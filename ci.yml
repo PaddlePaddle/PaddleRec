@@ -1,0 +1,16 @@
+Global:
+    tool: bcloud
+
+Default:
+    profile: [change]
+
+Profiles:
+    - profile:
+      name: change
+      command: bcloud ut --no-output
+      release: true
+
+    - profile:
+      name: merge
+      command: bcloud ut --no-output
+      release: true

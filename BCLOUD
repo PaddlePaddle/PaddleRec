@@ -1,0 +1,67 @@
+#edit-mode: -*- python -*-
+#coding:utf-8
+
+WORKROOT('../../../')
+
+#platform, if not write PLATFORM('xxx') in BCLOUD file, default is 'centos4u3'
+#PLATFORM('centos4u3')
+
+#gcc version, default 'gcc'
+COMPILER('gcc482')
+
+#Preprocessor flags.
+#CPPFLAGS(r'-D_GNU_SOURCE -D__STDC_LIMIT_MACROS')
+#CPPFLAGS(r'-DVERSION=\"%s\"' % REPO_REVISION())
+
+#C flags.
+#CFLAGS('-g -pipe -W -Wall -fPIC')
+
+#C++ flags.
+#CXXFLAGS('-g -pipe -W -Wall -fPIC')
+
+#IDL flags.
+#IDLFLAGS('--compack')
+
+#UBRPC flags.
+#UBRPCFLAGS('--compack')
+
+#-I path
+INCPATHS('. ./include $INC')
+
+#libs which need to link with
+#LIBS('$OUT/lib/libpaddle-trainer.a')
+#LIBS('$OUT/so/libpaddle-trainer.so')
+
+#link flags
+#LDFLAGS('-lpthread -lcrypto -lrt')
+
+#CONFIGS("baidu/bcloud-demo/hello-svn@hello-svn_1-0-2-1_PD_BL@git_tag")
+
+#user_sources=GLOB("*.c *.cpp *.cc *.idl")
+
+#release headers
+HEADERS('*.h', '$INC')
+HEADERS('*.hpp', '$INC')
+HEADERS('include/*.h', '$INC')
+HEADERS('include/*.hpp', '$INC')
+
+#release files except headers
+#OUTPUT('conf', '$OUT')
+
+#bin
+#Application('paddle-trainer', Sources(user_sources))
+
+#UT
+#UTApplication('paddle-trainer', Sources(user_sources), UTArgs(''), UTOnServer(False))
+
+#.a
+#StaticLibrary('paddle-trainer', Sources(user_sources))
+#StaticLibrary('paddle-trainer', PreBuilt(True))
+
+#.so
+#SharedLibrary('paddle-trainer', Sources(user_sources))
+#SharedLibrary('paddle-trainer', PreBuilt(True))
+
+#sub directory
+#Directory('demo')
+
