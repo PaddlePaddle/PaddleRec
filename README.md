@@ -1,4 +1,4 @@
-# PaddlePaddle  (clone from /baidu/paddlepaddle/paddle)
+# PaddlePaddle  (clone from /baidu/paddlepaddle/paddle@feed-trainer)
 
 English | [简体中文](./README_cn.md)
 
