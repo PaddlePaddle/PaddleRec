@@ -54,6 +54,7 @@ option(WITH_AVX         "Compile PaddlePaddle with AVX intrinsics"      ${AVX_FO
 option(WITH_PYTHON      "Compile PaddlePaddle with python interpreter"  ON)
 option(WITH_TESTING     "Compile PaddlePaddle with unit testing"        OFF)
 option(WITH_MKL         "Compile PaddlePaddle with MKL support."        ${AVX_FOUND})
+option(WITH_CUSTOM_TRAINER  "Turn on trainer implement by custom"       OFF)
 option(WITH_SYSTEM_BLAS   "Use system blas library"           OFF)
 option(WITH_DISTRIBUTE  "Compile with distributed support"              OFF)
 option(WITH_BRPC_RDMA     "Use brpc rdma as the rpc protocal"           OFF)
@@ -146,10 +147,12 @@ include(external/dlpack)
 include(external/snappy)    # download snappy
 include(external/snappystream) # download snappystream
 include(external/warpctc)   # download, build, install warpctc
+include(external/yaml-cpp)    # download yaml
 
 if (NOT WIN32)
 # there is no official support of nccl, cupti in windows
 include(cupti)
+include(external/gzstream)
 endif (NOT WIN32)
 
 if(WITH_PSLIB)

@@ -48,6 +48,7 @@ DEFINE_string(
     "Specify path for loading tensorrt library, such as libnvinfer.so.");
 
 DEFINE_string(mklml_dir, "", "Specify path for loading libmklml_intel.so.");
+DEFINE_string(custom_trainer_dir, "", "Specify path for loading custom_trainer.so.");
 
 namespace paddle {
 namespace platform {
@@ -251,6 +252,10 @@ void* GetMKLMLDsoHandle() {
 #else
   return GetDsoHandleFromSearchPath(FLAGS_mklml_dir, "libmklml_intel.so");
 #endif
+}
+
+void* GetCustomTrainerDsoHandle() {
+  return GetDsoHandleFromSearchPath(FLAGS_custom_trainer_dir, "custom_trainer.so");
 }
 
 }  // namespace dynload

@@ -1,0 +1,5 @@
+#!/bin/bash
+mkdir -p so
+
+cp baidu_third-party_mklml/so/* so
+rm -rf baidu_third-party_mklml

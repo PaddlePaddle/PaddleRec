@@ -21,4 +21,7 @@ cc_library(dynload_warpctc SRCS warpctc.cc DEPS dynamic_loader warpctc)
 if (WITH_MKLML)
     cc_library(dynload_mklml SRCS mklml.cc DEPS dynamic_loader mklml)
 endif()
+if (WITH_CUSTOM_TRAINER)
+    cc_library(dynload_custom_trainer SRCS custom_trainer.cc DEPS dynamic_loader)
+endif()
 # TODO(TJ): add iomp, mkldnn?
