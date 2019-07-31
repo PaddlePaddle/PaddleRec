@@ -71,6 +71,12 @@ int SimpleExecute::initialize(YAML::Node& exe_config,
         paddle::platform::SetNumThreads(1);
     }
 
+    if (!exe_config["startup_program"] || 
+        !exe_config["main_program"]) {
+        VLOG(4) << "fail to load config";
+        return -1;
+    }
+
     _context.reset(new SimpleExecute::Context(context_ptr->cpu_place));
 	auto startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
     if (startup_program == nullptr) {

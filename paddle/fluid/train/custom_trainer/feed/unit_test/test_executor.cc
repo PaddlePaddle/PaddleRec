@@ -23,7 +23,7 @@ namespace feed {
 TEST(testSimpleExecute, initialize) {
     SimpleExecute execute;
     auto context_ptr = std::make_shared<TrainerContext>();
-    auto config = YAML::Load("[1, 2, 3]");
+    YAML::Node config = YAML::Load("[1, 2, 3]");
     ASSERT_NE(0, execute.initialize(config, context_ptr));
     config = YAML::Load("{startup_program: ./data/startup_program, main_program: ./data/main_program}");
     ASSERT_EQ(0, execute.initialize(config, context_ptr));
