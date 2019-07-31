@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include "paddle/fluid/framework/executor.h"
+#include "paddle/fluid/framework/scope.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 
@@ -23,16 +23,16 @@ public:
     }
     //直接取var
     template <class T>
-    T* var(const std::string& name) {
-        return _scope.Var(name).Get<T>();
+    const T& var(const std::string& name) {
+        return _scope.Var(name)->Get<T>();
     }
     template <class T>
     T* mutable_var(const std::string& name) {
         return _scope.Var(name)->GetMutable<T>();
     }
 
-    //执行n轮训练，每轮回调(epoch_id, _scope)
-    virtual int run(uint32_t epoch_num, std::function<void(uint32_t, ::paddle::framework::Scope*)>) = 0;
+    //执行训练
+    virtual int run() = 0;
     
 protected:
     ::paddle::framework::Scope _scope;
@@ -41,13 +41,14 @@ REGISTER_REGISTERER(Execute);
 
 class SimpleExecute : public Execute {
 public:
-    SimpleExecute() {}
-    virtual ~SimpleExecute() {}
+    SimpleExecute();
+    virtual ~SimpleExecute();
     virtual int initialize(YAML::Node& exe_config,
         std::shared_ptr<TrainerContext> context_ptr);
-    virtual int run(uint32_t epoch_num, std::function<void(uint32_t, ::paddle::framework::Scope*)>) = 0;
+    virtual int run();
 protected:
-    ::paddle::framework::Executor _execute; 
+    struct Context;
+    std::unique_ptr<Context> _context;
 };
 
 }  // namespace feed
