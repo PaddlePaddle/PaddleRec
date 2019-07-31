@@ -5,6 +5,7 @@
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/process/process.h"
 #include "paddle/fluid/train/custom_trainer/feed/process/init_env_process.h"
+#include "paddle/fluid/framework/op_registry.h"
 #include "paddle/fluid/pybind/pybind.h"
 
 using namespace paddle::custom_trainer::feed;

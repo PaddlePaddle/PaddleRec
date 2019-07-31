@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include "paddle/fluid/framework/op_registry.h"
 #include "paddle/fluid/pybind/pybind.h"
 
 int32_t main(int32_t argc, char** argv) {

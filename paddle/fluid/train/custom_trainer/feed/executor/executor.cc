@@ -5,6 +5,7 @@
 #include "paddle/fluid/platform/init.h"
 #include "paddle/fluid/platform/cpu_helper.h"
 #include "paddle/fluid/inference/api/details/reset_tensor_array.h"
+#include "paddle/fluid/platform/enforce.h"
 
 
 namespace paddle {
@@ -16,7 +17,7 @@ namespace {
 int ReadBinaryFile(const std::string& filename, std::string* contents) {
     std::ifstream fin(filename, std::ios::in | std::ios::binary);
     if (!fin) {
-        VLOG(4) << "Cannot open file " << filename;
+        VLOG(2) << "Cannot open file " << filename;
         return -1;
     }
     fin.seekg(0, std::ios::end);
@@ -73,37 +74,53 @@ int SimpleExecute::initialize(YAML::Node& exe_config,
 
     if (!exe_config["startup_program"] || 
         !exe_config["main_program"]) {
-        VLOG(4) << "fail to load config";
+        VLOG(2) << "fail to load config";
         return -1;
     }
 
-    _context.reset(new SimpleExecute::Context(context_ptr->cpu_place));
-	auto startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
-    if (startup_program == nullptr) {
-        VLOG(4) << "fail to load startup_program: " << exe_config["startup_program"].as<std::string>();
-        return -1;
-    }
-    
-    _context->executor.Run(*startup_program, this->scope(), 0, false, true);
+    try {
+        _context.reset(new SimpleExecute::Context(context_ptr->cpu_place));
+        auto startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
+        if (startup_program == nullptr) {
+            VLOG(2) << "fail to load startup_program: " << exe_config["startup_program"].as<std::string>();
+            return -1;
+        }
+        
+        _context->executor.Run(*startup_program, this->scope(), 0, false, true);
 
-	_context->main_program = Load(&_context->executor, exe_config["main_program"].as<std::string>());
-    if (_context->main_program == nullptr) {
-        VLOG(4) << "fail to load main_program: " << exe_config["main_program"].as<std::string>();
+        _context->main_program = Load(&_context->executor, exe_config["main_program"].as<std::string>());
+        if (_context->main_program == nullptr) {
+            VLOG(2) << "fail to load main_program: " << exe_config["main_program"].as<std::string>();
+            return -1;
+        }
+        _context->prepare_context = _context->executor.Prepare(*_context->main_program, 0);
+        _context->executor.CreateVariables(*_context->main_program, this->scope(), 0);
+    } catch (::paddle::platform::EnforceNotMet& err) {
+        VLOG(2) << err.what();
+        _context.reset(nullptr);
         return -1;
     }
-    _context->prepare_context = _context->executor.Prepare(*_context->main_program, 0);
-    _context->executor.CreateVariables(*_context->main_program, this->scope(), 0);
+
     return 0;
 }
 
 int SimpleExecute::run() {
-    _context->executor.RunPreparedContext(_context->prepare_context.get(), this->scope(),
-                            false, /* don't create local scope each time*/
-                            false /* don't create variable each time */);
+    if (_context == nullptr) {
+        VLOG(2) << "need initialize before run";
+        return -1;
+    }
+    try {
+        _context->executor.RunPreparedContext(_context->prepare_context.get(), this->scope(),
+                                false, /* don't create local scope each time*/
+                                false /* don't create variable each time */);
 
-    // For some other vector like containers not cleaned after each batch.
-    _context->tensor_array_batch_cleaner.CollectNoTensorVars(this->scope());
-    _context->tensor_array_batch_cleaner.ResetNoTensorVars();
+        // For some other vector like containers not cleaned after each batch.
+        _context->tensor_array_batch_cleaner.CollectNoTensorVars(this->scope());
+        _context->tensor_array_batch_cleaner.ResetNoTensorVars();
+    } catch (::paddle::platform::EnforceNotMet& err) {
+        VLOG(2) << err.what();
+        return -1;
+    }
     return 0;
 }
     
