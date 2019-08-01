@@ -10,8 +10,13 @@ class Process {
 public:
     Process() {}
     virtual ~Process() {}
-    virtual int initialize(std::shared_ptr<TrainerContext> context_ptr) = 0;
+    virtual int initialize(std::shared_ptr<TrainerContext> context_ptr) {
+        _context_ptr = context_ptr.get();
+        return 0;
+    }
     virtual int run();
+protected:
+    TrainerContext* _context_ptr = NULL;
 };
 REGISTER_REGISTERER(Process);
 

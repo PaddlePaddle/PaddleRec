@@ -12,11 +12,31 @@ namespace custom_trainer {
 namespace feed {
 
 class Process;
+class EpochAccessor;
+
+enum class ModelSaveWay {
+    ModelSaveTrainCheckpoint = 0,
+    ModelSaveInferenceDelta = 1,
+    ModelSaveInferenceBase = 2
+};
+
+class TableMeta {
+public:
+    TableMeta() {}
+    ~TableMeta() {}
+    int table_id() {
+        return _id;
+    }
+private:
+    int _id;
+};
 
 class TrainerContext {
 public:
 YAML::Node trainer_config;
 paddle::platform::CPUPlace cpu_place;
+std::vector<TableMeta> params_table_list;
+std::shared_ptr<EpochAccessor> epoch_accessor;
 std::shared_ptr<RuntimeEnvironment> environment;
 std::vector<std::shared_ptr<Process>> process_list;
 };

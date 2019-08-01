@@ -70,10 +70,12 @@ SharedLibrary('paddle_fluid_avx_mklml', Sources(paddle_fluid_avx_mklml_src,  Cpp
 #feed
 HEADERS('paddle/fluid/train/custom_trainer/feed/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/common/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/common/')
+HEADERS('paddle/fluid/train/custom_trainer/feed/executor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/executor/')
+HEADERS('paddle/fluid/train/custom_trainer/feed/monitor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/monitor/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/dataset/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/dataset/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/process/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/process/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/shuffler/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/shuffler/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/params_accessor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/params_accessor/')
+HEADERS('paddle/fluid/train/custom_trainer/feed/accessor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/accessor/')
 NEED_OUTPUT("baidu/third-party/mklml")
 OUTPUT('paddle/fluid/train/custom_trainer/feed/conf', '$OUT')
 OUTPUT('paddle/fluid/train/custom_trainer/feed/scripts', '$OUT')

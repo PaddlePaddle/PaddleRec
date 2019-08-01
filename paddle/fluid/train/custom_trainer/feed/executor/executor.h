@@ -8,13 +8,13 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
-class Execute {
+class Executor {
 public:
-    Execute() {}
-    virtual ~Execute() {}
+    Executor() {}
+    virtual ~Executor() {}
 
     //初始化，包括进行训练网络&配置加载工作
-    virtual int initialize(YAML::Node& exe_config, 
+    virtual int initialize(YAML::Node exe_config, 
         std::shared_ptr<TrainerContext> context_ptr) = 0;
     
     //scope 可用于填充&取 var
@@ -24,7 +24,7 @@ public:
     //直接取var
     template <class T>
     T* var(const std::string& name) {
-        return _scope.Var(name).Get<T>();
+        return _scope.Var(name)->Get<T>();
     }
     template <class T>
     T* mutable_var(const std::string& name) {
@@ -34,20 +34,23 @@ public:
     //执行n轮训练，每轮回调(epoch_id, _scope)
     virtual int run(uint32_t epoch_num, std::function<void(uint32_t, ::paddle::framework::Scope*)>) = 0;
     
+    virtual bool is_dump_all_model() {
+        return false;
+    }
 protected:
     ::paddle::framework::Scope _scope;
 };
-REGISTER_REGISTERER(Execute);
+REGISTER_REGISTERER(Executor);
 
-class SimpleExecute : public Execute {
+class SimpleExecutor : public Executor {
 public:
-    SimpleExecute() {}
-    virtual ~SimpleExecute() {}
-    virtual int initialize(YAML::Node& exe_config,
+    SimpleExecutor() {}
+    virtual ~SimpleExecutor() {}
+    virtual int initialize(YAML::Node exe_config,
         std::shared_ptr<TrainerContext> context_ptr);
     virtual int run(uint32_t epoch_num, std::function<void(uint32_t, ::paddle::framework::Scope*)>) = 0;
 protected:
-    ::paddle::framework::Executor _execute; 
+    std::shared_ptr<::paddle::framework::Executor> _executor; 
 };
 
 }  // namespace feed

@@ -14,6 +14,7 @@ public:
     InitEnvProcess() {}
     virtual ~InitEnvProcess() {}
     virtual int initialize(std::shared_ptr<TrainerContext> context_ptr);
+    virtual int run(); 
 };
 
 }  // namespace feed
