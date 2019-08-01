@@ -8,6 +8,7 @@
 #include <memory>
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/framework/channel.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
 
 namespace paddle {
 namespace custom_trainer {
