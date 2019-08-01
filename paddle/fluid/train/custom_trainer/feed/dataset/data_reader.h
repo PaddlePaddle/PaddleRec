@@ -62,14 +62,15 @@ public:
         return _parser.get();
     }
 private:
-    std::shared_ptr<DataParser> _parser;
-    std::string _data_converter_shell;
+    std::shared_ptr<DataParser> _parser;//数据格式转换
+    std::string _pipeline_cmd; //将文件流，重定向到pipeline_cmd，再读入
 };
 REGISTER_REGISTERER(DataReader);
 
 
 //TODO
-//HDFS/DISK Reader
+//可读取HDFS/DISK上数据的Reader，数据按行分隔
+//HDFS/DISK - FileLineReader
 
 }//namespace feed
 }//namespace custom_trainer
