@@ -81,22 +81,23 @@ public:
 };
 
 TEST_F(SimpleExecutorTest, initialize) {
-    SimpleExecutor executor;
+    std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
     YAML::Node config = YAML::Load("[1, 2, 3]");
-    ASSERT_NE(0, executor.initialize(config, context_ptr));
+    ASSERT_NE(0, executor->initialize(config, context_ptr));
     config = YAML::Load(std::string() + "{startup_program: " + startup_program_path + ", main_program: " + main_program_path + "}");
-    ASSERT_EQ(0, executor.initialize(config, context_ptr));
+    ASSERT_EQ(0, executor->initialize(config, context_ptr));
     config = YAML::Load(std::string() + "{thread_num: 2, startup_program: " + startup_program_path + ", main_program: " + main_program_path + "}");
-    ASSERT_EQ(0, executor.initialize(config, context_ptr));
+    ASSERT_EQ(0, executor->initialize(config, context_ptr));
 }
 
 TEST_F(SimpleExecutorTest, run) {
-    SimpleExecutor executor;
+    std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
+
     auto config = YAML::Load(std::string() + "{thread_num: 2, startup_program: " + startup_program_path + ", main_program: " + main_program_path + "}");
-    ASSERT_EQ(0, executor.initialize(config, context_ptr));
+    ASSERT_EQ(0, executor->initialize(config, context_ptr));
     
-	auto x_var = executor.mutable_var<::paddle::framework::LoDTensor>("x");
-    executor.mutable_var<::paddle::framework::LoDTensor>("mean");
+	auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");
+    executor->mutable_var<::paddle::framework::LoDTensor>("mean");
     ASSERT_NE(nullptr, x_var);
 
     int x_len = 10;
@@ -109,9 +110,9 @@ TEST_F(SimpleExecutorTest, run) {
     }
     std::cout << std::endl;
 
-    ASSERT_EQ(0, executor.run());
+    ASSERT_EQ(0, executor->run());
 
-	auto mean_var = executor.var<::paddle::framework::LoDTensor>("mean");
+	auto mean_var = executor->var<::paddle::framework::LoDTensor>("mean");
     auto mean = mean_var.data<float>()[0];
     std::cout << "mean: " << mean << std::endl;
     ASSERT_NEAR(4.5, mean, 1e-9);

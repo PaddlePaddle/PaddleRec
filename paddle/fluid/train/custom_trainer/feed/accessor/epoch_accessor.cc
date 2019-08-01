@@ -1,4 +1,3 @@
-#pragma once
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
 
 namespace paddle {

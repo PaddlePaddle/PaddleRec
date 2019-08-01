@@ -42,18 +42,6 @@ protected:
 };
 REGISTER_REGISTERER(Executor);
 
-class SimpleExecutor : public Executor {
-public:
-    SimpleExecutor();
-    virtual ~SimpleExecutor();
-    virtual int initialize(YAML::Node exe_config,
-        std::shared_ptr<TrainerContext> context_ptr);
-    virtual int run();
-protected:
-    struct Context;
-    std::unique_ptr<Context> _context;
-};
-
 }  // namespace feed
 }  // namespace custom_trainer
 }  // namespace paddle
