@@ -43,7 +43,7 @@ std::unique_ptr<paddle::framework::ProgramDesc> Load(
 
 }
 
-struct SimpleExecute::Context {
+struct SimpleExecutor::Context {
     Context(const ::paddle::platform::Place& place) : place(place), executor(place) {
     }
     const ::paddle::platform::Place& place;
@@ -54,15 +54,15 @@ struct SimpleExecute::Context {
 };
 
 
-SimpleExecute::SimpleExecute() {
+SimpleExecutor::SimpleExecutor() {
 
 }
 
-SimpleExecute::~SimpleExecute() {
+SimpleExecutor::~SimpleExecutor() {
 
 }
 
-int SimpleExecute::initialize(YAML::Node exe_config,
+int SimpleExecutor::initialize(YAML::Node exe_config,
         std::shared_ptr<TrainerContext> context_ptr) {
     
     paddle::framework::InitDevices(false);
@@ -79,7 +79,7 @@ int SimpleExecute::initialize(YAML::Node exe_config,
     }
 
     try {
-        _context.reset(new SimpleExecute::Context(context_ptr->cpu_place));
+        _context.reset(new SimpleExecutor::Context(context_ptr->cpu_place));
         auto startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
         if (startup_program == nullptr) {
             VLOG(2) << "fail to load startup_program: " << exe_config["startup_program"].as<std::string>();
@@ -104,7 +104,7 @@ int SimpleExecute::initialize(YAML::Node exe_config,
     return 0;
 }
 
-int SimpleExecute::run() {
+int SimpleExecutor::run() {
     if (_context == nullptr) {
         VLOG(2) << "need initialize before run";
         return -1;

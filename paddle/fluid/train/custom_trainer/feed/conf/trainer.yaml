@@ -1,0 +1,6 @@
+train_thread_num : 10
+
+environment :
+   environment_class : MPIRuntimeEnvironment
+epoch:
+   epoch_class : HourlyEpochAccessor 

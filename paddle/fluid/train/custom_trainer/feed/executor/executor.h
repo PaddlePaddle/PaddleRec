@@ -44,8 +44,8 @@ REGISTER_REGISTERER(Executor);
 
 class SimpleExecutor : public Executor {
 public:
-    SimpleExecute();
-    virtual ~SimpleExecute();
+    SimpleExecutor();
+    virtual ~SimpleExecutor();
     virtual int initialize(YAML::Node exe_config,
         std::shared_ptr<TrainerContext> context_ptr);
     virtual int run();

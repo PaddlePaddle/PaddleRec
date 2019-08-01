@@ -22,8 +22,8 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
-TEST(testSimpleExecute, initialize) {
-    SimpleExecute execute;
+TEST(testSimpleExecutor, initialize) {
+    SimpleExecutor execute;
     auto context_ptr = std::make_shared<TrainerContext>();
     YAML::Node config = YAML::Load("[1, 2, 3]");
     ASSERT_NE(0, execute.initialize(config, context_ptr));
@@ -54,8 +54,8 @@ void next_batch(int batch_size, const paddle::platform::Place& place, paddle::fr
     }
 }
 
-TEST(testSimpleExecute, run) {
-    SimpleExecute execute;
+TEST(testSimpleExecutor, run) {
+    SimpleExecutor execute;
     auto context_ptr = std::make_shared<TrainerContext>();
     auto config = YAML::Load("{thread_num: 2, startup_program: ./data/startup_program, main_program: ./data/main_program}");
     ASSERT_EQ(0, execute.initialize(config, context_ptr));
