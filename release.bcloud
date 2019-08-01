@@ -3,3 +3,6 @@ mkdir -p so
 
 cp baidu_third-party_mklml/so/* so
 rm -rf baidu_third-party_mklml
+
+rm lib/libfake_paddle_proto.a
+rmdir lib 2>/dev/null || :
