@@ -5,6 +5,8 @@
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/process/process.h"
 #include "paddle/fluid/train/custom_trainer/feed/process/init_env_process.h"
+#include "paddle/fluid/framework/op_registry.h"
+#include "paddle/fluid/pybind/pybind.h"
 
 using namespace paddle::custom_trainer::feed;
 
@@ -19,7 +21,6 @@ int main(int argc, char* argv[]) {
     //load trainer config
     auto trainer_context_ptr = std::make_shared<TrainerContext>();
     trainer_context_ptr->trainer_config = YAML::LoadFile(FLAGS_feed_trainer_conf_path);    
-    VLOG(3) << "yaml node size" << trainer_context_ptr->trainer_config.size();
  
     std::vector<std::string> process_name_list = {
         "InitEnvProcess",

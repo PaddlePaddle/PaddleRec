@@ -17,10 +17,7 @@ int InitEnvProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     paddle::framework::InitDevices(false);
     context_ptr->cpu_place = paddle::platform::CPUPlace();
     
-    YAML::Node config;
-    config.reset(_context_ptr->trainer_config);
-    VLOG(3) << "yaml node size : " << config.size();
-
+    YAML::Node config = _context_ptr->trainer_config;
     //environment
     std::string env_class = config["environment"]["environment_class"].as<std::string>();
     auto* environment = CREATE_CLASS(RuntimeEnvironment, env_class);
