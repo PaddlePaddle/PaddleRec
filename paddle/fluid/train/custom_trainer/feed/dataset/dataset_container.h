@@ -9,20 +9,12 @@
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/framework/channel.h"
 #include "paddle/fluid/framework/data_set.h"
+#include "paddle/fluid/train/custom_trainer/feed/dataset/data_reader.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/runtime_environment.h"
 
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
-
-//单条样本的原始数据
-class DataItem {
-public:
-    DataItem() {}
-    virtual ~DataItem() {}
-    std::string id;  //样本id标识，可用于shuffle
-    std::string data;//样本完整数据
-};
 
 class DatasetContainer {
 public:
@@ -30,6 +22,7 @@ public:
     virtual ~DatasetContainer() {}
     virtual int initialize(const YAML::Node& config) {
         _dataset_config = config;
+        //预取n轮样本数据
         _prefetch_num = config["prefetch_num"].as<int>();
         _data_root_path = config["root_path"].as<std::string>();
         _data_path_generater = config["_data_path_generater"].as<std::string>();
@@ -54,7 +47,7 @@ protected:
     uint32_t _current_dataset_idx;             //当前样本数据idx
     int _current_epoch_id = -1;  
     int _ready_epoch_id = -1; //已下载完成的epoch_id
-    std::vector<std::shared_ptr<::paddle::framework::Dataset>> _dataset_list;
+    std::vector<std::shared_ptr<::paddle::framework::Dataset>> _dataset_list;//预取的数据列表
 };
 
 }//namespace feed

@@ -123,6 +123,7 @@ int SimpleExecutor::run() {
     }
     return 0;
 }
+REGISTER_CLASS(Executor, SimpleExecutor);
     
 }  // namespace feed
 }  // namespace custom_trainer
