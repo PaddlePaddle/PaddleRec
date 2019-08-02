@@ -22,13 +22,14 @@ public:
 
     virtual int parse(const char* str, size_t len, DataItem& data) const {
         size_t pos = 0;
-        while (str[pos] != ' ') {
-            if (pos >= len) {
-                VLOG(2) << "fail to parse line, strlen: " << len;
-                return -1;
-            }
+        while (pos < len && str[pos] != ' ') {
             ++pos;
         }
+        if (pos >= len) {
+            VLOG(2) << "fail to parse line" << std::string(str, len) << ", strlen: " << len;
+            return -1;
+        }
+        VLOG(5) << "getline: "  << str << " , pos: " << pos << ", len: " << len;
         data.id.assign(str, pos);
         data.data.assign(str + pos + 1, len - pos - 1);
         return 0;
@@ -36,13 +37,14 @@ public:
 
     virtual int parse(const char* str, DataItem& data) const {
         size_t pos = 0;
-        while (str[pos] != ' ') {
-            if (str[pos] == '\0') {
-                VLOG(2) << "fail to parse line, get '\\0' at pos: " << pos;
-                return -1;
-            }
+        while (str[pos] != '\0' && str[pos] != ' ') {
             ++pos;
         }
+        if (str[pos] == '\0') {
+            VLOG(2) << "fail to parse line" << str << ", get '\\0' at pos: " << pos;
+            return -1;
+        }
+        VLOG(5) << "getline: "  << str << " , pos: " << pos;
         data.id.assign(str, pos);
         data.data.assign(str + pos + 1);
         return 0;
@@ -106,6 +108,7 @@ public:
             int err_no;
             std::shared_ptr<FILE> fin = ::paddle::framework::fs_open_read(filename, &err_no, _pipeline_cmd);
             if (err_no != 0) {
+                VLOG(2) << "fail to open file: " << filename << ", with cmd: " << _pipeline_cmd;
                 return -1;
             }
             while (fgets(_buffer.get(), _buffer_size, fin.get())) {

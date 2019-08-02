@@ -20,14 +20,17 @@ limitations under the License. */
 #include "paddle/fluid/framework/tensor_util.h"
 #include "paddle/fluid/framework/program_desc.h"
 #include "paddle/fluid/framework/io/fs.h"
+#include "paddle/fluid/string/string_helper.h"
 
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+namespace {
 const char test_data_dir[] = "test_data";
 const char main_program_path[] = "test_data/main_program";
 const char startup_program_path[] = "test_data/startup_program";
+}
 
 class SimpleExecutorTest : public testing::Test
 {
@@ -82,18 +85,20 @@ public:
 
 TEST_F(SimpleExecutorTest, initialize) {
     std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
+    ASSERT_NE(nullptr, executor);
     YAML::Node config = YAML::Load("[1, 2, 3]");
     ASSERT_NE(0, executor->initialize(config, context_ptr));
-    config = YAML::Load(std::string() + "{startup_program: " + startup_program_path + ", main_program: " + main_program_path + "}");
+    config = YAML::Load(string::format_string("{startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
-    config = YAML::Load(std::string() + "{thread_num: 2, startup_program: " + startup_program_path + ", main_program: " + main_program_path + "}");
+    config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
 }
 
 TEST_F(SimpleExecutorTest, run) {
     std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
+    ASSERT_NE(nullptr, executor);
 
-    auto config = YAML::Load(std::string() + "{thread_num: 2, startup_program: " + startup_program_path + ", main_program: " + main_program_path + "}");
+    auto config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
     
 	auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");

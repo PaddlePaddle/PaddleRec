@@ -94,4 +94,4 @@ Application('feed_trainer', Sources('paddle/fluid/train/custom_trainer/feed/main
 
 #feed unit test
 UT_MAIN = UT_FILE('main.cc')
-UTApplication('test_executor', Sources(UT_MAIN, UT_FILE('test_executor.cc'), custom_trainer_src), CppFlags(CPPFLAGS_STR), CFlags(CFLAGS_STR), CxxFlags(CXXFLAGS_STR), Libs(src_libs=['paddle/fluid/train/custom_trainer/feed/so/libpaddle_fluid_avx_mklml.so']))
+UTApplication('unit_test', Sources(UT_MAIN, UT_FILE('test_executor.cc'), UT_FILE('test_datareader.cc'), custom_trainer_src), CppFlags(CPPFLAGS_STR), CFlags(CFLAGS_STR), CxxFlags(CXXFLAGS_STR), Libs(src_libs=['paddle/fluid/train/custom_trainer/feed/so/libpaddle_fluid_avx_mklml.so']))
