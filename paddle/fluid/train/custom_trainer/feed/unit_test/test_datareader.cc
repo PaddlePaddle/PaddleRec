@@ -105,18 +105,16 @@ TEST_F(DataReaderTest, LineDataReader) {
     std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
     ASSERT_NE(nullptr, data_reader);
 
-    YAML::Node config = YAML::Load("parser:\n"
-                                   "    class: LineDataParser\n"
-                                   "pipeline_cmd: cat\n"
-                                   "done_file: done_file");
-    ASSERT_EQ(0, data_reader->initialize(config, context_ptr));
-
-    config = YAML::Load("parser:\n"
+    auto config = YAML::Load("parser:\n"
                         "    class: LineDataParser\n"
                         "pipeline_cmd: cat\n"
                         "done_file: done_file\n"
                         "buffer_size: 128");
     ASSERT_EQ(0, data_reader->initialize(config, context_ptr));
+    auto data_file_list = data_reader->data_file_list(test_data_dir);
+    ASSERT_EQ(2, data_file_list.size());
+    ASSERT_EQ(string::format_string("%s/%s", test_data_dir, "a.txt"), data_file_list[0]);
+    ASSERT_EQ(string::format_string("%s/%s", test_data_dir, "b.txt"), data_file_list[1]);
 
     ASSERT_FALSE(data_reader->is_data_ready(test_data_dir));
     std::ofstream fout(framework::fs_path_join(test_data_dir, "done_file"));
@@ -150,6 +148,40 @@ TEST_F(DataReaderTest, LineDataReader) {
     ASSERT_TRUE(reader);
     ASSERT_STREQ("jkl", data_item.id.c_str());
     ASSERT_STREQ("456789", data_item.data.c_str());
+
+    reader >> data_item;
+    ASSERT_FALSE(reader);
+}
+
+TEST_F(DataReaderTest, LineDataReader_filename_prefix) {
+    std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
+    ASSERT_NE(nullptr, data_reader);
+    auto config = YAML::Load("parser:\n"
+                                   "    class: LineDataParser\n"
+                                   "pipeline_cmd: cat\n"
+                                   "done_file: done_file\n"
+                                   "filename_prefix: a");
+    ASSERT_EQ(0, data_reader->initialize(config, context_ptr));
+    auto data_file_list = data_reader->data_file_list(test_data_dir);
+    ASSERT_EQ(1, data_file_list.size());
+    ASSERT_EQ(string::format_string("%s/%s", test_data_dir, "a.txt"), data_file_list[0]);
+    
+    auto channel = framework::MakeChannel<DataItem>(128);
+    ASSERT_NE(nullptr, channel);
+    ASSERT_EQ(0, data_reader->read_all(test_data_dir, channel));
+
+    framework::ChannelReader<DataItem> reader(channel.get());
+    DataItem data_item;
+    
+    reader >> data_item;
+    ASSERT_TRUE(reader);
+    ASSERT_STREQ("abc", data_item.id.c_str());
+    ASSERT_STREQ("123456", data_item.data.c_str());
+
+    reader >> data_item;
+    ASSERT_TRUE(reader);
+    ASSERT_STREQ("def", data_item.id.c_str());
+    ASSERT_STREQ("234567", data_item.data.c_str());
 
     reader >> data_item;
     ASSERT_FALSE(reader);

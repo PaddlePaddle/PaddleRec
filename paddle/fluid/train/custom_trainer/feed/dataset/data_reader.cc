@@ -86,35 +86,50 @@ public:
         }
         _done_file_name = config["done_file"].as<std::string>();
         _buffer_size = config["buffer_size"].as<int>(1024);
+        _filename_prefix = config["filename_prefix"].as<std::string>("");
         _buffer.reset(new char[_buffer_size]);
         return 0;
     }
 
     //判断样本数据是否已就绪，就绪表明可以开始download
     virtual bool is_data_ready(const std::string& data_dir) {
-        auto done_file_path = ::paddle::framework::fs_path_join(data_dir, _done_file_name);
-        if (::paddle::framework::fs_exists(done_file_path)) {
+        auto done_file_path = framework::fs_path_join(data_dir, _done_file_name);
+        if (framework::fs_exists(done_file_path)) {
             return true;
         }
         return false;
     }
 
+    virtual std::vector<std::string> data_file_list(const std::string& data_dir) {
+        if (_filename_prefix.empty()) {
+            return framework::fs_list(data_dir);
+        }
+        std::vector<std::string> data_files;
+        for (auto& filepath : framework::fs_list(data_dir)) {
+            auto filename = framework::fs_path_split(filepath).second;
+            if (filename.size() >= _filename_prefix.size() && filename.substr(0, _filename_prefix.size()) == _filename_prefix) {
+                data_files.push_back(std::move(filepath));
+            }
+        }
+        return data_files;
+    }
+
     //读取数据样本流中
-    virtual int read_all(const std::string& data_dir, ::paddle::framework::Channel<DataItem> data_channel) {
-        ::paddle::framework::ChannelWriter<DataItem> writer(data_channel.get());
+    virtual int read_all(const std::string& data_dir, framework::Channel<DataItem> data_channel) {
+        framework::ChannelWriter<DataItem> writer(data_channel.get());
         DataItem data_item;
         if (_buffer_size <= 0 || _buffer == nullptr) {
             VLOG(2) << "no buffer";
             return -1;
         }
-        for (const auto& filename : ::paddle::framework::fs_list(data_dir)) {
-            if (::paddle::framework::fs_path_split(filename).second == _done_file_name) {
+        for (const auto& filepath : data_file_list(data_dir)) {
+            if (framework::fs_path_split(filepath).second == _done_file_name) {
                 continue;
             }
             int err_no = 0;
-            std::shared_ptr<FILE> fin = ::paddle::framework::fs_open_read(filename, &err_no, _pipeline_cmd);
+            std::shared_ptr<FILE> fin = framework::fs_open_read(filepath, &err_no, _pipeline_cmd);
             if (err_no != 0) {
-                VLOG(2) << "fail to open file: " << filename << ", with cmd: " << _pipeline_cmd;
+                VLOG(2) << "fail to open file: " << filepath << ", with cmd: " << _pipeline_cmd;
                 return -1;
             }
             while (fgets(_buffer.get(), _buffer_size, fin.get())) {
@@ -124,7 +139,7 @@ public:
                 writer << std::move(data_item);
             }
             if (ferror(fin.get()) != 0) {
-                VLOG(2) << "fail to read file: " << filename;
+                VLOG(2) << "fail to read file: " << filepath;
                 return -1;
             }
         }
@@ -144,6 +159,7 @@ private:
     std::string _done_file_name; // without data_dir
     int _buffer_size = 0;
     std::unique_ptr<char[]> _buffer;
+    std::string _filename_prefix;
 };
 REGISTER_CLASS(DataReader, LineDataReader);
 

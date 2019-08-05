@@ -59,6 +59,7 @@ public:
     virtual bool is_data_ready(const std::string& data_dir) = 0;
     //读取数据样本流中
     virtual int read_all(const std::string& data_dir, ::paddle::framework::Channel<DataItem> data_channel) = 0;
+    virtual std::vector<std::string> data_file_list(const std::string& data_dir) = 0;
     virtual const DataParser* get_parser() {
         return _parser.get();
     }
