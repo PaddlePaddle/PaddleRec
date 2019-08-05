@@ -36,17 +36,18 @@ class DataReaderTest : public testing::Test
 public:
     static void SetUpTestCase()
     {
-        ::paddle::framework::localfs_mkdir(test_data_dir);
+        framework::shell_set_verbose(true);
+        framework::localfs_mkdir(test_data_dir);
 
         {
-            std::ofstream fout(::paddle::framework::fs_path_join(test_data_dir, "a.txt"));
+            std::ofstream fout(framework::fs_path_join(test_data_dir, "a.txt"));
             fout << "abc 123456" << std::endl;
             fout << "def 234567" << std::endl;
             fout.close();
         }
 
         {
-            std::ofstream fout(::paddle::framework::fs_path_join(test_data_dir, "b.txt"));
+            std::ofstream fout(framework::fs_path_join(test_data_dir, "b.txt"));
             fout << "ghi 345678" << std::endl;
             fout << "jkl 456789" << std::endl;
             fout.close();
@@ -55,7 +56,7 @@ public:
 
     static void TearDownTestCase()
     {
-        ::paddle::framework::localfs_remove(test_data_dir);
+        framework::localfs_remove(test_data_dir);
     }
 
     virtual void SetUp()
@@ -118,12 +119,12 @@ TEST_F(DataReaderTest, LineDataReader) {
     ASSERT_EQ(0, data_reader->initialize(config, context_ptr));
 
     ASSERT_FALSE(data_reader->is_data_ready(test_data_dir));
-    std::ofstream fout(::paddle::framework::fs_path_join(test_data_dir, "done_file"));
+    std::ofstream fout(framework::fs_path_join(test_data_dir, "done_file"));
     fout << "done";
     fout.close();
     ASSERT_TRUE(data_reader->is_data_ready(test_data_dir));
 
-    auto channel = ::paddle::framework::MakeChannel<DataItem>();
+    auto channel = framework::MakeChannel<DataItem>(128);
     ASSERT_NE(nullptr, channel);
     ASSERT_EQ(0, data_reader->read_all(test_data_dir, channel));
 

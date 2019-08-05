@@ -26,12 +26,15 @@ public:
             ++pos;
         }
         if (pos >= len) {
-            VLOG(2) << "fail to parse line" << std::string(str, len) << ", strlen: " << len;
+            VLOG(2) << "fail to parse line: " << std::string(str, len) << ", strlen: " << len;
             return -1;
         }
         VLOG(5) << "getline: "  << str << " , pos: " << pos << ", len: " << len;
         data.id.assign(str, pos);
         data.data.assign(str + pos + 1, len - pos - 1);
+        if (!data.data.empty() && data.data.back() == '\n') {
+            data.data.pop_back();
+        }
         return 0;
     }
 
@@ -41,12 +44,15 @@ public:
             ++pos;
         }
         if (str[pos] == '\0') {
-            VLOG(2) << "fail to parse line" << str << ", get '\\0' at pos: " << pos;
+            VLOG(2) << "fail to parse line: " << str << ", get '\\0' at pos: " << pos;
             return -1;
         }
         VLOG(5) << "getline: "  << str << " , pos: " << pos;
         data.id.assign(str, pos);
         data.data.assign(str + pos + 1);
+        if (!data.data.empty() && data.data.back() == '\n') {
+            data.data.pop_back();
+        }
         return 0;
     }
 
@@ -105,7 +111,7 @@ public:
             if (::paddle::framework::fs_path_split(filename).second == _done_file_name) {
                 continue;
             }
-            int err_no;
+            int err_no = 0;
             std::shared_ptr<FILE> fin = ::paddle::framework::fs_open_read(filename, &err_no, _pipeline_cmd);
             if (err_no != 0) {
                 VLOG(2) << "fail to open file: " << filename << ", with cmd: " << _pipeline_cmd;
@@ -127,6 +133,7 @@ public:
             VLOG(2) << "fail when write to channel";
             return -1;
         }
+        data_channel->Close();
         return 0;
     }
 
