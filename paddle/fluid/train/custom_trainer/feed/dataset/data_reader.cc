@@ -171,7 +171,7 @@ public:
                     return -1;
                 }
             }
-            if (!_file_system) {
+            if (_file_system->err_no() != 0) {
                 _file_system->reset_err_no();
                 return -1;
             }
