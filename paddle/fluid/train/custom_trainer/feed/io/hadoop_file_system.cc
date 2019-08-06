@@ -16,9 +16,11 @@ limitations under the License. */
 
 #include <string>
 #include <unordered_map>
+#include <tuple>
 
 #include "paddle/fluid/train/custom_trainer/feed/io/shell.h"
 #include "paddle/fluid/string/string_helper.h"
+#include "paddle/fluid/string/piece.h"
 #include "glog/logging.h"
 
 namespace paddle {
@@ -31,8 +33,10 @@ public:
         _buffer_size = config["buffer_size"].as<size_t>(0);
         _hdfs_command = config["hdfs_command"].as<std::string>("hadoop fs");
         _ugi.clear();
-        for (const auto& prefix_ugi : config["ugi"]) {
-            _ugi.emplace(prefix_ugi.first.as<std::string>(), prefix_ugi.second.as<std::string>());
+        if (config["ugis"] && config["ugis"].Type() == YAML::NodeType::Map) {
+            for (const auto& prefix_ugi : config["ugis"]) {
+                _ugi.emplace(prefix_ugi.first.as<std::string>(), prefix_ugi.second.as<std::string>());
+            }
         }
         if (_ugi.find("default") == _ugi.end()) {
             VLOG(2) << "fail to load default ugi";
@@ -48,8 +52,7 @@ public:
             cmd = string::format_string(
                     "%s -text \"%s\"", hdfs_command(path).c_str(), path.c_str());
         } else {
-            cmd = string::format_string(
-                    "%s -cat \"%s\"", hdfs_command(path).c_str(), path.c_str());
+            cmd = string::format_string("%s -cat \"%s\"", hdfs_command(path).c_str(), path.c_str());
         }
 
         bool is_pipe = true;
@@ -59,7 +62,8 @@ public:
 
     std::shared_ptr<FILE> open_write(const std::string& path, const std::string& converter)
             override {
-        std::string cmd = string::format_string("%s -put - \"%s\"", hdfs_command(path).c_str(), path.c_str());
+        std::string cmd =
+                string::format_string("%s -put - \"%s\"", hdfs_command(path).c_str(), path.c_str());
         bool is_pipe = true;
 
         if (string::end_with(path, ".gz\"")) {
@@ -89,12 +93,8 @@ public:
         if (path == "") {
             return {};
         }
+        auto paths = _split_path(path);
 
-        std::string prefix = "hdfs:";
-
-        if (string::begin_with(path, "afs:")) {
-            prefix = "afs:";
-        }
         int err_no = 0;
         std::vector<std::string> list;
         do {
@@ -115,7 +115,7 @@ public:
                 if (line.size() != 8) {
                     continue;
                 }
-                list.push_back(prefix + line[7]);
+                list.push_back(_get_prefix(paths) + line[7]);
             }
         } while (err_no == -1);
         return list;
@@ -146,30 +146,60 @@ public:
             return;
         }
 
-        shell_execute(
-                string::format_string("%s -mkdir %s; true", hdfs_command(path).c_str(), path.c_str()));
+        shell_execute(string::format_string(
+                "%s -mkdir %s; true", hdfs_command(path).c_str(), path.c_str()));
     }
 
-    
     std::string hdfs_command(const std::string& path) {
-        auto start_pos = path.find_first_of(':');
-        auto end_pos = path.find_first_of('/');
-        if (start_pos != std::string::npos && end_pos != std::string::npos && start_pos < end_pos) {
-            auto fs_path = path.substr(start_pos + 1, end_pos - start_pos - 1);
-            auto ugi_it = _ugi.find(fs_path);
-            if (ugi_it != _ugi.end()) {
-                return hdfs_command_with_ugi(ugi_it->second);
-            }
+        auto paths = _split_path(path);
+        auto it = _ugi.find(std::get<1>(paths).ToString());
+        if (it != _ugi.end()) {
+            return hdfs_command_with_ugi(it->second);
         }
         VLOG(5) << "path: " << path << ", select default ugi";
         return hdfs_command_with_ugi(_ugi["default"]);
     }
 
     std::string hdfs_command_with_ugi(std::string ugi) {
-        return string::format_string("%s -Dhadoop.job.ugi=\"%s\"", _hdfs_command.c_str(), ugi.c_str());
+        return string::format_string(
+                "%s -Dhadoop.job.ugi=\"%s\"", _hdfs_command.c_str(), ugi.c_str());
     }
 
 private:
+    std::string _get_prefix(const std::tuple<string::Piece, string::Piece, string::Piece>& paths) {
+        if (std::get<1>(paths).len() == 0) {
+            return std::get<0>(paths).ToString();
+        }
+        return std::get<0>(paths).ToString() + "//" + std::get<1>(paths).ToString();
+    }
+
+    std::tuple<string::Piece, string::Piece, string::Piece> _split_path(string::Piece path) {
+        // parse "xxx://abc.def:8756/user" as "xxx:", "abc.def:8756", "/user"
+        // parse "xxx:/user" as "xxx:", "", "/user"
+        // parse "xxx://abc.def:8756" as "xxx:", "abc.def:8756", ""
+        // parse "other" as "", "", "other"
+        std::tuple<string::Piece, string::Piece, string::Piece> result{string::SubStr(path, 0, 0), string::SubStr(path, 0, 0), path};
+
+        auto fs_pos = string::Find(path, ':', 0) + 1;
+        if (path.len() > fs_pos) {
+            std::get<0>(result) = string::SubStr(path, 0, fs_pos);
+            path = string::SkipPrefix(path, fs_pos);
+            if (string::HasPrefix(path, "//")) {
+                path = string::SkipPrefix(path, 2);
+                auto end_pos = string::Find(path, '/', 0);
+                if (end_pos != string::Piece::npos) {
+                    std::get<1>(result) = string::SubStr(path, 0, end_pos);
+                    std::get<2>(result) = string::SkipPrefix(path, end_pos);
+                } else {
+                    std::get<1>(result) = path;
+                }
+            } else {
+                std::get<2>(result) = path;
+            }
+        }
+        return result;
+    }
+
     size_t _buffer_size = 0;
     std::string _hdfs_command;
     std::unordered_map<std::string, std::string> _ugi;

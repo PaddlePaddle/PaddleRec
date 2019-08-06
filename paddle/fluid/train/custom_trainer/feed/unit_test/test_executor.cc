@@ -19,7 +19,8 @@ limitations under the License. */
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 #include "paddle/fluid/framework/tensor_util.h"
 #include "paddle/fluid/framework/program_desc.h"
-#include "paddle/fluid/framework/io/fs.h"
+#include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
+#include "paddle/fluid/train/custom_trainer/feed/io/shell.h"
 #include "paddle/fluid/string/string_helper.h"
 
 namespace paddle {
@@ -37,7 +38,9 @@ class SimpleExecutorTest : public testing::Test
 public:
     static void SetUpTestCase()
     {
-        ::paddle::framework::localfs_mkdir(test_data_dir);
+        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        fs->mkdir(test_data_dir);
+        shell_set_verbose(true);
 
         {
             std::unique_ptr<paddle::framework::ProgramDesc> startup_program(
@@ -67,7 +70,8 @@ public:
 
     static void TearDownTestCase()
     {
-        ::paddle::framework::localfs_remove(test_data_dir);
+        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        fs->remove(test_data_dir);
     }
 
     virtual void SetUp()

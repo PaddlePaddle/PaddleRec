@@ -29,8 +29,8 @@ class AutoFileSystem : public FileSystem {
 public:
     int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) override {
         _file_system.clear();
-        if (config) {
-            for (auto& prefix_fs: config) {
+        if (config && config["file_systems"] && config["file_systems"].Type() == YAML::NodeType::Map) {
+            for (auto& prefix_fs: config["file_systems"]) {
                 std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, prefix_fs.second["class"].as<std::string>("")));
                 if (fs == nullptr) {
                     VLOG(2) << "fail to create class: " << prefix_fs.second["class"].as<std::string>("");
