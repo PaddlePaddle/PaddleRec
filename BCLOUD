@@ -72,6 +72,7 @@ HEADERS('paddle/fluid/train/custom_trainer/feed/dataset/*.h', '$INC/paddle/fluid
 HEADERS('paddle/fluid/train/custom_trainer/feed/process/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/process/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/shuffler/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/shuffler/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/accessor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/accessor/')
+HEADERS('paddle/fluid/train/custom_trainer/feed/io/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/io/')
 NEED_OUTPUT("baidu/third-party/mklml")
 OUTPUT('paddle/fluid/train/custom_trainer/feed/conf', '$OUT')
 OUTPUT('paddle/fluid/train/custom_trainer/feed/scripts', '$OUT')
@@ -79,6 +80,7 @@ OUTPUT('paddle/fluid/train/custom_trainer/feed/so', '$OUT')
 
 def UT_FILE(filename):
     UT_DIR = 'paddle/fluid/train/custom_trainer/feed/unit_test'
+    import os
     return os.path.join(UT_DIR, filename)
 
 custom_trainer_src = GLOB('paddle/fluid/train/custom_trainer/feed/*/*.cc', Exclude(UT_FILE('*')))
