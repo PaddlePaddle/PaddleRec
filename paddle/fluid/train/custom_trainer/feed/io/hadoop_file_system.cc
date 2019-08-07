@@ -93,7 +93,7 @@ public:
         if (path == "") {
             return {};
         }
-        auto paths = _split_path(path);
+        auto paths = split_path(path);
 
         int err_no = 0;
         std::vector<std::string> list;
@@ -115,7 +115,7 @@ public:
                 if (line.size() != 8) {
                     continue;
                 }
-                list.push_back(_get_prefix(paths) + line[7]);
+                list.push_back(get_prefix(paths) + line[7]);
             }
         } while (err_no == -1);
         return list;
@@ -151,7 +151,7 @@ public:
     }
 
     std::string hdfs_command(const std::string& path) {
-        auto paths = _split_path(path);
+        auto paths = split_path(path);
         auto it = _ugi.find(std::get<1>(paths).ToString());
         if (it != _ugi.end()) {
             return hdfs_command_with_ugi(it->second);
@@ -166,20 +166,19 @@ public:
     }
 
 private:
-    std::string _get_prefix(const std::tuple<string::Piece, string::Piece, string::Piece>& paths) {
+    std::string get_prefix(const std::tuple<string::Piece, string::Piece, string::Piece>& paths) {
         if (std::get<1>(paths).len() == 0) {
             return std::get<0>(paths).ToString();
         }
         return std::get<0>(paths).ToString() + "//" + std::get<1>(paths).ToString();
     }
 
-    std::tuple<string::Piece, string::Piece, string::Piece> _split_path(string::Piece path) {
-        // parse "xxx://abc.def:8756/user" as "xxx:", "abc.def:8756", "/user"
-        // parse "xxx:/user" as "xxx:", "", "/user"
-        // parse "xxx://abc.def:8756" as "xxx:", "abc.def:8756", ""
-        // parse "other" as "", "", "other"
+    // parse "xxx://abc.def:8756/user" as "xxx:", "abc.def:8756", "/user"
+    // parse "xxx:/user" as "xxx:", "", "/user"
+    // parse "xxx://abc.def:8756" as "xxx:", "abc.def:8756", ""
+    // parse "other" as "", "", "other"
+    std::tuple<string::Piece, string::Piece, string::Piece> split_path(string::Piece path) {
         std::tuple<string::Piece, string::Piece, string::Piece> result{string::SubStr(path, 0, 0), string::SubStr(path, 0, 0), path};
-
         auto fs_pos = string::Find(path, ':', 0) + 1;
         if (path.len() > fs_pos) {
             std::get<0>(result) = string::SubStr(path, 0, fs_pos);
