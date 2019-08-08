@@ -8,5 +8,6 @@ int32_t main(int32_t argc, char** argv) {
     ::google::InitGoogleLogging(argv[0]);
     ::testing::InitGoogleTest(&argc, argv);
     ::google::ParseCommandLineFlags(&argc, &argv, true);
+
     return RUN_ALL_TESTS();
 }

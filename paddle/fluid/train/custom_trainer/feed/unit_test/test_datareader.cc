@@ -15,6 +15,7 @@ limitations under the License. */
 #include <iostream>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <omp.h>
 
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 #include "paddle/fluid/framework/tensor_util.h"
@@ -60,17 +61,21 @@ public:
     }
 
     virtual void SetUp() {
+        thread_num = omp_get_max_threads();
+        omp_set_num_threads(1);
         fs.reset(CREATE_CLASS(FileSystem, "LocalFileSystem"));
         context_ptr.reset(new TrainerContext());
     }
 
     virtual void TearDown() {
+        omp_set_num_threads(thread_num);
         fs = nullptr;
         context_ptr = nullptr;
     }
 
     std::shared_ptr<TrainerContext> context_ptr;
     std::unique_ptr<FileSystem> fs;
+    int thread_num = 1;
 };
 
 TEST_F(DataReaderTest, LineDataParser) {
@@ -110,11 +115,11 @@ TEST_F(DataReaderTest, LineDataReader) {
             "parser:\n"
             "    class: LineDataParser\n"
             "pipeline_cmd: cat\n"
-            "done_file: done_file\n"
-            "buffer_size: 128");
+            "done_file: done_file\n");
     ASSERT_EQ(0, data_reader->initialize(config, context_ptr));
     auto data_file_list = data_reader->data_file_list(test_data_dir);
     ASSERT_EQ(2, data_file_list.size());
+    std::sort(data_file_list.begin(), data_file_list.end());
     ASSERT_EQ(string::format_string("%s/%s", test_data_dir, "a.txt"), data_file_list[0]);
     ASSERT_EQ(string::format_string("%s/%s", test_data_dir, "b.txt"), data_file_list[1]);
 

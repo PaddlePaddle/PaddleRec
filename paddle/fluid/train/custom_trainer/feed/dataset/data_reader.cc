@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include <glog/logging.h>
+#include <omp.h>
 
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 
@@ -32,9 +33,6 @@ public:
         VLOG(5) << "getline: " << str << " , pos: " << pos << ", len: " << len;
         data.id.assign(str, pos);
         data.data.assign(str + pos + 1, len - pos - 1);
-        if (!data.data.empty() && data.data.back() == '\n') {
-            data.data.pop_back();
-        }
         return 0;
     }
 
@@ -50,9 +48,6 @@ public:
         VLOG(5) << "getline: " << str << " , pos: " << pos;
         data.id.assign(str, pos);
         data.data.assign(str + pos + 1);
-        if (!data.data.empty() && data.data.back() == '\n') {
-            data.data.pop_back();
-        }
         return 0;
     }
 
@@ -85,9 +80,7 @@ public:
             return -1;
         }
         _done_file_name = config["done_file"].as<std::string>();
-        _buffer_size = config["buffer_size"].as<int>(1024);
         _filename_prefix = config["filename_prefix"].as<std::string>("");
-        _buffer.reset(new char[_buffer_size]);
 
         if (config["file_system"] && config["file_system"]["class"]) {
             _file_system.reset(
@@ -118,14 +111,11 @@ public:
     }
 
     virtual std::vector<std::string> data_file_list(const std::string& data_dir) {
-        if (_filename_prefix.empty()) {
-            return _file_system->list(data_dir);
-        }
         std::vector<std::string> data_files;
         for (auto& filepath : _file_system->list(data_dir)) {
             auto filename = _file_system->path_split(filepath).second;
-            if (filename.size() >= _filename_prefix.size() &&
-                filename.substr(0, _filename_prefix.size()) == _filename_prefix) {
+            if (filename != _done_file_name &&
+                string::begin_with(filename, _filename_prefix)) {
                 data_files.push_back(std::move(filepath));
             }
         }
@@ -143,28 +133,42 @@ public:
         };
         std::unique_ptr<framework::ChannelWriter<DataItem>, decltype(deleter)> writer(new framework::ChannelWriter<DataItem>(data_channel.get()), deleter);
         DataItem data_item;
-        if (_buffer_size <= 0 || _buffer == nullptr) {
-            VLOG(2) << "no buffer";
-            return -1;
+
+        auto file_list = data_file_list(data_dir);
+        int file_list_size = file_list.size();
+
+        VLOG(5) << "omg max_threads: " << omp_get_max_threads();
+        #pragma omp parallel for
+        for (int i = 0; i < file_list_size; ++i) {
+            VLOG(5) << "omg num_threads: " << omp_get_num_threads() << ", start read: " << i << std::endl;
         }
-        for (const auto& filepath : data_file_list(data_dir)) {
-            if (_file_system->path_split(filepath).second == _done_file_name) {
-                continue;
-            }
+        for (int i = 0; i < file_list_size; ++i) {
+            //VLOG(5) << "omg num_threads: " << omp_get_num_threads() << ", start read: " << i;
+            const auto& filepath = file_list[i];
             {
                 std::shared_ptr<FILE> fin = _file_system->open_read(filepath, _pipeline_cmd);
                 if (fin == nullptr) {
                     VLOG(2) << "fail to open file: " << filepath << ", with cmd: " << _pipeline_cmd;
                     return -1;
                 }
-                while (fgets(_buffer.get(), _buffer_size, fin.get())) {
-                    if (_buffer[0] == '\n') {
+                char *buffer = nullptr;
+                size_t buffer_size = 0;
+                ssize_t line_len = 0;
+                while ((line_len = getline(&buffer, &buffer_size, fin.get())) != -1) {
+                    if (line_len > 0 && buffer[line_len - 1] == '\n') {
+                        buffer[--line_len] = '\0';
+                    }
+                    if (line_len <= 0) {
                         continue;
                     }
-                    if (_parser->parse(_buffer.get(), data_item) != 0) {
-                        return -1;
+                    if (_parser->parse(buffer, line_len, data_item) == 0) {
+                        (*writer) << std::move(data_item);
                     }
-                    (*writer) << std::move(data_item);
+                }
+                if (buffer != nullptr) {
+                    free(buffer);
+                    buffer = nullptr;
+                    buffer_size = 0;
                 }
                 if (ferror(fin.get()) != 0) {
                     VLOG(2) << "fail to read file: " << filepath;
@@ -190,9 +194,7 @@ public:
     }
 
 private:
-    std::string _done_file_name;  // without data_dir
-    int _buffer_size = 0;
-    std::unique_ptr<char[]> _buffer;
+    std::string _done_file_name;  // without data_dirq
     std::string _filename_prefix;
     std::unique_ptr<FileSystem> _file_system;
 };
