@@ -1,6 +1,7 @@
 #include "paddle/fluid/train/custom_trainer/feed/dataset/data_reader.h"
 
 #include <cstdio>
+#include <atomic>
 
 #include <glog/logging.h>
 #include <omp.h>
@@ -136,20 +137,17 @@ public:
 
         auto file_list = data_file_list(data_dir);
         int file_list_size = file_list.size();
+        std::atomic<bool> is_failed(false);
 
-        VLOG(5) << "omg max_threads: " << omp_get_max_threads();
         #pragma omp parallel for
         for (int i = 0; i < file_list_size; ++i) {
-            VLOG(5) << "omg num_threads: " << omp_get_num_threads() << ", start read: " << i << std::endl;
-        }
-        for (int i = 0; i < file_list_size; ++i) {
-            //VLOG(5) << "omg num_threads: " << omp_get_num_threads() << ", start read: " << i;
             const auto& filepath = file_list[i];
-            {
+            if (!is_failed) {
                 std::shared_ptr<FILE> fin = _file_system->open_read(filepath, _pipeline_cmd);
                 if (fin == nullptr) {
                     VLOG(2) << "fail to open file: " << filepath << ", with cmd: " << _pipeline_cmd;
-                    return -1;
+                    is_failed = true;
+                    continue;
                 }
                 char *buffer = nullptr;
                 size_t buffer_size = 0;
@@ -172,21 +170,23 @@ public:
                 }
                 if (ferror(fin.get()) != 0) {
                     VLOG(2) << "fail to read file: " << filepath;
-                    return -1;
+                    is_failed = true;
+                    continue;
                 }
             }
             if (_file_system->err_no() != 0) {
                 _file_system->reset_err_no();
-                return -1;
+                is_failed = true;
+                continue;
             }
         }
         writer->Flush();
         if (!(*writer)) {
             VLOG(2) << "fail when write to channel";
-            return -1;
+            is_failed = true;
         }
         data_channel->Close();
-        return 0;
+        return is_failed ? -1 : 0;
     }
 
     virtual const DataParser* get_parser() {
@@ -194,7 +194,7 @@ public:
     }
 
 private:
-    std::string _done_file_name;  // without data_dirq
+    std::string _done_file_name;  // without data_dir
     std::string _filename_prefix;
     std::unique_ptr<FileSystem> _file_system;
 };

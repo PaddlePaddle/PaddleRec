@@ -104,6 +104,7 @@ public:
     std::shared_ptr<TrainerContext> context_ptr;
     std::unique_ptr<FileSystem> fs;
     int thread_num = 1;
+    const int n_run = 5;
 };
 
 std::vector<DataItem> DataReaderOmpTest::std_items;
@@ -128,7 +129,6 @@ TEST_F(DataReaderOmpTest, LineDataReaderSingleThread) {
         ASSERT_EQ(string::format_string("%s/%s.txt", test_data_dir, std_items[i].id.c_str()), data_file_list[i]);
     }
 
-    constexpr int n_run = 10;
     int same_count = 0;
     for (int i = 0; i < n_run; ++i) {
         auto channel = framework::MakeChannel<DataItem>(128);
@@ -172,7 +172,6 @@ TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
     fout.close();
     ASSERT_TRUE(data_reader->is_data_ready(test_data_dir));
 
-    constexpr int n_run = 10;
     int same_count = 0;
     int sort_same_count = 0;
     for (int i = 0; i < n_run; ++i) {
@@ -200,7 +199,8 @@ TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
 
     }
     // n_run次有不同的（证明是多线程）
-    // ASSERT_GT(n_run, same_count);
+    ASSERT_EQ(4, omp_get_max_threads());
+    ASSERT_GT(n_run, same_count);
 
     // 但排序后都是相同的
     ASSERT_EQ(n_run, sort_same_count);
