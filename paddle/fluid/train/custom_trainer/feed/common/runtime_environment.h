@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <yaml-cpp/yaml.h>
+#include "paddle/fluid/framework/archive.h"
 #include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
 
@@ -21,26 +22,37 @@ enum class EnvironmentLogLevel {
 };
 
 enum class EnvironmentLogType {
-    MASTER_LOG      = 0, //仅master节点对外输出
-    ALL_LOG         = 1 //所有节点都会对外输出
+    MASTER_LOG      = 0,        //仅master节点对外输出
+    ALL_LOG         = 1         //所有节点都会对外输出
+};
+
+//保持该枚举值的连续递增，且ALL在尾部
+enum class EnvironmentRole {
+    WORKER          = 0,        //训练Worker
+    PSERVER         = 1,        //参数服务器
+
+    ALL             = 2         //所有角色，请保持在枚举尾部
 };
 
 class RuntimeEnvironment {
 public:
-    RuntimeEnvironment() {}
-    virtual ~RuntimeEnvironment() {}
+    RuntimeEnvironment();
+    virtual ~RuntimeEnvironment();
     //配置初始化
     virtual int initialize(YAML::Node config) = 0;
+    //设置role
+    virtual int set_role(EnvironmentRole role) = 0;
     //环境初始化，会在所有依赖模块initialize后调用
     virtual int wireup() = 0;
     
     //多线程可调用接口  Start
     //当前环境rank_idx
-    virtual uint32_t rank_idx() = 0;
+    virtual uint32_t rank_id(EnvironmentRole role) = 0;
+    //运行环境节点数
+    virtual uint32_t node_num(EnvironmentRole role) = 0;
     //环境内主节点
-    virtual bool is_master_node() {
-        return rank_idx() == 0;
-    }
+    virtual bool is_master_node(EnvironmentRole role);
+    
     //环境定制化log
     template<class... ARGS>
     void log(EnvironmentLogType type, EnvironmentLogLevel level,
@@ -51,29 +63,22 @@ public:
 
 
     //接口只允许在主线程调用   Start
-    //barrier
-    virtual void barrier_all() = 0;
+    //barrier 指定role的节点
+    virtual void barrier(EnvironmentRole role) = 0;
+    //bcast 广播
+    virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) = 0;
     //接口只允许在主线程调用   End
 protected:
     virtual void print_log(EnvironmentLogType type, EnvironmentLogLevel level,  const std::string& log_str) = 0;
 };
 REGISTER_REGISTERER(RuntimeEnvironment);
 
-class MPIRuntimeEnvironment : public RuntimeEnvironment {
-public:
-    MPIRuntimeEnvironment() {}
-    virtual ~MPIRuntimeEnvironment() {}
-    //配置初始化
-    virtual int initialize(YAML::Node config);
-    //环境初始化，会在所有依赖模块initialize后调用
-    virtual int wireup();
-    //当前环境rank_idx
-    virtual uint32_t rank_idx();
 
-    virtual void barrier_all();
-protected:
-    virtual void print_log(EnvironmentLogType type, EnvironmentLogLevel level,  const std::string& log_str);
-};
+
+std::string format_timestamp(time_t time, const char* format);
+std::string format_timestamp(time_t time, const std::string& format) {
+    return format_timestamp(time, format.c_str());
+}
 
 }  // namespace feed
 }  // namespace custom_trainer

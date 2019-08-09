@@ -35,7 +35,7 @@ int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     return 0;
 }
 
-std::future<int> LearnerProcess::save_model(int epoch_id, int table_id, ModelSaveWay way) {
+std::future<int> LearnerProcess::save_model(uint64_t epoch_id, int table_id, ModelSaveWay way) {
     std::promise<int> p;
     auto ret = p.get_future();
     if (_context_ptr->epoch_accessor->need_save_model(epoch_id, way)) {
@@ -47,7 +47,7 @@ std::future<int> LearnerProcess::save_model(int epoch_id, int table_id, ModelSav
     return ret;
 }
 
-int LearnerProcess::wait_save_model(int epoch_id, ModelSaveWay way) {
+int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
     auto* environment = _context_ptr->environment.get();
     if (!environment->is_master_node()) {
         return 0;
@@ -71,7 +71,7 @@ int LearnerProcess::wait_save_model(int epoch_id, ModelSaveWay way) {
 int LearnerProcess::run() {
     auto* environment = _context_ptr->environment.get();
     auto* epoch_accessor = _context_ptr->epoch_accessor.get(); 
-    int epoch_id = epoch_accessor->current_epoch_id();
+    uint64_t epoch_id = epoch_accessor->current_epoch_id();
 
     environment->log(EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
         "Resume traine with epoch_id:%d label:%s", epoch_id, _context_ptr->epoch_accessor->text(epoch_id).c_str());

@@ -16,38 +16,61 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+inline int data_num_for_train(uint64_t train_begin_timestamp, uint32_t train_time_interval, uint32_t data_time_interval) {
+    uint64_t data_begin_time = train_begin_timestamp;
+    uint64_t data_end_time = data_begin_time + train_time_interval;
+    uint64_t end_idx = (data_end_time + data_time_interval - 1) / data_time_interval;
+    uint64_t begin_idx = (data_begin_time + data_time_interval - 1 ) / data_time_interval; 
+    return end_idx - begin_idx;
+}
+
+enum class DatasetStatus {
+    Empty          = 0,
+    Detected       = 1,
+    Downloding     = 2,
+    Ready          = 3
+};
+struct DatasetInfo {
+    uint64_t timestamp = 0;
+    std::vector<std::string> file_path_list;
+    DatasetStatus status = DatasetStatus::Empty;
+    ::paddle::framework::Channel<DataItem> data_channel = ::paddle::framework::MakeChannel<DataItem>();
+};
+
 class DatasetContainer {
 public:
     DatasetContainer() {}
     virtual ~DatasetContainer() {}
-    virtual int initialize(const YAML::Node& config) {
-        _dataset_config = config;
-        //预取n轮样本数据
-        _prefetch_num = config["prefetch_num"].as<int>();
-        _data_root_path = config["root_path"].as<std::string>();
-        _data_path_generater = config["_data_path_generater"].as<std::string>();
-        return 0;
-    }  
+    virtual int initialize(
+        const YAML::Node& config, std::shared_ptr<TrainerContext> context);
     virtual void run();
-    //获取特定epoch_i样本，如果数据未ready，Channel内为空指针
-    virtual ::paddle::framework::Channel<DataItem> fetch(int epoch_id);
     //触发可预取的数据判断
-    virtual void pre_detect_data(RuntimeEnvironment* env);
-    
+    virtual void pre_detect_data(uint64_t epoch_id);
+    //获取数据状态
+    virtual DatasetStatus epoch_data_status(uint64_t epoch_id);
+    //获取特定epoch_i样本，如果数据未ready，Channel内为空指针
+    virtual ::paddle::framework::Channel<DataItem> fetch(uint64_t epoch_id);
+    //获取DataItem解析器
+    virtual const DataParser* data_parser() {
+        return _data_reader->get_parser();
+    }
 protected:
+    virtual DatasetStatus data_status(uint64_t timestamp);
+    virtual int read_data_list(const std::string& data_dir, std::vector<std::string>& data_list);
     //异步样本download
-    virtual void async_download_data();
-    virtual void download(int epoch_id, const std::vector<std::string>& paths);
+    virtual void async_download_data(uint64_t start_timestamp);
+    virtual std::shared_ptr<DatasetInfo> dataset(uint64_t timestamp);
    
-    int _prefetch_num = 0;
+    int _prefetch_num                  = 0;
+    int _data_split_interval           = 60;                 //样本切分周期(秒)
     YAML::Node _dataset_config;
-    std::string _data_root_path;
-    std::string _data_path_generater;
+    std::string _data_path_formater;
+    std::vector<std::string> _data_root_paths;              //支持同时读取多个目录
     
-    uint32_t _current_dataset_idx;             //当前样本数据idx
-    int _current_epoch_id = -1;  
-    int _ready_epoch_id = -1; //已下载完成的epoch_id
-    std::vector<std::shared_ptr<::paddle::framework::Dataset>> _dataset_list;//预取的数据列表
+    TrainerContext* _trainer_context;
+    std::shared_ptr<DataReader> _data_reader;
+    std::shared_ptr<std::thread> _downloader_thread;
+    std::vector<std::shared_ptr<DatasetInfo>> _dataset_list;//预取的数据列表
 };
 
 }//namespace feed

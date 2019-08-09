@@ -13,18 +13,22 @@ public:
     virtual int initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr) = 0;
     
-    virtual int current_epoch_id() {
+    virtual uint64_t current_epoch_id() {
         return _current_epoch_id;
     }
     virtual void next_epoch() = 0;
-    virtual std::string text(int epoch_id) = 0;
-    virtual bool data_ready(int epoch_id) = 0;
-    virtual int next_epoch_id(int epoch_id) = 0;
-    virtual bool is_last_epoch(int epoch_id) = 0; 
-    virtual bool need_save_model(int epoch_id, ModelSaveWay save_way) = 0;
-    virtual std::string model_save_path(int epoch_id, ModelSaveWay save_way) = 0;
+    virtual std::string text(uint64_t epoch_id) = 0;
+    virtual bool data_ready(uint64_t epoch_id) = 0;
+    virtual int next_epoch_id(uint64_t epoch_id) = 0;
+    virtual bool is_last_epoch(uint64_t epoch_id) = 0; 
+    //epoch间的数据时间间隔（秒）
+    virtual uint64_t epoch_time_interval() = 0;
+    //获取epoch的样本数据时间
+    virtual uint64_t epoch_timestamp(uint64_t epoch_id) = 0; 
+    virtual bool need_save_model(uint64_t epoch_id, ModelSaveWay save_way) = 0;
+    virtual std::string model_save_path(uint64_t epoch_id, ModelSaveWay save_way) = 0;
 protected:
-    int _current_epoch_id;
+    uint64_t _current_epoch_id;
 };
 REGISTER_REGISTERER(EpochAccessor);
 
@@ -35,12 +39,14 @@ public:
     virtual int initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr);
     virtual void next_epoch();
-    virtual std::string text(int epoch_id);
-    virtual bool data_ready(int epoch_id);
-    virtual int next_epoch_id(int epoch_id);
-    virtual bool is_last_epoch(int epoch_id);
-    virtual bool need_save_model(int epoch_id, ModelSaveWay save_way);
-    virtual std::string model_save_path(int epoch_id, ModelSaveWay save_way);
+    virtual std::string text(uint64_t epoch_id);
+    virtual bool data_ready(uint64_t epoch_id);
+    virtual int next_epoch_id(uint64_t epoch_id);
+    virtual bool is_last_epoch(uint64_t epoch_id);
+    virtual uint64_t epoch_time_interval();
+    virtual uint64_t epoch_timestamp(uint64_t epoch_id); 
+    virtual bool need_save_model(uint64_t epoch_id, ModelSaveWay save_way);
+    virtual std::string model_save_path(uint64_t epoch_id, ModelSaveWay save_way);
 private:
     std::string _model_root_path;
 };

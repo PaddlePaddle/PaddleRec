@@ -8,6 +8,7 @@
 #include <memory>
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/framework/channel.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/pipeline.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
 
 namespace paddle {
@@ -36,6 +37,11 @@ public:
     std::string data;//样本数据， maybe压缩格式
 };
 
+typedef std::shared_ptr<Pipeline<DataItem, SampleInstance>> SampleInstancePipe;
+inline SampleInstancePipe make_sample_instance_channel() {
+    return std::make_shared<Pipeline<DataItem, SampleInstance>>();
+}
+
 class DataParser {
 public:
     DataParser() {}
@@ -56,8 +62,12 @@ public:
     virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) = 0;
     //判断样本数据是否已就绪，就绪表明可以开始download
     virtual bool is_data_ready(const std::string& data_dir) = 0;
-    //读取数据样本流中
-    virtual int read_all(const std::string& data_dir, ::paddle::framework::Channel<DataItem> data_channel) = 0;
+    //读取dir下文件列表
+    virtual std::vector<std::string> data_file_list(const std::string& data_dir);
+    //读取目录下数据到样本流中
+    virtual int read_all(const std::string& data_dir, ::paddle::framework::Channel<DataItem>& data_channel) = 0;
+    //读取指定文件列表的数据到样本流中
+    virtual int read_all(const std::vector<std::string>& data_list, ::paddle::framework::Channel<DataItem>& data_channel) = 0;
     virtual const DataParser* get_parser() {
         return _parser.get();
     }
