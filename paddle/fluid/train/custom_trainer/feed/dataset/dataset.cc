@@ -6,15 +6,14 @@ namespace feed {
 
 int Dataset::initialize(
     const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
-    if (!config["data_list"]) {
-        VLOG(0) << "miss data_list config in dataset, please check";
+    if (config["data_list"].Type() != YAML::NodeType::Map) {
+        VLOG(0) << "miss data_list config in dataset, or type error please check";
         return -1;
     }
-    int data_num = config["data_list"].size();
-    for (int i = 0; i < data_num; ++i) {
-        std::string name = config["data_list"][i]["name"].as<std::string>();
+    for (auto& data_config : config["data_list"]) {
+        std::string name = data_config.first.as<std::string>();
         auto data_ptr = std::make_shared<DatasetContainer>();
-        if (data_ptr->initialize(config["data_list"][i], context) != 0) {
+        if (data_ptr->initialize(data_config.second, context) != 0) {
             VLOG(0) << "dataset initialize failed, name:" << name;
             return -1;
         }
@@ -23,10 +22,25 @@ int Dataset::initialize(
     return 0;
 }
 
+inline void Dataset::pre_detect_data(uint64_t epoch_id) {
+    for (auto it = _data_containers.begin(); it != _data_containers.end(); ++it) {
+        it->second->pre_detect_data(epoch_id);
+    }
+    return;
+}
 inline void Dataset::pre_detect_data(
     const std::string& data_name, uint64_t epoch_id) {
     _data_containers[data_name]->pre_detect_data(epoch_id);
     return;
+}
+
+inline DatasetStatus Dataset::epoch_data_status(uint64_t epoch_id) {
+    int status = static_cast<int>(DatasetStatus::Ready);
+    for (auto it = _data_containers.begin(); it != _data_containers.end(); ++it) {
+        auto d_status = static_cast<int>(it->second->epoch_data_status(epoch_id));
+        status = d_status < status ? d_status : status;
+    }
+    return static_cast<DatasetStatus>(status);
 }
 
 inline DatasetStatus Dataset::epoch_data_status(

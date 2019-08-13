@@ -55,9 +55,9 @@ public:
     
     //环境定制化log
     template<class... ARGS>
-    void log(EnvironmentLogType type, EnvironmentLogLevel level,
-        const char* fmt, ARGS && ... args) {
-        print_log(type, level, paddle::string::format_string(fmt, args...));
+    void log(EnvironmentRole role, EnvironmentLogType type, 
+        EnvironmentLogLevel level, const char* fmt, ARGS && ... args) {
+        print_log(role, type, level, paddle::string::format_string(fmt, args...));
     }
     //多线程可调用接口      End
 
@@ -69,14 +69,13 @@ public:
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) = 0;
     //接口只允许在主线程调用   End
 protected:
-    virtual void print_log(EnvironmentLogType type, EnvironmentLogLevel level,  const std::string& log_str) = 0;
+    virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
+        EnvironmentLogLevel level,  const std::string& log_str) = 0;
 };
 REGISTER_REGISTERER(RuntimeEnvironment);
 
-
-
 std::string format_timestamp(time_t time, const char* format);
-std::string format_timestamp(time_t time, const std::string& format) {
+inline std::string format_timestamp(time_t time, const std::string& format) {
     return format_timestamp(time, format.c_str());
 }
 

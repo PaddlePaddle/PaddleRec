@@ -22,9 +22,11 @@ public:
         const YAML::Node& config, std::shared_ptr<TrainerContext> context);
 
     //触发可预取的数据判断
+    virtual void pre_detect_data(uint64_t epoch_id);
     virtual void pre_detect_data(const std::string& data_name, uint64_t epoch_id);
 
     //获取数据状态
+    virtual DatasetStatus epoch_data_status(uint64_t epoch_id);
     virtual DatasetStatus epoch_data_status(const std::string& data_name, uint64_t epoch_id);
 
     //返回各DataContainer内的原始数据(maybe 压缩格式)

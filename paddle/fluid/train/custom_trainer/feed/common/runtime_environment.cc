@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "paddle/fluid/train/custom_trainer/feed/common/runtime_environment.h"
 
 namespace paddle {
@@ -68,26 +69,67 @@ public:
     virtual void barrier(EnvironmentRole role) {
         MPI_Barrier(mpi_node_info(role).mpi_comm);
     }
+
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) {
         auto& node_info = mpi_node_info(role);
-        int len = (int)ar.length();
+        int len = (int)ar.Length();
         MPI_Bcast(&len, 1, MPI_INT, root_id, node_info.mpi_comm);
-        ar.resize(len);
-        ar.set_cursor(ar.buffer());
-        MPI_Bcast(ar.buffer(), len, MPI_BYTE, root, node_info.mpi_comm);
+        ar.Resize(len);
+        ar.SetCursor(ar.Buffer());
+        MPI_Bcast(ar.Buffer(), len, MPI_BYTE, root_id, node_info.mpi_comm);
     }
+
 protected:
-    virtual void print_log(EnvironmentLogType type, EnvironmentLogLevel level,  const std::string& log_str);
+    virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
+        EnvironmentLogLevel level,  const std::string& log_str) {
+        if (type == EnvironmentLogType::MASTER_LOG && !is_master_node(role)) {
+            return;
+        }
+        VLOG(static_cast<int>(level)) << log_str;
+    }
+
     inline MpiNodeInfo& mpi_node_info(EnvironmentRole role) {
         return _roles_node_info[static_cast<int>(role)];
     }
+
 private:
     std::vector<MpiNodeInfo> _roles_node_info;
-    
 };
-
 REGISTER_CLASS(RuntimeEnvironment, MPIRuntimeEnvironment);
-    
+
+//用于本地模式单机训练
+class LocalRuntimeEnvironment : public RuntimeEnvironment {
+public:
+    LocalRuntimeEnvironment() {}
+    virtual ~LocalRuntimeEnvironment() {}
+    virtual int initialize(YAML::Node config) {
+        return 0;
+    }
+    virtual int wireup() {
+        return 0;
+    }
+    virtual uint32_t rank_id(EnvironmentRole role) {
+        return 0;
+    }
+    virtual uint32_t node_num(EnvironmentRole role) {
+        return 1;
+    }
+    virtual int set_role(EnvironmentRole role) {
+        return 0;
+    }
+    virtual void barrier(EnvironmentRole role) {
+        return;
+    }
+    virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) {
+        return;
+    }
+protected:
+    virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
+        EnvironmentLogLevel level,  const std::string& log_str) {
+        VLOG(static_cast<int>(level)) << log_str;
+    }
+};
+REGISTER_CLASS(RuntimeEnvironment, LocalRuntimeEnvironment);
 
 }  // namespace feed
 }  // namespace custom_trainer

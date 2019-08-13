@@ -23,6 +23,9 @@ int DatasetContainer::initialize(
     //预取n轮样本数据
     _prefetch_num = config["prefetch_num"].as<int>();
     _dataset_list.resize(_prefetch_num);
+    for (int i = 0; i < _prefetch_num; ++i) {
+        _dataset_list[i].reset(new DatasetInfo);
+    }
 
     _data_root_paths = paddle::string::split_string(
         config["root_path"].as<std::string>(), " ");
@@ -48,21 +51,32 @@ void DatasetContainer::pre_detect_data(uint64_t epoch_id) {
         LOG(FATAL) << "timestamp:" << timestamp << " don't match interval:" << epoch_accessor->epoch_time_interval();
         return;
     }
-    size_t data_num = data_num_for_train(timestamp, epoch_accessor->epoch_time_interval(), _data_split_interval);
-    uint64_t data_timestamp = timestamp % _data_split_interval == 0 ? timestamp : (timestamp / _data_split_interval + 1) * _data_split_interval;
-    std::vector<std::string> data_path_list;
-    for (int i = 0; i < _data_root_paths.size() && status == 0; ++i) {
-        for (int j = 0; j < data_num && status == 0; ++j) {
-            std::string path_suffix = format_timestamp(data_timestamp + j * _data_split_interval, _data_path_formater);
-            std::string data_dir = _data_root_paths[i] + "/" + path_suffix;
-            status = read_data_list(data_dir, data_path_list);
-        }
+    if (_downloader_thread == nullptr) {
+        _downloader_thread.reset(new std::thread([this, timestamp](){
+            async_download_data(timestamp);
+        }));
     }
-    if (status == 0) {
-        auto dataset_info = dataset(timestamp);
-        dataset_info->timestamp = timestamp;
-        dataset_info->file_path_list = std::move(data_path_list);
-        dataset_info->status = DatasetStatus::Detected;
+    for (int detect_idx = 0 ; detect_idx < _prefetch_num; ++detect_idx) {
+        if (DatasetStatus::Empty != data_status(timestamp)) {
+            continue;
+        }
+        size_t data_num = data_num_for_train(timestamp, epoch_accessor->epoch_time_interval(), _data_split_interval);
+        uint64_t data_timestamp = timestamp % _data_split_interval == 0 ? timestamp : (timestamp / _data_split_interval + 1) * _data_split_interval;
+        std::vector<std::string> data_path_list;
+        for (int i = 0; i < _data_root_paths.size() && status == 0; ++i) {
+            for (int j = 0; j < data_num && status == 0; ++j) {
+                std::string path_suffix = format_timestamp(data_timestamp + j * _data_split_interval, _data_path_formater);
+                std::string data_dir = _data_root_paths[i] + "/" + path_suffix;
+                status = read_data_list(data_dir, data_path_list);
+            }
+        }
+        if (status == 0) {
+            auto dataset_info = dataset(timestamp);
+            dataset_info->timestamp = timestamp;
+            dataset_info->file_path_list = std::move(data_path_list);
+            dataset_info->status = DatasetStatus::Detected;
+        }
+        timestamp += epoch_accessor->epoch_time_interval();
     }
     return;
 }
@@ -134,7 +148,7 @@ void DatasetContainer::async_download_data(uint64_t start_timestamp) {
         LOG(FATAL) << "timestamp:" << start_timestamp << " don't match interval:" << epoch_accessor->epoch_time_interval();
         return;
     }
-    while (true) {
+    while (!_stop_download) {
         auto dataset_info = dataset(start_timestamp);
         while (data_status(start_timestamp) != DatasetStatus::Detected) {
             sleep(30);

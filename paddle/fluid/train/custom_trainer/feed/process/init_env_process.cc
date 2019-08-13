@@ -5,6 +5,8 @@
 #include "paddle/fluid/platform/init.h"
 #include "paddle/fluid/platform/place.h"
 #include "paddle/fluid/framework/executor.h"
+#include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
+#include "paddle/fluid/train/custom_trainer/feed/dataset/dataset.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
 #include "paddle/fluid/train/custom_trainer/feed/process/init_env_process.h"
 
@@ -20,26 +22,45 @@ int InitEnvProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     YAML::Node config = _context_ptr->trainer_config;
     //environment
     std::string env_class = config["environment"]["environment_class"].as<std::string>();
-    auto* environment = CREATE_CLASS(RuntimeEnvironment, env_class);
-    if (environment->initialize(config["environment"]) != 0) {
+    context_ptr->environment.reset(CREATE_CLASS(RuntimeEnvironment, env_class));
+    if (context_ptr->environment->initialize(config["environment"]) != 0) {
         return -1;
     }
-    context_ptr->environment.reset(environment);
+
+    //file_system
+    context_ptr->file_system.reset(CREATE_CLASS(FileSystem, "AutoFileSystem"));
+    if (context_ptr->file_system->initialize(config["io"], context_ptr) != 0) {
+        return -1;
+    }
 
     //epoch
     std::string epoch_class = config["epoch"]["epoch_class"].as<std::string>();
-    auto* epoch = CREATE_CLASS(EpochAccessor, epoch_class);
-    if (epoch->initialize(config["epoch"], context_ptr) != 0) {
+    context_ptr->epoch_accessor.reset(CREATE_CLASS(EpochAccessor, epoch_class));
+    if (context_ptr->epoch_accessor->initialize(config["epoch"], context_ptr) != 0) {
         return -1;
     }
-    context_ptr->epoch_accessor.reset(epoch);
+
+    //Dataset
+    context_ptr->dataset.reset(new Dataset());
+    if (context_ptr->dataset->initialize(config["dataset"], context_ptr) != 0) {
+        return -1;
+    }
+    
     VLOG(3) << "Env initialize success"; 
     return 0;
 }
 
 int InitEnvProcess::run() {
+    auto* epoch_accessor = _context_ptr->epoch_accessor.get();
+    VLOG(3) << "Trainer Resume From epoch:" << epoch_accessor->current_epoch_id();
+    auto next_epoch_id = epoch_accessor->next_epoch_id(epoch_accessor->current_epoch_id());
+    _context_ptr->dataset->pre_detect_data(next_epoch_id);
     //step 1. psserver init
     //step2. psserver load
+    VLOG(3) << "Psserver Start Success";
+    
+    //context_ptr->pslib_client()->load_model();
+    VLOG(3) << "Psserver Load Model Success";
     return 0;
 }
 

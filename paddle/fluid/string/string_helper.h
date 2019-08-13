@@ -136,6 +136,18 @@ std::string join_strings(const Container& strs, char delim) {
   return str;
 }
 
+
+  static inline bool end_with(const std::string& main_str, const std::string& str) {
+      return main_str.length() >= str.length() &&
+              strncmp(main_str.c_str() + main_str.length() - str.length(), str.c_str(), str.length()) ==
+              0;
+  }
+
+  static inline bool begin_with(const std::string& main_str, const std::string& str) {
+      return main_str.length() >= str.length() &&
+              strncmp(main_str.c_str(), str.c_str(), str.length()) == 0;
+  }
+
 // A helper class for reading lines from file. A line buffer is maintained. It
 // doesn't need to know the maximum possible length of a line.
 

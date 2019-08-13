@@ -30,6 +30,7 @@ enum class DatasetStatus {
     Downloding     = 2,
     Ready          = 3
 };
+
 struct DatasetInfo {
     uint64_t timestamp = 0;
     std::vector<std::string> file_path_list;
@@ -40,10 +41,14 @@ struct DatasetInfo {
 class DatasetContainer {
 public:
     DatasetContainer() {}
-    virtual ~DatasetContainer() {}
+    virtual ~DatasetContainer() {
+        if (_downloader_thread != nullptr) {
+            _stop_download = true;
+            _downloader_thread->join();
+        }
+    }
     virtual int initialize(
         const YAML::Node& config, std::shared_ptr<TrainerContext> context);
-    virtual void run();
     //触发可预取的数据判断
     virtual void pre_detect_data(uint64_t epoch_id);
     //获取数据状态
@@ -62,6 +67,7 @@ protected:
     virtual std::shared_ptr<DatasetInfo> dataset(uint64_t timestamp);
    
     int _prefetch_num                  = 0;
+    bool _stop_download                = false;
     int _data_split_interval           = 60;                 //样本切分周期(秒)
     YAML::Node _dataset_config;
     std::string _data_path_formater;

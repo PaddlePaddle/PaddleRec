@@ -106,7 +106,7 @@ BaseClassMap& global_factory_map_cpp();
     void register_factory_##name() __attribute__((constructor)); 
 
 #define CREATE_CLASS(base_class, name) \
-    base_class##Registerer::CreateInstanceByName(name);
+    base_class##Registerer::CreateInstanceByName(name)
     
 }//namespace feed
 }//namespace custom_trainer

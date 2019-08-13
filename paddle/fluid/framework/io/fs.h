@@ -97,5 +97,9 @@ extern std::string fs_tail(const std::string& path);
 extern bool fs_exists(const std::string& path);
 
 extern void fs_mkdir(const std::string& path);
+
+extern std::string fs_path_join(const std::string& dir, const std::string &path);
+
+extern std::pair<std::string, std::string> fs_path_split(const std::string &path);
 }  // namespace framework
 }  // namespace paddle

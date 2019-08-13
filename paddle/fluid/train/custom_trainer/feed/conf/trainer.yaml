@@ -1,6 +1,34 @@
 train_thread_num : 10
 
 environment :
-   environment_class : MPIRuntimeEnvironment
+    environment_class : LocalRuntimeEnvironment
+
+io :
+    file_systems :
+        afs :
+            class : HadoopFileSystem
+            buffer_size : 1024000
+            ugis : 
+                'default': 'feed_video,D3a0z8'
+                'xingtian.afs.baidu.com:9902': 'feed_video,D3a0z8'
+        local :
+            class : LocalFileSystem
+            buffer_size : 1024000
+dataset :
+    data_list :
+        train_sample :
+            prefetch_num : 2
+            root_path : ./sample
+            data_spit_interval : 300
+            data_path_formater : '%Y%m%d/%H%M' 
+            data_reader : LineDataReader 
+            done_file : to.hadoop.done 
+            filename_prefix : part
+            pipeline_cmd : cat
+            parser :
+                class : LineDataParser 
+    
 epoch:
-   epoch_class : HourlyEpochAccessor 
+    epoch_class : HourlyEpochAccessor 
+    model_root_path : ./model/
+    

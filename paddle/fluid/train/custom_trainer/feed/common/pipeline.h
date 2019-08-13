@@ -1,4 +1,5 @@
 #pragma once
+#include <thread>
 #include "paddle/fluid/framework/archive.h"
 
 namespace paddle {

@@ -3,6 +3,7 @@
  *Train样本
  */
 #include <omp.h>
+#include "paddle/fluid/train/custom_trainer/feed/dataset/dataset.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
 #include "paddle/fluid/train/custom_trainer/feed/process/learner_process.h"
 
@@ -49,7 +50,7 @@ std::future<int> LearnerProcess::save_model(uint64_t epoch_id, int table_id, Mod
 
 int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
     auto* environment = _context_ptr->environment.get();
-    if (!environment->is_master_node()) {
+    if (!environment->is_master_node(EnvironmentRole::WORKER)) {
         return 0;
     }
     int ret_size = 0;
@@ -69,16 +70,17 @@ int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
 }
 
 int LearnerProcess::run() {
+    auto* dataset = _context_ptr->dataset.get();
     auto* environment = _context_ptr->environment.get();
     auto* epoch_accessor = _context_ptr->epoch_accessor.get(); 
     uint64_t epoch_id = epoch_accessor->current_epoch_id();
 
-    environment->log(EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
+    environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
         "Resume traine with epoch_id:%d label:%s", epoch_id, _context_ptr->epoch_accessor->text(epoch_id).c_str());
     
     //判断是否先dump出base
     wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
-    environment->barrier_all(); 
+    environment->barrier(EnvironmentRole::WORKER); 
     
     while (true) {
         epoch_accessor->next_epoch();
@@ -87,16 +89,17 @@ int LearnerProcess::run() {
             "train epoch_id:%d label:%s", epoch_id, epoch_accessor->text(epoch_id).c_str());
         
         //Step1. 等待样本ready
-        environment->log(EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
+        environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
             "Start %s, wait data ready", epoch_log_title.c_str());
-        while (!epoch_accessor->data_ready(epoch_id)) {
+        while (dataset->epoch_data_status(epoch_id) != DatasetStatus::Ready) {
             sleep(30);  
-            environment->log(EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
+            dataset->pre_detect_data(epoch_id);
+            environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
                 "%s, data not ready, wait 30s", epoch_log_title.c_str());
         } 
-        environment->log(EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
+        environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
             "%s, data is ready, start traning", epoch_log_title.c_str());
-        environment->barrier_all();
+        environment->barrier(EnvironmentRole::WORKER); 
 
         //Step2. 运行训练网络
         bool already_dump_inference_model = false;
@@ -111,13 +114,13 @@ int LearnerProcess::run() {
             for (int i = 0; i < _train_thread_num; ++i) {
                 train_threads[i]->join();
             }
-            environment->barrier_all();
+            environment->barrier(EnvironmentRole::WORKER); 
 
             if (_threads_executor[0][i]->is_dump_all_model()) {
                 already_dump_inference_model = true;
                 wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
             }
-            environment->barrier_all();
+            environment->barrier(EnvironmentRole::WORKER); 
         }
 
         //Step3. Dump Model For Delta&&Checkpoint
@@ -126,7 +129,7 @@ int LearnerProcess::run() {
             wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
         } 
         wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
-        environment->barrier_all(); 
+        environment->barrier(EnvironmentRole::WORKER); 
         
         //Step4. Output Monitor && RunStatus
         //TODO
