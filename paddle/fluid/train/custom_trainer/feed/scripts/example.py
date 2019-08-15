@@ -15,7 +15,7 @@ def inference():
     Returns:
         list<Variable>: inputs
         and
-        Variable: ctr_output
+        list<Variable>: outputs
     """
     # TODO: build network here
     cvm_input = fluid.layers.data(name='cvm_input', shape=[4488], dtype='float32')
@@ -29,5 +29,5 @@ def inference():
     net = fluid.layers.fc(net, 128, act='relu')
     net = fluid.layers.fc(net, 128, act='relu')
 
-    ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr_output')
-    return [cvm_input], ctr_output
+    ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr')
+    return [cvm_input], [ctr_output]

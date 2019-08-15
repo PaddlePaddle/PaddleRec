@@ -91,6 +91,14 @@ public:
         return true;
     }
 
+    static void read_all(framework::Channel<DataItem>& channel, std::vector<DataItem>& items) {
+        framework::ChannelReader<DataItem> reader(channel.get());
+        DataItem data_item;
+        while (reader >> data_item) {
+            items.push_back(std::move(data_item));
+        }
+    }
+
     static bool is_same_with_std_items(const std::vector<DataItem>& items) {
         return is_same(items, std_items);
     }
@@ -136,7 +144,7 @@ TEST_F(DataReaderOmpTest, LineDataReaderSingleThread) {
         ASSERT_EQ(0, data_reader->read_all(test_data_dir, channel));
 
         std::vector<DataItem> items;
-        channel->ReadAll(items);
+        read_all(channel, items);
 
         if (is_same_with_std_items(items)) {
             ++same_count;
@@ -183,7 +191,7 @@ TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
         ASSERT_EQ(0, data_reader->read_all(test_data_dir, channel));
 
         std::vector<DataItem> items;
-        channel->ReadAll(items);
+        read_all(channel, items);
 
         if (is_same_with_std_items(items)) {
             ++same_count;
@@ -195,6 +203,12 @@ TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
 
         if (is_same_with_sorted_std_items(items)) {
             ++sort_same_count;
+        } else {
+            std::string items_str = "";
+            for (const auto& item: items) {
+                items_str.append(item.id);
+            }
+            VLOG(2) << "items: " << items_str;
         }
 
     }

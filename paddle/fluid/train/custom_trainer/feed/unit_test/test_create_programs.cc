@@ -28,6 +28,7 @@ namespace custom_trainer {
 namespace feed {
 
 namespace {
+const char feed_path[] = "paddle/fluid/train/custom_trainer/feed";
 const char test_data_dir[] = "test_data";
 const char main_program_path[] = "test_data/main_program";
 const char startup_program_path[] = "test_data/startup_program";
@@ -39,7 +40,12 @@ class CreateProgramsTest : public testing::Test
 public:
     static void SetUpTestCase()
     {
-        shell_execute(string::format_string("python scripts/create_programs.py scripts/example.py %s", test_data_dir));
+        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        if (fs->exists("./scripts/create_programs.py")) {
+            shell_execute(string::format_string("python ./scripts/create_programs.py ./scripts/example.py %s", test_data_dir));
+        } else if (fs->exists(string::format_string("%s/scripts/create_programs.py", feed_path))) {
+            shell_execute(string::format_string("python %s/scripts/create_programs.py %s/scripts/example.py %s", feed_path, feed_path, test_data_dir));
+        }
     }
 
     static void TearDownTestCase()

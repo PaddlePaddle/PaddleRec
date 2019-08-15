@@ -24,7 +24,7 @@ def inference_warpper(filename):
     Returns:
         list<Variable>: inputs
         and
-        Variable: ctr_output
+        list<Variable>: outputs
     """
     
     with open(filename, 'r') as f:
@@ -53,17 +53,23 @@ def main(argv):
     main_program = fluid.Program()
     startup_program = fluid.Program()
     with fluid.program_guard(main_program, startup_program):
-        inputs, ctr_output = inference_warpper(network_build_file)
+        inputs, outputs = inference_warpper(network_build_file)
 
         test_program = main_program.clone(for_test=True)
 
-        label_target = fluid.layers.data(name='label', shape=[1], dtype='float32')
+        labels = list()
+        losses = list()
+        for output in outputs:
+            label = fluid.layers.data(name='label_' + output.name, shape=output.shape, dtype='float32')
+            loss = fluid.layers.square_error_cost(input=output, label=label)
+            loss = fluid.layers.mean(loss, name='loss_' + output.name)
 
-        loss = fluid.layers.square_error_cost(input=ctr_output, label=label_target)
-        loss = fluid.layers.mean(loss, name='loss')
-        
+            labels.append(label)
+            losses.append(loss)
+
+        loss_all = fluid.layers.sum(losses)
         optimizer = fluid.optimizer.SGD(learning_rate=1.0)
-        params_grads = optimizer.backward(loss)
+        params_grads = optimizer.backward(loss_all)
 
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
@@ -78,11 +84,11 @@ def main(argv):
             f.write(program.desc.serialize_to_string())
 
     model_desc_path = os.path.join(model_dir, 'model.yaml')
-    model_desc = dict()
-    model_desc['inputs'] = {var.name: var.shape for var in inputs}
-    model_desc['loss_name'] = loss.name
-    model_desc['label_name'] = label_target.name
-    model_desc['ctr_output_name'] = ctr_output.name
+    model_desc = {
+        'inputs': [{"name": var.name, "shape": var.shape} for var in inputs],
+        'outputs': [{"name": var.name, "shape": var.shape, "label_name": label.name, "loss_name": loss.name} for var, label, loss in zip(outputs, labels, losses)],
+        'loss_all': loss_all.name,
+    }
     
     with open(model_desc_path, 'w') as f:
         yaml.safe_dump(model_desc, f, encoding='utf-8', allow_unicode=True)
