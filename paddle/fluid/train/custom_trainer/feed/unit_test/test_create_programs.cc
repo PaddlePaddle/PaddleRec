@@ -84,29 +84,29 @@ TEST_F(CreateProgramsTest, example_network) {
     ASSERT_EQ(-1, input_shape[0]);
     ASSERT_EQ(4488, input_shape[1]);
 
-	auto input_var = executor->mutable_var<::paddle::framework::LoDTensor>(input_name);
-	auto label_var = executor->mutable_var<::paddle::framework::LoDTensor>(label_name);
+    auto input_var = executor->mutable_var<::paddle::framework::LoDTensor>(input_name);
+    auto label_var = executor->mutable_var<::paddle::framework::LoDTensor>(label_name);
     ASSERT_NE(nullptr, input_var);
     ASSERT_NE(nullptr, label_var);
 
-	input_var->Resize({1, input_shape[1]});
-	auto input_data = input_var->mutable_data<float>(context_ptr->cpu_place);
+    input_var->Resize({1, input_shape[1]});
+    auto input_data = input_var->mutable_data<float>(context_ptr->cpu_place);
     ASSERT_NE(nullptr, input_data);
     for (int i = 0; i < input_shape[1]; ++i) {
         input_data[i] = 0.1;
     }
 
     label_var->Resize({1, 1});
-	auto label_data = label_var->mutable_data<float>(context_ptr->cpu_place);
+    auto label_data = label_var->mutable_data<float>(context_ptr->cpu_place);
     ASSERT_NE(nullptr, label_data);
     label_data[0] = 0.5;
 
     ASSERT_EQ(0, executor->run());
 
-	auto loss_var = executor->var<::paddle::framework::LoDTensor>(loss_name);
+    auto loss_var = executor->var<::paddle::framework::LoDTensor>(loss_name);
     auto loss = loss_var.data<float>()[0];
 
-	auto ctr_output_var = executor->var<::paddle::framework::LoDTensor>(ctr_output_name);
+    auto ctr_output_var = executor->var<::paddle::framework::LoDTensor>(ctr_output_name);
     auto ctr_output = ctr_output_var.data<float>()[0];
 
     std::cout << "loss: " << loss << std::endl;

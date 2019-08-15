@@ -15,7 +15,9 @@ def print_help(this_name):
     print("Usage: {} <network building filename> [model_dir]\n".format(this_name))
     print("    example: {} {}".format(this_name, os.path.join(dirname, 'example.py')))
 
-def inference(filename):
+
+
+def inference_warpper(filename):
     """Build inference network(without loss and optimizer)
     Args:
         filename: path of file which defined real inference function
@@ -24,11 +26,14 @@ def inference(filename):
         and
         Variable: ctr_output
     """
+    
     with open(filename, 'r') as f:
         code = f.read()
     compiled = compile(code, filename, 'exec')
-    exec(compiled)
-    return inference()
+    
+    scope = dict()
+    exec(compiled, scope)
+    return scope['inference']()
 
 def main(argv):
     """Create programs
@@ -40,7 +45,7 @@ def main(argv):
         exit(1)
     network_build_file = argv[1]
 
-    if len(argv) >= 2:
+    if len(argv) > 2:
         model_dir = argv[2]
     else:
         model_dir = './model'
@@ -48,7 +53,7 @@ def main(argv):
     main_program = fluid.Program()
     startup_program = fluid.Program()
     with fluid.program_guard(main_program, startup_program):
-        inputs, ctr_output = inference(network_build_file)
+        inputs, ctr_output = inference_warpper(network_build_file)
 
         test_program = main_program.clone(for_test=True)
 

@@ -106,12 +106,12 @@ TEST_F(SimpleExecutorTest, run) {
     auto config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
     
-	auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");
+    auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");
     ASSERT_NE(nullptr, x_var);
 
     int x_len = 10;
-	x_var->Resize({1, x_len});
-	auto x_data = x_var->mutable_data<float>(context_ptr->cpu_place);
+    x_var->Resize({1, x_len});
+    auto x_data = x_var->mutable_data<float>(context_ptr->cpu_place);
     ASSERT_NE(nullptr, x_data);
     std::cout << "x: ";
     for (int i = 0; i < x_len; ++i) {
@@ -122,7 +122,7 @@ TEST_F(SimpleExecutorTest, run) {
 
     ASSERT_EQ(0, executor->run());
 
-	auto mean_var = executor->var<::paddle::framework::LoDTensor>("mean");
+    auto mean_var = executor->var<::paddle::framework::LoDTensor>("mean");
     auto mean = mean_var.data<float>()[0];
     std::cout << "mean: " << mean << std::endl;
     ASSERT_NEAR(4.5, mean, 1e-9);
