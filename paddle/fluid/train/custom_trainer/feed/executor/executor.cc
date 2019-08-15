@@ -54,8 +54,6 @@ public:
         paddle::framework::InitDevices(false);
         if (exe_config["num_threads"]) {
             paddle::platform::SetNumThreads(exe_config["num_threads"].as<int>());
-        } else {
-            paddle::platform::SetNumThreads(1);
         }
 
         if (!exe_config["startup_program"] || 
@@ -80,6 +78,8 @@ public:
                 return -1;
             }
             _context->prepare_context = _context->executor.Prepare(*_context->main_program, 0);
+
+
             _context->executor.CreateVariables(*_context->main_program, this->scope(), 0);
         } catch (::paddle::platform::EnforceNotMet& err) {
             VLOG(2) << err.what();

@@ -61,6 +61,7 @@ public:
             op->SetInput("X", {"x"});
             op->SetOutput("Out", {"mean"});
             op->CheckAttrs();
+            load_block->Var("mean");
             std::ofstream fout(main_program_path, std::ios::out | std::ios::binary);
             ASSERT_TRUE(fout);
             fout << main_program->Proto()->SerializeAsString();
@@ -106,12 +107,12 @@ TEST_F(SimpleExecutorTest, run) {
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
     
 	auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");
-    executor->mutable_var<::paddle::framework::LoDTensor>("mean");
     ASSERT_NE(nullptr, x_var);
 
     int x_len = 10;
 	x_var->Resize({1, x_len});
 	auto x_data = x_var->mutable_data<float>(context_ptr->cpu_place);
+    ASSERT_NE(nullptr, x_data);
     std::cout << "x: ";
     for (int i = 0; i < x_len; ++i) {
         x_data[i] = i;
