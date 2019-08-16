@@ -40,7 +40,7 @@ public:
 protected:
     ::paddle::framework::Scope _scope;
 };
-REGISTER_REGISTERER(Executor);
+REGIST_REGISTERER(Executor);
 
 }  // namespace feed
 }  // namespace custom_trainer

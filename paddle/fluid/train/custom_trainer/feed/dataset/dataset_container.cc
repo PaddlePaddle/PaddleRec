@@ -32,7 +32,7 @@ int DatasetContainer::initialize(
     _data_split_interval = config["data_spit_interval"].as<int>();
     _data_path_formater = config["data_path_formater"].as<std::string>();
     std::string data_reader_class = config["data_reader"].as<std::string>();
-    DataReader* data_reader = CREATE_CLASS(DataReader, data_reader_class);
+    DataReader* data_reader = CREATE_INSTANCE(DataReader, data_reader_class);
     _data_reader.reset(data_reader);
     return _data_reader->initialize(config, context);
 }   

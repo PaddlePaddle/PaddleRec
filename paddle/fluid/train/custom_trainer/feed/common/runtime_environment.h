@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <yaml-cpp/yaml.h>
+#include "communicate/ps_env.h"
 #include "paddle/fluid/framework/archive.h"
 #include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
@@ -13,6 +14,8 @@
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
+
+class paddle::ps::PSEnvironment;
 
 enum class EnvironmentLogLevel {
     FATAL       = 0,
@@ -38,41 +41,43 @@ class RuntimeEnvironment {
 public:
     RuntimeEnvironment();
     virtual ~RuntimeEnvironment();
-    //配置初始化
+    // 配置初始化
     virtual int initialize(YAML::Node config) = 0;
-    //设置role
+    // 设置role
     virtual int set_role(EnvironmentRole role) = 0;
-    //环境初始化，会在所有依赖模块initialize后调用
+    // 环境初始化，会在所有依赖模块initialize后调用
     virtual int wireup() = 0;
     
-    //多线程可调用接口  Start
-    //当前环境rank_idx
+    // 多线程可调用接口  Start
+    // 当前环境rank_idx
     virtual uint32_t rank_id(EnvironmentRole role) = 0;
-    //运行环境节点数
+    // 运行环境节点数
     virtual uint32_t node_num(EnvironmentRole role) = 0;
-    //环境内主节点
+    // 环境内主节点
     virtual bool is_master_node(EnvironmentRole role);
+    //For PS
+    virtual paddle::ps::PSEnvironment* ps_environment() = 0;
     
-    //环境定制化log
+    // 环境定制化log
     template<class... ARGS>
     void log(EnvironmentRole role, EnvironmentLogType type, 
         EnvironmentLogLevel level, const char* fmt, ARGS && ... args) {
         print_log(role, type, level, paddle::string::format_string(fmt, args...));
     }
-    //多线程可调用接口      End
+    // 多线程可调用接口      End
 
 
-    //接口只允许在主线程调用   Start
-    //barrier 指定role的节点
+    // 接口只允许在主线程调用   Start
+    // barrier 指定role的节点
     virtual void barrier(EnvironmentRole role) = 0;
-    //bcast 广播
+    // bcast 广播
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) = 0;
-    //接口只允许在主线程调用   End
+    // 接口只允许在主线程调用   End
 protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
         EnvironmentLogLevel level,  const std::string& log_str) = 0;
 };
-REGISTER_REGISTERER(RuntimeEnvironment);
+REGIST_REGISTERER(RuntimeEnvironment);
 
 std::string format_timestamp(time_t time, const char* format);
 inline std::string format_timestamp(time_t time, const std::string& format) {

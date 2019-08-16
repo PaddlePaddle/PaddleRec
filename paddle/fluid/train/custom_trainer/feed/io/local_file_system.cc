@@ -129,7 +129,7 @@ public:
 private:
     size_t _buffer_size = 0;
 };
-REGISTER_CLASS(FileSystem, LocalFileSystem);
+REGIST_CLASS(FileSystem, LocalFileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

@@ -121,7 +121,7 @@ protected:
     std::unique_ptr<Context> _context;
 };
 
-REGISTER_CLASS(Executor, SimpleExecutor);
+REGIST_CLASS(Executor, SimpleExecutor);
     
 }  // namespace feed
 }  // namespace custom_trainer

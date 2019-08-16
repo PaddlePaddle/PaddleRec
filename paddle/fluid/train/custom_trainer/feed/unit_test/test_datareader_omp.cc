@@ -18,6 +18,7 @@ limitations under the License. */
 #include <gtest/gtest.h>
 #include <omp.h>
 
+#include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 #include "paddle/fluid/framework/tensor_util.h"
 #include "paddle/fluid/framework/program_desc.h"
@@ -37,7 +38,7 @@ const char test_data_dir[] = "test_data";
 class DataReaderOmpTest : public testing::Test {
 public:
     static void SetUpTestCase() {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->mkdir(test_data_dir);
         shell_set_verbose(true);
         std_items.clear();
@@ -61,14 +62,14 @@ public:
     }
 
     static void TearDownTestCase() {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->remove(test_data_dir);
     }
 
     virtual void SetUp() {
         thread_num = omp_get_max_threads();
         omp_set_num_threads(1);
-        fs.reset(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        fs.reset(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         context_ptr.reset(new TrainerContext());
     }
 
@@ -111,7 +112,7 @@ std::vector<DataItem> DataReaderOmpTest::std_items;
 std::vector<DataItem> DataReaderOmpTest::sorted_std_items;
 
 TEST_F(DataReaderOmpTest, LineDataReaderSingleThread) {
-    std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
+    std::unique_ptr<DataReader> data_reader(CREATE_INSTANCE(DataReader, "LineDataReader"));
     ASSERT_NE(nullptr, data_reader);
 
     auto config = YAML::Load(
@@ -148,7 +149,7 @@ TEST_F(DataReaderOmpTest, LineDataReaderSingleThread) {
 }
 
 TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
-    std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
+    std::unique_ptr<DataReader> data_reader(CREATE_INSTANCE(DataReader, "LineDataReader"));
     ASSERT_NE(nullptr, data_reader);
 
     auto config = YAML::Load(

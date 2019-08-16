@@ -203,7 +203,7 @@ private:
     std::string _hdfs_command;
     std::unordered_map<std::string, std::string> _ugi;
 };
-REGISTER_CLASS(FileSystem, HadoopFileSystem);
+REGIST_CLASS(FileSystem, HadoopFileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

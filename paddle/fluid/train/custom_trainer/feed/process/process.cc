@@ -5,8 +5,8 @@
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
-REGISTER_CLASS(Process, InitEnvProcess);
-REGISTER_CLASS(Process, LearnerProcess);
+REGIST_CLASS(Process, InitEnvProcess);
+REGIST_CLASS(Process, LearnerProcess);
 int Process::run() {
     return 0;
 }

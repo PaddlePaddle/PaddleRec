@@ -54,7 +54,7 @@ public:
     virtual int parse(const char* str, DataItem& data) const = 0;
     virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const = 0;  
 };
-REGISTER_REGISTERER(DataParser);
+REGIST_REGISTERER(DataParser);
 
 class DataReader {
 public:
@@ -76,7 +76,7 @@ protected:
     std::shared_ptr<DataParser> _parser;//数据格式转换
     std::string _pipeline_cmd; //将文件流，重定向到pipeline_cmd，再读入
 };
-REGISTER_REGISTERER(DataReader);
+REGIST_REGISTERER(DataReader);
 
 }//namespace feed
 }//namespace custom_trainer

@@ -39,7 +39,7 @@ protected:
     std::string _name;
 };
 
-REGISTER_REGISTERER(Monitor);
+REGIST_REGISTERER(Monitor);
 
 }  // namespace feed
 }  // namespace custom_trainer

@@ -3,12 +3,12 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
-BaseClassMap& global_factory_map() {
+BaseClassMap& global_reg_factory_map() {
     static BaseClassMap *base_class = new BaseClassMap();
     return *base_class;
 }
-BaseClassMap& global_factory_map_cpp() {
-    return global_factory_map();
+BaseClassMap& global_reg_factory_map_cpp() {
+    return global_reg_factory_map();
 }
 
 }// feed

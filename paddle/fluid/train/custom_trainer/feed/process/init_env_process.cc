@@ -20,22 +20,16 @@ int InitEnvProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     context_ptr->cpu_place = paddle::platform::CPUPlace();
     
     YAML::Node config = _context_ptr->trainer_config;
-    //environment
-    std::string env_class = config["environment"]["environment_class"].as<std::string>();
-    context_ptr->environment.reset(CREATE_CLASS(RuntimeEnvironment, env_class));
-    if (context_ptr->environment->initialize(config["environment"]) != 0) {
-        return -1;
-    }
 
     //file_system
-    context_ptr->file_system.reset(CREATE_CLASS(FileSystem, "AutoFileSystem"));
+    context_ptr->file_system.reset(CREATE_INSTANCE(FileSystem, "AutoFileSystem"));
     if (context_ptr->file_system->initialize(config["io"], context_ptr) != 0) {
         return -1;
     }
 
     //epoch
     std::string epoch_class = config["epoch"]["epoch_class"].as<std::string>();
-    context_ptr->epoch_accessor.reset(CREATE_CLASS(EpochAccessor, epoch_class));
+    context_ptr->epoch_accessor.reset(CREATE_INSTANCE(EpochAccessor, epoch_class));
     if (context_ptr->epoch_accessor->initialize(config["epoch"], context_ptr) != 0) {
         return -1;
     }
@@ -55,10 +49,12 @@ int InitEnvProcess::run() {
     VLOG(3) << "Trainer Resume From epoch:" << epoch_accessor->current_epoch_id();
     auto next_epoch_id = epoch_accessor->next_epoch_id(epoch_accessor->current_epoch_id());
     _context_ptr->dataset->pre_detect_data(next_epoch_id);
-    //step 1. psserver init
-    //step2. psserver load
-    VLOG(3) << "Psserver Start Success";
-    
+
+    if (epoch_accessor->checkpoint_path().size() > 0) {
+        //Load Model
+    } else {
+        //Random Init Model
+    }
     //context_ptr->pslib_client()->load_model();
     VLOG(3) << "Psserver Load Model Success";
     return 0;

@@ -18,7 +18,7 @@ public:
 protected:
     TrainerContext* _context_ptr = NULL;
 };
-REGISTER_REGISTERER(Process);
+REGIST_REGISTERER(Process);
 
 }  // namespace feed
 }  // namespace custom_trainer

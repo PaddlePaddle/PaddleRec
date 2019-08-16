@@ -88,7 +88,7 @@ namespace feed {
         return "";
     }
 
-    REGISTER_CLASS(EpochAccessor, HourlyEpochAccessor);
+    REGIST_CLASS(EpochAccessor, HourlyEpochAccessor);
 
 }  // namespace feed
 }  // namespace custom_trainer

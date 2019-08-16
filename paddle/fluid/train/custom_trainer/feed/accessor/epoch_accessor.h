@@ -60,7 +60,7 @@ protected:
     std::vector<std::string> _done_status; //当前完成状态，统一存成string
     
 };
-REGISTER_REGISTERER(EpochAccessor);
+REGIST_REGISTERER(EpochAccessor);
 
 class HourlyEpochAccessor : public EpochAccessor {
 public:

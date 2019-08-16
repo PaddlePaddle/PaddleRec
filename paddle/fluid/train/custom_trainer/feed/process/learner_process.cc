@@ -25,7 +25,7 @@ int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
             _threads_executor[i].resize(_executor_num);
             for (int e = 0; e < _executor_num; ++e) {
                 auto e_class = config["executor"][e]["class"].as<std::string>();
-                auto* e_ptr = CREATE_CLASS(Executor, e_class);
+                auto* e_ptr = CREATE_INSTANCE(Executor, e_class);
                 _threads_executor[i][e].reset(e_ptr);  
                 if (e_ptr->initialize(config["executor"][e], context_ptr) != 0) {
                     ret = -1;
@@ -84,53 +84,59 @@ int LearnerProcess::run() {
     
     while (true) {
         epoch_accessor->next_epoch();
+        bool already_dump_inference_model = false;
         epoch_id = epoch_accessor->current_epoch_id();
         std::string epoch_log_title= paddle::string::format_string(
             "train epoch_id:%d label:%s", epoch_id, epoch_accessor->text(epoch_id).c_str());
         
         //Step1. 等待样本ready
-        environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
-            "Start %s, wait data ready", epoch_log_title.c_str());
-        while (dataset->epoch_data_status(epoch_id) != DatasetStatus::Ready) {
-            sleep(30);  
-            dataset->pre_detect_data(epoch_id);
+        {
             environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
-                "%s, data not ready, wait 30s", epoch_log_title.c_str());
-        } 
-        environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
-            "%s, data is ready, start traning", epoch_log_title.c_str());
-        environment->barrier(EnvironmentRole::WORKER); 
-
+                "Start %s, wait data ready", epoch_log_title.c_str());
+            while (dataset->epoch_data_status(epoch_id) != DatasetStatus::Ready) {
+                sleep(30);  
+                dataset->pre_detect_data(epoch_id);
+                environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
+                    "%s, data not ready, wait 30s", epoch_log_title.c_str());
+            } 
+            environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
+                "%s, data is ready, start traning", epoch_log_title.c_str());
+            environment->barrier(EnvironmentRole::WORKER); 
+        }
+    
         //Step2. 运行训练网络
-        bool already_dump_inference_model = false;
-        for (int i = 0; i < _executor_num; ++i) {
-            std::vector<std::shared_ptr<std::thread>> train_threads(_train_thread_num);
-            for (int thread_id = 0; thread_id < _train_thread_num; ++thread_id) {
-                train_threads[i].reset(new std::thread([this](int exe_idx, int thread_idx) {
-                    auto* executor = _threads_executor[thread_idx][exe_idx].get();
-                    run_executor(executor);                      
-                }, i, thread_id));
-            }   
-            for (int i = 0; i < _train_thread_num; ++i) {
-                train_threads[i]->join();
-            }
-            environment->barrier(EnvironmentRole::WORKER); 
+        {
+            for (int i = 0; i < _executor_num; ++i) {
+                std::vector<std::shared_ptr<std::thread>> train_threads(_train_thread_num);
+                for (int thread_id = 0; thread_id < _train_thread_num; ++thread_id) {
+                    train_threads[i].reset(new std::thread([this](int exe_idx, int thread_idx) {
+                        auto* executor = _threads_executor[thread_idx][exe_idx].get();
+                        run_executor(executor);                      
+                    }, i, thread_id));
+                }   
+                for (int i = 0; i < _train_thread_num; ++i) {
+                    train_threads[i]->join();
+                }
+                environment->barrier(EnvironmentRole::WORKER); 
 
-            if (_threads_executor[0][i]->is_dump_all_model()) {
-                already_dump_inference_model = true;
-                wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
+                if (_threads_executor[0][i]->is_dump_all_model()) {
+                    already_dump_inference_model = true;
+                    wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
+                }
+                environment->barrier(EnvironmentRole::WORKER); 
             }
-            environment->barrier(EnvironmentRole::WORKER); 
         }
 
         //Step3. Dump Model For Delta&&Checkpoint
-        if (!already_dump_inference_model) {
-            already_dump_inference_model = true;
-            wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
-        } 
-        wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
-        environment->barrier(EnvironmentRole::WORKER); 
-        
+        {
+            if (!already_dump_inference_model) {
+                already_dump_inference_model = true;
+                wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
+            } 
+            wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
+            environment->barrier(EnvironmentRole::WORKER); 
+        }
+    
         //Step4. Output Monitor && RunStatus
         //TODO
     }

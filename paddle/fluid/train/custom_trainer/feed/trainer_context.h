@@ -4,6 +4,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/platform/place.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/pslib_warpper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/runtime_environment.h"
 
 
@@ -38,6 +39,7 @@ public:
 YAML::Node trainer_config;
 paddle::platform::CPUPlace cpu_place;
 
+std::shared_ptr<PSlib> pslib;
 std::shared_ptr<Dataset> dataset;                          //训练样本
 std::shared_ptr<FileSystem> file_system;                   //文件操作辅助类
 std::vector<TableMeta> params_table_list;                  //参数表

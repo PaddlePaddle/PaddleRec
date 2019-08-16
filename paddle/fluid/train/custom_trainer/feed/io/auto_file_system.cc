@@ -31,7 +31,7 @@ public:
         _file_system.clear();
         if (config && config["file_systems"] && config["file_systems"].Type() == YAML::NodeType::Map) {
             for (auto& prefix_fs: config["file_systems"]) {
-                std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, prefix_fs.second["class"].as<std::string>("")));
+                std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, prefix_fs.second["class"].as<std::string>("")));
                 if (fs == nullptr) {
                     VLOG(2) << "fail to create class: " << prefix_fs.second["class"].as<std::string>("");
                     return -1;
@@ -44,7 +44,7 @@ public:
             }
         }
         if (_file_system.find("default") == _file_system.end()) {
-            std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+            std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
             if (fs == nullptr || fs->initialize(YAML::Load(""), context) != 0) {
                 return -1;
             }
@@ -122,7 +122,7 @@ public:
 private:
     std::unordered_map<std::string, std::unique_ptr<FileSystem>> _file_system;
 };
-REGISTER_CLASS(FileSystem, AutoFileSystem);
+REGIST_CLASS(FileSystem, AutoFileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

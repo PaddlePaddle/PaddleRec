@@ -63,23 +63,23 @@ typedef std::map<std::string, FactoryMap> BaseClassMap;
 #ifdef __cplusplus
 extern "C" {
 #endif
-BaseClassMap& global_factory_map();
+BaseClassMap& global_reg_factory_map();
 #ifdef __cplusplus
 }
 #endif
 
-BaseClassMap& global_factory_map_cpp();
+BaseClassMap& global_reg_factory_map_cpp();
 
-#define REGISTER_REGISTERER(base_class) \
+#define REGIST_REGISTERER(base_class) \
     class base_class ## Registerer { \
         public: \
             static base_class *CreateInstanceByName(const ::std::string &name) { \
-                if (global_factory_map_cpp().find(#base_class) \
-                        == global_factory_map_cpp().end()) { \
+                if (global_reg_factory_map_cpp().find(#base_class) \
+                        == global_reg_factory_map_cpp().end()) { \
                     LOG(ERROR) << "Can't Find BaseClass For CreateClass with:" << #base_class; \
                     return NULL; \
                 } \
-                FactoryMap &map = global_factory_map_cpp()[#base_class]; \
+                FactoryMap &map = global_reg_factory_map_cpp()[#base_class]; \
                 FactoryMap::iterator iter = map.find(name); \
                 if (iter == map.end()) { \
                     LOG(ERROR) << "Can't Find Class For Create with:" << name; \
@@ -90,7 +90,7 @@ BaseClassMap& global_factory_map_cpp();
             } \
     };
 
-#define REGISTER_CLASS(clazz, name) \
+#define REGIST_CLASS(clazz, name) \
     class ObjectFactory##name : public ObjectFactory { \
         public: \
             Any NewInstance() { \
@@ -98,14 +98,14 @@ BaseClassMap& global_factory_map_cpp();
             } \
     }; \
     void register_factory_##name() { \
-        FactoryMap &map = global_factory_map_cpp()[#clazz]; \
+        FactoryMap &map = global_reg_factory_map_cpp()[#clazz]; \
             if (map.find(#name) == map.end()) { \
                 map[#name] = new ObjectFactory##name(); \
             } \
     } \
     void register_factory_##name() __attribute__((constructor)); 
 
-#define CREATE_CLASS(base_class, name) \
+#define CREATE_INSTANCE(base_class, name) \
     base_class##Registerer::CreateInstanceByName(name)
     
 }//namespace feed

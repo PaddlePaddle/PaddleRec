@@ -44,6 +44,11 @@ public:
         set_role(EnvironmentRole::ALL);
         return 0;
     }
+    
+    virtual paddle::ps::PSEnvironment* ps_environment() {
+        static paddle::ps::MpiPSEnvironment ps_environment;
+        return &ps_environment;
+    }
 
     virtual uint32_t rank_id(EnvironmentRole role) {
         return mpi_node_info(role).rank_id;
@@ -95,7 +100,7 @@ protected:
 private:
     std::vector<MpiNodeInfo> _roles_node_info;
 };
-REGISTER_CLASS(RuntimeEnvironment, MPIRuntimeEnvironment);
+REGIST_CLASS(RuntimeEnvironment, MPIRuntimeEnvironment);
 
 //用于本地模式单机训练
 class LocalRuntimeEnvironment : public RuntimeEnvironment {
@@ -107,6 +112,10 @@ public:
     }
     virtual int wireup() {
         return 0;
+    }
+    virtual paddle::ps::PSEnvironment* ps_environment() {
+        static paddle::ps::LocalPSEnvironment ps_environment;
+        return &ps_environment;
     }
     virtual uint32_t rank_id(EnvironmentRole role) {
         return 0;
@@ -129,7 +138,7 @@ protected:
         VLOG(static_cast<int>(level)) << log_str;
     }
 };
-REGISTER_CLASS(RuntimeEnvironment, LocalRuntimeEnvironment);
+REGIST_CLASS(RuntimeEnvironment, LocalRuntimeEnvironment);
 
 }  // namespace feed
 }  // namespace custom_trainer

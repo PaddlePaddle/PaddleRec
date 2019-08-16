@@ -52,7 +52,7 @@ public:
 protected:
     int _err_no = 0;
 };
-REGISTER_REGISTERER(FileSystem);
+REGIST_REGISTERER(FileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

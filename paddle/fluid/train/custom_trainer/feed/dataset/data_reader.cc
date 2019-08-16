@@ -56,10 +56,10 @@ public:
         return 0;
     }
 };
-REGISTER_CLASS(DataParser, LineDataParser);
+REGIST_CLASS(DataParser, LineDataParser);
 
 int DataReader::initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
-    _parser.reset(CREATE_CLASS(DataParser, config["parser"]["class"].as<std::string>()));
+    _parser.reset(CREATE_INSTANCE(DataParser, config["parser"]["class"].as<std::string>()));
     if (_parser == nullptr) {
         VLOG(2) << "fail to get parser: " << config["parser"]["class"].as<std::string>();
         return -1;
@@ -85,7 +85,7 @@ public:
 
         if (config["file_system"] && config["file_system"]["class"]) {
             _file_system.reset(
-                    CREATE_CLASS(FileSystem, config["file_system"]["class"].as<std::string>()));
+                    CREATE_INSTANCE(FileSystem, config["file_system"]["class"].as<std::string>()));
             if (_file_system == nullptr ||
                 _file_system->initialize(config["file_system"], context) != 0) {
                 VLOG(2) << "fail to create class: "
@@ -95,7 +95,7 @@ public:
         } else if (context->file_system != nullptr) { 
             _file_system = context->file_system;
         } else {
-            _file_system.reset(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+            _file_system.reset(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
             if (_file_system == nullptr || _file_system->initialize(YAML::Load(""), context) != 0) {
                 VLOG(2) << "fail to init file system";
                 return -1;
@@ -203,7 +203,7 @@ private:
     std::string _filename_prefix;
     std::shared_ptr<FileSystem> _file_system;
 };
-REGISTER_CLASS(DataReader, LineDataReader);
+REGIST_CLASS(DataReader, LineDataReader);
 
 }  // namespace feed
 }  // namespace custom_trainer
