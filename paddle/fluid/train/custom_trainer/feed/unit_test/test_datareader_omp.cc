@@ -38,6 +38,9 @@ class DataReaderOmpTest : public testing::Test {
 public:
     static void SetUpTestCase() {
         std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        if (fs->exists(test_data_dir)) {
+            fs->remove(test_data_dir);
+        }
         fs->mkdir(test_data_dir);
         shell_set_verbose(true);
         std_items.clear();
@@ -92,11 +95,12 @@ public:
     }
 
     static void read_all(framework::Channel<DataItem>& channel, std::vector<DataItem>& items) {
-        framework::ChannelReader<DataItem> reader(channel.get());
-        DataItem data_item;
-        while (reader >> data_item) {
-            items.push_back(std::move(data_item));
-        }
+        channel->ReadAll(items);
+        // framework::ChannelReader<DataItem> reader(channel.get());
+        // DataItem data_item;
+        // while (reader >> data_item) {
+        //     items.push_back(std::move(data_item));
+        // }
     }
 
     static bool is_same_with_std_items(const std::vector<DataItem>& items) {
@@ -105,6 +109,14 @@ public:
 
     static bool is_same_with_sorted_std_items(const std::vector<DataItem>& items) {
         return is_same(items, sorted_std_items);
+    }
+
+    static std::string to_string(const std::vector<DataItem>& items) {
+        std::string items_str = "";
+        for (const auto& item : items) {
+            items_str.append(item.id);
+        }
+        return items_str;
     }
 
     static std::vector<DataItem> std_items;
@@ -137,7 +149,6 @@ TEST_F(DataReaderOmpTest, LineDataReaderSingleThread) {
         ASSERT_EQ(string::format_string("%s/%s.txt", test_data_dir, std_items[i].id.c_str()), data_file_list[i]);
     }
 
-    int same_count = 0;
     for (int i = 0; i < n_run; ++i) {
         auto channel = framework::MakeChannel<DataItem>(128);
         ASSERT_NE(nullptr, channel);
@@ -146,13 +157,8 @@ TEST_F(DataReaderOmpTest, LineDataReaderSingleThread) {
         std::vector<DataItem> items;
         read_all(channel, items);
 
-        if (is_same_with_std_items(items)) {
-            ++same_count;
-        }
+        ASSERT_TRUE(is_same_with_std_items(items));
     }
-
-    // n_run 次都相同
-    ASSERT_EQ(n_run, same_count);
 }
 
 TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
@@ -188,36 +194,32 @@ TEST_F(DataReaderOmpTest, LineDataReaderMuiltThread) {
 
         omp_set_num_threads(4);
 
+        channel->SetBlockSize(1);
         ASSERT_EQ(0, data_reader->read_all(test_data_dir, channel));
 
         std::vector<DataItem> items;
         read_all(channel, items);
 
+        ASSERT_EQ(std_items_size, items.size());
+
         if (is_same_with_std_items(items)) {
             ++same_count;
         }
-
+        VLOG(5) << "before sort items: " << to_string(items);
         std::sort(items.begin(), items.end(), [] (const DataItem& a, const DataItem& b) {
             return a.id < b.id;
         });
-
-        if (is_same_with_sorted_std_items(items)) {
-            ++sort_same_count;
-        } else {
-            std::string items_str = "";
-            for (const auto& item: items) {
-                items_str.append(item.id);
-            }
-            VLOG(2) << "items: " << items_str;
+        bool is_same_with_std = is_same_with_sorted_std_items(items);
+        if (!is_same_with_std) {
+            VLOG(5) << "after sort items: " << to_string(items);
         }
-
+        // 排序后都是相同的
+        ASSERT_TRUE(is_same_with_std);
     }
     // n_run次有不同的（证明是多线程）
     ASSERT_EQ(4, omp_get_max_threads());
     ASSERT_GT(n_run, same_count);
 
-    // 但排序后都是相同的
-    ASSERT_EQ(n_run, sort_same_count);
 }
 
 }  // namespace feed
