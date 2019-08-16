@@ -171,6 +171,7 @@ public:
                 if (line_len <= 0) {
                     continue;
                 }
+                DataItem data_item;
                 if (_parser->parse(buffer, line_len, data_item) == 0) {
                     VLOG(5) << "parse data: " << data_item.id << " " << data_item.data << ", filename: " << filepath << ", thread_num: " << thread_num << ", max_threads: " << max_threads;
                     if (writer == nullptr) {

@@ -165,14 +165,14 @@ static int shell_popen_fork_internal(
 
     if (child_end != child_std_end) {
         if (dup2(child_end, child_std_end) != child_std_end) {
-            return -1;
+            exit(127);
         }
         close(child_end);
     }
 
     close_open_fds_internal();
     if (execl("/bin/bash", "bash", "-c", real_cmd, NULL) < 0) {
-        return -1;
+        exit(127);
     }
     exit(127);
 #endif
