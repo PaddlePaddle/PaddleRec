@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <cstdlib>
+#include <cmath>
 
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 #include "paddle/fluid/framework/tensor_util.h"
@@ -50,6 +52,11 @@ public:
         context_ptr = nullptr;
     }
 
+    float random(float min_x = 0.0, float max_x = 1.0) {
+        float r = static_cast<float>(rand()) / RAND_MAX;
+        return min_x + (max_x - min_x) * r;
+    }
+
     std::shared_ptr<TrainerContext> context_ptr;
 };
 
@@ -60,38 +67,49 @@ TEST_F(CreateProgramsTest, example_network) {
     auto config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     auto model_desc = YAML::LoadFile(model_desc_path);
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
-    
+
     std::string input_name = "cvm_input";
+    std::string loss_name = "loss_ctr";
+    std::string label_name = "label_ctr";
+
+    // loss
+    ASSERT_TRUE(model_desc["loss"]);
+    ASSERT_EQ(loss_name, model_desc["loss"].as<std::string>());
+
+    // input
     ASSERT_TRUE(model_desc["inputs"]);
     ASSERT_EQ(1, model_desc["inputs"].size());
     ASSERT_TRUE(model_desc["inputs"][0]["name"]);
     ASSERT_TRUE(model_desc["inputs"][0]["shape"]);
     ASSERT_EQ(input_name, model_desc["inputs"][0]["name"].as<std::string>());
-    std::vector<int> input_shape = model_desc["inputs"][0]["shape"].as<std::vector<int>>(std::vector<int>());
+    auto input_shape = model_desc["inputs"][0]["shape"].as<std::vector<int>>(std::vector<int>());
     ASSERT_EQ(2, input_shape.size());
     ASSERT_EQ(-1, input_shape[0]);
     ASSERT_EQ(4488, input_shape[1]);
 
-    ASSERT_TRUE(model_desc["loss_all"]);
-    auto loss_all_name = model_desc["loss_all"].as<std::string>();
+    // label
+    ASSERT_TRUE(model_desc["labels"]);
+    ASSERT_EQ(1, model_desc["labels"].size());
+    ASSERT_TRUE(model_desc["labels"][0]["name"]);
+    ASSERT_TRUE(model_desc["labels"][0]["shape"]);
+    ASSERT_EQ(label_name, model_desc["labels"][0]["name"].as<std::string>());
+    auto label_shape = model_desc["labels"][0]["shape"].as<std::vector<int>>(std::vector<int>());
+    ASSERT_EQ(2, label_shape.size());
+    ASSERT_EQ(-1, label_shape[0]);
+    ASSERT_EQ(1, label_shape[1]);
 
     ASSERT_TRUE(model_desc["outputs"]);
     ASSERT_EQ(1, model_desc["outputs"].size());
     ASSERT_TRUE(model_desc["outputs"][0]["name"]);
     ASSERT_TRUE(model_desc["outputs"][0]["shape"]);
-    ASSERT_TRUE(model_desc["outputs"][0]["label_name"]);
-    ASSERT_TRUE(model_desc["outputs"][0]["loss_name"]);
-
-    auto ctr_output_label_name = model_desc["outputs"][0]["label_name"].as<std::string>();
-    auto ctr_output_loss_name = model_desc["outputs"][0]["loss_name"].as<std::string>();
-    auto ctr_output_name = model_desc["outputs"][0]["name"].as<std::string>();
-    std::vector<int> output_shape = model_desc["outputs"][0]["shape"].as<std::vector<int>>(std::vector<int>());
+    auto output_name = model_desc["outputs"][0]["name"].as<std::string>();
+    auto output_shape = model_desc["outputs"][0]["shape"].as<std::vector<int>>(std::vector<int>());
     ASSERT_EQ(2, output_shape.size());
     ASSERT_EQ(-1, output_shape[0]);
     ASSERT_EQ(1, output_shape[1]);
 
     auto input_var = executor->mutable_var<::paddle::framework::LoDTensor>(input_name);
-    auto label_var = executor->mutable_var<::paddle::framework::LoDTensor>(ctr_output_label_name);
+    auto label_var = executor->mutable_var<::paddle::framework::LoDTensor>(label_name);
     ASSERT_NE(nullptr, input_var);
     ASSERT_NE(nullptr, label_var);
 
@@ -99,28 +117,26 @@ TEST_F(CreateProgramsTest, example_network) {
     auto input_data = input_var->mutable_data<float>(context_ptr->cpu_place);
     ASSERT_NE(nullptr, input_data);
     for (int i = 0; i < input_shape[1]; ++i) {
-        input_data[i] = 0.1;
+        input_data[i] = random();
     }
 
     label_var->Resize({1, 1});
     auto label_data = label_var->mutable_data<float>(context_ptr->cpu_place);
     ASSERT_NE(nullptr, label_data);
-    label_data[0] = 0.5;
+    label_data[0] = random();
 
     ASSERT_EQ(0, executor->run());
 
-    auto loss_var = executor->var<::paddle::framework::LoDTensor>(ctr_output_loss_name);
+    auto loss_var = executor->var<::paddle::framework::LoDTensor>(loss_name);
     auto loss = loss_var.data<float>()[0];
 
-    auto loss_all_var = executor->var<::paddle::framework::LoDTensor>(loss_all_name);
-    auto loss_all = loss_all_var.data<float>()[0];
+    auto output_var = executor->var<::paddle::framework::LoDTensor>(output_name);
+    auto output = output_var.data<float>()[0];
 
-    auto ctr_output_var = executor->var<::paddle::framework::LoDTensor>(ctr_output_name);
-    auto ctr_output = ctr_output_var.data<float>()[0];
-
-    std::cout << "loss: " << loss << std::endl;
-    std::cout << "ctr_output: " << ctr_output << std::endl;
-    ASSERT_NEAR(loss, loss_all, 1e-9);
+    VLOG(3) << "loss: " << loss << std::endl;
+    VLOG(3) << "label: " << label_data[0] << std::endl;
+    VLOG(3) << "output: " << output << std::endl;
+    ASSERT_NEAR(loss, pow(output - label_data[0], 2), 1e-8);
 }
 
 }  // namespace feed
