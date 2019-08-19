@@ -32,10 +32,10 @@ def inference():
     ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr')
     return [cvm_input], [ctr_output]
 
-def loss_function(outputs):
+def loss_function(ctr_output):
     """
     Args:
-        outputs: the second result of inference()
+        *outputs: the second result of inference()
 
     Returns:
         Variable: loss
@@ -43,7 +43,6 @@ def loss_function(outputs):
         list<Variable>: labels
     """
     # TODO: calc loss here
-    ctr_output, = outputs
 
     label = fluid.layers.data(name='label_ctr', shape=ctr_output.shape, dtype='float32')
     loss = fluid.layers.square_error_cost(input=ctr_output, label=label)

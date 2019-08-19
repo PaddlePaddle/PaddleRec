@@ -30,10 +30,10 @@ class ModelBuilder:
                 list<Variable>: outputs
             pass
 
-        def _loss_function(outputs):
+        def _loss_function(*outputs):
             **This function is declared in the network_desc_path file, and will be set in initialize()**
             Args:
-                outputs: the second result of inference()
+                *outputs: the second result of inference()
 
             Returns:
                 Variable: loss
@@ -97,7 +97,7 @@ class ModelBuilder:
         with fluid.program_guard(main_program, startup_program):
             inputs, outputs = self._inference()
             test_program = main_program.clone(for_test=True)
-            loss, labels = self._loss_function(outputs)
+            loss, labels = self._loss_function(*outputs)
 
             optimizer = fluid.optimizer.SGD(learning_rate=1.0)
             params_grads = optimizer.backward(loss)
