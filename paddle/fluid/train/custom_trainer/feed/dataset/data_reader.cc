@@ -345,11 +345,11 @@ public:
             return -1;
         }
 
-        //FIXME
-        int show, clk;
+        //FIXME temp
+        int show = 0, clk = 0;
         std::string tags;
         std::map<std::string, std::vector<float>> vec_feas;
-        int sample_type;
+        int sample_type = 0;
         std::map<std::string, std::vector<int>> auc_category_info_map;
         uint32_t feas_len = 0;
 
