@@ -19,6 +19,27 @@ class ModelBuilder:
     """
     Attributes:
         _save_path: Save path of programs
+
+        def _inference():
+            Build inference network(without loss and optimizer)
+            **This function is declared in the network_desc_path file, and will be set in initialize()**
+
+            Returns:
+                list<Variable>: inputs
+                and
+                list<Variable>: outputs
+            pass
+
+        def _loss_function(outputs):
+            **This function is declared in the network_desc_path file, and will be set in initialize()**
+            Args:
+                outputs: the second result of inference()
+
+            Returns:
+                Variable: loss
+                and
+                list<Variable>: labels
+            pass
     """
 
     def initialize(self, network_desc_path, save_path=None):
@@ -67,31 +88,6 @@ class ModelBuilder:
         self._loss_function = scope['loss_function']
 
         return True
-
-    def _inference():
-        """Build inference network(without loss and optimizer)
-        **This function is declared in the network_desc_path file, and will be set in initialize()**
-
-        Returns:
-            list<Variable>: inputs
-            and
-            list<Variable>: outputs
-        """
-        pass
-
-    def _loss_function(outputs):
-        """
-        **This function is declared in the network_desc_path file, and will be set in initialize()**
-
-        Args:
-            outputs: the second result of inference()
-
-        Returns:
-            Variable: loss
-            and
-            list<Variable>: labels
-        """
-        pass
 
     def build_and_save(self):
         """Build programs and save to _save_path
