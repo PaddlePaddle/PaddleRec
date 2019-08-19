@@ -26,9 +26,25 @@
 namespace paddle {
 namespace string {
 
-inline size_t count_spaces(const char* s);
+inline size_t count_spaces(const char* s) {
+  size_t count = 0;
 
-inline size_t count_nonspaces(const char* s);
+  while (*s != 0 && isspace(*s++)) {
+    count++;
+  }
+
+  return count;
+}
+
+inline size_t count_nonspaces(const char* s) {
+  size_t count = 0;
+
+  while (*s != 0 && !isspace(*s++)) {
+    count++;
+  }
+
+  return count;
+}
 
 template <class... ARGS>
 void format_string_append(std::string& str, const char* fmt,  // NOLINT

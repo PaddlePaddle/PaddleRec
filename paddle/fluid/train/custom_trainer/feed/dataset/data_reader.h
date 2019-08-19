@@ -9,6 +9,8 @@
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/framework/channel.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/pipeline.h"
+#include "paddle/fluid/framework/archive.h"
+#include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
 
 namespace paddle {
@@ -18,13 +20,38 @@ namespace feed {
 class TrainerContext;
 
 struct FeatureItem {
-    uint64_t feature_sign;
-    uint16_t slot_id;
+public:
+    FeatureItem() {
+    }
+    FeatureItem(uint64_t sign_, uint16_t slot_) {
+        sign() = sign_;
+        slot() = slot_;
+    }
+    uint64_t& sign() {
+        return *(uint64_t*)sign_buffer();
+    }
+    const uint64_t& sign() const {
+        return *(const uint64_t*)sign_buffer();
+    }
+    uint16_t& slot() {
+        return _slot;
+    }
+    const uint16_t& slot() const {
+        return _slot;
+    }
+
+private:
+    char _sign[sizeof(uint64_t)];
+    uint16_t _slot;
+
+    char* sign_buffer() const {
+        return (char*)_sign;
+    }
 };
 
 struct SampleInstance {
     std::string id;
-    std::vector<float> lables;
+    std::vector<float> labels;
     std::vector<FeatureItem> features;
     std::vector<float> embedx;
 };

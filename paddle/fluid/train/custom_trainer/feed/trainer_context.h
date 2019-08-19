@@ -33,6 +33,17 @@ private:
     int _id;
 };
 
+class SignCacheDict {
+public:
+    int32_t sign2index(uint64_t sign) {
+        return -1;
+    }
+
+    uint64_t index2sign(int32_t index) {
+        return 0;
+    }
+};
+
 class TrainerContext {
 public:
 YAML::Node trainer_config;
@@ -44,6 +55,7 @@ std::vector<TableMeta> params_table_list;                  //参数表
 std::shared_ptr<EpochAccessor> epoch_accessor;             //训练轮次控制
 std::shared_ptr<RuntimeEnvironment> environment;           //运行环境
 std::vector<std::shared_ptr<Process>> process_list;        //训练流程
+std::shared_ptr<SignCacheDict> cache_dict;                 //大模型cache词典
 };
 
 }  // namespace feed
