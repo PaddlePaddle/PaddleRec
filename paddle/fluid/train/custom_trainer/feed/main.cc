@@ -13,6 +13,7 @@ using namespace paddle::custom_trainer::feed;
 DEFINE_string(feed_trainer_conf_path, "./conf/trainer.yaml", "path of trainer conf");
 
 int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
     //gflags
     google::ParseCommandLineFlags(&argc, &argv, true);
     std::string gflag_conf = "./conf/gflags.conf";

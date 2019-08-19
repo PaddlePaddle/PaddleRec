@@ -7,14 +7,14 @@ namespace feed {
 int Dataset::initialize(
     const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
     if (config["data_list"].Type() != YAML::NodeType::Map) {
-        VLOG(0) << "miss data_list config in dataset, or type error please check";
+        LOG(FATAL) << "miss data_list config in dataset, or type error please check";
         return -1;
     }
     for (auto& data_config : config["data_list"]) {
         std::string name = data_config.first.as<std::string>();
         auto data_ptr = std::make_shared<DatasetContainer>();
         if (data_ptr->initialize(data_config.second, context) != 0) {
-            VLOG(0) << "dataset initialize failed, name:" << name;
+            LOG(FATAL) << "dataset initialize failed, name:" << name;
             return -1;
         }
         _data_containers[name] = data_ptr;

@@ -17,7 +17,7 @@ namespace {
 int ReadBinaryFile(const std::string& filename, std::string* contents) {
     std::ifstream fin(filename, std::ios::in | std::ios::binary);
     if (!fin) {
-        VLOG(2) << "Cannot open file " << filename;
+        LOG(FATAL) << "Cannot open file " << filename;
         return -1;
     }
     fin.seekg(0, std::ios::end);
@@ -31,7 +31,7 @@ int ReadBinaryFile(const std::string& filename, std::string* contents) {
 
 std::unique_ptr<paddle::framework::ProgramDesc> Load(
         paddle::framework::Executor* /*executor*/, const std::string& model_filename) {
-    VLOG(3) << "loading model from " << model_filename;
+    LOG(INFO) << "loading model from " << model_filename;
     std::string program_desc_str;
     if (ReadBinaryFile(model_filename, &program_desc_str) != 0) {
         return nullptr;

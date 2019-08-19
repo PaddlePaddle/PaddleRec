@@ -52,6 +52,7 @@ public:
     virtual bool need_save_model(uint64_t epoch_id, ModelSaveWay save_way) = 0;
     virtual std::string model_save_path(uint64_t epoch_id, ModelSaveWay save_way) = 0;
 protected:
+    TrainerContext* _trainer_context;
     std::string _done_file_path;
     std::string _model_root_path;
     uint64_t _current_epoch_id = 0;

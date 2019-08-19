@@ -133,9 +133,9 @@ TEST_F(CreateProgramsTest, example_network) {
     auto output_var = executor->var<::paddle::framework::LoDTensor>(output_name);
     auto output = output_var.data<float>()[0];
 
-    VLOG(3) << "loss: " << loss << std::endl;
-    VLOG(3) << "label: " << label_data[0] << std::endl;
-    VLOG(3) << "output: " << output << std::endl;
+    LOG(INFO) << "loss: " << loss << std::endl;
+    LOG(INFO) << "label: " << label_data[0] << std::endl;
+    LOG(INFO) << "output: " << output << std::endl;
     ASSERT_NEAR(loss, pow(output - label_data[0], 2), 1e-8);
 }
 

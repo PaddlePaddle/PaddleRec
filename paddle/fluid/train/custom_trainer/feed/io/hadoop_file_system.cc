@@ -25,7 +25,7 @@ public:
             }
         }
         if (_ugi.find("default") == _ugi.end()) {
-            VLOG(2) << "fail to load default ugi";
+            LOG(FATAL) << "fail to load default ugi";
             return -1;
         }
         return 0;
@@ -62,7 +62,7 @@ public:
 
     int64_t file_size(const std::string& path) override {
         _err_no = -1;
-        VLOG(2) << "not support";
+        LOG(FATAL) << "not support";
         return 0;
     }
 

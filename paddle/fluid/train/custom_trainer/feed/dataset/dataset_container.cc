@@ -6,10 +6,10 @@
 #include <vector>
 #include <memory>
 #include <yaml-cpp/yaml.h>
-#include "paddle/fluid/framework/io/shell.h"
 #include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
+#include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/dataset/dataset_container.h"
 
 namespace paddle {
@@ -27,8 +27,7 @@ int DatasetContainer::initialize(
         _dataset_list[i].reset(new DatasetInfo);
     }
 
-    _data_root_paths = paddle::string::split_string(
-        config["root_path"].as<std::string>(), " ");
+    _data_root_paths = config["root_path"].as<std::vector<std::string>>();
     _data_split_interval = config["data_spit_interval"].as<int>();
     _data_path_formater = config["data_path_formater"].as<std::string>();
     std::string data_reader_class = config["data_reader"].as<std::string>();
@@ -66,7 +65,7 @@ void DatasetContainer::pre_detect_data(uint64_t epoch_id) {
         for (int i = 0; i < _data_root_paths.size() && status == 0; ++i) {
             for (int j = 0; j < data_num && status == 0; ++j) {
                 std::string path_suffix = format_timestamp(data_timestamp + j * _data_split_interval, _data_path_formater);
-                std::string data_dir = _data_root_paths[i] + "/" + path_suffix;
+                std::string data_dir = _trainer_context->file_system->path_join(_data_root_paths[i], path_suffix);
                 status = read_data_list(data_dir, data_path_list);
             }
         }

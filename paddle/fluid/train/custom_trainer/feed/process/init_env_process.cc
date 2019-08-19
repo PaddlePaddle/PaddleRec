@@ -46,7 +46,7 @@ int InitEnvProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
         return -1;
     }
     
-    VLOG(3) << "Env initialize success"; 
+    VLOG(3) << "Env initialize success";
     return 0;
 }
 

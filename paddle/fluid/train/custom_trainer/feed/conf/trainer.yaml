@@ -11,14 +11,14 @@ io :
             ugis : 
                 'default': 'feed_video,D3a0z8'
                 'xingtian.afs.baidu.com:9902': 'feed_video,D3a0z8'
-        local :
+        default :
             class : LocalFileSystem
             buffer_size : 1024000
 dataset :
     data_list :
         train_sample :
             prefetch_num : 2
-            root_path : ./sample
+            root_path : [./sample]
             data_spit_interval : 300
             data_path_formater : '%Y%m%d/%H%M' 
             data_reader : LineDataReader 

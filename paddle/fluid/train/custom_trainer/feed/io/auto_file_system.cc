@@ -19,17 +19,18 @@ public:
             for (auto& prefix_fs: config["file_systems"]) {
                 std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, prefix_fs.second["class"].as<std::string>("")));
                 if (fs == nullptr) {
-                    VLOG(2) << "fail to create class: " << prefix_fs.second["class"].as<std::string>("");
+                    LOG(FATAL)  << "fail to create class: " << prefix_fs.second["class"].as<std::string>("");
                     return -1;
                 }
                 if (fs->initialize(prefix_fs.second, context) != 0) {
-                    VLOG(2) << "fail to initialize class: " << prefix_fs.second["class"].as<std::string>("");
-                    return 0;
+                    LOG(FATAL)  << "fail to initialize class: " << prefix_fs.second["class"].as<std::string>("");
+                    return -1;
                 }
                 _file_system.emplace(prefix_fs.first.as<std::string>(""), std::move(fs));
             }
         }
         if (_file_system.find("default") == _file_system.end()) {
+            LOG(WARNING) << "miss default file_system, use LocalFileSystem as default";
             std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
             if (fs == nullptr || fs->initialize(YAML::Load(""), context) != 0) {
                 return -1;
@@ -82,7 +83,6 @@ public:
                 return fs_it->second.get();
             }
         }
-        VLOG(5) << "path: " << path << ", select default file system";
         return _file_system["default"].get();
     }
 

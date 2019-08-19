@@ -7,20 +7,25 @@ namespace custom_trainer {
 namespace feed {
     int EpochAccessor::initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr) {
-        _model_root_path =  config["model_root_path"].as<std::string>() + "/";
-        
-        _done_file_path = _model_root_path;
-        if (config["donefile"]) {
-            _done_file_path.append(config["donefile"].as<std::string>());
-        } else {
-            _done_file_path.append("epoch_donefile.txt");
+        _model_root_path =  config["model_root_path"].as<std::string>();
+
+        _trainer_context = context_ptr.get();
+        if (context_ptr->file_system == nullptr) {
+            VLOG(0) << "file_system is not initialized";
+            return -1;
         }
         
-        if (!context_ptr->file_system->exists(_done_file_path)) {
+        if (config["donefile"]) {
+            _done_file_path = _trainer_context->file_system->path_join(_model_root_path, config["donefile"].as<std::string>());
+        } else {
+            _done_file_path = _trainer_context->file_system->path_join(_model_root_path, "epoch_donefile.txt");
+        }
+        
+        if (!_trainer_context->file_system->exists(_done_file_path)) {
             VLOG(0) << "missing done file, path:" << _done_file_path;
         }
 
-        std::string done_text = context_ptr->file_system->tail(_done_file_path);
+        std::string done_text = _trainer_context->file_system->tail(_done_file_path);
         _done_status = paddle::string::split_string(done_text, std::string("\t"));
         _current_epoch_id = get_status<uint64_t>(EpochStatusFiled::EpochIdField);
         _last_checkpoint_epoch_id = get_status<uint64_t>(EpochStatusFiled::CheckpointIdField);
@@ -67,23 +72,25 @@ namespace feed {
         if (epoch_id == 0) {
             return false;
         }
-        if (save_way == ModelSaveWay::ModelSaveInferenceDelta) {
-            return true;
-        } else if (save_way == ModelSaveWay::ModelSaveInferenceBase) {
-            return is_last_epoch(epoch_id);
-        } else if (save_way == ModelSaveWay::ModelSaveTrainCheckpoint) {
-            return ((epoch_id / 3600) % 8) == 0;
+        switch (save_way) {
+            case ModelSaveWay::ModelSaveInferenceDelta:
+                return true;
+            case ModelSaveWay::ModelSaveInferenceBase:
+                return is_last_epoch(epoch_id);
+            case ModelSaveWay::ModelSaveTrainCheckpoint:
+                return ((epoch_id / 3600) % 8) == 0;
         }
         return false;
     }
 
     std::string HourlyEpochAccessor::model_save_path(uint64_t epoch_id, ModelSaveWay save_way) {
-        if (save_way == ModelSaveWay::ModelSaveInferenceDelta) {
-            return _model_root_path + "/xbox/delta-" + std::to_string(epoch_id);
-        } else if (save_way == ModelSaveWay::ModelSaveInferenceBase) {
-            return _model_root_path + "/xbox/base";
-        } else if (save_way == ModelSaveWay::ModelSaveTrainCheckpoint) {
-            return _model_root_path + "/xbox/checkpoint";
+        switch (save_way) {
+            case ModelSaveWay::ModelSaveInferenceDelta:
+                return _trainer_context->file_system->path_join(_model_root_path, "/xbox/delta-" + std::to_string(epoch_id));
+            case ModelSaveWay::ModelSaveInferenceBase:
+                return _trainer_context->file_system->path_join(_model_root_path, "/xbox/base");
+            case ModelSaveWay::ModelSaveTrainCheckpoint:
+                return _trainer_context->file_system->path_join(_model_root_path, "/xbox/checkpoint");
         }
         return "";
     }
