@@ -91,7 +91,7 @@ TEST_F(SimpleExecutorTest, run) {
 
     auto config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
-    
+
     auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");
     ASSERT_NE(nullptr, x_var);
 
