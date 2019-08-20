@@ -77,7 +77,7 @@ public:
     FileSystem* get_file_system(const std::string& path) {
         auto pos = path.find_first_of(":");
         if (pos != std::string::npos) {
-            auto substr = path.substr(0, pos + 1);
+            auto substr = path.substr(0, pos); // example: afs:/xxx -> afs
             auto fs_it = _file_system.find(substr);
             if (fs_it != _file_system.end()) {
                 return fs_it->second.get();

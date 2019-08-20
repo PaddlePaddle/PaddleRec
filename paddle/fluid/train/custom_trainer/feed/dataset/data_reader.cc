@@ -534,7 +534,7 @@ public:
             size_t buffer_size = 0;
             ssize_t line_len = 0;
             while ((line_len = getline(&buffer, &buffer_size, fin.get())) != -1) {
-                // 去掉行位回车
+                // 去掉行尾回车
                 if (line_len > 0 && buffer[line_len - 1] == '\n') {
                     buffer[--line_len] = '\0';
                 }
@@ -547,7 +547,8 @@ public:
                     VLOG(5) << "parse data: " << data_item.id << " " << data_item.data << ", filename: " << filepath << ", thread_num: " << thread_num << ", max_threads: " << max_threads;
                     if (writer == nullptr) {
                         if (!data_channel->Put(std::move(data_item))) {
-                            VLOG(2) << "fail to put data, thread_num: " << thread_num;
+                            LOG(WARNING) << "fail to put data, thread_num: " << thread_num;
+                            is_failed = true;
                         }
                     } else {
                         (*writer) << std::move(data_item);

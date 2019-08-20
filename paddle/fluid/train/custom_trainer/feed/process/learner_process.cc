@@ -76,7 +76,7 @@ int LearnerProcess::run() {
     uint64_t epoch_id = epoch_accessor->current_epoch_id();
 
     environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
-        "Resume trainer with epoch_id:%d label:%s", epoch_id, _context_ptr->epoch_accessor->text(epoch_id).c_str());
+        "Resume training with epoch_id:%d label:%s", epoch_id, _context_ptr->epoch_accessor->text(epoch_id).c_str());
     
     //判断是否先dump出base
     wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
@@ -108,7 +108,7 @@ int LearnerProcess::run() {
             for (int thread_id = 0; thread_id < _train_thread_num; ++thread_id) {
                 train_threads[i].reset(new std::thread([this](int exe_idx, int thread_idx) {
                     auto* executor = _threads_executor[thread_idx][exe_idx].get();
-                    run_executor(executor);                      
+                    run_executor(executor);
                 }, i, thread_id));
             }   
             for (int i = 0; i < _train_thread_num; ++i) {

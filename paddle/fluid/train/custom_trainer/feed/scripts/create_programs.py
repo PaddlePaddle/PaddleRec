@@ -119,11 +119,12 @@ class ModelBuilder:
             'inputs': [{"name": var.name, "shape": var.shape} for var in inputs],
             'outputs': [{"name": var.name, "shape": var.shape} for var in outputs],
             'labels': [{"name": var.name, "shape": var.shape} for var in labels],
+            'vars': [{"name": var.name, "shape": var.shape} for var in main_program.list_vars() if fluid.io.is_parameter(var)],
             'loss': loss.name,
         }
 
         with open(model_desc_path, 'w') as f:
-            yaml.safe_dump(model_desc, f, encoding='utf-8', allow_unicode=True)
+            yaml.safe_dump(model_desc, f, encoding='utf-8', allow_unicode=True, default_flow_style=None)
 
 
 def main(argv):

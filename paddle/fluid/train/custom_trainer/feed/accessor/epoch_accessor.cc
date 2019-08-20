@@ -14,18 +14,18 @@ namespace feed {
             VLOG(0) << "file_system is not initialized";
             return -1;
         }
-        
+        auto fs = _trainer_context->file_system.get();
         if (config["donefile"]) {
-            _done_file_path = _trainer_context->file_system->path_join(_model_root_path, config["donefile"].as<std::string>());
+            _done_file_path = fs->path_join(_model_root_path, config["donefile"].as<std::string>());
         } else {
-            _done_file_path = _trainer_context->file_system->path_join(_model_root_path, "epoch_donefile.txt");
+            _done_file_path = fs->path_join(_model_root_path, "epoch_donefile.txt");
         }
         
-        if (!_trainer_context->file_system->exists(_done_file_path)) {
+        if (!fs->exists(_done_file_path)) {
             VLOG(0) << "missing done file, path:" << _done_file_path;
         }
 
-        std::string done_text = _trainer_context->file_system->tail(_done_file_path);
+        std::string done_text = fs->tail(_done_file_path);
         _done_status = paddle::string::split_string(done_text, std::string("\t"));
         _current_epoch_id = get_status<uint64_t>(EpochStatusFiled::EpochIdField);
         _last_checkpoint_epoch_id = get_status<uint64_t>(EpochStatusFiled::CheckpointIdField);
