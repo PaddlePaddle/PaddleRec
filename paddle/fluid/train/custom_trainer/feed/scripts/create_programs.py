@@ -114,12 +114,14 @@ class ModelBuilder:
             with open(os.path.join(self._save_path, name), 'w') as f:
                 f.write(program.desc.serialize_to_string())
 
+        params = filter(fluid.io.is_parameter, main_program.list_vars())
+
         model_desc_path = os.path.join(self._save_path, 'model.yaml')
         model_desc = {
             'inputs': [{"name": var.name, "shape": var.shape} for var in inputs],
             'outputs': [{"name": var.name, "shape": var.shape} for var in outputs],
             'labels': [{"name": var.name, "shape": var.shape} for var in labels],
-            'vars': [{"name": var.name, "shape": var.shape} for var in main_program.list_vars() if fluid.io.is_parameter(var)],
+            'vars': [{"name": var.name, "shape": var.shape} for var in params],
             'loss': loss.name,
         }
 
