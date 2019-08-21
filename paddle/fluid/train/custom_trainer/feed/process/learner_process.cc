@@ -76,7 +76,7 @@ int LearnerProcess::run() {
     uint64_t epoch_id = epoch_accessor->current_epoch_id();
 
     environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, 
-        "Resume training with epoch_id:%d label:%s", epoch_id, _context_ptr->epoch_accessor->text(epoch_id).c_str());
+        "Resume train with epoch_id:%d label:%s", epoch_id, _context_ptr->epoch_accessor->text(epoch_id).c_str());
     
     //判断是否先dump出base
     wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
