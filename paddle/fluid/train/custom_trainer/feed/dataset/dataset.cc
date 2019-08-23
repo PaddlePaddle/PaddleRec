@@ -53,25 +53,9 @@ inline ::paddle::framework::Channel<DataItem> Dataset::fetch_data(
     return _data_containers[data_name]->fetch(epoch_id);
 }
 
-SampleInstancePipe Dataset::fetch_sample(
-    const std::string& data_name, uint32_t batch_size, uint64_t epoch_id) {
+inline const DataParser* Dataset::data_parser(const std::string& data_name) {
     auto* data_container = _data_containers[data_name].get();
-    auto data_channel = data_container->fetch(epoch_id);
-    const auto* data_parser = data_container->data_parser();
-    PipelineOptions options;
-    options.batch_size = batch_size;
-    options.need_hold_input_data = true;
-    options.buffer_data_num = batch_size * 10;
-    SampleInstancePipe pipe = make_sample_instance_channel();
-    pipe->initialize(options, data_channel, 
-        [data_parser] (const DataItem* data, SampleInstance* sample, size_t num) -> int {
-            int ret = 0;
-            for (int i = 0; i < num; ++i, ++data, ++sample) {
-                ret |= data_parser->parse_to_sample(*data, *sample);
-            }
-            return ret;
-    });
-    return pipe;
+    return data_container->data_parser();
 }
      
 

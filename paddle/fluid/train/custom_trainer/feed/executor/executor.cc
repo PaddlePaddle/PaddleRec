@@ -54,8 +54,6 @@ public:
         paddle::framework::InitDevices(false);
         if (exe_config["num_threads"]) {
             paddle::platform::SetNumThreads(exe_config["num_threads"].as<int>());
-        } else {
-            paddle::platform::SetNumThreads(1);
         }
 
         if (!exe_config["startup_program"] || 
@@ -66,13 +64,11 @@ public:
 
         try {
             _context.reset(new SimpleExecutor::Context(context_ptr->cpu_place));
-            auto startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
-            if (startup_program == nullptr) {
+            _context->startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
+            if (_context->startup_program == nullptr) {
                 VLOG(2) << "fail to load startup_program: " << exe_config["startup_program"].as<std::string>();
                 return -1;
             }
-            
-            _context->executor.Run(*startup_program, this->scope(), 0, false, true);
 
             _context->main_program = Load(&_context->executor, exe_config["main_program"].as<std::string>());
             if (_context->main_program == nullptr) {
@@ -80,7 +76,6 @@ public:
                 return -1;
             }
             _context->prepare_context = _context->executor.Prepare(*_context->main_program, 0);
-            _context->executor.CreateVariables(*_context->main_program, this->scope(), 0);
         } catch (::paddle::platform::EnforceNotMet& err) {
             VLOG(2) << err.what();
             _context.reset(nullptr);
@@ -89,18 +84,23 @@ public:
 
         return 0;
     }
-    virtual int run() {
+    virtual int initialize_scope(::paddle::framework::Scope* scope) {
+        _context->executor.Run(*_context->startup_program, scope, 0, false, true);
+        _context->executor.CreateVariables(*_context->main_program, scope, 0);
+        return 0;
+    }
+    virtual int run(::paddle::framework::Scope* scope) {
         if (_context == nullptr) {
             VLOG(2) << "need initialize before run";
             return -1;
         }
         try {
-            _context->executor.RunPreparedContext(_context->prepare_context.get(), this->scope(),
+            _context->executor.RunPreparedContext(_context->prepare_context.get(), scope,
                                     false, /* don't create local scope each time*/
                                     false /* don't create variable each time */);
 
             // For some other vector like containers not cleaned after each batch.
-            _context->tensor_array_batch_cleaner.CollectNoTensorVars(this->scope());
+            _context->tensor_array_batch_cleaner.CollectNoTensorVars(scope);
             _context->tensor_array_batch_cleaner.ResetNoTensorVars();
         } catch (::paddle::platform::EnforceNotMet& err) {
             VLOG(2) << err.what();
@@ -115,6 +115,7 @@ protected:
         const ::paddle::platform::Place& place;
         ::paddle::framework::Executor executor;
         ::std::unique_ptr<::paddle::framework::ProgramDesc> main_program;
+        ::std::unique_ptr<::paddle::framework::ProgramDesc> startup_program;
         ::std::unique_ptr<framework::ExecutorPrepareContext> prepare_context;
         details::TensorArrayBatchCleaner tensor_array_batch_cleaner;
     };

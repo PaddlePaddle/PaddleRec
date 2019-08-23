@@ -13,32 +13,16 @@ public:
     Executor() {}
     virtual ~Executor() {}
 
-    //初始化，包括进行训练网络&配置加载工作
+    // 初始化，包括进行训练网络&配置加载工作
     virtual int initialize(YAML::Node exe_config, 
         std::shared_ptr<TrainerContext> context_ptr) = 0;
     
-    //scope 可用于填充&取 var
-    virtual ::paddle::framework::Scope* scope() {
-        return &_scope;
-    }
-    //直接取var
-    template <class T>
-    const T& var(const std::string& name) {
-        return _scope.Var(name)->Get<T>();
-    }
-    template <class T>
-    T* mutable_var(const std::string& name) {
-        return _scope.Var(name)->GetMutable<T>();
-    }
+    // 初始化scope, 后续反复执行训练，不再初始化
+    virtual int initialize_scope(::paddle::framework::Scope* scope) = 0;
 
-    //执行训练
-    virtual int run() = 0;
-    
-    virtual bool is_dump_all_model() {
-        return false;
-    }
-protected:
-    ::paddle::framework::Scope _scope;
+    // 执行训练
+    virtual int run(::paddle::framework::Scope* scope) = 0;
+
 };
 REGIST_REGISTERER(Executor);
 

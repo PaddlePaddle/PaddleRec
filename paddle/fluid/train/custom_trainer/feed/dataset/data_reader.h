@@ -20,11 +20,13 @@ class TrainerContext;
 struct FeatureItem {
     uint64_t feature_sign;
     uint16_t slot_id;
+    std::vector<float> weights;
+    std::vector<float> gradients;
 };
 
 struct SampleInstance {
     std::string id;
-    std::vector<float> lables;
+    std::vector<float> labels;
     std::vector<FeatureItem> features;
     std::vector<float> embedx;
 };

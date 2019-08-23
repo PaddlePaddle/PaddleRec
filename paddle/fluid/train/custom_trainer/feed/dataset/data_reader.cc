@@ -131,53 +131,66 @@ public:
         return read_all(file_list, data_channel);
     }
     virtual int read_all(const std::vector<std::string>& file_list, ::paddle::framework::Channel<DataItem> data_channel) {
-        auto deleter = [](framework::ChannelWriter<DataItem> *writer) {
-            if (writer) {
-                writer->Flush();
-                VLOG(3) << "writer auto flush";
-            }
-            delete writer;
-        };
-        std::unique_ptr<framework::ChannelWriter<DataItem>, decltype(deleter)> writer(new framework::ChannelWriter<DataItem>(data_channel.get()), deleter);
-        DataItem data_item;
-
-        int file_list_size = file_list.size();
+        const int file_list_size = file_list.size();
         std::atomic<bool> is_failed(false);
 
+        const int max_threads = omp_get_max_threads();
+        std::vector<framework::ChannelWriter<DataItem>> writers; // writer is not thread safe
+        writers.reserve(max_threads);
+        for (int i = 0; i < max_threads; ++i) {
+            writers.emplace_back(data_channel.get());
+        }
+        VLOG(5) << "file_list: " << string::join_strings(file_list, ' ');
         #pragma omp parallel for
         for (int i = 0; i < file_list_size; ++i) {
+            if (is_failed) {
+                continue;
+            }
+            const int thread_num = omp_get_thread_num();
+            framework::ChannelWriter<DataItem> *writer = nullptr;
+            if (thread_num < max_threads) {
+                writer = &writers[thread_num];
+            }
             const auto& filepath = file_list[i];
-            if (!is_failed) {
-                std::shared_ptr<FILE> fin = _file_system->open_read(filepath, _pipeline_cmd);
-                if (fin == nullptr) {
-                    VLOG(2) << "fail to open file: " << filepath << ", with cmd: " << _pipeline_cmd;
-                    is_failed = true;
+            std::shared_ptr<FILE> fin = _file_system->open_read(filepath, _pipeline_cmd);
+            if (fin == nullptr) {
+                VLOG(2) << "fail to open file: " << filepath << ", with cmd: " << _pipeline_cmd;
+                is_failed = true;
+                continue;
+            }
+            char *buffer = nullptr;
+            size_t buffer_size = 0;
+            ssize_t line_len = 0;
+            while ((line_len = getline(&buffer, &buffer_size, fin.get())) != -1) {
+                // 去掉行位回车
+                if (line_len > 0 && buffer[line_len - 1] == '\n') {
+                    buffer[--line_len] = '\0';
+                }
+                // 忽略空行
+                if (line_len <= 0) {
                     continue;
                 }
-                char *buffer = nullptr;
-                size_t buffer_size = 0;
-                ssize_t line_len = 0;
-                while ((line_len = getline(&buffer, &buffer_size, fin.get())) != -1) {
-                    if (line_len > 0 && buffer[line_len - 1] == '\n') {
-                        buffer[--line_len] = '\0';
-                    }
-                    if (line_len <= 0) {
-                        continue;
-                    }
-                    if (_parser->parse(buffer, line_len, data_item) == 0) {
+                DataItem data_item;
+                if (_parser->parse(buffer, line_len, data_item) == 0) {
+                    VLOG(5) << "parse data: " << data_item.id << " " << data_item.data << ", filename: " << filepath << ", thread_num: " << thread_num << ", max_threads: " << max_threads;
+                    if (writer == nullptr) {
+                        if (!data_channel->Put(std::move(data_item))) {
+                            VLOG(2) << "fail to put data, thread_num: " << thread_num;
+                        }
+                    } else {
                         (*writer) << std::move(data_item);
                     }
                 }
-                if (buffer != nullptr) {
-                    free(buffer);
-                    buffer = nullptr;
-                    buffer_size = 0;
-                }
-                if (ferror(fin.get()) != 0) {
-                    VLOG(2) << "fail to read file: " << filepath;
-                    is_failed = true;
-                    continue;
-                }
+            }
+            if (buffer != nullptr) {
+                free(buffer);
+                buffer = nullptr;
+                buffer_size = 0;
+            }
+            if (ferror(fin.get()) != 0) {
+                VLOG(2) << "fail to read file: " << filepath;
+                is_failed = true;
+                continue;
             }
             if (_file_system->err_no() != 0) {
                 _file_system->reset_err_no();
@@ -185,10 +198,14 @@ public:
                 continue;
             }
         }
-        writer->Flush();
-        if (!(*writer)) {
-            VLOG(2) << "fail when write to channel";
-            is_failed = true;
+        // omp end
+
+        for (int i = 0; i < max_threads; ++i) {
+            writers[i].Flush();
+            if (!writers[i]) {
+                VLOG(2) << "writer " << i << " is failed";
+                is_failed = true;
+            }
         }
         data_channel->Close();
         return is_failed ? -1 : 0;

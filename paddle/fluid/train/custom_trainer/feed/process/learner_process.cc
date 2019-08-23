@@ -14,23 +14,11 @@ namespace feed {
 int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     int ret = Process::initialize(context_ptr);
     auto& config = _context_ptr->trainer_config;
-    _train_thread_num = config["train_thread_num"].as<int>();
-    _threads_executor.resize(_train_thread_num);
-    
     if (config["executor"]) {
-        _executor_num = config["executor"].size();
-        omp_set_num_threads(_train_thread_num);
-        #pragma omp parallel for
-        for (int i = 0; i < _train_thread_num; ++i) {
-            _threads_executor[i].resize(_executor_num);
-            for (int e = 0; e < _executor_num; ++e) {
-                auto e_class = config["executor"][e]["class"].as<std::string>();
-                auto* e_ptr = CREATE_INSTANCE(Executor, e_class);
-                _threads_executor[i][e].reset(e_ptr);  
-                if (e_ptr->initialize(config["executor"][e], context_ptr) != 0) {
-                    ret = -1;
-                }
-            }
+        _executors.resize(config["executor"].size());
+        for (size_t i = 0; i < _executors.size(); ++i) {
+            _executors[i].reset(new MultiThreadExecutor());
+            CHECK(_executors[i]->initialize(config["executor"][i], context_ptr) == 0);
         }
     }
     return 0;
@@ -40,8 +28,7 @@ std::future<int> LearnerProcess::save_model(uint64_t epoch_id, int table_id, Mod
     std::promise<int> p;
     auto ret = p.get_future();
     if (_context_ptr->epoch_accessor->need_save_model(epoch_id, way)) {
-        //TODO
-        //context_ptr->pslib_client()->save();
+        LOG(NOTICE) << "save table, table_id:" << table_id;
     } else {
         p.set_value(0);
     }
@@ -106,23 +93,22 @@ int LearnerProcess::run() {
     
         //Step2. 运行训练网络
         {
-            for (int i = 0; i < _executor_num; ++i) {
-                std::vector<std::shared_ptr<std::thread>> train_threads(_train_thread_num);
-                for (int thread_id = 0; thread_id < _train_thread_num; ++thread_id) {
-                    train_threads[i].reset(new std::thread([this](int exe_idx, int thread_idx) {
-                        auto* executor = _threads_executor[thread_idx][exe_idx].get();
-                        run_executor(executor);                      
-                    }, i, thread_id));
-                }   
-                for (int i = 0; i < _train_thread_num; ++i) {
-                    train_threads[i]->join();
-                }
+            std::map<std::string, paddle::framework::Channel<DataItem>> backup_input_map;
+            for (auto& executor : _executors) {
                 environment->barrier(EnvironmentRole::WORKER); 
-
-                if (_threads_executor[0][i]->is_dump_all_model()) {
+                auto data_name = executor->train_data_name();
+                paddle::framework::Channel<DataItem> input_channel;
+                if (backup_input_map.count(data_name)) {
+                    input_channel = backup_input_map[data_name];
+                } else {
+                    input_channel = dataset->fetch_data(data_name, epoch_id);
+                }
+                input_channel = executor->run(input_channel, dataset->data_parser(data_name));
+                if (executor->is_dump_all_model()) {
                     already_dump_inference_model = true;
                     wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
                 }
+                backup_input_map[data_name] = input_channel;
                 environment->barrier(EnvironmentRole::WORKER); 
             }
         }
@@ -141,11 +127,6 @@ int LearnerProcess::run() {
         //TODO
     }
     
-    return 0;
-}
-
-int LearnerProcess::run_executor(Executor* executor) {
-    //TODO
     return 0;
 }
 

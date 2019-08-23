@@ -15,8 +15,6 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
-class paddle::ps::PSEnvironment;
-
 enum class EnvironmentLogLevel {
     FATAL       = 0,
     ERROR       = 1,

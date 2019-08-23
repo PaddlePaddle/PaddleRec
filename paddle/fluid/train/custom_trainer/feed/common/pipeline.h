@@ -6,12 +6,22 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+class DoneGuard {
+public:
+    DoneGuard(std::function<void()> func) : _func(func) {}
+    virtual ~DoneGuard() { _func(); }
+private:
+    std::function<void()>  _func;
+};
+
 class PipelineOptions {
 public:
     PipelineOptions() = default;
-    uint32_t buffer_data_num       = 400  ;  //缓冲区数据个数，需大于batch_size
-    uint32_t batch_size            = 100  ;  //从pipe读数据的batch大小
-    bool need_hold_input_data      = false;  //是否保存input流数据，否则消费后释放
+    uint32_t batch_size        = 10;        // pipe输出的batch大小
+    uint32_t thread_num        = 1;         // converter的并发线程数
+    float input_output_rate    = 1;         // 输入/输出 qps流量比
+    uint32_t buffer_batch_count    = 4;     // pipe预存count组batch数据
+    bool need_hold_input_data      = false; // 是否保存input流数据，否则消费后释放
 };
 
 /*
@@ -29,7 +39,8 @@ public:
     Pipeline() {}
     Pipeline(Pipeline&&) = delete; 
     Pipeline(const Pipeline&) = delete; 
-    typedef std::function<int(const TypeIn*, TypeOut*, size_t num)> PipeDataConverter; 
+    typedef std::function<int(TypeIn*, size_t in_num,
+        TypeOut*, size_t* out_num, size_t thread_idx)> PipeDataConverter; 
     
     int initialize(const PipelineOptions& options,
         ::paddle::framework::Channel<TypeIn> input_channel, 
@@ -42,18 +53,12 @@ public:
         _converter = data_converter;
         _input_channel = input_channel;
         _output_channel = ::paddle::framework::MakeChannel<TypeOut>();
-
-        auto batch_size = options.batch_size;
-        auto buffer_data_num = options.buffer_data_num;
-        _input_channel->SetBlockSize(batch_size);
-        _output_channel->SetBlockSize(batch_size);
-        _input_data_buffer.resize(buffer_data_num);
-        _output_data_buffer.resize(buffer_data_num);
-        if (buffer_data_num / batch_size < 3) {
-            buffer_data_num = batch_size * 3;
-        }
-        buffer_data_num = (buffer_data_num / batch_size) * batch_size;
-        _output_channel->SetCapacity(buffer_data_num);
+        _output_channel->SetBlockSize(options.batch_size);
+        size_t input_batch_size = options.batch_size * options.input_output_rate;
+        _input_channel->SetBlockSize(input_batch_size);
+        _input_data_buffer.resize(input_batch_size * options.buffer_batch_count);
+        _output_data_buffer.resize(options.batch_size * options.buffer_batch_count);
+        _output_channel->SetCapacity(_output_data_buffer.size());
         CHECK(_input_channel != nullptr) << " Input Channel is null";
         _convert_thread = std::make_shared<std::thread>([this](){
             async_convert_data();
@@ -63,7 +68,9 @@ public:
 
     template <class PreTypeIn>
     int connect_to(Pipeline<PreTypeIn, TypeIn>& pre_pipeline, 
-        PipeDataConverter data_converter) {
+        PipelineOptions& options, PipeDataConverter data_converter) {
+        // 保证全局batch一致
+        options.batch_size = pre_pipeline.options().batch_size / options.input_output_rate;
         return initialize(pre_pipeline.options(), pre_pipeline.output_chnnel(), data_converter);
     }
     
@@ -87,24 +94,26 @@ public:
     inline ::paddle::framework::Channel<TypeOut> output_chnnel() {
         return _output_channel;
     }
+
+    // 返回对input_channel的消费备份
+    inline ::paddle::framework::Channel<TypeIn> backup_channel() {
+        return _input_channel_backup;
+    }
 private:
     void async_convert_data() {
-        size_t convete_batch_size =  _input_data_buffer.size() / 4;
-        if (convete_batch_size < _options.batch_size * 3) {
-            convete_batch_size = 3 * _options.batch_size;
-        }
-        convete_batch_size = (convete_batch_size / _options.batch_size) * _options.batch_size;
+        size_t input_batch_size = _options.batch_size * _options.input_output_rate;
         while (!_is_read_end) {
             while (_output_channel->Size() < _input_data_buffer.size()) {
                 size_t read_size = _input_channel->
-                    Read(convete_batch_size, &_input_data_buffer[0]);
+                    Read(input_batch_size, &_input_data_buffer[0]);
                 if (read_size == 0) {
                     _is_read_end = true;
                     break;
                 }
-                CHECK(_converter(&_input_data_buffer[0], &_output_data_buffer[0], 
-                    read_size) == 0) << "Data Converter Do Failed";
-                _output_channel->WriteMove(read_size, &_output_data_buffer[0]);
+                size_t write_size = 0;
+                CHECK(_converter(&_input_data_buffer[0], read_size,
+                    &_output_data_buffer[0], &write_size, 0) == 0) << "Data Converter Do Failed";
+                _output_channel->WriteMove(write_size, &_output_data_buffer[0]);
                 if (_options.need_hold_input_data) {
                     _input_channel_backup->WriteMove(read_size, &_input_data_buffer[0]);
                 }
