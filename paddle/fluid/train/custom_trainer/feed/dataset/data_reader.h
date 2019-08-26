@@ -51,6 +51,7 @@ private:
 
 struct SampleInstance {
     std::string id;
+    std::vector<float> predicts;
     std::vector<float> labels;
     std::vector<FeatureItem> features;
     std::vector<float> embedx;

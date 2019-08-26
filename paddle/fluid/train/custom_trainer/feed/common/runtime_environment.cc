@@ -5,6 +5,58 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+template<class T>
+struct mpi_type_trait {
+};
+template<>
+struct mpi_type_trait<double> {
+    static MPI_Datatype type() {
+        return MPI_DOUBLE;
+    }
+};
+template<>
+struct mpi_type_trait<float> {
+    static MPI_Datatype type() {
+        return MPI_FLOAT;
+    }
+};
+template<>
+struct mpi_type_trait<int32_t> {
+    static MPI_Datatype type() {
+        return MPI_INT;
+    }
+};
+template<>
+struct mpi_type_trait<uint32_t> {
+    static MPI_Datatype type() {
+        return MPI_UNSIGNED;
+    }
+};
+template<>
+struct mpi_type_trait<int64_t> {
+    static MPI_Datatype type() {
+        return MPI_LONG_LONG;
+    }
+};
+template<>
+struct mpi_type_trait<uint64_t> {
+    static MPI_Datatype type() {
+        return MPI_UNSIGNED_LONG_LONG;
+    }
+};
+template<>
+struct mpi_type_trait<long long> {
+    static MPI_Datatype type() {
+        return MPI_LONG_LONG;
+    }
+};
+template<>
+struct mpi_type_trait<unsigned long long> {
+    static MPI_Datatype type() {
+        return MPI_UNSIGNED_LONG_LONG;
+    }
+};
+
 RuntimeEnvironment::RuntimeEnvironment() {}
 RuntimeEnvironment::~RuntimeEnvironment() {}
 bool RuntimeEnvironment::is_master_node(EnvironmentRole role) {
@@ -79,6 +131,15 @@ public:
         MPI_Bcast(ar.Buffer(), len, MPI_BYTE, root_id, node_info.mpi_comm);
     }
 
+    virtual double all_reduce_ele(double x) {
+        double tot;
+        MPI_Allreduce(&x, &tot, 1, mpi_type_trait<double>::type(), MPI_SUM, MPI_COMM_WORLD);
+        return tot;
+    }
+    virtual void all_reduce_arr(double* x, int n) {
+        MPI_Allreduce(MPI_IN_PLACE, x, n, mpi_type_trait<double>::type(), MPI_SUM, MPI_COMM_WORLD);
+    }
+
 protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
         EnvironmentLogLevel level,  const std::string& log_str) {
@@ -121,6 +182,12 @@ public:
         return;
     }
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) {
+        return;
+    }
+    virtual double all_reduce_ele(double x) {
+        return x;
+    }
+    virtual void all_reduce_arr(double* x, int n) {
         return;
     }
 protected:
