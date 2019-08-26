@@ -132,7 +132,7 @@ public:
     }
 
     virtual double all_reduce_ele(double x) {
-        double tot;
+        double tot = 0.0;
         MPI_Allreduce(&x, &tot, 1, mpi_type_trait<double>::type(), MPI_SUM, MPI_COMM_WORLD);
         return tot;
     }
