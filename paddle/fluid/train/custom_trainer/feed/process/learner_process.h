@@ -18,6 +18,8 @@ public:
     virtual int initialize(std::shared_ptr<TrainerContext> context_ptr);
 
 protected:
+// 加载所有模型
+virtual int load_model(uint64_t epoch_id);
 // 同步保存所有模型
 virtual int wait_save_model(uint64_t epoch_id, ModelSaveWay way);
 // 异步保存指定模型

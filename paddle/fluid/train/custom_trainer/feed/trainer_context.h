@@ -2,8 +2,8 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <yaml-cpp/yaml.h>
 #include "paddle/fluid/platform/place.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/yaml_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/pslib_warpper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/runtime_environment.h"
 
@@ -17,35 +17,43 @@ class Dataset;
 class FileSystem;
 class EpochAccessor;
 
+const uint32_t SecondsPerMin = 60;
+const uint32_t SecondsPerHour = 3600;
+const uint32_t SecondsPerDay = 24 * 3600;
+
 enum class ModelSaveWay {
     ModelSaveTrainCheckpoint = 0,
     ModelSaveInferenceDelta = 1,
     ModelSaveInferenceBase = 2
 };
 
-class TableMeta {
+class SignCacheDict {
 public:
-    TableMeta() {}
-    ~TableMeta() {}
-    int table_id() {
-        return _id;
+    int32_t sign2index(uint64_t sign) {
+        return -1;
     }
-private:
-    int _id;
+
+    uint64_t index2sign(int32_t index) {
+        return 0;
+    }
 };
 
 class TrainerContext {
 public:
-YAML::Node trainer_config;
-paddle::platform::CPUPlace cpu_place;
+    inline paddle::ps::PSClient* ps_client() {
+        return pslib->ps_client();
+    }
 
-std::shared_ptr<PSlib> pslib;
-std::shared_ptr<Dataset> dataset;                          //训练样本
-std::shared_ptr<FileSystem> file_system;                   //文件操作辅助类
-std::vector<TableMeta> params_table_list;                  //参数表
-std::shared_ptr<EpochAccessor> epoch_accessor;             //训练轮次控制
-std::shared_ptr<RuntimeEnvironment> environment;           //运行环境
-std::vector<std::shared_ptr<Process>> process_list;        //训练流程
+    YAML::Node trainer_config;
+    paddle::platform::CPUPlace cpu_place;
+
+    std::shared_ptr<PSlib> pslib;
+    std::shared_ptr<Dataset> dataset;                          //训练样本
+    std::shared_ptr<FileSystem> file_system;                   //文件操作辅助类
+    std::shared_ptr<EpochAccessor> epoch_accessor;             //训练轮次控制
+    std::shared_ptr<RuntimeEnvironment> environment;           //运行环境
+    std::vector<std::shared_ptr<Process>> process_list;        //训练流程
+    std::shared_ptr<SignCacheDict> cache_dict;                 //大模型cache词典
 };
 
 }  // namespace feed

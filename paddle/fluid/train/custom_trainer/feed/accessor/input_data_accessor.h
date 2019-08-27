@@ -22,6 +22,11 @@ public:
         return 0;
     }
 
+    // 创建，一般用于模型冷启的随机初始化
+    virtual int32_t create(::paddle::framework::Scope* scope) {
+        return 0;
+    }
+
     // 前向， 一般用于填充输入，在训练网络执行前调用
     virtual int32_t forward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope) = 0;
@@ -30,12 +35,34 @@ public:
     virtual int32_t backward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope) = 0;
 protected:
-    size_t _table_id;
+    size_t _table_id = 0;
     bool _need_gradient = false;
     TrainerContext* _trainer_context = nullptr;
 };
 REGIST_REGISTERER(DataInputAccessor);
 
+struct LabelInputVariable {
+    std::string label_name;
+    std::string output_name;
+    size_t label_dim = 0;
+};
+class LabelInputAccessor : public DataInputAccessor {
+public:
+    LabelInputAccessor() {}
+    virtual ~LabelInputAccessor() {}
+    
+    virtual int initialize(YAML::Node config,
+         std::shared_ptr<TrainerContext> context_ptr);
+
+    virtual int32_t forward(SampleInstance* samples, size_t num,
+        ::paddle::framework::Scope* scope);
+
+    virtual int32_t backward(SampleInstance* samples, size_t num,
+        ::paddle::framework::Scope* scope);
+protected:
+    size_t _label_total_dim = 0; 
+    std::vector<LabelInputVariable> _labels;
+};
 
 struct SparseInputVariable {
     size_t slot_dim;
@@ -104,6 +131,8 @@ public:
     
     virtual int initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr);
+    
+    virtual int32_t create(::paddle::framework::Scope* scope);
 
     virtual int32_t forward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);

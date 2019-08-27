@@ -1,11 +1,10 @@
 WORKROOT('../../../')
 COMPILER('gcc482')
 CPPFLAGS('-D_GNU_SOURCE -DNDEBUG')
-GLOBAL_CFLAGS_STR = '-g -O0 -pipe -fopenmp '
+GLOBAL_CFLAGS_STR = '-g -O3 -pipe -fopenmp '
 CFLAGS(GLOBAL_CFLAGS_STR)
 GLOBAL_CXXFLAGS_STR = GLOBAL_CFLAGS_STR + ' -std=c++11 '
 CXXFLAGS(GLOBAL_CXXFLAGS_STR)
-
 INCPATHS('./')
 INCPATHS('$OUT/../')
 INCPATHS('../../third-party')
@@ -36,9 +35,8 @@ CONFIGS('baidu/third-party/pybind11@v2.2.4@git_branch')
 CONFIGS('baidu/third-party/python@gcc482output@git_branch')
 CONFIGS('baidu/third-party/yaml-cpp@yaml-cpp_0-6-2-0_GEN_PD_BL@git_tag')
 CONFIGS('baidu/third-party/openmpi@openmpi_1-4-5-0-feed_mlarch@git_branch')
-CONFIGS('baidu/paddlepaddle/pslib@master@git_branch')
+CONFIGS('baidu/paddlepaddle/pslib@no_abacus_in_proto@git_branch')
 CONFIGS('third-64/gtest@base')
-
 HEADERS('paddle/fluid/memory/*.h', '$INC/paddle/fluid/memory/')
 HEADERS('paddle/fluid/memory/detail/*.h', '$INC/paddle/fluid/memory/detail/')
 HEADERS('paddle/fluid/memory/allocation/*.h', '$INC/paddle/fluid/memory/allocation/')
@@ -59,12 +57,9 @@ HEADERS('paddle/fluid/pybind/pybind.h', '$INC/paddle/fluid/pybind')
 HEADERS('paddle/fluid/inference/api/*.h', '$INC/paddle/fluid/inference/api/')
 HEADERS(GLOB_GEN_SRCS('paddle/fluid/framework/*pb.h'), '$INC/paddle/fluid/framework')
 HEADERS(GLOB_GEN_SRCS('paddle/fluid/platform/*pb.h'), '$INC/paddle/fluid/platform')
-
 PROTOC('../../third-party/protobuf/bin/protoc')
-
 #proto
 StaticLibrary("fake_paddle_proto", Sources(GLOB("paddle/fluid/framework/*.proto"), GLOB("paddle/fluid/platform/*.proto")))
-
 #feed
 HEADERS('paddle/fluid/train/custom_trainer/feed/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/')
 HEADERS('paddle/fluid/train/custom_trainer/feed/common/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/common/')
@@ -80,16 +75,15 @@ NEED_OUTPUT("baidu/third-party/openmpi")
 OUTPUT('paddle/fluid/train/custom_trainer/feed/conf', '$OUT')
 OUTPUT('paddle/fluid/train/custom_trainer/feed/scripts', '$OUT')
 
+
 def UT_FILE(filename):
     UT_DIR = 'paddle/fluid/train/custom_trainer/feed/unit_test'
     import os
     return os.path.join(UT_DIR, filename)
-
 custom_trainer_src = GLOB('paddle/fluid/train/custom_trainer/feed/*/*.cc', Exclude(UT_FILE('*')))
-
 CPPFLAGS_STR = '-DHPPL_STUB_FUNC -DLAPACK_FOUND -DPADDLE_DISABLE_PROFILER -DPADDLE_NO_PYTHON -DCUSTOM_TRAINER -DPADDLE_ON_INFERENCE -DPADDLE_USE_DSO -DPADDLE_USE_PTHREAD_BARRIER -DPADDLE_USE_PTHREAD_SPINLOCK -DPADDLE_VERSION=0.0.0 -DPADDLE_WITH_AVX -DPADDLE_WITH_MKLML -DPADDLE_WITH_XBYAK -DXBYAK64 -DXBYAK_NO_OP_NAMES -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DPYBIND_AVX_MKLML' + r" -DPADDLE_REVISION=\"%s@%s@%s\"" % (REPO_URL(), REPO_BRANCH(), REPO_REVISION())
 
-CFLAGS_STR = '-m64 -fPIC -fno-omit-frame-pointer -Werror -Wall -Wextra -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-unused-parameter -Wno-unused-function -Wno-error=literal-suffix -Wno-error=sign-compare -Wno-error=unused-local-typedefs -Wno-error=maybe-uninitialized -fopenmp -mavx -O0 -DNDEBUG '
+CFLAGS_STR = '-m64 -fPIC -fno-omit-frame-pointer -Werror -Wall -Wextra -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-unused-parameter -Wno-unused-function -Wno-error=literal-suffix -Wno-error=sign-compare -Wno-error=unused-local-typedefs -Wno-error=maybe-uninitialized -Wno-narrowing -Wnarrowing -fopenmp -mavx -O3 -DNDEBUG '
 CXXFLAGS_STR = '-std=c++11 ' + CFLAGS_STR
 
 SharedLibrary("paddle_fluid_avx_mklml", PreBuilt(True))

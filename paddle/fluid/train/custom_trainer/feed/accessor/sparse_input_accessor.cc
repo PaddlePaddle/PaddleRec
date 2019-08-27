@@ -12,20 +12,18 @@ namespace feed {
 int BaseSparseInputAccessor::initialize(YAML::Node config,
     std::shared_ptr<TrainerContext> context_ptr) {
     CHECK(DataInputAccessor::initialize(config, context_ptr) == 0);
-    CHECK(config["input"] && config["input"].Type() == YAML::NodeType::Map);
     for (const auto& input : config["input"]) {
         SparseInputVariable variable;
-        variable.name = input.first.as<std::string>();
+        variable.name = input["name"].as<std::string>();
         variable.gradient_name = paddle::framework::GradVarName(variable.name);
-        std::string slots_str = input.second["slots"].as<std::string>();
-        std::vector<std::string> slots = paddle::string::split_string(slots_str, ","); 
+        auto slots = input["slots"].as<std::vector<int>>();
         variable.slot_idx.resize(UINT16_MAX, -1);
         for (int i = 0; i < slots.size(); ++i) {
-            auto slot = (uint16_t)atoi(slots[i].c_str());
+            uint16_t slot = (uint16_t)slots[i];
             variable.slot_idx[slot] = i;
             variable.slot_list.push_back(slot);
         }
-        variable.slot_dim = input.second["slot_dim"].as<int>();
+        variable.slot_dim = input["slot_dim"].as<int>();
         variable.total_dim = variable.slot_list.size() * variable.slot_dim; 
         _x_variables.push_back(variable);
     }
@@ -52,7 +50,7 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
         auto& features = samples[i].features;
         for (auto& feature_item : features) {
             feature_item.weights.resize(pull_value_dim, 0.0);
-            keys[key_idx] = feature_item.feature_sign;
+            keys[key_idx] = feature_item.sign();
             pull_values[key_idx++] = &(feature_item.weights[0]);
         }
     }
@@ -60,6 +58,7 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
     auto ret = pull_status.get();
     delete[] pull_values;
     if (ret != 0) {
+        VLOG(0) << "pull sparse failed, table_id:" << _table_id << ", key_num:" << key_num << ", ret:" << ret;
         return ret;
     }
 
@@ -78,6 +77,7 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
             scope, variable.name, {num, variable.total_dim});
         auto* grad_tensor = ScopeHelper::resize_lod_tensor(
             scope, variable.gradient_name, {num, variable.total_dim});
+        VLOG(5) << "fill scope variable:" << variable.name << ", " << variable.gradient_name;
         var_runtime_data[i].variable_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
         var_runtime_data[i].gradient_data = grad_tensor->mutable_data<float>(_trainer_context->cpu_place);
         memset((void*) var_runtime_data[i].variable_data, 0, var_runtime_data[i].total_size * sizeof(float)); 
@@ -89,12 +89,12 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
         for (auto& feature_item : features) {
             for (size_t i = 0; i < _x_variables.size(); ++i) {
                 auto& variable = _x_variables[i];
-                auto slot_idx = variable.slot_idx[feature_item.slot_id]; 
+                auto slot_idx = variable.slot_idx[feature_item.slot()]; 
                 if (slot_idx < 0) {
                     continue;
                 }
                 float* item_data =  var_runtime_data[i].variable_data +  
-                samp_idx * var_runtime_data[i].total_size + variable.slot_dim * slot_idx; 
+                samp_idx * variable.total_dim + variable.slot_dim * slot_idx; 
                 fill_input(item_data, &(feature_item.weights[0]), *value_accessor, variable, samples[samp_idx]);
             }
         }
@@ -138,24 +138,24 @@ int32_t BaseSparseInputAccessor::backward(SampleInstance* samples,
             feature_item.gradients.resize(push_value_dim, 0.0);
             for (size_t i = 0; i < _x_variables.size(); ++i) {
                 auto& variable = _x_variables[i];
-                auto slot_idx = variable.slot_idx[feature_item.slot_id]; 
+                auto slot_idx = variable.slot_idx[feature_item.slot()]; 
                 if (slot_idx < 0) {
                     continue;
                 }
                 const float* grad_data = var_runtime_data[i].gradient_data +  
-                    samp_idx * var_runtime_data[i].total_size + variable.slot_dim * slot_idx; 
+                    samp_idx * variable.total_dim + variable.slot_dim * slot_idx; 
                 fill_gradient(&(feature_item.gradients[0]), grad_data, 
                     *value_accessor, variable, samples[samp_idx]);
-                keys[key_idx] = feature_item.feature_sign;
+                keys[key_idx] = feature_item.sign();
                 push_values[key_idx++] = &(feature_item.gradients[0]);
             }
         }
     }
     auto push_status = ps_client->push_sparse(_table_id, 
-        keys.data(), (const float**)push_values, key_num);
-    auto ret = push_status.get();
+        keys.data(), (const float**)push_values, key_idx);
+    //auto ret = push_status.get();
     delete[] push_values;
-    return ret;
+    return 0;
 } 
 
 class AbacusSparseJoinAccessor : public BaseSparseInputAccessor {

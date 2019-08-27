@@ -1,3 +1,4 @@
+#include <sstream>
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 
 #include "paddle/fluid/framework/program_desc.h"
@@ -17,7 +18,7 @@ namespace {
 int ReadBinaryFile(const std::string& filename, std::string* contents) {
     std::ifstream fin(filename, std::ios::in | std::ios::binary);
     if (!fin) {
-        VLOG(2) << "Cannot open file " << filename;
+        LOG(FATAL) << "Cannot open file " << filename;
         return -1;
     }
     fin.seekg(0, std::ios::end);
@@ -31,7 +32,7 @@ int ReadBinaryFile(const std::string& filename, std::string* contents) {
 
 std::unique_ptr<paddle::framework::ProgramDesc> Load(
         paddle::framework::Executor* /*executor*/, const std::string& model_filename) {
-    VLOG(3) << "loading model from " << model_filename;
+    LOG(INFO) << "loading model from " << model_filename;
     std::string program_desc_str;
     if (ReadBinaryFile(model_filename, &program_desc_str) != 0) {
         return nullptr;
@@ -50,38 +51,34 @@ public:
     virtual ~SimpleExecutor() {};
     virtual int initialize(YAML::Node exe_config,
         std::shared_ptr<TrainerContext> context_ptr) {
-        
         paddle::framework::InitDevices(false);
-        if (exe_config["num_threads"]) {
-            paddle::platform::SetNumThreads(exe_config["num_threads"].as<int>());
-        }
-
-        if (!exe_config["startup_program"] || 
-            !exe_config["main_program"]) {
-            VLOG(2) << "fail to load config";
-            return -1;
-        }
-
+        //if (exe_config["num_threads"]) {
+            
+        //}
+        paddle::platform::SetNumThreads(1);
+        std::string name = exe_config["name"].as<std::string>();
+        std::string main_program = YamlHelper::get_with_default(exe_config, "main_program",
+            string::format_string("./model/%s/main_program", name.c_str()));
+        std::string startup_program = YamlHelper::get_with_default(exe_config, "startup_program",
+            string::format_string("./model/%s/startup_program", name.c_str()));
         try {
             _context.reset(new SimpleExecutor::Context(context_ptr->cpu_place));
-            _context->startup_program = Load(&_context->executor, exe_config["startup_program"].as<std::string>());
+            _context->startup_program = Load(&_context->executor, startup_program);
             if (_context->startup_program == nullptr) {
-                VLOG(2) << "fail to load startup_program: " << exe_config["startup_program"].as<std::string>();
+                VLOG(0) << "fail to load startup_program: " << startup_program;
                 return -1;
             }
-
-            _context->main_program = Load(&_context->executor, exe_config["main_program"].as<std::string>());
+            _context->main_program = Load(&_context->executor, main_program);
             if (_context->main_program == nullptr) {
-                VLOG(2) << "fail to load main_program: " << exe_config["main_program"].as<std::string>();
+                VLOG(0) << "fail to load main_program: " << main_program;
                 return -1;
             }
             _context->prepare_context = _context->executor.Prepare(*_context->main_program, 0);
         } catch (::paddle::platform::EnforceNotMet& err) {
-            VLOG(2) << err.what();
+            VLOG(0) << err.what();
             _context.reset(nullptr);
             return -1;
         }
-
         return 0;
     }
     virtual int initialize_scope(::paddle::framework::Scope* scope) {
@@ -96,8 +93,8 @@ public:
         }
         try {
             _context->executor.RunPreparedContext(_context->prepare_context.get(), scope,
-                                    false, /* don't create local scope each time*/
-                                    false /* don't create variable each time */);
+                false, /* don't create local scope each time*/
+                false /* don't create variable each time */);
 
             // For some other vector like containers not cleaned after each batch.
             _context->tensor_array_batch_cleaner.CollectNoTensorVars(scope);

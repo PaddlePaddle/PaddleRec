@@ -7,14 +7,14 @@ namespace feed {
 int Dataset::initialize(
     const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
     if (config["data_list"].Type() != YAML::NodeType::Map) {
-        VLOG(0) << "miss data_list config in dataset, or type error please check";
+        LOG(FATAL) << "miss data_list config in dataset, or type error please check";
         return -1;
     }
     for (auto& data_config : config["data_list"]) {
         std::string name = data_config.first.as<std::string>();
         auto data_ptr = std::make_shared<DatasetContainer>();
         if (data_ptr->initialize(data_config.second, context) != 0) {
-            VLOG(0) << "dataset initialize failed, name:" << name;
+            LOG(FATAL) << "dataset initialize failed, name:" << name;
             return -1;
         }
         _data_containers[name] = data_ptr;
@@ -46,6 +46,22 @@ inline DatasetStatus Dataset::epoch_data_status(uint64_t epoch_id) {
 inline DatasetStatus Dataset::epoch_data_status(
     const std::string& data_name, uint64_t epoch_id) {
     return _data_containers[data_name]->epoch_data_status(epoch_id);
+}
+
+inline std::vector<std::string> Dataset::epoch_data_path(
+    const std::string& data_name, uint64_t epoch_id) {
+    return _data_containers[data_name]->epoch_data_path(epoch_id);
+}
+
+inline std::vector<std::string> Dataset::epoch_data_path(uint64_t epoch_id) {
+    std::vector<std::string> results;
+    for (auto it = _data_containers.begin(); it != _data_containers.end(); ++it) {
+        auto items = std::move(it->second->epoch_data_path(epoch_id));
+        for (auto& item : items) {
+            results.emplace_back(item);
+        }
+    }
+    return results;
 }
 
 inline ::paddle::framework::Channel<DataItem> Dataset::fetch_data(

@@ -31,6 +31,15 @@ inline std::string to_string(T v) {
   return sout.str();
 }
 
+template <typename T>
+inline std::string to_string(const std::vector<T>& v_list) {
+    std::ostringstream sout;
+    for (const auto& v : v_list) {
+        sout << v << " ";
+    }
+    return sout.str();
+}
+
 template <>
 inline std::string to_string(std::type_index t) {
   return t.name();

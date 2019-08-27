@@ -12,7 +12,7 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
     _train_data_name = exe_config["train_data_name"].as<std::string>();
     _train_batch_size = exe_config["train_batch_size"].as<int>();
     _input_parse_thread_num = exe_config["input_parse_thread_num"].as<int>();
-    _push_gradient_thread_num = exe_config["push_gradient_thread_num "].as<int>();
+    _push_gradient_thread_num = exe_config["push_gradient_thread_num"].as<int>();
     _train_thread_num = exe_config["train_thread_num"].as<int>();
     _need_dump_all_model = exe_config["need_dump_all_model"].as<bool>();
     CHECK(_train_thread_num > 0 && _train_batch_size > 0);
@@ -26,28 +26,41 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
         auto* e_ptr = CREATE_INSTANCE(Executor, e_class);
         _thread_executors[i].reset(e_ptr);
         if (e_ptr->initialize(exe_config, context_ptr) != 0) {
+            VLOG(0) << "executor initialize failed, name:" << _train_exe_name
+                << " class:" << e_class;
             ret = -1;
         }
     }
     CHECK(ret == 0);
-    _scope_obj_pool.config(
+
+    // buffer
+    _scope_obj_pool.reset(new paddle::ps::ObjectPool<::paddle::framework::Scope>(
         [this]() -> ::paddle::framework::Scope* {
             auto* scope = new ::paddle::framework::Scope();
             _thread_executors[0]->initialize_scope(scope);
             return scope;
-        }, _train_thread_num * 8);
+        }, _train_thread_num * 8, 0, _train_thread_num * 8));
 
+    // 模型网络加载
     std::string model_config_path = _trainer_context->file_system->path_join(
-        "./model", string::format_string("%s.yaml", _train_exe_name.c_str()));
+        "./model", string::format_string("%s/model.yaml", _train_exe_name.c_str()));
     CHECK(_trainer_context->file_system->exists(model_config_path)) 
         << "miss model config file:" << model_config_path;
     _model_config = YAML::LoadFile(model_config_path);
-    _input_accessors.resize(_model_config["input_accessor"].size());
     for (const auto& accessor_config : _model_config["input_accessor"]) {
         auto accessor_class = accessor_config["class"].as<std::string>();
-        _input_accessors.emplace_back(CREATE_INSTANCE(DataInputAccessor, accessor_class));
-        CHECK(_input_accessors.back()->initialize(accessor_config, context_ptr) == 0)
+        auto* accessor_ptr = CREATE_INSTANCE(DataInputAccessor, accessor_class);
+        _input_accessors.emplace_back(accessor_ptr);
+        CHECK(accessor_ptr->initialize(accessor_config, context_ptr) == 0)
             << "InputAccessor init Failed, class:" << accessor_class;
+        if (accessor_config["table_id"]) {
+            auto table_id = accessor_config["table_id"].as<int>();
+            if (_table_to_accessors.count(table_id) > 0) {
+                _table_to_accessors[table_id].push_back(accessor_ptr);
+            } else {
+                _table_to_accessors[table_id] = {accessor_ptr};
+            }
+        }
     } 
 
     return ret;
@@ -57,7 +70,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     paddle::framework::Channel<DataItem> input, const DataParser* parser) {
     PipelineOptions input_pipe_option;
     input_pipe_option.need_hold_input_data = true;
-    input_pipe_option.batch_size = _train_batch_size;
+    input_pipe_option.batch_size = 1;
     input_pipe_option.thread_num = _input_parse_thread_num;
     input_pipe_option.input_output_rate = _train_batch_size;
     input_pipe_option.buffer_batch_count = _train_thread_num;
@@ -66,7 +79,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
         [this, parser](DataItem* item, size_t item_num, 
             ScopePoolObj* scope, size_t* scope_num, size_t thread_idx) -> int {
             *scope_num = 1;
-            auto scope_obj = _scope_obj_pool.get();   
+            auto scope_obj = _scope_obj_pool->get();   
             auto* samples = new SampleInstance[item_num];
             for (size_t i = 0; i <item_num; ++i) {
                 CHECK(parser->parse_to_sample(item[i], samples[i]) == 0);
@@ -95,7 +108,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
             auto* executor = _thread_executors[thread_idx].get();
             size_t& out_idx = *out_num;
             for (out_idx = 0; out_idx < in_num; ++out_idx) {
-                executor->run(in_items[out_idx].get());
+                //CHECK(executor->run(in_items[out_idx].get()) == 0);
                 out_items[out_idx] = std::move(in_items[out_idx]);
             }
             return 0;
@@ -123,7 +136,6 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                 }
                 delete[] samples; // 所有pipe完成后，再回收sample
             }
-
             return 0;
         });
 

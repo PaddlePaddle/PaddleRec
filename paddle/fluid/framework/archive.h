@@ -518,11 +518,11 @@ Archive<AR>& operator>>(Archive<AR>& ar, std::tuple<T...>& x) {
   }                                                                            \
   template <class AR, class KEY, class VALUE, class... ARGS>                   \
   Archive<AR>& operator>>(Archive<AR>& ar, MAP_TYPE<KEY, VALUE, ARGS...>& p) { \
-    size_t size = ar.template get<size_t>();                                   \
+    size_t size = ar.template Get<size_t>();                                   \
     p.clear();                                                                 \
     RESERVE_STATEMENT;                                                         \
     for (size_t i = 0; i < size; i++) {                                        \
-      p.insert(ar.template get<std::pair<KEY, VALUE>>());                      \
+      p.insert(ar.template Get<std::pair<KEY, VALUE>>());                      \
     }                                                                          \
     return ar;                                                                 \
   }
@@ -539,11 +539,11 @@ Archive<AR>& operator>>(Archive<AR>& ar, std::tuple<T...>& x) {
   }                                                                            \
   template <class AR, class KEY, class VALUE, class... ARGS>                   \
   Archive<AR>& operator>>(Archive<AR>& ar, MAP_TYPE<KEY, VALUE, ARGS...>& p) { \
-    size_t size = ar.template get<uint64_t>();                                 \
+    size_t size = ar.template Get<uint64_t>();                                 \
     p.clear();                                                                 \
     RESERVE_STATEMENT;                                                         \
     for (size_t i = 0; i < size; i++) {                                        \
-      p.insert(ar.template get<std::pair<KEY, VALUE>>());                      \
+      p.insert(ar.template Get<std::pair<KEY, VALUE>>());                      \
     }                                                                          \
     return ar;                                                                 \
   }
@@ -568,11 +568,11 @@ ARCHIVE_REPEAT(std::unordered_multimap, p.reserve(size))
   }                                                                           \
   template <class AR, class KEY, class... ARGS>                               \
   Archive<AR>& operator>>(Archive<AR>& ar, SET_TYPE<KEY, ARGS...>& p) {       \
-    size_t size = ar.template get<size_t>();                                  \
+    size_t size = ar.template Get<size_t>();                                  \
     p.clear();                                                                \
     RESERVE_STATEMENT;                                                        \
     for (size_t i = 0; i < size; i++) {                                       \
-      p.insert(ar.template get<KEY>());                                       \
+      p.insert(ar.template Get<KEY>());                                       \
     }                                                                         \
     return ar;                                                                \
   }
@@ -588,11 +588,11 @@ ARCHIVE_REPEAT(std::unordered_multimap, p.reserve(size))
   }                                                                           \
   template <class AR, class KEY, class... ARGS>                               \
   Archive<AR>& operator>>(Archive<AR>& ar, SET_TYPE<KEY, ARGS...>& p) {       \
-    size_t size = ar.template get<uint64_t>();                                \
+    size_t size = ar.template Get<uint64_t>();                                \
     p.clear();                                                                \
     RESERVE_STATEMENT;                                                        \
     for (size_t i = 0; i < size; i++) {                                       \
-      p.insert(ar.template get<KEY>());                                       \
+      p.insert(ar.template Get<KEY>());                                       \
     }                                                                         \
     return ar;                                                                \
   }

@@ -42,7 +42,9 @@ public:
     // 配置初始化
     virtual int initialize(YAML::Node config) = 0;
     // 设置role
-    virtual int set_role(EnvironmentRole role) = 0;
+    virtual int add_role(EnvironmentRole role) = 0;
+    // 判断role
+    virtual bool is_role(EnvironmentRole role) = 0;
     // 环境初始化，会在所有依赖模块initialize后调用
     virtual int wireup() = 0;
     

@@ -40,7 +40,7 @@ int InitEnvProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
         return -1;
     }
     
-    VLOG(3) << "Env initialize success"; 
+    VLOG(3) << "Env initialize success";
     return 0;
 }
 
@@ -49,14 +49,6 @@ int InitEnvProcess::run() {
     VLOG(3) << "Trainer Resume From epoch:" << epoch_accessor->current_epoch_id();
     auto next_epoch_id = epoch_accessor->next_epoch_id(epoch_accessor->current_epoch_id());
     _context_ptr->dataset->pre_detect_data(next_epoch_id);
-
-    if (epoch_accessor->checkpoint_path().size() > 0) {
-        //Load Model
-    } else {
-        //Random Init Model
-    }
-    //context_ptr->pslib_client()->load_model();
-    VLOG(3) << "Psserver Load Model Success";
     return 0;
 }
 

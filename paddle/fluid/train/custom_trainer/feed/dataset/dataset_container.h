@@ -49,20 +49,22 @@ public:
     }
     virtual int initialize(
         const YAML::Node& config, std::shared_ptr<TrainerContext> context);
-    //触发可预取的数据判断
+    // 触发可预取的数据判断
     virtual void pre_detect_data(uint64_t epoch_id);
-    //获取数据状态
+    // 获取epoch对应的样本数据目录
+    std::vector<std::string> epoch_data_path(uint64_t epoch_id);
+    // 获取数据状态
     virtual DatasetStatus epoch_data_status(uint64_t epoch_id);
-    //获取特定epoch_i样本，如果数据未ready，Channel内为空指针
+    // 获取特定epoch_i样本，如果数据未ready，Channel内为空指针
     virtual ::paddle::framework::Channel<DataItem> fetch(uint64_t epoch_id);
-    //获取DataItem解析器
+    // 获取DataItem解析器
     virtual const DataParser* data_parser() {
         return _data_reader->get_parser();
     }
 protected:
     virtual DatasetStatus data_status(uint64_t timestamp);
     virtual int read_data_list(const std::string& data_dir, std::vector<std::string>& data_list);
-    //异步样本download
+    // 异步样本download
     virtual void async_download_data(uint64_t start_timestamp);
     virtual std::shared_ptr<DatasetInfo> dataset(uint64_t timestamp);
    

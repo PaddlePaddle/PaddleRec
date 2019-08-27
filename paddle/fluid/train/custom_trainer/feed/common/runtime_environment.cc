@@ -41,7 +41,7 @@ public:
             return -1;
         }
         _roles_node_info.resize(static_cast<int>(EnvironmentRole::ALL) + 1);
-        set_role(EnvironmentRole::ALL);
+        add_role(EnvironmentRole::ALL);
         return 0;
     }
     
@@ -56,7 +56,7 @@ public:
     virtual uint32_t node_num(EnvironmentRole role) {
         return mpi_node_info(role).node_num;
     }
-    virtual int set_role(EnvironmentRole role) {
+    virtual int add_role(EnvironmentRole role) {
         auto& node_info = mpi_node_info(role);
         if (node_info.rank_id < 0) {
             if (role == EnvironmentRole::ALL) {
@@ -68,7 +68,11 @@ public:
             MPI_Comm_rank(node_info.mpi_comm, &(node_info.rank_id));
             MPI_Comm_size(node_info.mpi_comm, &(node_info.node_num));
         }
+        _role_set.insert(role);
         return 0;
+    }
+    virtual bool is_role(EnvironmentRole role) {
+        return _role_set.count(role) > 0;
     }
 
     virtual void barrier(EnvironmentRole role) {
@@ -98,6 +102,7 @@ protected:
     }
 
 private:
+    std::set<EnvironmentRole> _role_set;
     std::vector<MpiNodeInfo> _roles_node_info;
 };
 REGIST_CLASS(RuntimeEnvironment, MPIRuntimeEnvironment);
@@ -123,8 +128,11 @@ public:
     virtual uint32_t node_num(EnvironmentRole role) {
         return 1;
     }
-    virtual int set_role(EnvironmentRole role) {
+    virtual int add_role(EnvironmentRole role) {
         return 0;
+    }
+    virtual bool is_role(EnvironmentRole role) {
+        return true;
     }
     virtual void barrier(EnvironmentRole role) {
         return;

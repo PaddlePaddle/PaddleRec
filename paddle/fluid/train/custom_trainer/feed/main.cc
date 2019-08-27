@@ -13,6 +13,7 @@ using namespace paddle::custom_trainer::feed;
 DEFINE_string(feed_trainer_conf_path, "./conf/trainer.yaml", "path of trainer conf");
 
 int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
     //gflags
     google::ParseCommandLineFlags(&argc, &argv, true);
     std::string gflag_conf = "./conf/gflags.conf";
@@ -29,26 +30,27 @@ int main(int argc, char* argv[]) {
     if (trainer_context_ptr->environment->initialize(config["environment"]) != 0) {
         return -1;
     }
-    EnvironmentRole role;
     auto* environment = trainer_context_ptr->environment.get();
     environment->wireup();
-    if (environment->rank_id(EnvironmentRole::ALL) % 2 == 0) {
-        role = EnvironmentRole::WORKER;
+    if (environment->node_num(EnvironmentRole::ALL) == 1) {
+        environment->add_role(EnvironmentRole::WORKER);
+        environment->add_role(EnvironmentRole::PSERVER);
+    } else if (environment->rank_id(EnvironmentRole::ALL) % 2 == 0) {
+        environment->add_role(EnvironmentRole::WORKER);
     } else {
-        role = EnvironmentRole::PSERVER;
+        environment->add_role(EnvironmentRole::PSERVER);
     } 
-    environment->set_role(role);
     trainer_context_ptr->pslib.reset(new PSlib());
     std::string ps_config = config["environment"]["ps"].as<std::string>();
-    trainer_context_ptr->pslib->initialize(ps_config, environment, role);
+    trainer_context_ptr->pslib->initialize(ps_config, environment);
     //VLOG(3) << "Node Start With Role:" << role;    
      
-    std::vector<std::string> process_name_list = {
-        "InitEnvProcess",
-        "LearnerProcess"
-    };
-    switch (role) {
-    case EnvironmentRole::WORKER:
+    
+    if (environment->is_role(EnvironmentRole::WORKER)) {
+        std::vector<std::string> process_name_list = {
+            "InitEnvProcess",
+            "LearnerProcess"
+        };
         for (const auto& process_name : process_name_list) {
             Process* process = CREATE_INSTANCE(Process, process_name);
             if (process == NULL) {
@@ -64,14 +66,13 @@ int main(int argc, char* argv[]) {
         for (auto& process : trainer_context_ptr->process_list) {
             process->run();
         }
-        break;
-    case EnvironmentRole::PSERVER:
-        //wait server done
-        while (true) {
-            sleep(10000);
-        }
-        break;
+     
     }
-
+    
+    //TODO exit control
+    bool running = true;
+    while (running) {
+        sleep(10000);
+    }
     return 0;
 }

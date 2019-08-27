@@ -9,6 +9,8 @@
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/framework/channel.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/pipeline.h"
+#include "paddle/fluid/framework/archive.h"
+#include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/registerer.h"
 
 namespace paddle {
@@ -18,14 +20,40 @@ namespace feed {
 class TrainerContext;
 
 struct FeatureItem {
-    uint64_t feature_sign;
-    uint16_t slot_id;
     std::vector<float> weights;
     std::vector<float> gradients;
+public:
+    FeatureItem() {
+    }
+    FeatureItem(uint64_t sign_, uint16_t slot_) {
+        sign() = sign_;
+        slot() = slot_;
+    }
+    uint64_t& sign() {
+        return *(uint64_t*)sign_buffer();
+    }
+    const uint64_t& sign() const {
+        return *(const uint64_t*)sign_buffer();
+    }
+    uint16_t& slot() {
+        return _slot;
+    }
+    const uint16_t& slot() const {
+        return _slot;
+    }
+
+private:
+    char _sign[sizeof(uint64_t)];
+    uint16_t _slot;
+
+    char* sign_buffer() const {
+        return (char*)_sign;
+    }
 };
 
 struct SampleInstance {
     std::string id;
+    std::vector<float> predicts;
     std::vector<float> labels;
     std::vector<FeatureItem> features;
     std::vector<float> embedx;
@@ -50,10 +78,9 @@ public:
     virtual ~DataParser() {}
     virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) = 0;
     virtual int parse(const std::string& str, DataItem& data) const {
-        return parse(str.c_str(), data);
+        return parse(str.c_str(), str.size(), data);
     }
     virtual int parse(const char* str, size_t len, DataItem& data) const = 0;
-    virtual int parse(const char* str, DataItem& data) const = 0;
     virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const = 0;  
 };
 REGIST_REGISTERER(DataParser);
@@ -79,6 +106,23 @@ protected:
     std::string _pipeline_cmd; //将文件流，重定向到pipeline_cmd，再读入
 };
 REGIST_REGISTERER(DataReader);
+
+class LineDataParser : public DataParser {
+public:
+    LineDataParser() {}
+
+    virtual ~LineDataParser() {}
+
+    virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
+        return 0;
+    }
+
+    virtual int parse(const char* str, size_t len, DataItem& data) const;
+
+    virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const {
+        return 0;
+    }
+};
 
 }//namespace feed
 }//namespace custom_trainer

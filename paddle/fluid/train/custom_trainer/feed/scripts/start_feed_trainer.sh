@@ -1,3 +1,3 @@
-#!bash
+#!/bin/bash
 export LD_LIBRARY_PATH=LD_LIBRARY_PATH:./so
-./bin/feed_trainer
+./bin/feed_trainer "$@"

@@ -6,10 +6,10 @@
 #include <vector>
 #include <memory>
 #include <yaml-cpp/yaml.h>
-#include "paddle/fluid/framework/io/shell.h"
 #include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
+#include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/dataset/dataset_container.h"
 
 namespace paddle {
@@ -27,8 +27,7 @@ int DatasetContainer::initialize(
         _dataset_list[i].reset(new DatasetInfo);
     }
 
-    _data_root_paths = paddle::string::split_string(
-        config["root_path"].as<std::string>(), " ");
+    _data_root_paths = config["root_path"].as<std::vector<std::string>>();
     _data_split_interval = config["data_spit_interval"].as<int>();
     _data_path_formater = config["data_path_formater"].as<std::string>();
     std::string data_reader_class = config["data_reader"].as<std::string>();
@@ -41,6 +40,21 @@ std::shared_ptr<DatasetInfo> DatasetContainer::dataset(uint64_t timestamp) {
     auto* epoch_accessor = _trainer_context->epoch_accessor.get();
     auto data_idx = timestamp / epoch_accessor->epoch_time_interval();
     return _dataset_list[data_idx % _prefetch_num];
+}
+std::vector<std::string> DatasetContainer::epoch_data_path(uint64_t epoch_id) {
+    std::vector<std::string> results;
+    auto* epoch_accessor = _trainer_context->epoch_accessor.get();
+    time_t timestamp = epoch_accessor->epoch_timestamp(epoch_id);
+    size_t data_num = data_num_for_train(timestamp, epoch_accessor->epoch_time_interval(), _data_split_interval);
+    uint64_t data_timestamp = timestamp % _data_split_interval == 0 ? timestamp : (timestamp / _data_split_interval + 1) * _data_split_interval;
+    for (int i = 0; i < _data_root_paths.size(); ++i) {
+        for (int j = 0; j < data_num; ++j) {
+            std::string path_suffix = format_timestamp(data_timestamp + j * _data_split_interval, _data_path_formater);
+            std::string data_dir = _trainer_context->file_system->path_join(_data_root_paths[i], path_suffix);
+            results.emplace_back(data_dir);
+        }
+    }
+    return results;
 }
 
 void DatasetContainer::pre_detect_data(uint64_t epoch_id) {
@@ -56,7 +70,7 @@ void DatasetContainer::pre_detect_data(uint64_t epoch_id) {
             async_download_data(timestamp);
         }));
     }
-    for (int detect_idx = 0 ; detect_idx < _prefetch_num; ++detect_idx) {
+    for (int detect_idx = 0 ; detect_idx < _prefetch_num; ++detect_idx, ++epoch_id) {
         if (DatasetStatus::Empty != data_status(timestamp)) {
             continue;
         }
@@ -66,7 +80,7 @@ void DatasetContainer::pre_detect_data(uint64_t epoch_id) {
         for (int i = 0; i < _data_root_paths.size() && status == 0; ++i) {
             for (int j = 0; j < data_num && status == 0; ++j) {
                 std::string path_suffix = format_timestamp(data_timestamp + j * _data_split_interval, _data_path_formater);
-                std::string data_dir = _data_root_paths[i] + "/" + path_suffix;
+                std::string data_dir = _trainer_context->file_system->path_join(_data_root_paths[i], path_suffix);
                 status = read_data_list(data_dir, data_path_list);
             }
         }
@@ -75,6 +89,7 @@ void DatasetContainer::pre_detect_data(uint64_t epoch_id) {
             dataset_info->timestamp = timestamp;
             dataset_info->file_path_list = std::move(data_path_list);
             dataset_info->status = DatasetStatus::Detected;
+            VLOG(2) << epoch_accessor->text(epoch_id) << ", data is detected";
         }
         timestamp += epoch_accessor->epoch_time_interval();
     }
@@ -150,16 +165,25 @@ void DatasetContainer::async_download_data(uint64_t start_timestamp) {
     }
     while (!_stop_download) {
         auto dataset_info = dataset(start_timestamp);
-        while (data_status(start_timestamp) != DatasetStatus::Detected) {
+        while (data_status(start_timestamp) == DatasetStatus::Empty) {
             sleep(30);
         }
+        dataset_info->status = DatasetStatus::Downloding;
+
+        VLOG(2) << "Start download data, data_timestap:" << start_timestamp
+            << ", for epoch:" << epoch_accessor->text(start_timestamp);
         const auto& file_list = dataset_info->file_path_list;
         dataset_info->data_channel->Clear();
         while (_data_reader->read_all(file_list, dataset_info->data_channel) != 0) {
             dataset_info->data_channel->Clear();
-            VLOG(0) << "timestamp:" << start_timestamp << " data read failed, retry";
+            VLOG(0) << "Failed download data, data_timestap:" << start_timestamp
+                << ", for epoch:" << epoch_accessor->text(start_timestamp) << ", Retry it";
             sleep(30); 
         }
+        VLOG(2) << "End download data num:" << dataset_info->data_channel->Size()
+            << ", data_timestap:" << start_timestamp
+            << ", for epoch:" << epoch_accessor->text(start_timestamp);
+        dataset_info->status = DatasetStatus::Ready;
         start_timestamp += epoch_accessor->epoch_time_interval();
     }
 }

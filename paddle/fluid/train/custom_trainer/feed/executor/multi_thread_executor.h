@@ -8,6 +8,8 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+typedef paddle::ps::ObjectPool<::paddle::framework::Scope>::PooledObject ScopePoolObj;
+
 class MultiThreadExecutor {
 public:
     MultiThreadExecutor() {}
@@ -24,9 +26,18 @@ public:
     virtual bool is_dump_all_model() {
         return _need_dump_all_model;
     }
-
+    virtual const std::string& train_exe_name() {
+        return _train_exe_name;
+    }
     virtual const std::string& train_data_name() {
         return _train_data_name;
+    }
+    virtual const std::map<uint32_t, std::vector<DataInputAccessor*>>& table_accessors() {
+        return _table_to_accessors;
+    }
+    virtual ScopePoolObj fetch_scope() {
+        ScopePoolObj scope_obj(_scope_obj_pool->get());
+        return scope_obj;
     }
 protected:
     std::string _train_data_name;
@@ -41,8 +52,8 @@ protected:
     TrainerContext* _trainer_context = nullptr;
     std::vector<std::shared_ptr<Executor>> _thread_executors;
     std::vector<std::shared_ptr<DataInputAccessor>> _input_accessors;
-    paddle::ps::ObjectPool<::paddle::framework::Scope> _scope_obj_pool;
-    typedef paddle::ps::ObjectPool<::paddle::framework::Scope>::PooledObject ScopePoolObj;
+    std::map<uint32_t, std::vector<DataInputAccessor*>> _table_to_accessors;
+    std::shared_ptr<paddle::ps::ObjectPool<::paddle::framework::Scope>> _scope_obj_pool;
 };
 
 }  // namespace feed

@@ -12,7 +12,8 @@ namespace custom_trainer {
 namespace feed {
 
 int PSlib::initialize(const std::string& conf_path, 
-    RuntimeEnvironment* environment, EnvironmentRole role) {
+    RuntimeEnvironment* environment) {
+    _environment = environment;
     init_gflag();    
     int file_descriptor = open(conf_path.c_str(), O_RDONLY);
     if (file_descriptor == -1){
@@ -25,26 +26,26 @@ int PSlib::initialize(const std::string& conf_path,
         return -1;
     }
     close(file_descriptor); 
-    init_server(role);
-    init_client(EnvironmentRole::ALL);
+    init_server();
+    init_client();
     return 0;
 }
         
-int PSlib::init_server(EnvironmentRole role) {
-    if (role == EnvironmentRole::PSERVER) {
+int PSlib::init_server() {
+    if (_environment->is_role(EnvironmentRole::PSERVER)) {
         _server_ptr.reset(paddle::ps::PSServerFactory::create(_ps_param));
         _server_ptr->configure(_ps_param, *(_environment->ps_environment()), 
-            _environment->rank_id(role));
+            _environment->rank_id(EnvironmentRole::PSERVER));
         _server_ptr->start(); 
     }
     _environment->ps_environment()->gather_ps_servers();
     return 0;
 }
 
-int PSlib::init_client(EnvironmentRole role) {
+int PSlib::init_client() {
     _client_ptr.reset(paddle::ps::PSClientFactory::create(_ps_param));
     _client_ptr->configure(_ps_param, *(_environment->ps_environment()), 
-        _environment->rank_id(role));
+        _environment->rank_id(EnvironmentRole::ALL));
     return 0;
 }
 

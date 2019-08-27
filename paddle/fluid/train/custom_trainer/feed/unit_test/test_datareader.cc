@@ -194,14 +194,14 @@ TEST_F(DataReaderTest, LineDataReader_FileSystem) {
             "file_system:\n"
             "    class: AutoFileSystem\n"
             "    file_systems:\n"
-            "        'afs:': &HDFS \n"
+            "        'afs': &HDFS \n"
             "            class: HadoopFileSystem\n"
             "            hdfs_command: 'hadoop fs'\n"
             "            ugis:\n"
             "                'default': 'feed_video,D3a0z8'\n"
             "                'xingtian.afs.baidu.com:9902': 'feed_video,D3a0z8'\n"
             "            \n"
-            "        'hdfs:': *HDFS\n");
+            "        'hdfs': *HDFS\n");
     ASSERT_EQ(0, data_reader->initialize(config, context_ptr));
     {
         auto data_file_list = data_reader->data_file_list(test_data_dir);

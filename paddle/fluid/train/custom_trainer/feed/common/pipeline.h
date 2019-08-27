@@ -59,6 +59,10 @@ public:
         _input_data_buffer.resize(input_batch_size * options.buffer_batch_count);
         _output_data_buffer.resize(options.batch_size * options.buffer_batch_count);
         _output_channel->SetCapacity(_output_data_buffer.size());
+        if (_options.need_hold_input_data) {
+            _input_channel_backup = ::paddle::framework::MakeChannel<TypeIn>();
+            _input_channel_backup->SetBlockSize(input_batch_size);
+        }
         CHECK(_input_channel != nullptr) << " Input Channel is null";
         _convert_thread = std::make_shared<std::thread>([this](){
             async_convert_data();
@@ -114,11 +118,15 @@ private:
                 CHECK(_converter(&_input_data_buffer[0], read_size,
                     &_output_data_buffer[0], &write_size, 0) == 0) << "Data Converter Do Failed";
                 _output_channel->WriteMove(write_size, &_output_data_buffer[0]);
-                if (_options.need_hold_input_data) {
+                if (_input_channel_backup) {
                     _input_channel_backup->WriteMove(read_size, &_input_data_buffer[0]);
                 }
             }  
             sleep(1);
+        }
+        _output_channel->Close();
+        if (_input_channel_backup) {
+            _input_channel_backup->Close();
         }
     }    
    

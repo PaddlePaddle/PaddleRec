@@ -7,14 +7,13 @@ namespace feed {
 int DenseInputAccessor::initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr) {
     CHECK(DataInputAccessor::initialize(config, context_ptr) == 0);
-    CHECK(config["input"] && config["input"].Type() == YAML::NodeType::Map);
     _total_dim = 0;
     _pull_request_num.store(0);
     for (const auto& input : config["input"]) {
         DenseInputVariable variable;
-        variable.name = input.first.as<std::string>();
+        variable.name = input["name"].as<std::string>();
         variable.gradient_name = paddle::framework::GradVarName(variable.name);
-        variable.shape = input.second["shape"].as<std::vector<int>>();
+        variable.shape = input["shape"].as<std::vector<int>>();
         variable.dim = 1;
         for (int i = 0; i < variable.shape.size(); ++i) {
             if (variable.shape[i] <= 0) {
@@ -23,6 +22,7 @@ int DenseInputAccessor::initialize(YAML::Node config,
             variable.dim *= variable.shape[i];    
         }
         _total_dim += variable.dim;
+        _x_variables.emplace_back(variable);
     }
     if (config["async_pull"] && config["async_pull"].as<bool>()) {
         _need_async_pull = true;
@@ -30,14 +30,28 @@ int DenseInputAccessor::initialize(YAML::Node config,
     return 0;
 }
 
+int32_t DenseInputAccessor::create(::paddle::framework::Scope* scope) {
+    size_t data_buffer_idx = 0;
+    std::vector<paddle::ps::Region> regions;
+    for (auto& variable : _x_variables) {
+        auto* tensor = scope->Var(variable.name)->
+            GetMutable<paddle::framework::LoDTensor>(); 
+        auto* data = tensor->data<float>();
+        regions.emplace_back(data, variable.dim);
+    }
+    auto* ps_client = _trainer_context->pslib->ps_client();
+    auto push_status = ps_client->push_dense_param(regions.data(), regions.size(), _table_id);
+    return push_status.get();
+}
+
 // rpc拉取数据，需保证单线程运行
 int32_t DenseInputAccessor::pull_dense(size_t table_id) {
     float* data_buffer = NULL;
-    if (_data_buffer != nullptr) {
-        data_buffer = _data_buffer;
-    } else {
-        data_buffer = new float[_total_dim];
+    if (_data_buffer == nullptr) {
+        _data_buffer = new float[_total_dim];
     }
+    // TODO 使用双buffer DataBuffer,避免训练期改写，当前异步SGD下，问题不大
+    data_buffer = _data_buffer;
     
     size_t data_buffer_idx = 0;
     std::vector<paddle::ps::Region> regions;
@@ -77,6 +91,8 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
         auto* shape_ptr = &(variable.shape[0]);
         paddle::framework::DDim ddim(shape_ptr, variable.shape.size());
         auto* tensor = ScopeHelper::resize_lod_tensor(scope, variable.name, ddim);  
+        auto* grad_tensor = ScopeHelper::resize_lod_tensor(scope, variable.gradient_name, ddim);
+        VLOG(5) << "fill scope variable:" << variable.name << ", " << variable.gradient_name;
         auto* var_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
         memcpy(var_data, _data_buffer + data_buffer_idx, variable.dim * sizeof(float));
         data_buffer_idx += variable.dim;
@@ -102,7 +118,8 @@ int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
     }
     auto* ps_client = _trainer_context->pslib->ps_client();
     auto push_status = ps_client->push_dense(regions.data(), regions.size(), _table_id);
-    return push_status.get();
+    //return push_status.get();
+    return 0;
 }
 
 int32_t EbdVariableInputAccessor::forward(SampleInstance* samples, size_t num,
