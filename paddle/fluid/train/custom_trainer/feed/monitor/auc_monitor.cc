@@ -44,6 +44,7 @@ void AucMonitor::add_data(int epoch_id, const Executor* executor, SampleInstance
 bool AucMonitor::need_compute_result(int epoch_id, EpochAccessor* accessor) {
     CHECK(accessor != nullptr);
     uint64_t epoch_time = accessor->epoch_timestamp(epoch_id);
+    CHECK(_compute_interval != 0);
     if (epoch_time % _compute_interval != 0) {
         return false;
     }
@@ -68,7 +69,6 @@ void AucMonitor::compute_result() {
     _auc = area / (fp * tp);
     _mae = Monitor::_context_ptr->environment->all_reduce_ele(_local_abserr) / (fp + tp);
     _rmse = sqrt(Monitor::_context_ptr->environment->all_reduce_ele(_local_sqrerr) / (fp + tp));
-    _rmse = sqrt(_rmse / (fp + tp));
     _actual_ctr = tp / (fp + tp);
     _predicted_ctr = Monitor::_context_ptr->environment->all_reduce_ele(_local_pred) / (fp + tp);
     _size = fp + tp;

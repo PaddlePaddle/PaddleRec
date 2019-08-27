@@ -37,6 +37,10 @@ public:
     virtual bool is_dump_all_model() {
         return false;
     }
+    // cost time millisecond
+    virtual uint64_t epoch_cost() const {
+        return 0;
+    }
 protected:
     ::paddle::framework::Scope _scope;
 };
