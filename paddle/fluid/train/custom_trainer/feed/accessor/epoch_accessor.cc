@@ -126,7 +126,7 @@ namespace feed {
             case ModelSaveWay::ModelSaveInferenceBase:
                 return is_last_epoch(epoch_id);
             case ModelSaveWay::ModelSaveTrainCheckpoint:
-                return ((epoch_id / SecondsPerHour) % 8) == 0;
+                return delta_id(epoch_id) % 8 == 0;
         }
         return false;
     }

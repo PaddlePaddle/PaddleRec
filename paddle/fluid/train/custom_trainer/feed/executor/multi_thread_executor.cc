@@ -1,4 +1,5 @@
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
+#include "paddle/fluid/train/custom_trainer/feed/monitor/monitor.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/multi_thread_executor.h"
 
 namespace paddle {
@@ -63,11 +64,23 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
         }
     } 
 
+    // Monitor组件
+    for (const auto& monitor_config : _model_config["monitor"]) {
+        auto monitor_class = monitor_config["class"].as<std::string>();
+        auto* monitor_ptr = CREATE_INSTANCE(Monitor, monitor_class);
+        _monitors.emplace_back(monitor_ptr);
+        CHECK(monitor_ptr->initialize(monitor_config, context_ptr) == 0)
+            << "Monitor init Failed, class:" << monitor_class;
+    }
     return ret;
 }
 
 paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     paddle::framework::Channel<DataItem> input, const DataParser* parser) {
+
+    uint64_t epoch_id = _trainer_context->epoch_accessor->current_epoch_id();
+
+    // 输入流
     PipelineOptions input_pipe_option;
     input_pipe_option.need_hold_input_data = true;
     input_pipe_option.batch_size = 1;
@@ -97,6 +110,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
             return 0;
         });
     
+    // 训练流
     PipelineOptions train_pipe_option;
     train_pipe_option.input_output_rate = 1;
     train_pipe_option.thread_num = _train_thread_num;
@@ -108,19 +122,20 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
             auto* executor = _thread_executors[thread_idx].get();
             size_t& out_idx = *out_num;
             for (out_idx = 0; out_idx < in_num; ++out_idx) {
-                //CHECK(executor->run(in_items[out_idx].get()) == 0);
+                CHECK(executor->run(in_items[out_idx].get()) == 0);
                 out_items[out_idx] = std::move(in_items[out_idx]);
             }
             return 0;
         });
 
+    // 梯度回传流
     PipelineOptions gradient_pipe_option;
     gradient_pipe_option.input_output_rate = 1;
     gradient_pipe_option.thread_num = _push_gradient_thread_num;
     gradient_pipe_option.buffer_batch_count = 2 * _train_thread_num;
     auto gradient_pipe = std::make_shared<Pipeline<ScopePoolObj, int>>();
     gradient_pipe->connect_to(*train_pipe, gradient_pipe_option, 
-        [this] (ScopePoolObj* in_items, size_t in_num, 
+        [epoch_id, this] (ScopePoolObj* in_items, size_t in_num, 
             int* out_items, size_t* out_num, size_t thread_idx) -> int {
             size_t& out_idx = *out_num;
             for (out_idx = 0; out_idx < in_num; ++out_idx) {
@@ -134,13 +149,26 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                     out_items[out_idx] = _input_accessors[i]->
                         backward(samples, sample_num, scope);
                 }
+                for (auto& monitor : _monitors) {
+                    monitor->add_data(epoch_id, this, samples, sample_num);
+                }
                 delete[] samples; // 所有pipe完成后，再回收sample
             }
             return 0;
         });
 
+    // 等待训练流结束
     std::vector<int> gradient_status;
     while (gradient_pipe->read(gradient_status) > 0) {
+    }
+    // 输出相关监控&统计项
+    for (auto& monitor : _monitors) {
+        if (monitor->need_compute_result(epoch_id)) {
+            monitor->compute_result();
+            VLOG(2) << "[Monitor]" << _train_exe_name << ", monitor:" << monitor->get_name()
+                << ", result:" << monitor->format_result();
+            monitor->reset();
+        }
     }
     return input_pipe->backup_channel();
 }

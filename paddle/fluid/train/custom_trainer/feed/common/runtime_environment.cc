@@ -139,14 +139,13 @@ public:
         ar.SetCursor(ar.Buffer());
         MPI_Bcast(ar.Buffer(), len, MPI_BYTE, root_id, node_info.mpi_comm);
     }
-
-    virtual double all_reduce_ele(double x) {
-        double tot = 0.0;
-        MPI_Allreduce(&x, &tot, 1, mpi_type_trait<double>::type(), MPI_SUM, MPI_COMM_WORLD);
-        return tot;
-    }
-    virtual void all_reduce_arr(double* x, int n) {
-        MPI_Allreduce(MPI_IN_PLACE, x, n, mpi_type_trait<double>::type(), MPI_SUM, MPI_COMM_WORLD);
+    virtual void all_reduce_in_place(double* x, int n, ReduceOperator op, EnvironmentRole role) {
+        auto& node_info = mpi_node_info(role);
+        if (op == ReduceOperator::SUM) {
+            MPI_Allreduce(MPI_IN_PLACE, x, n, MPI_DOUBLE, MPI_SUM, node_info.mpi_comm);
+        } else {
+            CHECK(false) << "unsupport operator";
+        }
     }
 
 protected:
@@ -201,10 +200,7 @@ public:
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) {
         return;
     }
-    virtual double all_reduce_ele(double x) {
-        return x;
-    }
-    virtual void all_reduce_arr(double* x, int n) {
+    virtual void all_reduce_in_place(double* x, int n, ReduceOperator op, EnvironmentRole role) {
         return;
     }
 protected:

@@ -1,3 +1,4 @@
+aa_Attention: Do Not Modify This File Manually, Unless You Really Know It
 input_accessor:
 - class: AbacusSparseUpdateAccessor
   input:
@@ -98,6 +99,10 @@ labels:
 - name: label_ctr
   shape: [-1, 1]
 loss: loss_ctr
+monitor:
+- {class: AucMonitor, compute_interval: 3600, name: epoch_auc, target: ctr.tmp_2,
+  target_idx: 0}
+- {class: AucMonitor, compute_interval: 86400, name: day_auc, target: ctr.tmp_2, target_idx: 0}
 outputs:
 - name: ctr.tmp_2
   shape: [-1, 1]

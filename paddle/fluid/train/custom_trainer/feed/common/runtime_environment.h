@@ -27,12 +27,17 @@ enum class EnvironmentLogType {
     ALL_LOG         = 1         //所有节点都会对外输出
 };
 
-//保持该枚举值的连续递增，且ALL在尾部
+// 保持该枚举值的连续递增，且ALL在尾部
 enum class EnvironmentRole {
     WORKER          = 0,        //训练Worker
     PSERVER         = 1,        //参数服务器
 
     ALL             = 2         //所有角色，请保持在枚举尾部
+};
+
+// Reduce的操作类型
+enum class ReduceOperator {
+    SUM             = 0         //求和
 };
 
 class RuntimeEnvironment {
@@ -72,10 +77,15 @@ public:
     virtual void barrier(EnvironmentRole role) = 0;
     // bcast 广播
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) = 0;
-    // all_reduce sum element 规约元素
-    virtual double all_reduce_ele(double x) = 0;
-    // all_reduce sum array 规约数组
-    virtual void all_reduce_arr(double* x, int n) = 0;
+    // 全局reduce操作, 返回reduce结果
+    virtual double all_reduce(double x, ReduceOperator op, EnvironmentRole role) {
+        double result = x;
+        all_reduce_in_place(&result, 1, op, role);
+        return result;
+    }
+    // 全局reduce，就地执行
+    virtual void all_reduce_in_place(double* x, int n, 
+            ReduceOperator op, EnvironmentRole role) = 0;
     // 接口只允许在主线程调用   End
 protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 

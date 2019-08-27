@@ -95,7 +95,8 @@ class ModelBuilder:
         main_program = fluid.Program()
         startup_program = fluid.Program()
         with fluid.program_guard(main_program, startup_program):
-            input_accessor, sparses, inputs, outputs = self._inference()
+            #TODO return dict maybe better ?
+            input_accessor, sparses, inputs, outputs, monitors = self._inference()
             test_program = main_program.clone(for_test=True)
             loss, labels = self._loss_function(*outputs)
 
@@ -134,7 +135,11 @@ class ModelBuilder:
                 accessor["input"] = [
                     {"label_name": label.name, "shape": label.shape, "output_name": output.name } 
                     for (label, output) in zip(labels, outputs) ]
-            
+       
+        for monitor in monitors:
+            idx = outputs.index(monitor['target'])
+            monitor["target_idx"] = idx
+            monitor["target"] = outputs[idx].name
 
         model_desc_path = os.path.join(self._save_path, 'model.yaml')
         model_desc = {
@@ -142,7 +147,9 @@ class ModelBuilder:
             'outputs': [{"name": var.name, "shape": var.shape} for var in outputs],
             'labels': [{"name": var.name, "shape": var.shape} for var in labels],
             'loss': loss.name,
-            'input_accessor': input_accessor
+            'input_accessor': input_accessor,
+            'monitor': monitors,
+            'aa_Attention' : 'Do Not Modify This File Manually, Unless You Really Know It'
         }
 
         with open(model_desc_path, 'w') as f:

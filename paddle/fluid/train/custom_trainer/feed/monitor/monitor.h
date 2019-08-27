@@ -9,6 +9,7 @@
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
+class MultiThreadExecutor;
 
 class Monitor {
 public:
@@ -19,14 +20,16 @@ public:
         std::shared_ptr<TrainerContext> context_ptr) {
         _name = config["name"].as<std::string>();
         _context_ptr = context_ptr;
+        _epoch_accessor = _context_ptr->epoch_accessor.get();
         return 0;
     }
 
     //添加一项记录，统计内容Monitor自行从Executor按需获取
-    virtual void add_data(int epoch_id, const Executor* executor, SampleInstance* instance, size_t num) = 0;
+    virtual void add_data(int epoch_id, const MultiThreadExecutor* executor, 
+            SampleInstance* samples, size_t num) = 0;
     
     //是否对于当前epoch_id进行结果统计
-    virtual bool need_compute_result(int epoch_id, EpochAccessor* accessor) = 0;
+    virtual bool need_compute_result(int epoch_id) = 0;
     //统计当前结果
     virtual void compute_result() = 0;
     //基于现有结果，输出格式化的统计信息
@@ -40,6 +43,7 @@ public:
 
 protected:
     std::string _name;
+    EpochAccessor* _epoch_accessor = nullptr;
     std::shared_ptr<TrainerContext> _context_ptr;
 };
 

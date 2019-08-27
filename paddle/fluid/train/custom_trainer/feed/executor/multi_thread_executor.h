@@ -8,6 +8,7 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+class Monitor;
 typedef paddle::ps::ObjectPool<::paddle::framework::Scope>::PooledObject ScopePoolObj;
 
 class MultiThreadExecutor {
@@ -50,6 +51,7 @@ protected:
     YAML::Node _model_config;
     std::string _train_exe_name;
     TrainerContext* _trainer_context = nullptr;
+    std::vector<std::shared_ptr<Monitor>> _monitors;
     std::vector<std::shared_ptr<Executor>> _thread_executors;
     std::vector<std::shared_ptr<DataInputAccessor>> _input_accessors;
     std::map<uint32_t, std::vector<DataInputAccessor*>> _table_to_accessors;

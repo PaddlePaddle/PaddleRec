@@ -46,7 +46,11 @@ def inference():
         { "class": "DenseInputAccessor", "input": "sums", "table_id": 2, "need_gradient": True, "async_pull": True},
         { "class": "LabelInputAccessor", "input": "labels"}
     ]
-    return accessors, [sparse_cvm], [cvm_input], [ctr_output]
+    monitors = [
+        { "name": "epoch_auc", "class": "AucMonitor", "target": ctr_output, "compute_interval": 600 },
+        { "name": "day_auc", "class": "AucMonitor", "target": ctr_output, "compute_interval": 86400 }
+    ]
+    return accessors, [sparse_cvm], [cvm_input], [ctr_output], monitors
 
 def loss_function(ctr_output):
     """

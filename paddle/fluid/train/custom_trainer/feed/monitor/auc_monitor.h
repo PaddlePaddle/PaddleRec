@@ -18,13 +18,11 @@ public:
         std::shared_ptr<TrainerContext> context_ptr) override;
 
     //添加一项记录，统计内容Monitor自行从Executor按需获取
-    virtual void add_data(int epoch_id, 
-            const Executor* executor, 
-            SampleInstance* instance, 
-            size_t num);
+    virtual void add_data(int epoch_id, const MultiThreadExecutor* executor, 
+            SampleInstance* samples, size_t num);
     
     //是否开始结果统计
-    virtual bool need_compute_result(int epoch_id, EpochAccessor* accessor);
+    virtual bool need_compute_result(int epoch_id);
     //统计当前结果
     virtual void compute_result();
     //基于现有结果，输出格式化的统计信息
@@ -33,7 +31,7 @@ public:
     virtual void reset();
 
 protected:
-    std::string _label_name;
+    uint32_t _target_idx;
     std::string _target_name;
     std::string _name;
     std::string _output_var;
@@ -47,7 +45,7 @@ protected:
     double _bucket_error;
     int _table_size;
     void add_unlocked(double pred, int label);
-
+    
 private:
     void calculate_bucket_error();
     void set_table_size(int table_size);

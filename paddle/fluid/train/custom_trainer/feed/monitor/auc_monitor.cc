@@ -6,8 +6,8 @@ namespace feed {
 
 int AucMonitor::initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context_ptr) {
     Monitor::initialize(config, context_ptr);
+    _target_idx = config["target_idx"].as<int32_t>();
     _target_name = config["target"].as<std::string>();
-    _label_name = config["label"].as<std::string>();
     _table_size = 1000000;
     if (config["table_size"]) {
         _table_size = config["table_size"].as<int>();
@@ -15,45 +15,34 @@ int AucMonitor::initialize(const YAML::Node& config, std::shared_ptr<TrainerCont
     set_table_size(_table_size);
     _compute_interval = 3600;
     if (config["compute_interval"]) {
-        uint32_t interval = config["compute_interval"].as<uint32_t>();
-        if (interval != 3600 || interval != 86400) {
-            LOG(FATAL) << " AucMonitor config compute_interval just support hour: 3600 or day: 86400. ";
-            return -1;
-        }
-        _compute_interval = interval;
+        _compute_interval = config["compute_interval"].as<uint32_t>();
+        CHECK(_compute_interval % 60 == 0);
     }
+    return 0;
 }
 
-void AucMonitor::add_data(int epoch_id, const Executor* executor, SampleInstance* instance, size_t num) {
-    if (executor == nullptr
-            || instance == nullptr 
-            || instance->predicts.empty()
-            || instance->labels.empty()
-            || num <= 0
-            || instance->predicts.size() < num
-            || instance->labels.size() < num) {
-        LOG(FATAL) << "AucMonitor add predict data is invalid, predicts or labels is empty, num[" << num << "]";
-        return;
-    }
+void AucMonitor::add_data(int epoch_id, 
+    const MultiThreadExecutor* executor, SampleInstance* samples, size_t num) {
+    CHECK(num > 0);
     std::lock_guard<std::mutex> lock(_mutex);
     for (int i = 0; i < num; ++i) {
-        add_unlocked(instance->predicts[i], std::lround(instance->labels[i]));
+        auto& instance = samples[i]; 
+        add_unlocked(instance.predicts[_target_idx], std::lround(instance.labels[_target_idx]));
     }
 }
 
-bool AucMonitor::need_compute_result(int epoch_id, EpochAccessor* accessor) {
-    CHECK(accessor != nullptr);
-    uint64_t epoch_time = accessor->epoch_timestamp(epoch_id);
-    if (epoch_time % _compute_interval != 0) {
-        return false;
-    }
-    return true;
+bool AucMonitor::need_compute_result(int epoch_id) {
+    CHECK(_epoch_accessor != nullptr);
+    uint64_t epoch_time = _epoch_accessor->epoch_timestamp(epoch_id);
+    return epoch_time % _compute_interval == 0;
 }
 
 void AucMonitor::compute_result() {
+    auto* environment = Monitor::_context_ptr->environment.get();
     double* table[2] = {&_table[0][0], &_table[1][0]};
     for (int i = 0; i < 2; i++) {
-        Monitor::_context_ptr->environment->all_reduce_arr(table[i], _table_size);
+        environment->all_reduce_in_place(table[i], 
+            _table_size, ReduceOperator::SUM, EnvironmentRole::WORKER);
     }
     double area = 0;
     double fp = 0;
@@ -66,11 +55,14 @@ void AucMonitor::compute_result() {
         tp = newtp;
     }
     _auc = area / (fp * tp);
-    _mae = Monitor::_context_ptr->environment->all_reduce_ele(_local_abserr) / (fp + tp);
-    _rmse = sqrt(Monitor::_context_ptr->environment->all_reduce_ele(_local_sqrerr) / (fp + tp));
+    _mae = environment->all_reduce(_local_abserr, 
+        ReduceOperator::SUM, EnvironmentRole::WORKER) / (fp + tp);
+    _rmse = sqrt(environment->all_reduce(_local_sqrerr,
+        ReduceOperator::SUM, EnvironmentRole::WORKER) / (fp + tp));
     _rmse = sqrt(_rmse / (fp + tp));
     _actual_ctr = tp / (fp + tp);
-    _predicted_ctr = Monitor::_context_ptr->environment->all_reduce_ele(_local_pred) / (fp + tp);
+    _predicted_ctr = environment->all_reduce(_local_pred,
+        ReduceOperator::SUM, EnvironmentRole::WORKER) / (fp + tp);
     _size = fp + tp;
     calculate_bucket_error();
 }
@@ -81,9 +73,8 @@ std::string AucMonitor::format_result() {
         copc = _actual_ctr / _predicted_ctr;
     }
     char buf[10240];
-    snprintf(buf, 10240 * sizeof(char), "%s: AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "
+    snprintf(buf, 10240 * sizeof(char), "AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "
         "Actual CTR=%.6f Predicted CTR=%.6f COPC=%.6f INS Count=%.0f",
-        Monitor::_name.c_str(), 
         _auc,
         _bucket_error,
         _mae, 
@@ -156,6 +147,8 @@ void AucMonitor::reset() {
     _local_sqrerr = 0;
     _local_pred = 0;
 }
+
+REGIST_CLASS(Monitor, AucMonitor);
 
 }  // namespace feed
 }  // namespace custom_trainer
