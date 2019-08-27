@@ -32,7 +32,7 @@ def inference():
     net = fluid.layers.fc(net, 128, act='relu', name='fc_7')
 
     ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr')
-    return [], [], [cvm_input], [ctr_output], monitors
+    return {'accessors': [], 'monitors': [], 'sparses': [], 'inputs': [cvm_input], 'outputs': [ctr_output]}
 
 def loss_function(ctr_output):
     """

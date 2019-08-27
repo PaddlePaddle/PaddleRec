@@ -95,8 +95,14 @@ class ModelBuilder:
         main_program = fluid.Program()
         startup_program = fluid.Program()
         with fluid.program_guard(main_program, startup_program):
-            #TODO return dict maybe better ?
-            input_accessor, sparses, inputs, outputs, monitors = self._inference()
+            #input_accessor, sparses, inputs, outputs, monitors 
+            inference_info = self._inference()
+            inputs = inference_info['inputs']            
+            outputs = inference_info['outputs']            
+            sparses = inference_info['sparses']            
+            monitors = inference_info['monitors']            
+            input_accessor = inference_info['accessors']            
+
             test_program = main_program.clone(for_test=True)
             loss, labels = self._loss_function(*outputs)
 
@@ -149,7 +155,7 @@ class ModelBuilder:
             'loss': loss.name,
             'input_accessor': input_accessor,
             'monitor': monitors,
-            'aa_Attention' : 'Do Not Modify This File Manually, Unless You Really Know It'
+            'aa_Attention': 'Do Not Modify This File Manually, Unless You Really Know It'
         }
 
         with open(model_desc_path, 'w') as f:

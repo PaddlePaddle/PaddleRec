@@ -43,7 +43,7 @@ def inference():
         { "name": "day_auc", "class": "AucMonitor", "target": ctr_output, "compute_interval": 86400 }
     ]
 
-    return accessors, [sparse_cvm], [cvm_input], [ctr_output], monitors
+    return {'accessors': accessors, 'monitors': monitors, 'sparses': [sparse_cvm], 'inputs': [cvm_input], 'outputs': [ctr_output]}
 
 def loss_function(ctr_output):
     """
