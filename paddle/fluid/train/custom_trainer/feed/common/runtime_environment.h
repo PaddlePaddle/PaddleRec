@@ -72,6 +72,10 @@ public:
     virtual void barrier(EnvironmentRole role) = 0;
     // bcast 广播
     virtual void bcast(paddle::framework::BinaryArchive& ar, int root_id, EnvironmentRole role) = 0;
+    // all_reduce sum element 规约元素
+    virtual double all_reduce_ele(double x) = 0;
+    // all_reduce sum array 规约数组
+    virtual void all_reduce_arr(double* x, int n) = 0;
     // 接口只允许在主线程调用   End
 protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
