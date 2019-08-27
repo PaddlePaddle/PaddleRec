@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <omp.h>
 
+#include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 #include "paddle/fluid/framework/tensor_util.h"
 #include "paddle/fluid/framework/program_desc.h"
@@ -22,7 +23,7 @@ const char test_data_dir[] = "test_data";
 class DataReaderTest : public testing::Test {
 public:
     static void SetUpTestCase() {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->mkdir(test_data_dir);
         shell_set_verbose(true);
 
@@ -42,14 +43,14 @@ public:
     }
 
     static void TearDownTestCase() {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->remove(test_data_dir);
     }
 
     virtual void SetUp() {
         thread_num = omp_get_max_threads();
         omp_set_num_threads(1);
-        fs.reset(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        fs.reset(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         context_ptr.reset(new TrainerContext());
     }
 
@@ -65,7 +66,7 @@ public:
 };
 
 TEST_F(DataReaderTest, LineDataParser) {
-    std::unique_ptr<DataParser> data_parser(CREATE_CLASS(DataParser, "LineDataParser"));
+    std::unique_ptr<DataParser> data_parser(CREATE_INSTANCE(DataParser, "LineDataParser"));
 
     ASSERT_NE(nullptr, data_parser);
     auto config = YAML::Load("");
@@ -94,7 +95,7 @@ TEST_F(DataReaderTest, LineDataParser) {
 }
 
 TEST_F(DataReaderTest, LineDataReader) {
-    std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
+    std::unique_ptr<DataReader> data_reader(CREATE_INSTANCE(DataReader, "LineDataReader"));
     ASSERT_NE(nullptr, data_reader);
 
     auto config = YAML::Load(
@@ -147,7 +148,7 @@ TEST_F(DataReaderTest, LineDataReader) {
 }
 
 TEST_F(DataReaderTest, LineDataReader_filename_prefix) {
-    std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
+    std::unique_ptr<DataReader> data_reader(CREATE_INSTANCE(DataReader, "LineDataReader"));
     ASSERT_NE(nullptr, data_reader);
     auto config = YAML::Load(
             "parser:\n"
@@ -182,7 +183,7 @@ TEST_F(DataReaderTest, LineDataReader_filename_prefix) {
 }
 
 TEST_F(DataReaderTest, LineDataReader_FileSystem) {
-    std::unique_ptr<DataReader> data_reader(CREATE_CLASS(DataReader, "LineDataReader"));
+    std::unique_ptr<DataReader> data_reader(CREATE_INSTANCE(DataReader, "LineDataReader"));
     ASSERT_NE(nullptr, data_reader);
     auto config = YAML::Load(
             "parser:\n"

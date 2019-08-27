@@ -29,14 +29,17 @@ public:
     virtual DatasetStatus epoch_data_status(uint64_t epoch_id);
     virtual DatasetStatus epoch_data_status(const std::string& data_name, uint64_t epoch_id);
 
+    //获取数据路径
+    virtual std::vector<std::string> epoch_data_path(uint64_t epoch_id);
+    virtual std::vector<std::string> epoch_data_path(const std::string& data_name, uint64_t epoch_id);
+
     //返回各DataContainer内的原始数据(maybe 压缩格式)
     virtual ::paddle::framework::Channel<DataItem> fetch_data(
             const std::string& data_name, uint64_t epoch_id);
 
-    //以管道形式返回标准样本流，管道内会对数据做异步转换
-    virtual SampleInstancePipe fetch_sample(
-            const std::string& data_name, uint32_t batch_size, uint64_t epoch_id);
-     
+    //获取DataItem解析器
+    virtual const DataParser* data_parser(const std::string& data_name);
+    
 private: 
     std::unordered_map<std::string, std::shared_ptr<DatasetContainer>> _data_containers;
 };

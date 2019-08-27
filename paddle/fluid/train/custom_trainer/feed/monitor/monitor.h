@@ -43,7 +43,7 @@ protected:
     std::shared_ptr<TrainerContext> _context_ptr;
 };
 
-REGISTER_REGISTERER(Monitor);
+REGIST_REGISTERER(Monitor);
 
 }  // namespace feed
 }  // namespace custom_trainer

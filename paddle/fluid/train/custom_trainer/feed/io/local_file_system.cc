@@ -64,10 +64,10 @@ public:
         if (path == "") {
             return {};
         }
-
+        int err_no;
         std::shared_ptr<FILE> pipe;
         pipe = shell_popen(
-                string::format_string("find %s -maxdepth 1 -type f", path.c_str()), "r", &_err_no);
+                string::format_string("find %s -maxdepth 1 -type f", path.c_str()), "r", &err_no);
         string::LineFileReader reader;
         std::vector<std::string> list;
 
@@ -78,12 +78,12 @@ public:
         return list;
     }
 
-    std::string tail(const std::string& path) override {
+    std::string tail(const std::string& path,  size_t tail_num = 1) override {
         if (path == "") {
             return "";
         }
 
-        return shell_get_command_output(string::format_string("tail -1 %s ", path.c_str()));
+        return shell_get_command_output(string::format_string("tail -%u %s ", tail_num, path.c_str()));
     }
 
     bool exists(const std::string& path) override {
@@ -115,7 +115,7 @@ public:
 private:
     size_t _buffer_size = 0;
 };
-REGISTER_CLASS(FileSystem, LocalFileSystem);
+REGIST_CLASS(FileSystem, LocalFileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

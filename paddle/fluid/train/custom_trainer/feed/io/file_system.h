@@ -21,24 +21,14 @@ public:
     virtual int64_t file_size(const std::string& path) = 0;
     virtual void remove(const std::string& path) = 0;
     virtual std::vector<std::string> list(const std::string& path) = 0;
-    virtual std::string tail(const std::string& path) = 0;
+    virtual std::string tail(const std::string& path, size_t tail_num = 1) = 0;
     virtual bool exists(const std::string& path) = 0;
     virtual void mkdir(const std::string& path) = 0;
     virtual std::string path_join(const std::string& dir, const std::string& path);
     virtual std::pair<std::string, std::string> path_split(const std::string& path);
-    virtual int err_no() const {
-        return _err_no;
-    }
-    inline operator bool() {
-        return err_no() == 0;
-    }
-    virtual void reset_err_no() {
-        _err_no = 0;
-    }
 protected:
-    int _err_no = 0;
 };
-REGISTER_REGISTERER(FileSystem);
+REGIST_REGISTERER(FileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

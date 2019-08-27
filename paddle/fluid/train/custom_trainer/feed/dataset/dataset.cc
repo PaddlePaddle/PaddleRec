@@ -48,30 +48,30 @@ inline DatasetStatus Dataset::epoch_data_status(
     return _data_containers[data_name]->epoch_data_status(epoch_id);
 }
 
+inline std::vector<std::string> Dataset::epoch_data_path(
+    const std::string& data_name, uint64_t epoch_id) {
+    return _data_containers[data_name]->epoch_data_path(epoch_id);
+}
+
+inline std::vector<std::string> Dataset::epoch_data_path(uint64_t epoch_id) {
+    std::vector<std::string> results;
+    for (auto it = _data_containers.begin(); it != _data_containers.end(); ++it) {
+        auto items = std::move(it->second->epoch_data_path(epoch_id));
+        for (auto& item : items) {
+            results.emplace_back(item);
+        }
+    }
+    return results;
+}
+
 inline ::paddle::framework::Channel<DataItem> Dataset::fetch_data(
     const std::string& data_name, uint64_t epoch_id) {
     return _data_containers[data_name]->fetch(epoch_id);
 }
 
-SampleInstancePipe Dataset::fetch_sample(
-    const std::string& data_name, uint32_t batch_size, uint64_t epoch_id) {
+inline const DataParser* Dataset::data_parser(const std::string& data_name) {
     auto* data_container = _data_containers[data_name].get();
-    auto data_channel = data_container->fetch(epoch_id);
-    const auto* data_parser = data_container->data_parser();
-    PipelineOptions options;
-    options.batch_size = batch_size;
-    options.need_hold_input_data = true;
-    options.buffer_data_num = batch_size * 10;
-    SampleInstancePipe pipe = make_sample_instance_channel();
-    pipe->initialize(options, data_channel, 
-        [data_parser] (const DataItem* data, SampleInstance* sample, size_t num) -> int {
-            int ret = 0;
-            for (int i = 0; i < num; ++i, ++data, ++sample) {
-                ret |= data_parser->parse_to_sample(*data, *sample);
-            }
-            return ret;
-    });
-    return pipe;
+    return data_container->data_parser();
 }
      
 

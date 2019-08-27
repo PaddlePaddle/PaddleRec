@@ -18,9 +18,11 @@ def inference():
         list<Variable>: outputs
     """
     # TODO: build network here
-    cvm_input = fluid.layers.data(name='cvm_input', shape=[4488], dtype='float32')
+    cvm_input = fluid.layers.data(name='cvm_input', shape=[4488], dtype='float32', stop_gradient=False)
 
     net = cvm_input
+    net = fluid.layers.data_norm(input=net, name="bn6048", epsilon=1e-4,
+        param_attr={"batch_size":1e4, "batch_sum_default":0.0, "batch_square":1e4})
     net = fluid.layers.fc(net, 512, act='relu', name='fc_1')
     net = fluid.layers.fc(net, 256, act='relu', name='fc_2')
     net = fluid.layers.fc(net, 256, act='relu', name='fc_3')

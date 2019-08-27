@@ -12,51 +12,21 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
-class LineDataParser : public DataParser {
-public:
-    LineDataParser() {}
-
-    virtual ~LineDataParser() {}
-
-    virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
-        return 0;
+int LineDataParser::parse(const char* str, size_t len, DataItem& data) const {
+    size_t pos = 0;
+    while (pos < len && str[pos] != ' ') {
+        ++pos;
     }
-
-    virtual int parse(const char* str, size_t len, DataItem& data) const {
-        size_t pos = 0;
-        while (pos < len && str[pos] != ' ') {
-            ++pos;
-        }
-        if (pos >= len) {
-            VLOG(2) << "fail to parse line: " << std::string(str, len) << ", strlen: " << len;
-            return -1;
-        }
-        VLOG(5) << "getline: " << str << " , pos: " << pos << ", len: " << len;
-        data.id.assign(str, pos);
-        data.data.assign(str + pos + 1, len - pos - 1);
-        return 0;
+    if (pos >= len) {
+        VLOG(2) << "fail to parse line: " << std::string(str, len) << ", strlen: " << len;
+        return -1;
     }
-
-    virtual int parse(const char* str, DataItem& data) const {
-        size_t pos = 0;
-        while (str[pos] != '\0' && str[pos] != ' ') {
-            ++pos;
-        }
-        if (str[pos] == '\0') {
-            VLOG(2) << "fail to parse line: " << str << ", get '\\0' at pos: " << pos;
-            return -1;
-        }
-        VLOG(5) << "getline: " << str << " , pos: " << pos;
-        data.id.assign(str, pos);
-        data.data.assign(str + pos + 1);
-        return 0;
-    }
-
-    virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const {
-        return 0;
-    }
-};
-REGISTER_CLASS(DataParser, LineDataParser);
+    VLOG(5) << "getline: " << str << " , pos: " << pos << ", len: " << len;
+    data.id.assign(str, pos);
+    data.data.assign(str + pos + 1, len - pos - 1);
+    return 0;
+}
+REGIST_CLASS(DataParser, LineDataParser);
 
 /********************************
  * feasign压缩格式
@@ -335,10 +305,6 @@ public:
         return 0;
     }
 
-    virtual int parse(const char* str, DataItem& data) const {
-
-    }
-
     virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const {
         instance.id = data.id;
         if (data.data.empty()) {
@@ -428,10 +394,10 @@ private:
     std::shared_ptr<SignCacheDict> _index;
 
 };
-REGISTER_CLASS(DataParser, ArchiveDataParse);
+REGIST_CLASS(DataParser, ArchiveDataParse);
 
 int DataReader::initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
-    _parser.reset(CREATE_CLASS(DataParser, config["parser"]["class"].as<std::string>()));
+    _parser.reset(CREATE_INSTANCE(DataParser, config["parser"]["class"].as<std::string>()));
     if (_parser == nullptr) {
         VLOG(2) << "fail to get parser: " << config["parser"]["class"].as<std::string>();
         return -1;
@@ -457,7 +423,7 @@ public:
 
         if (config["file_system"] && config["file_system"]["class"]) {
             _file_system.reset(
-                    CREATE_CLASS(FileSystem, config["file_system"]["class"].as<std::string>()));
+                    CREATE_INSTANCE(FileSystem, config["file_system"]["class"].as<std::string>()));
             if (_file_system == nullptr ||
                 _file_system->initialize(config["file_system"], context) != 0) {
                 VLOG(2) << "fail to create class: "
@@ -467,7 +433,7 @@ public:
         } else if (context->file_system != nullptr) { 
             _file_system = context->file_system;
         } else {
-            _file_system.reset(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+            _file_system.reset(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
             if (_file_system == nullptr || _file_system->initialize(YAML::Load(""), context) != 0) {
                 VLOG(2) << "fail to init file system";
                 return -1;
@@ -565,11 +531,6 @@ public:
                 is_failed = true;
                 continue;
             }
-            if (_file_system->err_no() != 0) {
-                _file_system->reset_err_no();
-                is_failed = true;
-                continue;
-            }
         }
         // omp end
 
@@ -593,7 +554,7 @@ private:
     std::string _filename_prefix;
     std::shared_ptr<FileSystem> _file_system;
 };
-REGISTER_CLASS(DataReader, LineDataReader);
+REGIST_CLASS(DataReader, LineDataReader);
 
 }  // namespace feed
 }  // namespace custom_trainer

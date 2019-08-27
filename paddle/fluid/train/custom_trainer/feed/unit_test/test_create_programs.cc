@@ -9,6 +9,7 @@
 #include "paddle/fluid/framework/program_desc.h"
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/io/shell.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/scope_helper.h"
 #include "paddle/fluid/string/string_helper.h"
 
 namespace paddle {
@@ -28,7 +29,7 @@ class CreateProgramsTest : public testing::Test
 public:
     static void SetUpTestCase()
     {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         if (fs->exists("./scripts/create_programs.py")) {
             shell_execute(string::format_string("python ./scripts/create_programs.py ./scripts/example.py %s", test_data_dir));
         } else if (fs->exists(string::format_string("%s/scripts/create_programs.py", feed_path))) {
@@ -38,7 +39,7 @@ public:
 
     static void TearDownTestCase()
     {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->remove(test_data_dir);
     }
 
@@ -61,7 +62,7 @@ public:
 };
 
 TEST_F(CreateProgramsTest, example_network) {
-    std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
+    std::unique_ptr<Executor> executor(CREATE_INSTANCE(Executor, "SimpleExecutor"));
     ASSERT_NE(nullptr, executor);
 
     auto config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
@@ -108,8 +109,10 @@ TEST_F(CreateProgramsTest, example_network) {
     ASSERT_EQ(-1, output_shape[0]);
     ASSERT_EQ(1, output_shape[1]);
 
-    auto input_var = executor->mutable_var<::paddle::framework::LoDTensor>(input_name);
-    auto label_var = executor->mutable_var<::paddle::framework::LoDTensor>(label_name);
+    paddle::framework::Scope scope;
+    executor->initialize_scope(&scope);
+    auto input_var = ScopeHelper::mutable_var<::paddle::framework::LoDTensor>(&scope, input_name);
+    auto label_var = ScopeHelper::mutable_var<::paddle::framework::LoDTensor>(&scope, label_name);
     ASSERT_NE(nullptr, input_var);
     ASSERT_NE(nullptr, label_var);
 
@@ -125,12 +128,12 @@ TEST_F(CreateProgramsTest, example_network) {
     ASSERT_NE(nullptr, label_data);
     label_data[0] = random();
 
-    ASSERT_EQ(0, executor->run());
+    ASSERT_EQ(0, executor->run(&scope));
 
-    auto loss_var = executor->var<::paddle::framework::LoDTensor>(loss_name);
+    auto loss_var = ScopeHelper::var<::paddle::framework::LoDTensor>(&scope, loss_name);
     auto loss = loss_var.data<float>()[0];
 
-    auto output_var = executor->var<::paddle::framework::LoDTensor>(output_name);
+    auto output_var = ScopeHelper::var<::paddle::framework::LoDTensor>(&scope, output_name);
     auto output = output_var.data<float>()[0];
 
     LOG(INFO) << "loss: " << loss << std::endl;

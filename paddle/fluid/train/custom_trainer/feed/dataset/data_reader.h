@@ -20,6 +20,8 @@ namespace feed {
 class TrainerContext;
 
 struct FeatureItem {
+    std::vector<float> weights;
+    std::vector<float> gradients;
 public:
     FeatureItem() {
     }
@@ -76,13 +78,12 @@ public:
     virtual ~DataParser() {}
     virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) = 0;
     virtual int parse(const std::string& str, DataItem& data) const {
-        return parse(str.c_str(), data);
+        return parse(str.c_str(), str.size(), data);
     }
     virtual int parse(const char* str, size_t len, DataItem& data) const = 0;
-    virtual int parse(const char* str, DataItem& data) const = 0;
     virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const = 0;  
 };
-REGISTER_REGISTERER(DataParser);
+REGIST_REGISTERER(DataParser);
 
 class DataReader {
 public:
@@ -104,7 +105,24 @@ protected:
     std::shared_ptr<DataParser> _parser;//数据格式转换
     std::string _pipeline_cmd; //将文件流，重定向到pipeline_cmd，再读入
 };
-REGISTER_REGISTERER(DataReader);
+REGIST_REGISTERER(DataReader);
+
+class LineDataParser : public DataParser {
+public:
+    LineDataParser() {}
+
+    virtual ~LineDataParser() {}
+
+    virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) {
+        return 0;
+    }
+
+    virtual int parse(const char* str, size_t len, DataItem& data) const;
+
+    virtual int parse_to_sample(const DataItem& data, SampleInstance& instance) const {
+        return 0;
+    }
+};
 
 }//namespace feed
 }//namespace custom_trainer

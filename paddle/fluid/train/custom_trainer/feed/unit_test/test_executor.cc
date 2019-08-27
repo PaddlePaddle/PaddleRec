@@ -2,7 +2,9 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
+#include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/scope_helper.h"
 #include "paddle/fluid/framework/tensor_util.h"
 #include "paddle/fluid/framework/program_desc.h"
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
@@ -24,7 +26,7 @@ class SimpleExecutorTest : public testing::Test
 public:
     static void SetUpTestCase()
     {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->mkdir(test_data_dir);
         shell_set_verbose(true);
 
@@ -57,7 +59,7 @@ public:
 
     static void TearDownTestCase()
     {
-        std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+        std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
         fs->remove(test_data_dir);
     }
 
@@ -75,7 +77,7 @@ public:
 };
 
 TEST_F(SimpleExecutorTest, initialize) {
-    std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
+    std::unique_ptr<Executor> executor(CREATE_INSTANCE(Executor, "SimpleExecutor"));
     ASSERT_NE(nullptr, executor);
     YAML::Node config = YAML::Load("[1, 2, 3]");
     ASSERT_NE(0, executor->initialize(config, context_ptr));
@@ -86,13 +88,14 @@ TEST_F(SimpleExecutorTest, initialize) {
 }
 
 TEST_F(SimpleExecutorTest, run) {
-    std::unique_ptr<Executor> executor(CREATE_CLASS(Executor, "SimpleExecutor"));
+    std::unique_ptr<Executor> executor(CREATE_INSTANCE(Executor, "SimpleExecutor"));
     ASSERT_NE(nullptr, executor);
 
     auto config = YAML::Load(string::format_string("{thread_num: 2, startup_program: %s, main_program: %s}", startup_program_path, main_program_path));
     ASSERT_EQ(0, executor->initialize(config, context_ptr));
-
-    auto x_var = executor->mutable_var<::paddle::framework::LoDTensor>("x");
+    paddle::framework::Scope scope;
+    executor->initialize_scope(&scope);
+    auto x_var = ScopeHelper::mutable_var<::paddle::framework::LoDTensor>(&scope, std::string("x"));
     ASSERT_NE(nullptr, x_var);
 
     int x_len = 10;
@@ -106,9 +109,9 @@ TEST_F(SimpleExecutorTest, run) {
     }
     std::cout << std::endl;
 
-    ASSERT_EQ(0, executor->run());
+    ASSERT_EQ(0, executor->run(&scope));
 
-    auto mean_var = executor->var<::paddle::framework::LoDTensor>("mean");
+    auto mean_var = ScopeHelper::var<::paddle::framework::LoDTensor>(&scope, std::string("mean"));
     auto mean = mean_var.data<float>()[0];
     std::cout << "mean: " << mean << std::endl;
     ASSERT_NEAR(4.5, mean, 1e-9);

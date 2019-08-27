@@ -95,7 +95,7 @@ class ModelBuilder:
         main_program = fluid.Program()
         startup_program = fluid.Program()
         with fluid.program_guard(main_program, startup_program):
-            inputs, outputs = self._inference()
+            input_accessor, sparses, inputs, outputs = self._inference()
             test_program = main_program.clone(for_test=True)
             loss, labels = self._loss_function(*outputs)
 
@@ -115,14 +115,34 @@ class ModelBuilder:
                 f.write(program.desc.serialize_to_string())
 
         params = filter(fluid.io.is_parameter, main_program.list_vars())
+        vars = []
+        sums=[]
+        for param in params:
+            if param.name.find("bn") == 0:
+                sums.append({"name": param.name, "shape": param.shape});
+            else:
+                vars.append({"name": param.name, "shape": param.shape});
+
+        for accessor in input_accessor:
+            if (accessor["input"] == "sparses"):
+                accessor["input"] = sparses
+            if (accessor["input"] == "vars"):
+                accessor["input"] = vars
+            if (accessor["input"] == "sums"):
+                accessor["input"] = sums
+            if (accessor["input"] == "labels"):
+                accessor["input"] = [
+                    {"label_name": label.name, "shape": label.shape, "output_name": output.name } 
+                    for (label, output) in zip(labels, outputs) ]
+            
 
         model_desc_path = os.path.join(self._save_path, 'model.yaml')
         model_desc = {
             'inputs': [{"name": var.name, "shape": var.shape} for var in inputs],
             'outputs': [{"name": var.name, "shape": var.shape} for var in outputs],
             'labels': [{"name": var.name, "shape": var.shape} for var in labels],
-            'vars': [{"name": var.name, "shape": var.shape} for var in params],
             'loss': loss.name,
+            'input_accessor': input_accessor
         }
 
         with open(model_desc_path, 'w') as f:

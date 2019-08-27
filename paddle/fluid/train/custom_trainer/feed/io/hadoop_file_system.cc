@@ -33,6 +33,7 @@ public:
 
     std::shared_ptr<FILE> open_read(const std::string& path, const std::string& converter)
             override {
+        int err_no = 0;
         std::string cmd;
         if (string::end_with(path, ".gz")) {
             cmd = string::format_string(
@@ -43,11 +44,12 @@ public:
 
         bool is_pipe = true;
         shell_add_read_converter(cmd, is_pipe, converter);
-        return shell_open(cmd, is_pipe, "r", _buffer_size, &_err_no);
+        return shell_open(cmd, is_pipe, "r", _buffer_size, &err_no);
     }
 
     std::shared_ptr<FILE> open_write(const std::string& path, const std::string& converter)
             override {
+        int err_no = 0;
         std::string cmd =
                 string::format_string("%s -put - \"%s\"", hdfs_command(path).c_str(), path.c_str());
         bool is_pipe = true;
@@ -57,11 +59,10 @@ public:
         }
 
         shell_add_write_converter(cmd, is_pipe, converter);
-        return shell_open(cmd, is_pipe, "w", _buffer_size, &_err_no);
+        return shell_open(cmd, is_pipe, "w", _buffer_size, &err_no);
     }
 
     int64_t file_size(const std::string& path) override {
-        _err_no = -1;
         LOG(FATAL) << "not support";
         return 0;
     }
@@ -107,13 +108,13 @@ public:
         return list;
     }
 
-    std::string tail(const std::string& path) override {
+    std::string tail(const std::string& path, size_t tail_num = 1) override {
         if (path == "") {
             return "";
         }
 
         return shell_get_command_output(string::format_string(
-                "%s -text %s | tail -1 ", hdfs_command(path).c_str(), path.c_str()));
+                "%s -text %s | tail -%u", hdfs_command(path).c_str(), path.c_str(), tail_num));
     }
 
     bool exists(const std::string& path) override {
@@ -189,7 +190,7 @@ private:
     std::string _hdfs_command;
     std::unordered_map<std::string, std::string> _ugi;
 };
-REGISTER_CLASS(FileSystem, HadoopFileSystem);
+REGIST_CLASS(FileSystem, HadoopFileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer

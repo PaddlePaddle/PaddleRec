@@ -1,34 +1,56 @@
-train_thread_num : 10
+train_thread_num: 10
 
-environment :
-    environment_class : LocalRuntimeEnvironment
+environment:
+    environment_class: LocalRuntimeEnvironment
+    ps: ./conf/ps_table_config
+        
+    
 
-io :
-    file_systems :
-        afs :
-            class : HadoopFileSystem
-            buffer_size : 1024000
-            ugis : 
+io:
+    file_systems:
+        afs:
+            class: HadoopFileSystem
+            buffer_size: 1024000
+            ugis: 
                 'default': 'feed_video,D3a0z8'
                 'xingtian.afs.baidu.com:9902': 'feed_video,D3a0z8'
-        default :
-            class : LocalFileSystem
-            buffer_size : 1024000
-dataset :
-    data_list :
-        train_sample :
-            prefetch_num : 2
+        default:
+            class: LocalFileSystem
+            buffer_size: 1024000
+dataset:
+    data_list:
+        train_sample:
+            prefetch_num: 2
             root_path : [./sample]
-            data_spit_interval : 300
-            data_path_formater : '%Y%m%d/%H%M' 
-            data_reader : LineDataReader 
-            done_file : to.hadoop.done 
-            filename_prefix : part
-            pipeline_cmd : cat
-            parser :
-                class : LineDataParser 
+            data_spit_interval: 300
+            data_path_formater: '%Y%m%d/%H%M' 
+            data_reader: LineDataReader 
+            done_file: to.hadoop.done 
+            filename_prefix: part
+            pipeline_cmd: './tool/ins_weight.py | awk -f ./tool/format_newcate_hotnews.awk'
+            parser:
+                class: AbacusTextDataParser 
     
 epoch:
-    epoch_class : HourlyEpochAccessor 
-    model_root_path : ./model/
-    
+    epoch_class: TimelyEpochAccessor 
+    model_root_path: ./model/
+    train_time_interval: 600
+    time_zone_seconds: 28800
+
+executor:
+- name: join
+  class: SimpleExecutor
+  train_data_name: train_sample
+  train_batch_size: 32
+  input_parse_thread_num: 10
+  push_gradient_thread_num: 16
+  train_thread_num: 16
+  need_dump_all_model: true
+- name: update
+  class: SimpleExecutor
+  train_data_name: train_sample
+  train_batch_size: 32
+  input_parse_thread_num: 10
+  push_gradient_thread_num: 16
+  train_thread_num: 16
+  need_dump_all_model: false 

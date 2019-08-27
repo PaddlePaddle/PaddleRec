@@ -17,7 +17,7 @@ public:
         _file_system.clear();
         if (config && config["file_systems"] && config["file_systems"].Type() == YAML::NodeType::Map) {
             for (auto& prefix_fs: config["file_systems"]) {
-                std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, prefix_fs.second["class"].as<std::string>("")));
+                std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, prefix_fs.second["class"].as<std::string>("")));
                 if (fs == nullptr) {
                     LOG(FATAL)  << "fail to create class: " << prefix_fs.second["class"].as<std::string>("");
                     return -1;
@@ -31,7 +31,7 @@ public:
         }
         if (_file_system.find("default") == _file_system.end()) {
             LOG(WARNING) << "miss default file_system, use LocalFileSystem as default";
-            std::unique_ptr<FileSystem> fs(CREATE_CLASS(FileSystem, "LocalFileSystem"));
+            std::unique_ptr<FileSystem> fs(CREATE_INSTANCE(FileSystem, "LocalFileSystem"));
             if (fs == nullptr || fs->initialize(YAML::Load(""), context) != 0) {
                 return -1;
             }
@@ -62,8 +62,8 @@ public:
         return get_file_system(path)->list(path);
     }
 
-    std::string tail(const std::string& path) override {
-        return get_file_system(path)->tail(path);
+    std::string tail(const std::string& path,  size_t tail_num = 1) override {
+        return get_file_system(path)->tail(path, tail_num);
     }
 
     bool exists(const std::string& path) override {
@@ -86,29 +86,10 @@ public:
         return _file_system["default"].get();
     }
 
-    int err_no() const override {
-        if (_err_no == 0) {
-            for (const auto& file_system : _file_system) {
-                if (file_system.second->err_no() != 0) {
-                    const_cast<int&>(_err_no) = -1;
-                    break;
-                }
-            }
-        }
-        return FileSystem::err_no();
-    }
-
-    void reset_err_no() override {
-        _err_no = 0;
-        for (auto& file_system : _file_system) {
-            file_system.second->reset_err_no();
-        }
-    }
-
 private:
     std::unordered_map<std::string, std::unique_ptr<FileSystem>> _file_system;
 };
-REGISTER_CLASS(FileSystem, AutoFileSystem);
+REGIST_CLASS(FileSystem, AutoFileSystem);
 
 }  // namespace feed
 }  // namespace custom_trainer
