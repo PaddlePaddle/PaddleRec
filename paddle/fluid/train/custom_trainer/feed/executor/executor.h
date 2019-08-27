@@ -27,8 +27,6 @@ public:
     virtual uint64_t epoch_cost() const {
         return 0;
     }
-protected:
-    ::paddle::framework::Scope _scope;
 };
 REGIST_REGISTERER(Executor);
 
