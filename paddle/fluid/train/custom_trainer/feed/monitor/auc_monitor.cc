@@ -13,14 +13,8 @@ int AucMonitor::initialize(const YAML::Node& config, std::shared_ptr<TrainerCont
         _table_size = config["table_size"].as<int>();
     }
     set_table_size(_table_size);
-    _compute_interval = 3600;
     if (config["compute_interval"]) {
-        uint32_t interval = config["compute_interval"].as<uint32_t>();
-        if (interval != 3600 || interval != 86400) {
-            LOG(FATAL) << " AucMonitor config compute_interval just support hour: 3600 or day: 86400. ";
-            return -1;
-        }
-        _compute_interval = interval;
+        _compute_interval = config["compute_interval"].as<uint32_t>();
     }
 }
 
@@ -80,8 +74,7 @@ std::string AucMonitor::format_result() {
     if (fabs(_predicted_ctr) > 1e-6) {
         copc = _actual_ctr / _predicted_ctr;
     }
-    char buf[10240];
-    snprintf(buf, 10240 * sizeof(char), "%s: AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "
+    return paddle::string::format_string("%s: AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "
         "Actual CTR=%.6f Predicted CTR=%.6f COPC=%.6f INS Count=%.0f",
         Monitor::_name.c_str(), 
         _auc,
@@ -92,8 +85,6 @@ std::string AucMonitor::format_result() {
         _predicted_ctr, 
         copc,
         _size);
-
-    return std::string(buf);
 }
 
 void AucMonitor::add_unlocked(double pred, int label) {

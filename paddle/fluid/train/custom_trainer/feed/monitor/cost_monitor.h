@@ -10,7 +10,7 @@ namespace feed {
 // cost time profile
 class CostMonitor : public Monitor {
 public:
-    CostMonitor() : _total_time_ms(0), _total_cnt(0), _avg_time_ms(0) {}
+    CostMonitor() : _total_time_ms(0), _total_cnt(0), _avg_time_ms(0), _compute_interval(0) {}
     virtual ~CostMonitor() {}
 
     virtual int initialize(const YAML::Node& config,
@@ -30,7 +30,10 @@ public:
         _avg_time_ms = _total_time_ms / _total_cnt;
     }
     //基于现有结果，输出格式化的统计信息
-    virtual std::string format_result();
+    virtual std::string format_result() {
+        return paddle::string::format_string(
+                "Monitor %s: Cost Time=%lu", Monitor::_name.c_str(), _avg_time_ms);
+    }
     
     virtual void reset() {
         _total_time_ms = 0;
