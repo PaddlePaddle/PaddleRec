@@ -15,6 +15,7 @@ limitations under the License. */
 #pragma once
 #include <sstream>
 #include <string>
+#include <vector>
 #include <typeindex>
 
 namespace paddle {
