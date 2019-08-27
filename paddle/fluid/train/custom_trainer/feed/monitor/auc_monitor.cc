@@ -13,11 +13,8 @@ int AucMonitor::initialize(const YAML::Node& config, std::shared_ptr<TrainerCont
         _table_size = config["table_size"].as<int>();
     }
     set_table_size(_table_size);
-    _compute_interval = 3600;
-    if (config["compute_interval"]) {
-        _compute_interval = config["compute_interval"].as<uint32_t>();
-        CHECK(_compute_interval % 60 == 0);
-    }
+    _compute_interval = config["compute_interval"].as<uint32_t>();
+    CHECK(_compute_interval % 60 == 0);
     return 0;
 }
 
@@ -36,7 +33,6 @@ bool AucMonitor::need_compute_result(int epoch_id) {
     uint64_t epoch_time = _epoch_accessor->epoch_timestamp(epoch_id);
     return epoch_time % _compute_interval == 0;
 }
-
 void AucMonitor::compute_result() {
     auto* environment = Monitor::_context_ptr->environment.get();
     double* table[2] = {&_table[0][0], &_table[1][0]};
@@ -59,7 +55,6 @@ void AucMonitor::compute_result() {
         ReduceOperator::SUM, EnvironmentRole::WORKER) / (fp + tp);
     _rmse = sqrt(environment->all_reduce(_local_sqrerr,
         ReduceOperator::SUM, EnvironmentRole::WORKER) / (fp + tp));
-    _rmse = sqrt(_rmse / (fp + tp));
     _actual_ctr = tp / (fp + tp);
     _predicted_ctr = environment->all_reduce(_local_pred,
         ReduceOperator::SUM, EnvironmentRole::WORKER) / (fp + tp);
@@ -72,8 +67,7 @@ std::string AucMonitor::format_result() {
     if (fabs(_predicted_ctr) > 1e-6) {
         copc = _actual_ctr / _predicted_ctr;
     }
-    char buf[10240];
-    snprintf(buf, 10240 * sizeof(char), "AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "
+    return paddle::string::format_string("AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "
         "Actual CTR=%.6f Predicted CTR=%.6f COPC=%.6f INS Count=%.0f",
         _auc,
         _bucket_error,
@@ -83,8 +77,6 @@ std::string AucMonitor::format_result() {
         _predicted_ctr, 
         copc,
         _size);
-
-    return std::string(buf);
 }
 
 void AucMonitor::add_unlocked(double pred, int label) {

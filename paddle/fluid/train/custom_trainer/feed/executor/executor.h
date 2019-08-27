@@ -23,6 +23,10 @@ public:
     // 执行训练
     virtual int run(::paddle::framework::Scope* scope) = 0;
 
+    // cost time millisecond
+    virtual uint64_t epoch_cost() const {
+        return 0;
+    }
 };
 REGIST_REGISTERER(Executor);
 
