@@ -1,8 +1,13 @@
 #pragma once
 
 // Hide BLOG
+#ifndef BUTIL_LOGGING_H_
 #define BUTIL_LOGGING_H_
+#endif
+#ifndef COMPACT_GOOGLE_LOG_NOTICE
 #define COMPACT_GOOGLE_LOG_NOTICE COMPACT_GOOGLE_LOG_INFO
+#endif 
+
 #include "communicate/ps_server.h"
 #include "communicate/ps_client.h"
 

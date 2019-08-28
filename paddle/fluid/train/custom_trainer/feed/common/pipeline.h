@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include "paddle/fluid/framework/archive.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/bthread_task_runner.h"
 
 namespace paddle {
 namespace custom_trainer {
@@ -18,7 +19,6 @@ class PipelineOptions {
 public:
     PipelineOptions() = default;
     uint32_t batch_size        = 10;        // pipe输出的batch大小
-    uint32_t thread_num        = 1;         // converter的并发线程数
     float input_output_rate    = 1;         // 输入/输出 qps流量比
     uint32_t buffer_batch_count    = 4;     // pipe预存count组batch数据
     bool need_hold_input_data      = false; // 是否保存input流数据，否则消费后释放
@@ -56,9 +56,7 @@ public:
         _output_channel->SetBlockSize(options.batch_size);
         size_t input_batch_size = options.batch_size * options.input_output_rate;
         _input_channel->SetBlockSize(input_batch_size);
-        _input_data_buffer.resize(input_batch_size * options.buffer_batch_count);
-        _output_data_buffer.resize(options.batch_size * options.buffer_batch_count);
-        _output_channel->SetCapacity(_output_data_buffer.size());
+        _output_channel->SetCapacity(options.batch_size * options.buffer_batch_count);
         if (_options.need_hold_input_data) {
             _input_channel_backup = ::paddle::framework::MakeChannel<TypeIn>();
             _input_channel_backup->SetBlockSize(input_batch_size);
@@ -75,7 +73,7 @@ public:
         PipelineOptions& options, PipeDataConverter data_converter) {
         // 保证全局batch一致
         options.batch_size = pre_pipeline.options().batch_size / options.input_output_rate;
-        return initialize(pre_pipeline.options(), pre_pipeline.output_chnnel(), data_converter);
+        return initialize(options, pre_pipeline.output_chnnel(), data_converter);
     }
     
     virtual ~Pipeline() {
@@ -106,23 +104,39 @@ public:
 private:
     void async_convert_data() {
         size_t input_batch_size = _options.batch_size * _options.input_output_rate;
+        size_t input_data_max = input_batch_size * _options.buffer_batch_count;
+        std::atomic<int> parsing_num(0);
         while (!_is_read_end) {
-            while (_output_channel->Size() < _input_data_buffer.size()) {
-                size_t read_size = _input_channel->
-                    Read(input_batch_size, &_input_data_buffer[0]);
+            while (!_is_read_end && parsing_num < input_data_max) {
+                auto input_data_buffer = std::make_shared<std::vector<TypeIn>>(input_batch_size);
+                size_t read_size = _input_channel->Read(input_batch_size, input_data_buffer->data());
                 if (read_size == 0) {
                     _is_read_end = true;
                     break;
                 }
-                size_t write_size = 0;
-                CHECK(_converter(&_input_data_buffer[0], read_size,
-                    &_output_data_buffer[0], &write_size, 0) == 0) << "Data Converter Do Failed";
-                _output_channel->WriteMove(write_size, &_output_data_buffer[0]);
-                if (_input_channel_backup) {
-                    _input_channel_backup->WriteMove(read_size, &_input_data_buffer[0]);
-                }
+                parsing_num += read_size;
+                BthreadTaskRunner::instance().add_task(
+                    [this, &parsing_num, read_size, input_data_buffer](){
+                    size_t write_size = 0;
+                    std::vector<TypeOut> output_data_buffer(_options.batch_size);
+                    _converter(input_data_buffer->data(), read_size,
+                            &output_data_buffer[0], &write_size, 0);
+                    _output_channel->WriteMove(write_size, &output_data_buffer[0]);
+                    if (_input_channel_backup) {
+                        _input_channel_backup->WriteMove(read_size, input_data_buffer->data());
+                    }
+                    parsing_num -= read_size;
+                });
             }  
-            sleep(1);
+            // 离线场景，batch消费间的buffer充足，允许的gap时间较大
+            // 使用sleep会相对condition或yeild更省资源，且不影响吞吐 
+            // 可以考虑添加参数选项，以适应其它场景，这里只针对离线场景实现。
+            while (!_is_read_end && parsing_num >= input_data_max) {
+                usleep(50000); // 50ms
+            }
+        }
+        while (parsing_num > 0) {
+            usleep(100000);   // 100ms
         }
         _output_channel->Close();
         if (_input_channel_backup) {
@@ -136,8 +150,6 @@ private:
     bool _is_read_end = false;                                     //标识输入流读取完成
     PipelineOptions _options;                                      //pipe参数
     PipeDataConverter _converter;                                  //converter
-    std::vector<TypeIn> _input_data_buffer;                        //输入数据buffer
-    std::vector<TypeOut> _output_data_buffer;                      //出数据buffer
     std::shared_ptr<std::thread> _convert_thread;                  //异步convert
     ::paddle::framework::Channel<TypeIn> _input_channel;           //输入流
     ::paddle::framework::Channel<TypeIn> _input_channel_backup;    //备份原始输入流

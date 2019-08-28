@@ -12,9 +12,12 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
     _trainer_context = context_ptr.get();
     _train_data_name = exe_config["train_data_name"].as<std::string>();
     _train_batch_size = exe_config["train_batch_size"].as<int>();
+
+    // 暂未使用，后续各流考虑独立线程池，或设置流数据的优先级
     _input_parse_thread_num = exe_config["input_parse_thread_num"].as<int>();
     _push_gradient_thread_num = exe_config["push_gradient_thread_num"].as<int>();
     _train_thread_num = exe_config["train_thread_num"].as<int>();
+
     _need_dump_all_model = exe_config["need_dump_all_model"].as<bool>();
     CHECK(_train_thread_num > 0 && _train_batch_size > 0);
     _thread_executors.resize(_train_thread_num);
@@ -84,7 +87,6 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     PipelineOptions input_pipe_option;
     input_pipe_option.need_hold_input_data = true;
     input_pipe_option.batch_size = 1;
-    input_pipe_option.thread_num = _input_parse_thread_num;
     input_pipe_option.input_output_rate = _train_batch_size;
     input_pipe_option.buffer_batch_count = _train_thread_num;
     auto input_pipe = std::make_shared<Pipeline<DataItem, ScopePoolObj>>();
@@ -113,8 +115,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     // 训练流
     PipelineOptions train_pipe_option;
     train_pipe_option.input_output_rate = 1;
-    train_pipe_option.thread_num = _train_thread_num;
-    train_pipe_option.buffer_batch_count = 2 * _train_thread_num;
+    train_pipe_option.buffer_batch_count = _train_thread_num;
     auto train_pipe = std::make_shared<Pipeline<ScopePoolObj, ScopePoolObj>>();
     train_pipe->connect_to(*input_pipe, train_pipe_option, 
         [this] (ScopePoolObj* in_items, size_t in_num, 
@@ -126,13 +127,12 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                 out_items[out_idx] = std::move(in_items[out_idx]);
             }
             return 0;
-        });
+    });
 
     // 梯度回传流
     PipelineOptions gradient_pipe_option;
     gradient_pipe_option.input_output_rate = 1;
-    gradient_pipe_option.thread_num = _push_gradient_thread_num;
-    gradient_pipe_option.buffer_batch_count = 2 * _train_thread_num;
+    gradient_pipe_option.buffer_batch_count = _train_thread_num;
     auto gradient_pipe = std::make_shared<Pipeline<ScopePoolObj, int>>();
     gradient_pipe->connect_to(*train_pipe, gradient_pipe_option, 
         [epoch_id, this] (ScopePoolObj* in_items, size_t in_num, 
@@ -155,7 +155,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                 delete[] samples; // 所有pipe完成后，再回收sample
             }
             return 0;
-        });
+    });
 
     // 等待训练流结束
     std::vector<int> gradient_status;
