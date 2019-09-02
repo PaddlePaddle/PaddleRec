@@ -10,6 +10,7 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 class MultiThreadExecutor;
+class ScopeExecutorContext;
 
 class Monitor {
 public:
@@ -25,8 +26,8 @@ public:
     }
 
     //添加一项记录，统计内容Monitor自行从Executor按需获取
-    virtual void add_data(int epoch_id, const MultiThreadExecutor* executor, 
-            SampleInstance* samples, size_t num) = 0;
+    virtual void add_data(int epoch_id, 
+        const MultiThreadExecutor* executor, ScopeExecutorContext*) = 0;
     
     //是否对于当前epoch_id进行结果统计
     virtual bool need_compute_result(int epoch_id) = 0;

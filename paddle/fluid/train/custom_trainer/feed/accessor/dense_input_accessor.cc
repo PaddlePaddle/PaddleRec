@@ -1,8 +1,12 @@
+#include <sstream>
+#include "gflags/gflags.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/input_data_accessor.h"
 
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
+
+DEFINE_string(feed_trainer_debug_dense_name, "", "open dense debug for specif layer_name");
     
 int DenseInputAccessor::initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr) {
@@ -85,7 +89,6 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
         }
         _pull_mutex.unlock();
     }
-
     size_t data_buffer_idx = 0;
     for (auto& variable : _x_variables) {
         auto* shape_ptr = &(variable.shape[0]);
@@ -96,6 +99,26 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
         auto* var_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
         memcpy(var_data, _data_buffer + data_buffer_idx, variable.dim * sizeof(float));
         data_buffer_idx += variable.dim;
+    }
+    if (!FLAGS_feed_trainer_debug_dense_name.empty()) {
+        data_buffer_idx = 0;
+        std::stringstream ssm;
+        for (auto& variable : _x_variables) {
+            if (variable.name != FLAGS_feed_trainer_debug_dense_name) {
+                data_buffer_idx += variable.dim;
+                continue;
+            }
+            ssm.str("");
+            auto& tensor = ScopeHelper::var<paddle::framework::LoDTensor>(scope, variable.name);  
+            const auto* var_data = tensor.data<float>();
+            for (size_t data_idx = 0; data_idx < variable.dim; ++data_idx) {
+                if (data_idx > 0)
+                    ssm << ",";
+                ssm << _data_buffer[data_buffer_idx + data_idx];
+            }
+            data_buffer_idx += variable.dim;
+            VLOG(2) << "[DEBUG]pull_dense: " << ssm.str();
+        }
     }
     if (_need_async_pull) {
         ++_pull_request_num;
@@ -118,7 +141,25 @@ int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
     }
     auto* ps_client = _trainer_context->pslib->ps_client();
     auto push_status = ps_client->push_dense(regions.data(), regions.size(), _table_id);
-    //return push_status.get();
+    //push_status.get();
+    if (!FLAGS_feed_trainer_debug_dense_name.empty()) {
+        std::stringstream ssm;
+        for (auto& variable : _x_variables) {
+            ssm.str("");
+            if (variable.name != FLAGS_feed_trainer_debug_dense_name) {
+                continue;
+            }
+            auto& tensor = scope->Var(variable.gradient_name)->
+                Get<paddle::framework::LoDTensor>(); 
+            const auto* var_data = tensor.data<float>();
+            for (size_t data_idx = 0; data_idx < variable.dim; ++data_idx) {
+                if (data_idx > 0)
+                    ssm << ",";
+                ssm << var_data[data_idx];
+            }
+            VLOG(2) << "[DEBUG]push_dense: " << ssm.str();
+        }
+    }
     return 0;
 }
 

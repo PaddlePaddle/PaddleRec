@@ -46,6 +46,15 @@ public:
     virtual ~RuntimeEnvironment();
     // 配置初始化
     virtual int initialize(YAML::Node config) = 0;
+
+    // job 信息
+    virtual std::string job_id() {
+        return _job_id;
+    }
+    virtual std::string job_name() {
+        return _job_name;
+    }
+
     // 设置role
     virtual int add_role(EnvironmentRole role) = 0;
     // 判断role
@@ -90,8 +99,20 @@ public:
 protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
         EnvironmentLogLevel level,  const std::string& log_str) = 0;
+
+    std::string _job_id = "default_job_id";
+    std::string _job_name = "default_job_name";
 };
 REGIST_REGISTERER(RuntimeEnvironment);
+
+#define ENVLOG_WORKER_ALL_NOTICE \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::ALL_LOG, EnvironmentLogType::NOTICE, 
+#define ENVLOG_WORKER_MASTER_NOTICE \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogType::NOTICE, 
+#define ENVLOG_WORKER_ALL_ERROR \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::ALL_LOG, EnvironmentLogType::ERROR, 
+#define ENVLOG_WORKER_MASTER_ERROR \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogType::ERROR, 
 
 std::string format_timestamp(time_t time, const char* format);
 inline std::string format_timestamp(time_t time, const std::string& format) {

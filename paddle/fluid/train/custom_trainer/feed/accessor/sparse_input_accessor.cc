@@ -1,9 +1,13 @@
 #include <math.h>
 #include <vector>
 #include <utility>
+#include <sstream>
+#include "gflags/gflags.h"
 #include "paddle/fluid/string/string_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/scope_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/input_data_accessor.h"
+
+DEFINE_int32(feed_trainer_debug_sparse_slot, 0, "open sparse debug for specif slot");
 
 namespace paddle {
 namespace custom_trainer {
@@ -99,6 +103,30 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
             }
         }
     }
+    if (FLAGS_feed_trainer_debug_sparse_slot) {
+        std::stringstream ssm;
+        for (size_t samp_idx = 0; samp_idx < num; ++samp_idx) {
+            ssm.str("");
+            auto& features = samples[samp_idx].features;
+            for (auto& feature_item : features) {
+                for (size_t i = 0; i < _x_variables.size(); ++i) {
+                    auto& variable = _x_variables[i];
+                    if (feature_item.slot() != FLAGS_feed_trainer_debug_sparse_slot) {
+                        continue;
+                    }
+                    if (variable.slot_idx[feature_item.slot()] < 0) {
+                        continue;
+                    }
+                    ssm << "(" << feature_item.sign() << "," << feature_item.slot();
+                    for (auto weight : feature_item.weights) {
+                        ssm << "," << weight;    
+                    }
+                    ssm << ")";
+                }
+            }
+            VLOG(2) << "[DEBUG][sparse_slot_pull]" << ssm.str();
+        }
+    }
     // Variable后置处理
     for (size_t i = 0; i < _x_variables.size(); ++i) {
         auto& variable = _x_variables[i];
@@ -145,11 +173,36 @@ int32_t BaseSparseInputAccessor::backward(SampleInstance* samples,
                 const float* grad_data = var_runtime_data[i].gradient_data +  
                     samp_idx * variable.total_dim + variable.slot_dim * slot_idx; 
                 fill_gradient(&(feature_item.gradients[0]), grad_data, 
-                    *value_accessor, variable, samples[samp_idx]);
+                    *value_accessor, variable, samples[samp_idx], feature_item);
                 keys[key_idx] = feature_item.sign();
                 push_values[key_idx++] = &(feature_item.gradients[0]);
             }
         }
+    }
+    if (FLAGS_feed_trainer_debug_sparse_slot) {
+        size_t key_idx = 0;
+        std::stringstream ssm;
+        for (size_t samp_idx = 0; samp_idx < num; ++samp_idx) {
+            ssm.str("");
+            auto& features = samples[samp_idx].features;
+            for (auto& feature_item : features) {
+                for (size_t i = 0; i < _x_variables.size(); ++i) {
+                    auto& variable = _x_variables[i];
+                    if (feature_item.slot() != FLAGS_feed_trainer_debug_sparse_slot) {
+                        continue;
+                    }
+                    if (variable.slot_idx[feature_item.slot()] < 0) { 
+                        continue;
+                    }
+                    ssm << "(" << feature_item.sign() << "," << feature_item.slot();
+                    for (auto weight : feature_item.gradients) {
+                        ssm << "," << weight;    
+                    }
+                    ssm << ")";
+                }
+            }
+            VLOG(2) << "[DEBUG][sparse_slot_push]" << ssm.str();
+        }   
     }
     auto push_status = ps_client->push_sparse(_table_id, 
         keys.data(), (const float**)push_values, key_idx);
@@ -180,8 +233,8 @@ public:
     }
 
     virtual void fill_gradient(float* push_value, const float* gradient_raw,
-        paddle::ps::ValueAccessor& value_accessor, 
-        SparseInputVariable& variable, SampleInstance& sample) {
+        paddle::ps::ValueAccessor& value_accessor, SparseInputVariable& variable, 
+        SampleInstance& sample, FeatureItem& feature) {
         // join阶段不回填梯度
         CHECK(false);
         return;
@@ -207,12 +260,13 @@ public:
     }
 
     virtual void fill_gradient(float* push_value, const float* gradient_raw,
-        paddle::ps::ValueAccessor& value_accessor, 
-        SparseInputVariable& variable, SampleInstance& sample) {
-        push_value[0] += 1;
-        push_value[1] += sample.labels[0];
+        paddle::ps::ValueAccessor& value_accessor, SparseInputVariable& variable, 
+        SampleInstance& sample, FeatureItem& feature) {
+        push_value[0] = feature.slot();
+        push_value[1] += 1;
+        push_value[2] += sample.labels[0];
         for (size_t i = 0; i < variable.slot_dim; ++i) {
-            push_value[i + 2] += gradient_raw[i];
+            push_value[i + 3] += gradient_raw[i];
         }
         return;
     }

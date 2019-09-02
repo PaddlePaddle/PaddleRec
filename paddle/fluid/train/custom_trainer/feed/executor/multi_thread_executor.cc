@@ -1,3 +1,4 @@
+#include "paddle/fluid/platform/timer.h"
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/monitor/monitor.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/multi_thread_executor.h"
@@ -94,20 +95,22 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
         [this, parser](DataItem* item, size_t item_num, 
             ScopePoolObj* scope, size_t* scope_num, size_t thread_idx) -> int {
             *scope_num = 1;
+            paddle::platform::Timer timer;
+            timer.Start();
             auto scope_obj = _scope_obj_pool->get();   
-            auto* samples = new SampleInstance[item_num];
+            auto* scope_context = new ScopeExecutorContext(item_num);
+            auto* samples = scope_context->samples();
             for (size_t i = 0; i <item_num; ++i) {
                 CHECK(parser->parse_to_sample(item[i], samples[i]) == 0);
             }
             for (size_t i = 0; i < _input_accessors.size(); ++i) {
                 _input_accessors[i]->forward(samples, item_num, scope_obj.get());
             }
-            int64_t data_for_scope = (int64_t)samples;
+            timer.Pause();
+            scope_context->prepare_cost_ms = timer.ElapsedMS(); 
+            int64_t data_for_scope = (int64_t)scope_context;
             ScopeHelper::fill_value(scope_obj.get(), _trainer_context->cpu_place,
-                "sample_data", data_for_scope);
-            data_for_scope = (int64_t)item_num;
-            ScopeHelper::fill_value(scope_obj.get(), _trainer_context->cpu_place,
-                "sample_num", data_for_scope);
+                "scope_context", data_for_scope);
             *scope = std::move(scope_obj);
             return 0;
         });
@@ -123,7 +126,14 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
             auto* executor = _thread_executors[thread_idx].get();
             size_t& out_idx = *out_num;
             for (out_idx = 0; out_idx < in_num; ++out_idx) {
-                CHECK(executor->run(in_items[out_idx].get()) == 0);
+                auto* scope = in_items[out_idx].get();
+                auto* scope_ctx = (ScopeExecutorContext*)(*ScopeHelper::get_value<int64_t>(
+                    scope, _trainer_context->cpu_place, "scope_context"));
+                paddle::platform::Timer timer;
+                timer.Start();
+                CHECK(executor->run(scope) == 0);
+                timer.Pause();
+                scope_ctx->executor_cost_ms = timer.ElapsedMS();
                 out_items[out_idx] = std::move(in_items[out_idx]);
             }
             return 0;
@@ -139,20 +149,24 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
             int* out_items, size_t* out_num, size_t thread_idx) -> int {
             size_t& out_idx = *out_num;
             for (out_idx = 0; out_idx < in_num; ++out_idx) {
+                paddle::platform::Timer timer;
+                timer.Start();
                 auto* scope = in_items[out_idx].get();
-                auto sample_num = *ScopeHelper::get_value<int64_t>(
-                    scope, _trainer_context->cpu_place, "sample_num");
+                auto* scope_ctx = (ScopeExecutorContext*)(*ScopeHelper::get_value<int64_t>(
+                    scope, _trainer_context->cpu_place, "scope_context"));
+                auto* samples = scope_ctx->samples();
+                auto sample_num = scope_ctx->sample_num();
                 
-                auto* samples = (SampleInstance*)(*ScopeHelper::get_value<int64_t>(
-                    scope, _trainer_context->cpu_place, "sample_data"));
                 for (size_t i = 0; i < _input_accessors.size(); ++i) {
                     out_items[out_idx] = _input_accessors[i]->
                         backward(samples, sample_num, scope);
                 }
+                timer.Pause();
+                scope_ctx->push_gradient_cost_ms = timer.ElapsedMS();
                 for (auto& monitor : _monitors) {
-                    monitor->add_data(epoch_id, this, samples, sample_num);
+                    monitor->add_data(epoch_id, this, scope_ctx);
                 }
-                delete[] samples; // 所有pipe完成后，再回收sample
+                delete scope_ctx; // 所有pipe完成后，再回收sample
             }
             return 0;
     });
@@ -167,6 +181,8 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
             monitor->compute_result();
             VLOG(2) << "[Monitor]" << _train_exe_name << ", monitor:" << monitor->get_name()
                 << ", result:" << monitor->format_result();
+            _trainer_context->monitor_ssm << _train_exe_name << ":" << 
+                monitor->get_name() << ":" << monitor->format_result() << ","; 
             monitor->reset();
         }
     }

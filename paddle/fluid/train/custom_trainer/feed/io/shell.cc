@@ -356,6 +356,7 @@ std::string shell_get_command_output(const std::string& cmd) {
                 return reader.get();
             }
         }
+        VLOG(2) << "run shell cmd:" << cmd << ", errno:" << err_no;
     } while (err_no == -1);
     return "";
 #endif

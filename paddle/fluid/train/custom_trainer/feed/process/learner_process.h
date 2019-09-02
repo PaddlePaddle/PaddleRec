@@ -22,8 +22,6 @@ protected:
 virtual int load_model(uint64_t epoch_id);
 // 同步保存所有模型
 virtual int wait_save_model(uint64_t epoch_id, ModelSaveWay way);
-// 异步保存指定模型
-virtual std::future<int> save_model(uint64_t epoch_id, int table_id, ModelSaveWay way);
 
 private:
     std::vector<std::shared_ptr<MultiThreadExecutor>> _executors;

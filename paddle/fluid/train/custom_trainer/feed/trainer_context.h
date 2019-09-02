@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <sstream>
 #include "paddle/fluid/platform/place.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/yaml_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/pslib_warpper.h"
@@ -48,6 +49,7 @@ public:
     paddle::platform::CPUPlace cpu_place;
 
     std::shared_ptr<PSlib> pslib;
+    std::stringstream monitor_ssm;                             //记录monitor信息
     std::shared_ptr<Dataset> dataset;                          //训练样本
     std::shared_ptr<FileSystem> file_system;                   //文件操作辅助类
     std::shared_ptr<EpochAccessor> epoch_accessor;             //训练轮次控制

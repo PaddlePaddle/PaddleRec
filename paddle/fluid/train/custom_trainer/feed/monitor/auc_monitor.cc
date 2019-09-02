@@ -1,4 +1,5 @@
 #include "paddle/fluid/train/custom_trainer/feed/monitor/auc_monitor.h"
+#include "paddle/fluid/train/custom_trainer/feed/executor/multi_thread_executor.h"
 
 namespace paddle {
 namespace custom_trainer {
@@ -19,7 +20,9 @@ int AucMonitor::initialize(const YAML::Node& config, std::shared_ptr<TrainerCont
 }
 
 void AucMonitor::add_data(int epoch_id, 
-    const MultiThreadExecutor* executor, SampleInstance* samples, size_t num) {
+    const MultiThreadExecutor* executor, ScopeExecutorContext* ctx) {
+    auto num = ctx->sample_num();
+    auto* samples = ctx->samples();
     CHECK(num > 0);
     std::lock_guard<std::mutex> lock(_mutex);
     for (int i = 0; i < num; ++i) {
@@ -80,6 +83,10 @@ std::string AucMonitor::format_result() {
 }
 
 void AucMonitor::add_unlocked(double pred, int label) {
+    if (std::isnan(pred)) {
+        VLOG(2) << "pred[" << pred << "] outside of [0,1]";
+        continue;
+    }
     CHECK(pred >= 0 && pred <= 1) << "pred[" << pred << "] outside of [0,1]";
     CHECK(label == 0 || label == 1) << "label[" << label << "] invalid";
     _table[label][std::min(int(pred * _table_size), _table_size - 1)]++;

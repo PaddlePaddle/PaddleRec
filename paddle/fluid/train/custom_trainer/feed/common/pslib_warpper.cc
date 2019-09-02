@@ -38,6 +38,7 @@ int PSlib::init_server() {
             _environment->rank_id(EnvironmentRole::PSERVER));
         _server_ptr->start(); 
     }
+    _environment->barrier(EnvironmentRole::ALL);
     _environment->ps_environment()->gather_ps_servers();
     return 0;
 }

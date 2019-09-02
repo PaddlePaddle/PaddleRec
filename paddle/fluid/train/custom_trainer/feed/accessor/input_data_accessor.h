@@ -102,7 +102,8 @@ public:
         paddle::framework::Scope* scope);    
     // SparseGradValue会被依次调用，用于整理push的梯度
     virtual void fill_gradient(float* push_value, const float* gradient_raw, 
-        paddle::ps::ValueAccessor&, SparseInputVariable&, SampleInstance&) = 0;
+        paddle::ps::ValueAccessor&, SparseInputVariable&, 
+        SampleInstance&, FeatureItem&) = 0;
 
 protected:
     // 输入层列表

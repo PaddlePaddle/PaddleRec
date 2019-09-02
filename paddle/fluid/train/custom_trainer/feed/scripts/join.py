@@ -26,22 +26,33 @@ def inference():
 
     # TODO: build network here
     cvm_input = fluid.layers.data(name='cvm_input', shape=[sparse_cvm_dim(sparse_cvm)], dtype='float32', stop_gradient=False)
-
     net = cvm_input
     net = fluid.layers.data_norm(input=net, name="bn6048", epsilon=1e-4,
         param_attr={"batch_size":1e4, "batch_sum_default":0.0, "batch_square":1e4})
-    net = fluid.layers.fc(net, 511, act='relu', name='fc_1')
-    net = fluid.layers.fc(net, 255, act='relu', name='fc_2')
-    net = fluid.layers.fc(net, 255, act='relu', name='fc_3')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_4')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_5')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_6')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_7')
-
+    lr_x = 1.0
+    init_range = 0.2
+    fc_layers_size = [511, 255, 255, 127, 127, 127, 127]
+    fc_layers_act = ["relu"] * len(fc_layers_size)
+    scales_tmp = [net.shape[1]] + fc_layers_size
+    scales = []
+    for i in range(len(scales_tmp)):
+        scales.append(init_range / (scales_tmp[i] ** 0.5))
+    for i in range(len(fc_layers_size)):
+        net = fluid.layers.fc(
+            input = net,
+            size = fc_layers_size[i],
+            name = 'fc_' + str(i+1), 
+            act = fc_layers_act[i],
+            param_attr = \
+                fluid.ParamAttr(learning_rate=lr_x, \
+                initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])),
+            bias_attr = \
+                fluid.ParamAttr(learning_rate=lr_x, \
+                initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))
     ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr')
     
     accessors = [
-        { "class": "AbacusSparseUpdateAccessor", "input": "sparses", "table_id": 0, "need_gradient": False},
+        { "class": "AbacusSparseJoinAccessor", "input": "sparses", "table_id": 0, "need_gradient": False},
         { "class": "DenseInputAccessor", "input": "vars", "table_id": 1, "need_gradient": True, "async_pull": True},
         { "class": "DenseInputAccessor", "input": "sums", "table_id": 2, "need_gradient": True, "async_pull": True},
         { "class": "LabelInputAccessor", "input": "labels"}

@@ -18,8 +18,8 @@ public:
         std::shared_ptr<TrainerContext> context_ptr) override;
 
     //添加一项记录，统计内容Monitor自行从Executor按需获取
-    virtual void add_data(int epoch_id, const MultiThreadExecutor* executor, 
-            SampleInstance* samples, size_t num);
+    virtual void add_data(int epoch_id, 
+        const MultiThreadExecutor* executor, ScopeExecutorContext*);
     
     //是否开始结果统计
     virtual bool need_compute_result(int epoch_id);

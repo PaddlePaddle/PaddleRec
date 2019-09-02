@@ -73,7 +73,7 @@ public:
         }
 
         shell_execute(string::format_string(
-                "%s -rmr %s &>/dev/null; true", _hdfs_command.c_str(), path.c_str()));
+                "%s -rmr %s &>/dev/null; true", hdfs_command(path).c_str(), path.c_str()));
     }
 
     std::vector<std::string> list(const std::string& path) override {

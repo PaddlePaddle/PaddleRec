@@ -3,6 +3,7 @@
  *Train样本
  */
 #include <omp.h>
+#include "paddle/fluid/platform/timer.h"
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/dataset/dataset.h"
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
@@ -25,26 +26,18 @@ int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     return 0;
 }
 
-std::future<int> LearnerProcess::save_model(uint64_t epoch_id, int table_id, ModelSaveWay way) {
-    std::promise<int> p;
-    auto ret = p.get_future();
-    auto* ps_client = _context_ptr->pslib->ps_client();
-    auto* epoch_accessor = _context_ptr->epoch_accessor.get();
-    if (epoch_accessor->need_save_model(epoch_id, way)) {
-        VLOG(2) << "Start save model, table_id:" << table_id;
-        auto model_dir = epoch_accessor->model_save_path(epoch_id, way);
-        return ps_client->save(table_id, model_dir, std::to_string((int)way));
-    } else {
-        p.set_value(0);
-    }
-    return ret;
-}
-
 int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
+    auto* ps_client = _context_ptr->pslib->ps_client();
     auto* environment = _context_ptr->environment.get();
+    auto* epoch_accessor = _context_ptr->epoch_accessor.get();
     if (!environment->is_master_node(EnvironmentRole::WORKER)) {
         return 0;
     }
+    if (!epoch_accessor->need_save_model(epoch_id, way)) {
+        return 0;
+    }
+    paddle::platform::Timer timer;
+    timer.Start();
     std::set<uint32_t> table_set;
     for (auto& executor : _executors) {
         const auto& table_accessors = executor->table_accessors();
@@ -56,13 +49,18 @@ int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
     auto table_num = table_set.size();
     std::future<int> rets[table_num];
     for (auto table_id : table_set) {
-        rets[ret_size++] = save_model(epoch_id, table_id, way); 
+        VLOG(2) << "Start save model, table_id:" << table_id;
+        auto model_dir = epoch_accessor->model_save_path(epoch_id, way);
+        rets[ret_size++] = ps_client->save(table_id, model_dir, std::to_string((int)way));
     }
     int all_ret = 0;
     for (int i = 0; i < ret_size; ++i) {
         rets[i].wait();
         all_ret |= rets[i].get();
     }
+    timer.Pause();
+    VLOG(2) << "Save Model Cost(s):" << timer.ElapsedSec();
+    _context_ptr->epoch_accessor->update_model_donefile(epoch_id, way);
     return all_ret;
 }
 
@@ -115,6 +113,7 @@ int LearnerProcess::run() {
     
     while (true) {
         epoch_accessor->next_epoch();
+        _context_ptr->monitor_ssm.str(""); 
         bool already_dump_inference_model = false;
         epoch_id = epoch_accessor->current_epoch_id();
         std::string epoch_log_title = paddle::string::format_string(
@@ -141,6 +140,8 @@ int LearnerProcess::run() {
             std::map<std::string, paddle::framework::Channel<DataItem>> backup_input_map;
             for (auto& executor : _executors) {
                 environment->barrier(EnvironmentRole::WORKER); 
+                paddle::platform::Timer timer;
+                timer.Start();
                 VLOG(2) << "Start executor:" << executor->train_exe_name();
                 auto data_name = executor->train_data_name();
                 paddle::framework::Channel<DataItem> input_channel;
@@ -150,12 +151,12 @@ int LearnerProcess::run() {
                     input_channel = dataset->fetch_data(data_name, epoch_id);
                 }
                 input_channel = executor->run(input_channel, dataset->data_parser(data_name));
-                VLOG(2) << "End executor:" << executor->train_exe_name();
+                timer.Pause();
+                VLOG(2) << "End executor:" << executor->train_exe_name() << ", cost" << timer.ElapsedSec();
 
                 // 等待异步梯度完成
                 _context_ptr->ps_client()->flush();
                 environment->barrier(EnvironmentRole::WORKER); 
-
                 if (executor->is_dump_all_model()) {
                     already_dump_inference_model = true;
                     wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
@@ -167,16 +168,12 @@ int LearnerProcess::run() {
 
         //Step3. Dump Model For Delta&&Checkpoint
         {
-            if (!already_dump_inference_model) {
-                already_dump_inference_model = true;
-                wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceDelta);
-            } 
+            wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
             wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
             environment->barrier(EnvironmentRole::WORKER); 
 
             epoch_accessor->epoch_done(epoch_id);
             environment->barrier(EnvironmentRole::WORKER); 
-
         }
     
         //Step4. Output Monitor && RunStatus

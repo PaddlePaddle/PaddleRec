@@ -11,6 +11,29 @@ namespace feed {
 class Monitor;
 typedef paddle::ps::ObjectPool<::paddle::framework::Scope>::PooledObject ScopePoolObj;
 
+class ScopeExecutorContext {
+public:
+    ScopeExecutorContext(size_t sample_num) {
+        _samples = new SampleInstance[sample_num];
+        _sample_num = sample_num;
+    }
+    virtual ~ScopeExecutorContext() {
+        delete[] _samples;
+    }
+    inline SampleInstance* samples() {
+        return _samples;
+    }
+    inline size_t sample_num() {
+        return _sample_num;
+    }
+    size_t executor_cost_ms = 0;
+    size_t prepare_cost_ms = 0;
+    size_t push_gradient_cost_ms = 0;
+private:
+    size_t _sample_num = 0;
+    SampleInstance* _samples = NULL;
+};
+
 class MultiThreadExecutor {
 public:
     MultiThreadExecutor() {}

@@ -14,7 +14,8 @@ enum class EpochStatusFiled {
     TimestampField           = 1,
     CheckpointPathField      = 2,
     EpochIdField             = 3,
-    CheckpointIdField        = 4
+    CheckpointIdField        = 4,
+    InferenceBaseKeyField    = 5
 };
 
 class EpochAccessor : public Accessor {
@@ -62,14 +63,19 @@ public:
 
     virtual bool need_save_model(uint64_t epoch_id, ModelSaveWay save_way) = 0;
     virtual std::string model_save_path(uint64_t epoch_id, ModelSaveWay save_way) = 0;
+    virtual int update_model_donefile(uint64_t epoch_id, ModelSaveWay save_way);
 protected:
     TrainerContext* _trainer_context;
     std::string _done_file_path;
     std::string _model_root_path;
+    std::string _inference_model_path;
+    std::string _inference_model_base_done_path;
+    std::string _inference_model_delta_done_path;
     uint64_t _current_epoch_id = 0;
     std::string _last_checkpoint_path;
     uint64_t _last_checkpoint_epoch_id = 0;
-    std::vector<std::string> _done_status; //当前完成状态，统一存成string
+    std::vector<std::string> _done_status;  // 当前完成状态，统一存成string
+    uint64_t _inference_base_model_key = 0; // 预估模型的base-key
     
 };
 REGIST_REGISTERER(EpochAccessor);

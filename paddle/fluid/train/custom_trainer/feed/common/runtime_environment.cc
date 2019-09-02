@@ -56,7 +56,6 @@ struct mpi_type_trait<unsigned long long> {
         return MPI_UNSIGNED_LONG_LONG;
     }
 };
-
 RuntimeEnvironment::RuntimeEnvironment() {}
 RuntimeEnvironment::~RuntimeEnvironment() {}
 bool RuntimeEnvironment::is_master_node(EnvironmentRole role) {
@@ -87,13 +86,24 @@ public:
         return 0;
     }
     virtual int wireup() {
-        int hr = MPI_Init(NULL, NULL);
+        int argc = 0;
+        char** argv = NULL;
+        int hr = MPI_Init(&argc, &argv);
         if (MPI_SUCCESS != hr) {
             LOG(FATAL) << "MPI_init failed with error code" << hr; 
             return -1;
         }
         _roles_node_info.resize(static_cast<int>(EnvironmentRole::ALL) + 1);
         add_role(EnvironmentRole::ALL);
+    
+        char* value = getenv("JOB_ID");
+        if (value) {
+            _job_id = value;
+        }
+        value = getenv("JOB_NAME");
+        if (value) {
+            _job_name = value;
+        }
         return 0;
     }
     
@@ -155,6 +165,11 @@ protected:
             return;
         }
         VLOG(static_cast<int>(level)) << log_str;
+        /*
+        static std::mutex mtx;
+        std::lock_guard<std::mutex> guard(mtx);
+        std::err << log_str;
+        */
     }
 
     inline MpiNodeInfo& mpi_node_info(EnvironmentRole role) {

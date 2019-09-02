@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     }
     auto* environment = trainer_context_ptr->environment.get();
     environment->wireup();
+    VLOG(2) << "node_num: " << environment->node_num(EnvironmentRole::ALL);
     if (environment->node_num(EnvironmentRole::ALL) == 1) {
         environment->add_role(EnvironmentRole::WORKER);
         environment->add_role(EnvironmentRole::PSERVER);
@@ -42,6 +43,7 @@ int main(int argc, char* argv[]) {
     } 
     trainer_context_ptr->pslib.reset(new PSlib());
     std::string ps_config = config["environment"]["ps"].as<std::string>();
+    trainer_context_ptr->environment->barrier(EnvironmentRole::ALL); 
     trainer_context_ptr->pslib->initialize(ps_config, environment);
     //VLOG(3) << "Node Start With Role:" << role;    
      

@@ -44,7 +44,7 @@ executor:
   train_batch_size: 32
   input_parse_thread_num: 10
   push_gradient_thread_num: 16
-  train_thread_num: 16
+  train_thread_num: 12
   need_dump_all_model: true
 - name: update
   class: SimpleExecutor
@@ -52,5 +52,5 @@ executor:
   train_batch_size: 32
   input_parse_thread_num: 10
   push_gradient_thread_num: 16
-  train_thread_num: 16
+  train_thread_num: 12
   need_dump_all_model: false 

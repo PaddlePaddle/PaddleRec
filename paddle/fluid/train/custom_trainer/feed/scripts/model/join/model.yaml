@@ -1,6 +1,6 @@
 aa_Attention: Do Not Modify This File Manually, Unless You Really Know It
 input_accessor:
-- class: AbacusSparseUpdateAccessor
+- class: AbacusSparseJoinAccessor
   input:
   - name: cvm_input
     slot_dim: 11

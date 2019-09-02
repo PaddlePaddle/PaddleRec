@@ -1,4 +1,5 @@
 #include "paddle/fluid/train/custom_trainer/feed/monitor/cost_monitor.h"
+#include "paddle/fluid/train/custom_trainer/feed/executor/multi_thread_executor.h"
 
 namespace paddle {
 namespace custom_trainer {
@@ -12,8 +13,9 @@ int CostMonitor::initialize(const YAML::Node& config, std::shared_ptr<TrainerCon
 }
 
 void CostMonitor::add_data(int epoch_id,
-        const MultiThreadExecutor* executor,
-        SampleInstance* samples, size_t num) {
+    const MultiThreadExecutor* executor, ScopeExecutorContext* ctx) {
+    auto num = ctx->sample_num();
+    auto* samples = ctx->samples();
     CHECK(executor != nullptr);
     //TODO use paddle time
     _total_time_ms += 1;

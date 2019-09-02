@@ -469,6 +469,7 @@ public:
         return read_all(file_list, data_channel);
     }
     virtual int read_all(const std::vector<std::string>& file_list, ::paddle::framework::Channel<DataItem> data_channel) {
+        data_channel->Open();
         const int file_list_size = file_list.size();
         std::atomic<bool> is_failed(false);
 

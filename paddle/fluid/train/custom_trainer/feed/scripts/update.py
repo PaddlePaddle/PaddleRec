@@ -25,11 +25,26 @@ def inference():
     cvm_input = fluid.layers.data(name='cvm_input', shape=[sparse_cvm_dim(sparse_cvm)], dtype='float32', stop_gradient=False)
 
     net = cvm_input
-    net = fluid.layers.fc(net, 511, act='relu', name='fc_1')
-    net = fluid.layers.fc(net, 255, act='relu', name='fc_2')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_3')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_4')
-    net = fluid.layers.fc(net, 127, act='relu', name='fc_5')
+    lr_x = 1.0
+    init_range = 0.2
+    fc_layers_size = [511, 255, 127, 127, 127]
+    fc_layers_act = ["relu"] * len(fc_layers_size)
+    scales_tmp = [net.shape[1]] + fc_layers_size
+    scales = []
+    for i in range(len(scales_tmp)):
+        scales.append(init_range / (scales_tmp[i] ** 0.5))
+    for i in range(len(fc_layers_size)):
+        net = fluid.layers.fc(
+            input = net,
+            size = fc_layers_size[i],
+            name = 'fc_' + str(i+1), 
+            act = fc_layers_act[i],
+            param_attr = \
+                fluid.ParamAttr(learning_rate=lr_x, \
+                initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])),
+            bias_attr = \
+                fluid.ParamAttr(learning_rate=lr_x, \
+                initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))
 
     ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr')
 
