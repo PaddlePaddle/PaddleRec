@@ -85,7 +85,7 @@ std::string AucMonitor::format_result() {
 void AucMonitor::add_unlocked(double pred, int label) {
     if (std::isnan(pred)) {
         VLOG(2) << "pred[" << pred << "] outside of [0,1]";
-        continue;
+        return;
     }
     CHECK(pred >= 0 && pred <= 1) << "pred[" << pred << "] outside of [0,1]";
     CHECK(label == 0 || label == 1) << "label[" << label << "] invalid";
