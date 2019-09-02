@@ -37,7 +37,7 @@ def inference():
         net = fluid.layers.fc(
             input = net,
             size = fc_layers_size[i],
-            name = 'fc_' + str(i+1), 
+            name = 'fc_' + str(i + 1), 
             act = fc_layers_act[i],
             param_attr = \
                 fluid.ParamAttr(learning_rate=lr_x, \
