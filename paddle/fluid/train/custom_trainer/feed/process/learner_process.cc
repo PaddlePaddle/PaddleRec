@@ -169,7 +169,22 @@ int LearnerProcess::run() {
         //Step3. Dump Model For Delta&&Checkpoint
         {
             wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
+            environment->barrier(EnvironmentRole::WORKER); 
             wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
+            environment->barrier(EnvironmentRole::WORKER); 
+            if (epoch_accessor->is_last_epoch(epoch_id) &&
+                environment->is_master_node(EnvironmentRole::WORKER)) {
+                paddle::platform::Timer timer;
+                timer.Start();
+                VLOG(2) << "Start shrink table"; 
+                for (auto& executor : _executors) {
+                    const auto& table_accessors = executor->table_accessors();
+                    for (auto& itr : table_accessors) {
+                        CHECK(itr.second[0]->shrink() == 0);
+                    }
+                } 
+                VLOG(2) << "End shrink table, cost" << timer.ElapsedSec();
+            }
             environment->barrier(EnvironmentRole::WORKER); 
 
             epoch_accessor->epoch_done(epoch_id);

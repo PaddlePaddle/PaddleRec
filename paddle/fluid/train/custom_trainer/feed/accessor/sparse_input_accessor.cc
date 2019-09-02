@@ -253,6 +253,13 @@ public:
             var_data[i] += pull_raw[i + 2];
         }
     }
+    
+    // 裁剪，用于模型裁剪，base级调用
+    virtual int32_t shrink() {
+        auto* ps_client = _trainer_context->pslib->ps_client();
+        auto status = ps_client->shrink(_table_id);
+        return status.get();
+    }
 
     virtual void post_process_input(float* var_data, 
         SparseInputVariable& variable, SampleInstance* samples, size_t num) {

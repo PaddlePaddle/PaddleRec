@@ -26,6 +26,10 @@ public:
     virtual int32_t create(::paddle::framework::Scope* scope) {
         return 0;
     }
+    // 裁剪，用于模型裁剪，base级调用
+    virtual int32_t shrink() {
+        return 0;
+    }
 
     // 前向， 一般用于填充输入，在训练网络执行前调用
     virtual int32_t forward(SampleInstance* samples, size_t num,
