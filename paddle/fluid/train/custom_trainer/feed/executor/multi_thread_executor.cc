@@ -2,6 +2,8 @@
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/monitor/monitor.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/multi_thread_executor.h"
+#include "paddle/fluid/framework/executor.h"
+#include "paddle/fluid/framework/program_desc.h"
 
 namespace paddle {
 namespace custom_trainer {

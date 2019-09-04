@@ -78,43 +78,6 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
     return 0;
 }
 
-int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
-        paddle::framework::Scope* scope) {
-    if (!_need_gradient) {
-        return 0;
-    }
-    size_t data_buffer_idx = 0;
-    std::vector<paddle::ps::Region> regions;
-    for (auto& variable : _x_variables) {
-        auto* tensor = scope->Var(variable.gradient_name)->
-            GetMutable<paddle::framework::LoDTensor>();
-        auto* grad_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
-        regions.emplace_back(grad_data, variable.dim);
-    }
-    auto* ps_client = _trainer_context->pslib->ps_client();
-    auto push_status = ps_client->push_dense(regions.data(), regions.size(), _table_id);
-    //push_status.get();
-    if (!FLAGS_feed_trainer_debug_dense_name.empty()) {
-        std::stringstream ssm;
-        for (auto& variable : _x_variables) {
-            ssm.str("");
-            if (variable.name != FLAGS_feed_trainer_debug_dense_name) {
-                continue;
-            }
-            auto& tensor = scope->Var(variable.gradient_name)->
-                Get<paddle::framework::LoDTensor>();
-            const auto* var_data = tensor.data<float>();
-            for (size_t data_idx = 0; data_idx < variable.dim; ++data_idx) {
-                if (data_idx > 0)
-                    ssm << ",";
-                ssm << var_data[data_idx];
-            }
-            VLOG(2) << "[DEBUG]push_dense: " << ssm.str();
-        }
-    }
-    return 0;
-}
-
 int32_t DenseInputAccessor::collect_persistables(paddle::framework::Scope* scope) {
     // 首次同步pull，之后异步pull
     if (_data_buffer == nullptr) {
@@ -174,6 +137,43 @@ int32_t DenseInputAccessor::collect_persistables(paddle::framework::Scope* scope
 int32_t DenseInputAccessor::collect_persistables_name(std::vector<std::string>& persistables) {
     for (auto& variable : _x_variables) {
         persistables.push_back(variable.name);
+    }
+    return 0;
+}
+
+int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
+        paddle::framework::Scope* scope) {
+    if (!_need_gradient) {
+        return 0;
+    }
+    size_t data_buffer_idx = 0;
+    std::vector<paddle::ps::Region> regions;
+    for (auto& variable : _x_variables) {
+        auto* tensor = scope->Var(variable.gradient_name)->
+            GetMutable<paddle::framework::LoDTensor>();
+        auto* grad_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
+        regions.emplace_back(grad_data, variable.dim);
+    }
+    auto* ps_client = _trainer_context->pslib->ps_client();
+    auto push_status = ps_client->push_dense(regions.data(), regions.size(), _table_id);
+    //push_status.get();
+    if (!FLAGS_feed_trainer_debug_dense_name.empty()) {
+        std::stringstream ssm;
+        for (auto& variable : _x_variables) {
+            ssm.str("");
+            if (variable.name != FLAGS_feed_trainer_debug_dense_name) {
+                continue;
+            }
+            auto& tensor = scope->Var(variable.gradient_name)->
+                Get<paddle::framework::LoDTensor>();
+            const auto* var_data = tensor.data<float>();
+            for (size_t data_idx = 0; data_idx < variable.dim; ++data_idx) {
+                if (data_idx > 0)
+                    ssm << ",";
+                ssm << var_data[data_idx];
+            }
+            VLOG(2) << "[DEBUG]push_dense: " << ssm.str();
+        }
     }
     return 0;
 }
