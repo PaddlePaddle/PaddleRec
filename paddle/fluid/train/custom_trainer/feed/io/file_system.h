@@ -25,6 +25,10 @@ public:
     virtual bool exists(const std::string& path) = 0;
     virtual void mkdir(const std::string& path) = 0;
     virtual std::string path_join(const std::string& dir, const std::string& path);
+    template<class... STRS>
+    std::string path_join(const std::string& dir, const std::string& path, const STRS&... paths) {
+        return path_join(path_join(dir, path), paths...);
+    }
     virtual std::pair<std::string, std::string> path_split(const std::string& path);
 protected:
 };

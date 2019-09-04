@@ -38,6 +38,12 @@ public:
     // 后向，一般用于更新梯度，在训练网络执行后调用
     virtual int32_t backward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope) = 0;
+
+    // 收集持久化变量的名称, 并将值拷贝到Scope
+    virtual int32_t collect_persistables_name(std::vector<std::string>& persistables) {return 0;}
+
+    // 填充持久化变量的值，用于保存
+    virtual int32_t collect_persistables(paddle::framework::Scope* scope) {return 0;}
 protected:
     size_t _table_id = 0;
     bool _need_gradient = false;
@@ -144,6 +150,11 @@ public:
 
     virtual int32_t backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);
+
+
+    virtual int32_t collect_persistables_name(std::vector<std::string>& persistables);
+
+    virtual int32_t collect_persistables(paddle::framework::Scope* scope);
 protected:
     virtual int32_t pull_dense(size_t table_id);
 

@@ -27,6 +27,7 @@ int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
 }
 
 int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
+    auto fs = _context_ptr->file_system;
     auto* ps_client = _context_ptr->pslib->ps_client();
     auto* environment = _context_ptr->environment.get();
     auto* epoch_accessor = _context_ptr->epoch_accessor.get();
@@ -39,18 +40,21 @@ int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
     paddle::platform::Timer timer;
     timer.Start();
     std::set<uint32_t> table_set;
+    auto model_dir = epoch_accessor->model_save_path(epoch_id, way);
     for (auto& executor : _executors) {
         const auto& table_accessors = executor->table_accessors();
         for (auto& itr : table_accessors) {
             table_set.insert(itr.first);
         }
+        auto save_path = fs->path_join(model_dir, executor->train_exe_name() + "_param");
+        VLOG(2) << "Start save model, save_path:" << save_path;
+        executor->save_persistables(save_path);
     }
     int ret_size = 0;
     auto table_num = table_set.size();
     std::future<int> rets[table_num];
     for (auto table_id : table_set) {
         VLOG(2) << "Start save model, table_id:" << table_id;
-        auto model_dir = epoch_accessor->model_save_path(epoch_id, way);
         rets[ret_size++] = ps_client->save(table_id, model_dir, std::to_string((int)way));
     }
     int all_ret = 0;

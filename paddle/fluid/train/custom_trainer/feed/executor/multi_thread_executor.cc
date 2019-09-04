@@ -52,6 +52,7 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
     CHECK(_trainer_context->file_system->exists(model_config_path)) 
         << "miss model config file:" << model_config_path;
     _model_config = YAML::LoadFile(model_config_path);
+    _persistables.clear();
     for (const auto& accessor_config : _model_config["input_accessor"]) {
         auto accessor_class = accessor_config["class"].as<std::string>();
         auto* accessor_ptr = CREATE_INSTANCE(DataInputAccessor, accessor_class);
@@ -66,7 +67,10 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
                 _table_to_accessors[table_id] = {accessor_ptr};
             }
         }
-    } 
+        CHECK(accessor_ptr->collect_persistables_name(_persistables) == 0)
+            << "collect_persistables Failed, class:" << accessor_class;
+    }
+    std::sort(_persistables.begin(), _persistables.end()); // 持久化变量名一定要排序
 
     // Monitor组件
     for (const auto& monitor_config : _model_config["monitor"]) {
@@ -77,6 +81,27 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
             << "Monitor init Failed, class:" << monitor_class;
     }
     return ret;
+}
+
+int32_t MultiThreadExecutor::save_persistables(const std::string& filename) {
+    // auto fs = _trainer_context->file_system;
+    // fs->mkdir(fs->path_split(filename).first);
+    auto scope_obj = _scope_obj_pool->get();
+    for (size_t i = 0; i < _input_accessors.size(); ++i) {
+        _input_accessors[i]->collect_persistables(scope_obj.get());
+    }
+    framework::ProgramDesc prog;
+    auto* block = prog.MutableBlock(0);
+    auto* op = block->AppendOp();
+    op->SetType("save_combine");
+    op->SetInput("X", _persistables);
+    op->SetAttr("file_path", filename);
+    op->CheckAttrs();
+
+    platform::CPUPlace place;
+    framework::Executor exe(place);
+    exe.Run(prog, scope_obj.get(), 0, true, true);
+    return 0;
 }
 
 paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
