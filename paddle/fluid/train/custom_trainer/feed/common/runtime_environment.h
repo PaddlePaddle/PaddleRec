@@ -100,6 +100,7 @@ protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
         EnvironmentLogLevel level,  const std::string& log_str) = 0;
 
+    std::string _debug_verion;
     std::string _job_id = "default_job_id";
     std::string _job_name = "default_job_name";
 };

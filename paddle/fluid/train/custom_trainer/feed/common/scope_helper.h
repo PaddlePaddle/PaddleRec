@@ -48,6 +48,31 @@ public:
         return tensor->mutable_data<T>(place);
     }
 
+    static std::string to_string(paddle::framework::Scope* scope, const std::string& name) {
+        CHECK(scope->FindVar(name) != nullptr) << "Var named:" << name << " is not exists in scope";
+        auto& tensor = scope->Var(name)->Get<paddle::framework::LoDTensor>();
+        auto& ddim = tensor.dims();
+        thread_local std::stringstream ssm;
+        ssm.str("");
+        ssm << "[" << name << "][";
+        for (auto i = 0; i < ddim.size(); ++i) {
+            if (i > 0) ssm << "X";
+            ssm << ddim.at(i);
+        }
+        ssm << "][";
+        auto last_dim = ddim.at(ddim.size() - 1);
+        auto sample_rate = last_dim > 100 ? last_dim / 100 : 1; // 保证最后一层 最多只打100个
+        auto* data = tensor.data<float>();
+        for (auto i = 0; i < tensor.numel(); i += last_dim) {
+            auto* dim_data = data + i;
+            for (auto j = 0; j < last_dim; j += sample_rate, dim_data += sample_rate) {
+                ssm << *dim_data << " ";
+            }
+        }
+        ssm << "]";
+        return ssm.str();
+    }
+
 };
 
 }  // namespace feed

@@ -69,6 +69,7 @@ int LearnerProcess::load_model(uint64_t epoch_id) {
     if (!environment->is_master_node(EnvironmentRole::WORKER)) {
         return 0;
     }
+    auto* fs = _context_ptr->file_system.get();
     std::set<uint32_t> loaded_table_set;
     auto model_dir = _context_ptr->epoch_accessor->checkpoint_path();
     for (auto& executor : _executors) {
@@ -77,9 +78,9 @@ int LearnerProcess::load_model(uint64_t epoch_id) {
             if (loaded_table_set.count(itr.first)) {
                 continue;
             }
-            auto table_model_path = _context_ptr->file_system->path_join(
+            auto table_model_path = fs->path_join(
                 model_dir, string::format_string("%03d", itr.first));
-            if (_context_ptr->file_system->list(table_model_path).size() == 0) {
+            if ((!fs->exists(table_model_path)) || fs->list(table_model_path).size() == 0) {
                 VLOG(2) << "miss table_model:" << table_model_path << ", initialize by default";
                 auto scope = std::move(executor->fetch_scope());
                 CHECK(itr.second[0]->create(scope.get()) == 0);
@@ -152,7 +153,7 @@ int LearnerProcess::run() {
                 }
                 input_channel = executor->run(input_channel, dataset->data_parser(data_name));
                 timer.Pause();
-                VLOG(2) << "End executor:" << executor->train_exe_name() << ", cost" << timer.ElapsedSec();
+                VLOG(2) << "End executor:" << executor->train_exe_name() << ", cost:" << timer.ElapsedSec();
 
                 // 等待异步梯度完成
                 _context_ptr->ps_client()->flush();
@@ -183,7 +184,7 @@ int LearnerProcess::run() {
                         CHECK(itr.second[0]->shrink() == 0);
                     }
                 } 
-                VLOG(2) << "End shrink table, cost" << timer.ElapsedSec();
+                VLOG(2) << "End shrink table, cost:" << timer.ElapsedSec();
             }
             environment->barrier(EnvironmentRole::WORKER); 
 

@@ -44,9 +44,14 @@ int PSlib::init_server() {
 }
 
 int PSlib::init_client() {
+    // 所有节点都启动psclient
     _client_ptr.reset(paddle::ps::PSClientFactory::create(_ps_param));
     _client_ptr->configure(_ps_param, *(_environment->ps_environment()), 
         _environment->rank_id(EnvironmentRole::ALL));
+
+    _environment->barrier(EnvironmentRole::ALL);
+    _environment->ps_environment()->gather_ps_clients();
+    _client_ptr->create_client2client_connection();
     return 0;
 }
 
@@ -64,8 +69,8 @@ paddle::PSParameter* PSlib::get_param() {
 
 void PSlib::init_gflag() {
     int cnt = 4;
-    std::shared_ptr<char*> params(new char*[cnt]);
-    char** params_ptr = params.get();
+    char** params_ptr = new char*[cnt];
+    std::cout << "alloc_ptr" << params_ptr << std::flush;
     char p0[] = "exe default";
     char p1[] = "-max_body_size=314217728";
     char p2[] = "-bthread_concurrency=40";
@@ -74,7 +79,10 @@ void PSlib::init_gflag() {
     params_ptr[1] = p1;
     params_ptr[2] = p2;
     params_ptr[3] = p3;
-    ::google::ParseCommandLineFlags(&cnt, &params_ptr, true);
+    // ParseCommandLineFlags would change param_ptr, so copy it
+    char** params_ptrp = params_ptr;
+    ::google::ParseCommandLineFlags(&cnt, &params_ptrp, true);
+    delete[] params_ptr;
 }
 
 }  // namespace feed

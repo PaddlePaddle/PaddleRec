@@ -31,8 +31,8 @@ def inference():
         param_attr={"batch_size":1e4, "batch_sum_default":0.0, "batch_square":1e4})
     lr_x = 1.0
     init_range = 0.2
-    fc_layers_size = [511, 255, 255, 127, 127, 127, 127]
-    fc_layers_act = ["relu"] * len(fc_layers_size)
+    fc_layers_size = [511, 255, 255, 127, 127, 127, 127, 1]
+    fc_layers_act = ["relu"] * (len(fc_layers_size) - 1) + [None]
     scales_tmp = [net.shape[1]] + fc_layers_size
     scales = []
     for i in range(len(scales_tmp)):
@@ -41,7 +41,7 @@ def inference():
         net = fluid.layers.fc(
             input = net,
             size = fc_layers_size[i],
-            name = 'fc_' + str(i + 1), 
+            name = 'fc_' + str(i), 
             act = fc_layers_act[i],
             param_attr = \
                 fluid.ParamAttr(learning_rate=lr_x, \
@@ -49,7 +49,7 @@ def inference():
             bias_attr = \
                 fluid.ParamAttr(learning_rate=lr_x, \
                 initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))
-    ctr_output = fluid.layers.fc(net, 1, act='sigmoid', name='ctr')
+    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name="ctr")
     
     accessors = [
         { "class": "AbacusSparseJoinAccessor", "input": "sparses", "table_id": 0, "need_gradient": False},
@@ -83,7 +83,7 @@ def loss_function(ctr_output):
     # TODO: calc loss here
 
     label = fluid.layers.data(name='label_ctr', shape=ctr_output.shape, dtype='float32')
-    loss = fluid.layers.square_error_cost(input=ctr_output, label=label)
+    loss = fluid.layers.log_loss(input=ctr_output, label=label)
     loss = fluid.layers.mean(loss, name='loss_ctr')
 
     return loss, [label]

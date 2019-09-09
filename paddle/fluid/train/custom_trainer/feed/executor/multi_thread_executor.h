@@ -74,6 +74,7 @@ protected:
     YAML::Node _model_config;
     std::string _train_exe_name;
     TrainerContext* _trainer_context = nullptr;
+    std::vector<std::string> _debug_layer_list;
     std::vector<std::shared_ptr<Monitor>> _monitors;
     std::vector<std::shared_ptr<Executor>> _thread_executors;
     std::vector<std::shared_ptr<DataInputAccessor>> _input_accessors;

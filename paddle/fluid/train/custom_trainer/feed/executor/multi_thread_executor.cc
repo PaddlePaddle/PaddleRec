@@ -24,6 +24,9 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
     _thread_executors.resize(_train_thread_num);
     auto e_class = exe_config["class"].as<std::string>();
     _train_exe_name = exe_config["name"].as<std::string>();
+    if (exe_config["debug_layer_list"]) {
+        _debug_layer_list = exe_config["debug_layer_list"].as<std::vector<std::string>>();
+    }
 
     omp_set_num_threads(_train_thread_num);
     #pragma omp parallel for
@@ -163,8 +166,15 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                 }
                 timer.Pause();
                 scope_ctx->push_gradient_cost_ms = timer.ElapsedMS();
+                
+                // Monitor && Debug
                 for (auto& monitor : _monitors) {
                     monitor->add_data(epoch_id, this, scope_ctx);
+                }
+                if (_debug_layer_list.size() > 0) {
+                    for (auto& layer_name : _debug_layer_list) {
+                        VLOG(2) << "[Debug][Layer]" << ScopeHelper::to_string(scope, layer_name);
+                    }
                 }
                 delete scope_ctx; // 所有pipe完成后，再回收sample
             }
@@ -175,6 +185,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     std::vector<int> gradient_status;
     while (gradient_pipe->read(gradient_status) > 0) {
     }
+
     // 输出相关监控&统计项
     for (auto& monitor : _monitors) {
         if (monitor->need_compute_result(epoch_id)) {

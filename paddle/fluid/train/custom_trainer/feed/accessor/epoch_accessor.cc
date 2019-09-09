@@ -155,7 +155,7 @@ namespace feed {
         }
         switch (save_way) {
             case ModelSaveWay::ModelSaveInferenceDelta:
-                return true;
+                return delta_id(epoch_id) % 6 == 0;
             case ModelSaveWay::ModelSaveInferenceBase:
                 return is_last_epoch(epoch_id);
             case ModelSaveWay::ModelSaveTrainCheckpoint:

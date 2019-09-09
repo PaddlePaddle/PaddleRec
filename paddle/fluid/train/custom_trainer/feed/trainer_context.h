@@ -13,6 +13,7 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+class PSlib;
 class Process;
 class Dataset;
 class FileSystem;
@@ -26,6 +27,11 @@ enum class ModelSaveWay {
     ModelSaveTrainCheckpoint = 0,
     ModelSaveInferenceDelta = 1,
     ModelSaveInferenceBase = 2
+};
+
+enum class TrainerStatus {
+    Training  = 0,  // 训练状态
+    Saving    = 1  // 模型存储状态
 };
 
 class SignCacheDict {
@@ -44,7 +50,17 @@ public:
     inline paddle::ps::PSClient* ps_client() {
         return pslib->ps_client();
     }
+    inline bool is_status(TrainerStatus status) {
+        auto bit_idx = static_cast<uint32_t>(status);
+        return ((trainer_status >> bit_idx) & 1) > 0;
+    }
+    // 非线程安全, 其实TrainerContext所有成员的线程安全性 取决于 成员本身的线程安全性
+    inline void set_status(TrainerStatus status, bool on) {
+        auto bit_idx = static_cast<uint32_t>(status);
+        trainer_status = trainer_status & (1L << bit_idx);
+    }
 
+    uint32_t trainer_status;      // trainer当前，由于可同时处于多种状态，这里分bit存储状态
     YAML::Node trainer_config;
     paddle::platform::CPUPlace cpu_place;
 

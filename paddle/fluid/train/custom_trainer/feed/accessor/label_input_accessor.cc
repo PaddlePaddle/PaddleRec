@@ -64,6 +64,11 @@ int32_t LabelInputAccessor::backward(SampleInstance* samples, size_t num,
             sample_predict_data_idx += label.label_dim;  
         }
     }
+    /* for debug
+    for (auto& label : _labels) {
+        VLOG(2) << "[Debug][Lable]" << ScopeHelper::to_string(scope, label.label_name) << ScopeHelper::to_string(scope, label.output_name);
+    }
+    */
     return 0;
 }
 

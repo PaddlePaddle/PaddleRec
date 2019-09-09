@@ -92,6 +92,7 @@ class ModelBuilder:
     def build_and_save(self):
         """Build programs and save to _save_path
         """
+        scope1 = fluid.Scope()
         main_program = fluid.Program()
         startup_program = fluid.Program()
         with fluid.program_guard(main_program, startup_program):
@@ -120,6 +121,8 @@ class ModelBuilder:
         for name, program in programs.items():
             with open(os.path.join(self._save_path, name), 'w') as f:
                 f.write(program.desc.serialize_to_string())
+            with open(os.path.join(self._save_path, name + '.pbtxt'), 'w') as fout:
+                fout.write(str(program))
 
         params = filter(fluid.io.is_parameter, main_program.list_vars())
         vars = []

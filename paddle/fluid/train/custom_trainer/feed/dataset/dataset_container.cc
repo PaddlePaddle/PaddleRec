@@ -11,6 +11,7 @@
 #include "paddle/fluid/train/custom_trainer/feed/accessor/epoch_accessor.h"
 #include "paddle/fluid/train/custom_trainer/feed/io/file_system.h"
 #include "paddle/fluid/train/custom_trainer/feed/dataset/dataset_container.h"
+#include "paddle/fluid/train/custom_trainer/feed/shuffler/shuffler.h"
 
 namespace paddle {
 namespace custom_trainer {
@@ -30,6 +31,9 @@ int DatasetContainer::initialize(
     _data_root_paths = config["root_path"].as<std::vector<std::string>>();
     _data_split_interval = config["data_spit_interval"].as<int>();
     _data_path_formater = config["data_path_formater"].as<std::string>();
+    std::string shuffler = config["shuffler"]["name"].as<std::string>();
+    _shuffler.reset(CREATE_INSTANCE(Shuffler, shuffler));
+    _shuffler->initialize(config, context);
     std::string data_reader_class = config["data_reader"].as<std::string>();
     DataReader* data_reader = CREATE_INSTANCE(DataReader, data_reader_class);
     _data_reader.reset(data_reader);
@@ -182,7 +186,9 @@ void DatasetContainer::async_download_data(uint64_t start_timestamp) {
         }
         VLOG(2) << "End download data num:" << dataset_info->data_channel->Size()
             << ", data_timestap:" << start_timestamp
-            << ", for epoch:" << epoch_accessor->text(start_timestamp);
+            << ", for epoch:" << epoch_accessor->text(start_timestamp) << ", Start shuffle";
+        _shuffler->shuffle(dataset_info->data_channel);
+        VLOG(2) << "Shuffle done";
         dataset_info->status = DatasetStatus::Ready;
         start_timestamp += epoch_accessor->epoch_time_interval();
     }

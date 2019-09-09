@@ -1,0 +1,3618 @@
+blocks {
+  idx: 0
+  parent_idx: -1
+  vars {
+    name: "fc_0.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_1.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 511
+          dims: 255
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_1.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_1.tmp_1@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_2.b_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_2.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_3.b_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_2.tmp_1@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_3.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "cvm_input@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 3672
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_3.tmp_1@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_4.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 127
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_3.tmp_2@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_0.tmp_2@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_4.b_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_4.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_0.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_0.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 511
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_1.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_2.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "cvm_input"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 3672
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_3.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_2.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_2.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_2.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+          dims: 127
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_1.tmp_2@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_3.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "loss_ctr@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 1
+        }
+      }
+    }
+  }
+  vars {
+    name: "clip_0.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_2.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_4.tmp_1@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_3.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_4.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 1
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "log_loss_0.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_0.tmp_1@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_4.tmp_2@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_3.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_4.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_0.b_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 511
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_1.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_0.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_0.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 3672
+          dims: 511
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_0.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_2.tmp_2@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_2.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_4.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_0.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 3672
+          dims: 511
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_4.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_4.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_1.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 511
+          dims: 255
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_1.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 1
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_5.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_1.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "ctr.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_3.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "label_ctr"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "loss_ctr"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 1
+        }
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.tmp_1@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+      }
+    }
+  }
+  vars {
+    name: "log_loss_0.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_3.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 127
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_5.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 1
+        }
+      }
+    }
+  }
+  vars {
+    name: "ctr.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+      }
+    }
+  }
+  vars {
+    name: "clip_0.tmp_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_1.b_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_5.b_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "cvm_input"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_0.w_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_0.tmp_0"
+    }
+    type: "mul"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_0.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_0.b_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_0.tmp_1"
+    }
+    type: "elementwise_add"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_0.tmp_1"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_0.tmp_2"
+    }
+    type: "relu"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_0.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_1.w_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_1.tmp_0"
+    }
+    type: "mul"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_1.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_1.b_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_1.tmp_1"
+    }
+    type: "elementwise_add"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_1.tmp_1"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_1.tmp_2"
+    }
+    type: "relu"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_1.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_2.w_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_2.tmp_0"
+    }
+    type: "mul"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_2.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_2.b_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_2.tmp_1"
+    }
+    type: "elementwise_add"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_2.tmp_1"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_2.tmp_2"
+    }
+    type: "relu"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_2.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_3.w_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_3.tmp_0"
+    }
+    type: "mul"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_3.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_3.b_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_3.tmp_1"
+    }
+    type: "elementwise_add"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_3.tmp_1"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_3.tmp_2"
+    }
+    type: "relu"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_3.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_4.w_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_4.tmp_0"
+    }
+    type: "mul"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_4.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_4.b_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_4.tmp_1"
+    }
+    type: "elementwise_add"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_4.tmp_1"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_4.tmp_2"
+    }
+    type: "relu"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_4.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_5.w_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_5.tmp_0"
+    }
+    type: "mul"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_5.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_5.b_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fc_5.tmp_1"
+    }
+    type: "elementwise_add"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "fc_5.tmp_1"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "clip_0.tmp_0"
+    }
+    type: "clip"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10681, in clip\n    outputs={\"Out\": out})\n"
+      strings: "  File \"update.py\", line 49, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "max"
+      type: FLOAT
+      f: 15.0
+    }
+    attrs {
+      name: "min"
+      type: FLOAT
+      f: -15.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "clip_0.tmp_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "ctr.tmp_0"
+    }
+    type: "sigmoid"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/layer_function_generator.py\", line 247, in func\n    helper.append_op(type=op_type, inputs={\"X\": x}, outputs={\"Out\": output})\n"
+      strings: "  File \"update.py\", line 49, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Labels"
+      arguments: "label_ctr"
+    }
+    inputs {
+      parameter: "Predicted"
+      arguments: "ctr.tmp_0"
+    }
+    outputs {
+      parameter: "Loss"
+      arguments: "log_loss_0.tmp_0"
+    }
+    type: "log_loss"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 11422, in log_loss\n    attrs={\'epsilon\': epsilon})\n"
+      strings: "  File \"update.py\", line 82, in loss_function\n    loss = fluid.layers.log_loss(input=ctr_output, label=label)\n"
+      strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "epsilon"
+      type: FLOAT
+      f: 9.99999974738e-05
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "log_loss_0.tmp_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "loss_ctr"
+    }
+    type: "mean"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10756, in mean\n    type=\"mean\", inputs={\"X\": x}, attrs={}, outputs={\"Out\": out})\n"
+      strings: "  File \"update.py\", line 83, in loss_function\n    loss = fluid.layers.mean(loss, name=\'loss_ctr\')\n"
+      strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 256
+    }
+  }
+  ops {
+    outputs {
+      parameter: "Out"
+      arguments: "loss_ctr@GRAD"
+    }
+    type: "fill_constant"
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 257
+    }
+    attrs {
+      name: "value"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "force_cpu"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "shape"
+      type: LONGS
+      longs: 1
+    }
+    attrs {
+      name: "dtype"
+      type: INT
+      i: 5
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "loss_ctr@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "log_loss_0.tmp_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "log_loss_0.tmp_0@GRAD"
+    }
+    type: "mean_grad"
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Labels"
+      arguments: "label_ctr"
+    }
+    inputs {
+      parameter: "Loss@GRAD"
+      arguments: "log_loss_0.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "Predicted"
+      arguments: "ctr.tmp_0"
+    }
+    outputs {
+      parameter: "Predicted@GRAD"
+      arguments: "ctr.tmp_0@GRAD"
+    }
+    type: "log_loss_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 11422, in log_loss\n    attrs={\'epsilon\': epsilon})\n"
+      strings: "  File \"update.py\", line 82, in loss_function\n    loss = fluid.layers.log_loss(input=ctr_output, label=label)\n"
+      strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "epsilon"
+      type: FLOAT
+      f: 9.99999974738e-05
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out"
+      arguments: "ctr.tmp_0"
+    }
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "ctr.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "clip_0.tmp_0@GRAD"
+    }
+    type: "sigmoid_grad"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/layer_function_generator.py\", line 247, in func\n    helper.append_op(type=op_type, inputs={\"X\": x}, outputs={\"Out\": output})\n"
+      strings: "  File \"update.py\", line 49, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "clip_0.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "fc_5.tmp_1"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_5.tmp_1@GRAD"
+    }
+    type: "clip_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10681, in clip\n    outputs={\"Out\": out})\n"
+      strings: "  File \"update.py\", line 49, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "max"
+      type: FLOAT
+      f: 15.0
+    }
+    attrs {
+      name: "min"
+      type: FLOAT
+      f: -15.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_5.tmp_1@GRAD"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_5.b_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_5.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_5.b_0@GRAD"
+    }
+    type: "elementwise_add_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_5.b_0"
+      strings: "fc_5.b_0@GRAD"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_5.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "fc_4.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_5.w_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_4.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_5.w_0@GRAD"
+    }
+    type: "mul_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_5.w_0"
+      strings: "fc_5.w_0@GRAD"
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out"
+      arguments: "fc_4.tmp_2"
+    }
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_4.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_4.tmp_1@GRAD"
+    }
+    type: "relu_grad"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_4.tmp_1@GRAD"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_4.b_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_4.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_4.b_0@GRAD"
+    }
+    type: "elementwise_add_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_4.b_0"
+      strings: "fc_4.b_0@GRAD"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_4.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "fc_3.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_4.w_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_3.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_4.w_0@GRAD"
+    }
+    type: "mul_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_4.w_0"
+      strings: "fc_4.w_0@GRAD"
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out"
+      arguments: "fc_3.tmp_2"
+    }
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_3.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_3.tmp_1@GRAD"
+    }
+    type: "relu_grad"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_3.tmp_1@GRAD"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_3.b_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_3.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_3.b_0@GRAD"
+    }
+    type: "elementwise_add_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_3.b_0"
+      strings: "fc_3.b_0@GRAD"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_3.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "fc_2.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_3.w_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_2.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_3.w_0@GRAD"
+    }
+    type: "mul_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_3.w_0"
+      strings: "fc_3.w_0@GRAD"
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out"
+      arguments: "fc_2.tmp_2"
+    }
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_2.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_2.tmp_1@GRAD"
+    }
+    type: "relu_grad"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_2.tmp_1@GRAD"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_2.b_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_2.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_2.b_0@GRAD"
+    }
+    type: "elementwise_add_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_2.b_0"
+      strings: "fc_2.b_0@GRAD"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_2.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "fc_1.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_2.w_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_1.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_2.w_0@GRAD"
+    }
+    type: "mul_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_2.w_0"
+      strings: "fc_2.w_0@GRAD"
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out"
+      arguments: "fc_1.tmp_2"
+    }
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_1.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_1.tmp_1@GRAD"
+    }
+    type: "relu_grad"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_1.tmp_1@GRAD"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_1.b_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_1.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_1.b_0@GRAD"
+    }
+    type: "elementwise_add_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_1.b_0"
+      strings: "fc_1.b_0@GRAD"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_1.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "fc_0.tmp_2"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_1.w_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_0.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_1.w_0@GRAD"
+    }
+    type: "mul_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_1.w_0"
+      strings: "fc_1.w_0@GRAD"
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out"
+      arguments: "fc_0.tmp_2"
+    }
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_0.tmp_2@GRAD"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_0.tmp_1@GRAD"
+    }
+    type: "relu_grad"
+    attrs {
+      name: "is_test"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 159, in append_activation\n    attrs=act)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_0.tmp_1@GRAD"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_0.b_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "fc_0.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_0.b_0@GRAD"
+    }
+    type: "elementwise_add_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_0.b_0"
+      strings: "fc_0.b_0@GRAD"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 135, in append_bias_op\n    attrs={\'axis\': dim_start})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "fc_0.tmp_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "cvm_input"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "fc_0.w_0"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "cvm_input@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+      arguments: "fc_0.w_0@GRAD"
+    }
+    type: "mul_grad"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+      strings: "fc_0.w_0"
+      strings: "fc_0.w_0@GRAD"
+    }
+    attrs {
+      name: "x_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "force_fp32_output"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "y_num_col_dims"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
+      strings: "  File \"update.py\", line 47, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
+      strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
+      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "scale_out"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "scale_y"
+      type: FLOATS
+      floats: 1.0
+    }
+  }
+}
+version {
+  version: 0
+}

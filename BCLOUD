@@ -10,7 +10,8 @@ INCPATHS('$OUT/../')
 INCPATHS('../../third-party')
 INCPATHS('../../third-party/eigen')
 INCPATHS('$OUT_ROOT/baidu/third-party/python/output/include/python2.7')
-LDFLAGS('-lpthread -lcrypto -lrt -ldl -lssl -lz -lgomp -fopenmp ')
+LDFLAGS('-lpthread -lcrypto -lrt -ldl -lssl -lz -lgomp -fopenmp')
+#LDFLAGS('-lpthread -lcrypto -lrt -ldl -lssl -lz -lgomp -fopenmp -lasan')
 CONFIGS('baidu/third-party/any@15595d8324be9e8a9a80d9ae442fdd12bd66df5d@git_branch')
 CONFIGS('baidu/third-party/boost@v1.41.0@git_branch')
 CONFIGS('baidu/third-party/c-ares@v1.13.0@git_branch')
@@ -84,6 +85,7 @@ custom_trainer_src = GLOB('paddle/fluid/train/custom_trainer/feed/*/*.cc', Exclu
 CPPFLAGS_STR = '-DHPPL_STUB_FUNC -DLAPACK_FOUND -DPADDLE_DISABLE_PROFILER -DPADDLE_NO_PYTHON -DCUSTOM_TRAINER -DPADDLE_ON_INFERENCE -DPADDLE_USE_DSO -DPADDLE_USE_PTHREAD_BARRIER -DPADDLE_USE_PTHREAD_SPINLOCK -DPADDLE_VERSION=0.0.0 -DPADDLE_WITH_AVX -DPADDLE_WITH_MKLML -DPADDLE_WITH_XBYAK -DXBYAK64 -DXBYAK_NO_OP_NAMES -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DPYBIND_AVX_MKLML' + r" -DPADDLE_REVISION=\"%s@%s@%s\"" % (REPO_URL(), REPO_BRANCH(), REPO_REVISION())
 
 CFLAGS_STR = '-m64 -fPIC -fno-omit-frame-pointer -Werror -Wall -Wextra -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-unused-parameter -Wno-unused-function -Wno-error=literal-suffix -Wno-error=sign-compare -Wno-error=unused-local-typedefs -Wno-error=maybe-uninitialized -Wno-narrowing -Wnarrowing -fopenmp -mavx -O3 -DNDEBUG '
+#CFLAGS_STR = '-m64 -fPIC -fsanitize=address -fsanitize-recover=address -fno-omit-frame-pointer -Werror -Wall -Wextra -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-unused-parameter -Wno-unused-function -Wno-error=literal-suffix -Wno-error=sign-compare -Wno-error=unused-local-typedefs -Wno-error=maybe-uninitialized -Wno-narrowing -Wnarrowing -fopenmp -mavx -O3 -DNDEBUG '
 CXXFLAGS_STR = '-std=c++11 ' + CFLAGS_STR
 
 SharedLibrary("paddle_fluid_avx_mklml", PreBuilt(True))

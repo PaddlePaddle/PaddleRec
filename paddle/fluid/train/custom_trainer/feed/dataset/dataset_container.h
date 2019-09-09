@@ -16,6 +16,8 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+class Shuffler;
+
 inline int data_num_for_train(uint64_t train_begin_timestamp, uint32_t train_time_interval, uint32_t data_time_interval) {
     uint64_t data_begin_time = train_begin_timestamp;
     uint64_t data_end_time = data_begin_time + train_time_interval;
@@ -76,6 +78,7 @@ protected:
     std::vector<std::string> _data_root_paths;              //支持同时读取多个目录
     
     TrainerContext* _trainer_context;
+    std::shared_ptr<Shuffler> _shuffler;
     std::shared_ptr<DataReader> _data_reader;
     std::shared_ptr<std::thread> _downloader_thread;
     std::vector<std::shared_ptr<DatasetInfo>> _dataset_list;//预取的数据列表

@@ -42,16 +42,20 @@ input_accessor:
 - async_pull: true
   class: DenseInputAccessor
   input:
-  - name: fc_1.w_0
+  - name: fc_0.w_0
     shape: [3672, 511]
-  - name: fc_1.b_0
+  - name: fc_0.b_0
     shape: [511]
-  - name: fc_2.w_0
+  - name: fc_1.w_0
     shape: [511, 255]
-  - name: fc_2.b_0
+  - name: fc_1.b_0
     shape: [255]
-  - name: fc_3.w_0
+  - name: fc_2.w_0
     shape: [255, 127]
+  - name: fc_2.b_0
+    shape: [127]
+  - name: fc_3.w_0
+    shape: [127, 127]
   - name: fc_3.b_0
     shape: [127]
   - name: fc_4.w_0
@@ -59,19 +63,15 @@ input_accessor:
   - name: fc_4.b_0
     shape: [127]
   - name: fc_5.w_0
-    shape: [127, 127]
-  - name: fc_5.b_0
-    shape: [127]
-  - name: ctr.w_0
     shape: [127, 1]
-  - name: ctr.b_0
+  - name: fc_5.b_0
     shape: [1]
   need_gradient: true
   table_id: 3
 - class: LabelInputAccessor
   input:
   - label_name: label_ctr
-    output_name: ctr.tmp_2
+    output_name: ctr.tmp_0
     shape: [-1, 1]
 inputs:
 - name: cvm_input
@@ -81,8 +81,8 @@ labels:
   shape: [-1, 1]
 loss: loss_ctr
 monitor:
-- {class: AucMonitor, compute_interval: 600, name: epoch_auc, target: ctr.tmp_2, target_idx: 0}
-- {class: AucMonitor, compute_interval: 86400, name: day_auc, target: ctr.tmp_2, target_idx: 0}
+- {class: AucMonitor, compute_interval: 600, name: epoch_auc, target: ctr.tmp_0, target_idx: 0}
+- {class: AucMonitor, compute_interval: 86400, name: day_auc, target: ctr.tmp_0, target_idx: 0}
 outputs:
-- name: ctr.tmp_2
+- name: ctr.tmp_0
   shape: [-1, 1]

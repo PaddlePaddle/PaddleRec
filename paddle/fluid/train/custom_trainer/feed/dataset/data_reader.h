@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <time.h>
 #include <yaml-cpp/yaml.h>
 #include "paddle/fluid/framework/channel.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/pipeline.h"

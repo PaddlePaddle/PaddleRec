@@ -14,6 +14,7 @@
 namespace paddle {
 namespace custom_trainer {
 namespace feed {
+
     
 class RuntimeEnvironment;
 class PSlib {
