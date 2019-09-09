@@ -124,6 +124,14 @@ class ModelBuilder:
             with open(os.path.join(self._save_path, name + '.pbtxt'), 'w') as fout:
                 fout.write(str(program))
 
+        fluid.io.save_inference_model(self._save_path,
+                [var.name for var in inputs],
+                outputs,
+                executor=None,
+                main_program=test_program,
+                model_filename='inference_program',
+                program_only=True)
+
         params = filter(fluid.io.is_parameter, main_program.list_vars())
         vars = []
         sums=[]

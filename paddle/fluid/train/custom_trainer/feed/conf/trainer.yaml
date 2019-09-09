@@ -30,6 +30,8 @@ dataset:
             pipeline_cmd: './tool/ins_weight.py | awk -f ./tool/format_newcate_hotnews.awk'
             parser:
                 class: AbacusTextDataParser 
+            shuffler:
+                class: LocalShuffler
     
 epoch:
     epoch_class: TimelyEpochAccessor 

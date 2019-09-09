@@ -69,6 +69,15 @@ int32_t DenseInputAccessor::pull_dense(size_t table_id) {
 
 int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
     paddle::framework::Scope* scope) {
+    collect_persistables(scope);
+
+    if (_need_async_pull) {
+        ++_pull_request_num;
+    }
+    return 0;
+}
+
+int32_t DenseInputAccessor::collect_persistables(paddle::framework::Scope* scope) {
     // 首次同步pull，之后异步pull
     if (_data_buffer == nullptr) {
         _pull_mutex.lock();
@@ -94,7 +103,9 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
         paddle::framework::DDim ddim(shape_ptr, variable.shape.size());
         auto* tensor = ScopeHelper::resize_lod_tensor(scope, variable.name, ddim);  
         auto* grad_tensor = ScopeHelper::resize_lod_tensor(scope, variable.gradient_name, ddim);
-        VLOG(5) << "fill scope variable:" << variable.name << ", " << variable.gradient_name;
+        VLOG(5) << "fill scope variable:" << variable.name << ", " << variable.gradient_name
+            << ", data_buffer: " << _data_buffer + data_buffer_idx
+            << ", dim: " << variable.dim * sizeof(float);
         auto* var_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
         memcpy(var_data, _data_buffer + data_buffer_idx, variable.dim * sizeof(float));
         data_buffer_idx += variable.dim;
@@ -107,8 +118,12 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
             VLOG(2) << "[Debug][PullDense]" << ScopeHelper::to_string(scope, variable.name);
         }
     }
-    if (_need_async_pull) {
-        ++_pull_request_num;
+    return 0;
+}
+
+int32_t DenseInputAccessor::collect_persistables_name(std::vector<std::string>& persistables) {
+    for (auto& variable : _x_variables) {
+        persistables.push_back(variable.name);
     }
     return 0;
 }
@@ -117,12 +132,12 @@ int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope) {
     if (!_need_gradient) {
         return 0;
-    } 
+    }
     size_t data_buffer_idx = 0;
     std::vector<paddle::ps::Region> regions;
     for (auto& variable : _x_variables) {
         auto* tensor = scope->Var(variable.gradient_name)->
-            GetMutable<paddle::framework::LoDTensor>(); 
+            GetMutable<paddle::framework::LoDTensor>();
         auto* grad_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
         regions.emplace_back(grad_data, variable.dim);
     }

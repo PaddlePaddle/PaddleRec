@@ -46,6 +46,8 @@ public:
     //执行训练
     virtual paddle::framework::Channel<DataItem> run(
         paddle::framework::Channel<DataItem> input, const DataParser* parser);
+
+    virtual int32_t save_persistables(const std::string& filename);
     
     virtual bool is_dump_all_model() {
         return _need_dump_all_model;
@@ -80,6 +82,7 @@ protected:
     std::vector<std::shared_ptr<DataInputAccessor>> _input_accessors;
     std::map<uint32_t, std::vector<DataInputAccessor*>> _table_to_accessors;
     std::shared_ptr<paddle::ps::ObjectPool<::paddle::framework::Scope>> _scope_obj_pool;
+    std::vector<std::string> _persistables;
 };
 
 }  // namespace feed

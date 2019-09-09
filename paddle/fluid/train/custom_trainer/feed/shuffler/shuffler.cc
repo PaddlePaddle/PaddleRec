@@ -1,4 +1,3 @@
-#pragma once
 #include "paddle/fluid/framework/archive.h"
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/shuffler/shuffler.h"
@@ -30,7 +29,7 @@ public:
         return 0;
     }
 };
-REGIST_CLASS(DataParser, LocalShuffler);
+REGIST_CLASS(Shuffler, LocalShuffler);
 
 class GlobalShuffler : public Shuffler {
 public:
@@ -109,7 +108,7 @@ private:
     uint32_t _max_concurrent_num  = 0;
     
 };
-REGIST_CLASS(DataParser, GlobalShuffler);
+REGIST_CLASS(Shuffler, GlobalShuffler);
 
 }  // namespace feed
 }  // namespace custom_trainer

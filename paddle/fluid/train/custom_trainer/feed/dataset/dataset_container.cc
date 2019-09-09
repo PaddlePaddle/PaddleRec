@@ -31,7 +31,7 @@ int DatasetContainer::initialize(
     _data_root_paths = config["root_path"].as<std::vector<std::string>>();
     _data_split_interval = config["data_spit_interval"].as<int>();
     _data_path_formater = config["data_path_formater"].as<std::string>();
-    std::string shuffler = config["shuffler"]["name"].as<std::string>();
+    std::string shuffler = config["shuffler"]["class"].as<std::string>();
     _shuffler.reset(CREATE_INSTANCE(Shuffler, shuffler));
     _shuffler->initialize(config, context);
     std::string data_reader_class = config["data_reader"].as<std::string>();
