@@ -52,7 +52,10 @@ int32_t DenseInputAccessor::create(::paddle::framework::Scope* scope) {
 
 // rpc拉取数据，需保证单线程运行
 int32_t DenseInputAccessor::pull_dense(size_t table_id) {
-    float* data_buffer =  new float[_total_dim];
+    float* data_buffer =  _data_buffer;
+    if (data_buffer == NULL) {
+        data_buffer = new float[_total_dim];
+    }
     size_t data_buffer_idx = 0;
     std::vector<paddle::ps::Region> regions;
     for (auto& variable : _x_variables) {
@@ -128,10 +131,11 @@ int32_t DenseInputAccessor::collect_persistables_name(std::vector<std::string>& 
     return 0;
 }
 
-int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
+std::future<int32_t> DenseInputAccessor::backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope) {
+    std::future<int32_t> ret;
     if (!_need_gradient) {
-        return 0;
+        return ret;
     }
     size_t data_buffer_idx = 0;
     std::vector<paddle::ps::Region> regions;
@@ -142,8 +146,7 @@ int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
         regions.emplace_back(grad_data, variable.dim);
     }
     auto* ps_client = _trainer_context->pslib->ps_client();
-    auto push_status = ps_client->push_dense(regions.data(), regions.size(), _table_id);
-    //push_status.get();
+    ps_client->push_dense(regions.data(), regions.size(), _table_id);
     if (!FLAGS_feed_trainer_debug_dense_name.empty()) {
         for (auto& variable : _x_variables) {
             if (variable.name != FLAGS_feed_trainer_debug_dense_name) {
@@ -152,7 +155,8 @@ int32_t DenseInputAccessor::backward(SampleInstance* samples, size_t num,
             VLOG(2) << "[Debug][PushDense]" << ScopeHelper::to_string(scope, variable.gradient_name);
         }
     }
-    return 0;
+    // not wait dense push
+    return ret;
 }
 
 int32_t EbdVariableInputAccessor::forward(SampleInstance* samples, size_t num,
@@ -171,10 +175,10 @@ int32_t EbdVariableInputAccessor::forward(SampleInstance* samples, size_t num,
     }
     return 0;
 }
-
-int32_t EbdVariableInputAccessor::backward(SampleInstance* samples, size_t num,
+std::future<int32_t> EbdVariableInputAccessor::backward(SampleInstance* samples, size_t num,
     paddle::framework::Scope* scope) {
-    return 0;
+    std::future<int32_t> ret;
+    return ret;
 }
 
 REGIST_CLASS(DataInputAccessor, DenseInputAccessor);

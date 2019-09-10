@@ -18,6 +18,8 @@ public:
     virtual int initialize(const YAML::Node& config, std::shared_ptr<TrainerContext> context) = 0;
     virtual std::shared_ptr<FILE> open_read(const std::string& path, const std::string& converter) = 0;
     virtual std::shared_ptr<FILE> open_write(const std::string& path, const std::string& converter) = 0;
+    // only support text-file 
+    virtual int append_line(const std::string& path, const std::string& line, size_t reserve_line_num);
     virtual int64_t file_size(const std::string& path) = 0;
     virtual void remove(const std::string& path) = 0;
     virtual std::vector<std::string> list(const std::string& path) = 0;

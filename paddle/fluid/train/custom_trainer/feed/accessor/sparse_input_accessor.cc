@@ -136,8 +136,9 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
 }
 
 // 更新spare数据
-int32_t BaseSparseInputAccessor::backward(SampleInstance* samples,
+std::future<int32_t> BaseSparseInputAccessor::backward(SampleInstance* samples,
     size_t num, paddle::framework::Scope* scope) {
+    std::future<int32_t> ret;
     int64_t runtime_data_for_scope = *ScopeHelper::get_value<int64_t>(
             scope, _trainer_context->cpu_place, "sparse_runtime_data");
     auto* runtime_data_ptr = (std::vector<SparseVarRuntimeData>*)runtime_data_for_scope;
@@ -146,7 +147,7 @@ int32_t BaseSparseInputAccessor::backward(SampleInstance* samples,
         delete runtime_data_ptr;
     });
     if (!_need_gradient) {
-        return 0;
+        return ret;
     }
     auto* ps_client = _trainer_context->pslib->ps_client();
     auto* value_accessor = ps_client->table_accessor(_table_id);
@@ -204,11 +205,10 @@ int32_t BaseSparseInputAccessor::backward(SampleInstance* samples,
             VLOG(2) << "[DEBUG][sparse_slot_push]" << ssm.str();
         }   
     }
-    auto push_status = ps_client->push_sparse(_table_id, 
-        keys.data(), (const float**)push_values, key_idx);
-    //auto ret = push_status.get();
+    ret = ps_client->push_sparse(_table_id, 
+          keys.data(), (const float**)push_values, key_idx);
     delete[] push_values;
-    return 0;
+    return ret;
 } 
 
 class AbacusSparseJoinAccessor : public BaseSparseInputAccessor {

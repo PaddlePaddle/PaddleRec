@@ -73,6 +73,7 @@ protected:
     std::string _inference_model_delta_done_path;
     uint64_t _current_epoch_id = 0;
     std::string _last_checkpoint_path;
+    uint64_t _last_done_epoch_id = 0;
     uint64_t _last_checkpoint_epoch_id = 0;
     std::vector<std::string> _done_status;  // 当前完成状态，统一存成string
     uint64_t _inference_base_model_key = 0; // 预估模型的base-key

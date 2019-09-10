@@ -9,6 +9,10 @@ namespace paddle {
 namespace custom_trainer {
 namespace feed {
 
+std::once_flag MultiThreadExecutor::_async_delete_flag;
+std::shared_ptr<std::thread> MultiThreadExecutor::_async_delete_thread;
+paddle::framework::Channel<ScopeExecutorContext*> MultiThreadExecutor::_delete_channel;
+
 int MultiThreadExecutor::initialize(YAML::Node exe_config, 
     std::shared_ptr<TrainerContext> context_ptr) {
     int ret = 0;
@@ -85,6 +89,23 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
         CHECK(monitor_ptr->initialize(monitor_config, context_ptr) == 0)
             << "Monitor init Failed, class:" << monitor_class;
     }
+
+    // 异步删除池
+    std::call_once(_async_delete_flag, [this](){
+        _delete_channel = paddle::framework::MakeChannel<ScopeExecutorContext*>();
+        _delete_channel->SetBlockSize(32);
+        _async_delete_thread.reset(new std::thread([this]{
+            std::vector<ScopeExecutorContext*> ctxs;
+            while (true) {
+                while (_delete_channel->Read(ctxs)) {
+                    for (auto* ctx : ctxs) {
+                        delete ctx;
+                    }
+                }
+                usleep(200000); // 200ms
+            }
+        }));
+    });
     return ret;
 }
 
@@ -187,9 +208,10 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                 auto* samples = scope_ctx->samples();
                 auto sample_num = scope_ctx->sample_num();
                 
+                out_items[out_idx] = 0;
+                scope_ctx->wait_status.resize(_input_accessors.size());
                 for (size_t i = 0; i < _input_accessors.size(); ++i) {
-                    out_items[out_idx] = _input_accessors[i]->
-                        backward(samples, sample_num, scope);
+                    scope_ctx->wait_status[i] = _input_accessors[i]->backward(samples, sample_num, scope);
                 }
                 timer.Pause();
                 scope_ctx->push_gradient_cost_ms = timer.ElapsedMS();
@@ -203,7 +225,8 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
                         VLOG(2) << "[Debug][Layer]" << ScopeHelper::to_string(scope, layer_name);
                     }
                 }
-                delete scope_ctx; // 所有pipe完成后，再回收sample
+                 // 所有pipe完成后，再异步回收sample
+                _delete_channel->Put(scope_ctx);
             }
             return 0;
     });

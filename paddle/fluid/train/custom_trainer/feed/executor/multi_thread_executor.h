@@ -1,4 +1,5 @@
 #pragma once
+#include <thread>
 #include <functional>
 #include "paddle/fluid/framework/channel.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
@@ -18,6 +19,12 @@ public:
         _sample_num = sample_num;
     }
     virtual ~ScopeExecutorContext() {
+        for (auto& status : wait_status) {
+            if (!status.valid()) {
+                continue;
+            }
+            status.wait();
+        }
         delete[] _samples;
     }
     inline SampleInstance* samples() {
@@ -29,6 +36,7 @@ public:
     size_t executor_cost_ms = 0;
     size_t prepare_cost_ms = 0;
     size_t push_gradient_cost_ms = 0;
+    std::vector<std::future<int32_t>> wait_status;
 private:
     size_t _sample_num = 0;
     SampleInstance* _samples = NULL;
@@ -83,6 +91,11 @@ protected:
     std::map<uint32_t, std::vector<DataInputAccessor*>> _table_to_accessors;
     std::shared_ptr<paddle::ps::ObjectPool<::paddle::framework::Scope>> _scope_obj_pool;
     std::vector<std::string> _persistables;
+
+    // 异步删除
+    static std::once_flag _async_delete_flag;
+    static std::shared_ptr<std::thread> _async_delete_thread;
+    static paddle::framework::Channel<ScopeExecutorContext*> _delete_channel;
 };
 
 }  // namespace feed

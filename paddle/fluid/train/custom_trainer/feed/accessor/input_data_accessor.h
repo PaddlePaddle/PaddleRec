@@ -35,8 +35,9 @@ public:
     virtual int32_t forward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope) = 0;
 
-    // 后向，一般用于更新梯度，在训练网络执行后调用
-    virtual int32_t backward(SampleInstance* samples, size_t num,
+    // 后向，一般用于更新梯度，在训练网络执行后调用, 由于backward一般是异步，这里返回future， 
+    // TODO 前向接口也改为future返回形式，接口一致性好些
+    virtual std::future<int32_t> backward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope) = 0;
 
     // 收集持久化变量的名称, 并将值拷贝到Scope
@@ -67,7 +68,7 @@ public:
     virtual int32_t forward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope);
 
-    virtual int32_t backward(SampleInstance* samples, size_t num,
+    virtual std::future<int32_t> backward(SampleInstance* samples, size_t num,
         ::paddle::framework::Scope* scope);
 protected:
     size_t _label_total_dim = 0; 
@@ -108,7 +109,7 @@ public:
     virtual void post_process_input(float* var_data, SparseInputVariable&, SampleInstance*, size_t num) = 0;
 
     // backward过程的梯度push
-    virtual int32_t backward(SampleInstance* samples, size_t num,
+    virtual std::future<int32_t> backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);    
     // SparseGradValue会被依次调用，用于整理push的梯度
     virtual void fill_gradient(float* push_value, const float* gradient_raw, 
@@ -148,7 +149,7 @@ public:
     virtual int32_t forward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);
 
-    virtual int32_t backward(SampleInstance* samples, size_t num,
+    virtual std::future<int32_t> backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);
 
 
@@ -175,7 +176,7 @@ public:
     virtual int32_t forward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);
 
-    virtual int32_t backward(SampleInstance* samples, size_t num,
+    virtual std::future<int32_t> backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);
 };
 

@@ -45,10 +45,11 @@ int32_t LabelInputAccessor::forward(SampleInstance* samples, size_t num,
     return 0;
 }
 
-int32_t LabelInputAccessor::backward(SampleInstance* samples, size_t num,
+std::future<int32_t> LabelInputAccessor::backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope) {
+    std::future<int32_t> ret;
     if (num < 1) {
-        return 0;
+        return ret;
     }
     for (size_t i = 0; i < num; ++i) {
         auto& sample = samples[i];
@@ -69,7 +70,7 @@ int32_t LabelInputAccessor::backward(SampleInstance* samples, size_t num,
         VLOG(2) << "[Debug][Lable]" << ScopeHelper::to_string(scope, label.label_name) << ScopeHelper::to_string(scope, label.output_name);
     }
     */
-    return 0;
+    return ret;
 }
 
 REGIST_CLASS(DataInputAccessor, LabelInputAccessor);

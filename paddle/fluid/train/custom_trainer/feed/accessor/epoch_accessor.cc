@@ -22,8 +22,10 @@ namespace feed {
         }
         std::string done_text = fs->tail(_done_file_path);
         _done_status = paddle::string::split_string(done_text, std::string("\t"));
-        _current_epoch_id = get_status<uint64_t>(EpochStatusFiled::EpochIdField);
+        _last_done_epoch_id = get_status<uint64_t>(EpochStatusFiled::EpochIdField);
         _last_checkpoint_epoch_id = get_status<uint64_t>(EpochStatusFiled::CheckpointIdField);
+        // 训练需要从上一个checkpoint对应的epoch开始
+        _current_epoch_id = _last_checkpoint_epoch_id;
         _last_checkpoint_path = get_status<std::string>(EpochStatusFiled::CheckpointPathField);
         _inference_base_model_key = get_status<uint64_t>(EpochStatusFiled::InferenceBaseKeyField);
         _inference_model_path = fs->path_join(_model_root_path, config["inference_model_dir"].as<std::string>("xbox"));
@@ -45,8 +47,14 @@ namespace feed {
         set_status(EpochStatusFiled::TimestampField, now.tv_sec);
         set_status(EpochStatusFiled::CheckpointIdField, _last_checkpoint_epoch_id);
         set_status(EpochStatusFiled::CheckpointPathField, _last_checkpoint_path);
-        set_status(EpochStatusFiled::DateField, format_timestamp(epoch_id, "%Y%m%d"));
+        set_status(EpochStatusFiled::DateField, format_timestamp(epoch_id, "%Y%m%d-%H%M"));
         set_status(EpochStatusFiled::InferenceBaseKeyField, _inference_base_model_key);
+        if (epoch_id > _last_done_epoch_id) {
+            // 保留末尾1000数据
+            auto fs = _trainer_context->file_system.get();
+            std::string done_str = paddle::string::join_strings(_done_status, '\t');
+            fs->append_line(_done_file_path, done_str, 1000); 
+        }
         return 0;
     }
     
@@ -59,20 +67,18 @@ namespace feed {
         }
         std::string done_str;
         std::string donefile;
+        auto fs = _trainer_context->file_system.get();
         auto model_path = model_save_path(epoch_id, save_way);
         std::string inference_done_format("{\"id\":\"%lu\",\"key\":\"%lu\",\"input\":\"%s/000\",\"record_count\":\"1\",\"file_format\":\"pb\",\"schema_version\":\"2\",\"partition_type\":\"1\",\"job_name\":\"%s\",\"job_id\":\"%s\",\"mpi_size\":\"%d\",\"monitor_data\":\"%s\"}");
         
         auto id = time(NULL);
         switch (save_way) {
-        case ModelSaveWay::ModelSaveTrainCheckpoint:
-            donefile = _done_file_path;
-            done_str = paddle::string::join_strings(_done_status, '\t');
-            break;
         case ModelSaveWay::ModelSaveInferenceDelta:
             donefile = _inference_model_delta_done_path;
             done_str = string::format_string(inference_done_format.c_str(), id, _inference_base_model_key, 
                 model_path.c_str(), env->job_name().c_str(), env->job_id().c_str(),
                 env->node_num(EnvironmentRole::PSERVER), _trainer_context->monitor_ssm.str().c_str());
+            fs->append_line(donefile, done_str, 1000); 
             break;
         case ModelSaveWay::ModelSaveInferenceBase:
             donefile = _inference_model_base_done_path;
@@ -80,30 +86,9 @@ namespace feed {
             done_str = string::format_string(inference_done_format.c_str(), id, id, 
                 model_path.c_str(), env->job_name().c_str(), env->job_id().c_str(),
                 env->node_num(EnvironmentRole::PSERVER), _trainer_context->monitor_ssm.str().c_str());
+            fs->append_line(donefile, done_str, 1000); 
             break;
         }
-        // 保留末尾1000数据
-        std::string tail_done_info;
-        auto fs = _trainer_context->file_system.get();
-        if (fs->exists(donefile)) {
-            tail_done_info = paddle::string::trim_spaces(fs->tail(donefile, 1000)); 
-        }
-        if (tail_done_info.size() > 0) {
-            tail_done_info = tail_done_info + "\n" + done_str;
-        } else {
-            tail_done_info = done_str;
-        }
-        VLOG(2) << "Write donefile " << donefile << ", str:" << done_str;
-        bool write_success = false;
-        while (true) {
-            fs->remove(donefile);
-            auto fp = fs->open_write(donefile, "");
-            if (fwrite(tail_done_info.c_str(), tail_done_info.length(), 1, &*fp) == 1) {
-                break;
-            }     
-            sleep(10);   
-        }
-        VLOG(2) << "Write donefile " << donefile << "success";
         return 0;
     }
 
@@ -155,7 +140,9 @@ namespace feed {
         }
         switch (save_way) {
             case ModelSaveWay::ModelSaveInferenceDelta:
-                return delta_id(epoch_id) % 6 == 0;
+                // 重启训练后，中间的delta不重复dump
+                return epoch_id > _last_done_epoch_id && 
+                    delta_id(epoch_id) % 6 == 0;
             case ModelSaveWay::ModelSaveInferenceBase:
                 return is_last_epoch(epoch_id);
             case ModelSaveWay::ModelSaveTrainCheckpoint:

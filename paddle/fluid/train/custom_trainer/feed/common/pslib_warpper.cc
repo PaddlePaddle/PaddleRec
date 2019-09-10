@@ -70,7 +70,6 @@ paddle::PSParameter* PSlib::get_param() {
 void PSlib::init_gflag() {
     int cnt = 4;
     char** params_ptr = new char*[cnt];
-    std::cout << "alloc_ptr" << params_ptr << std::flush;
     char p0[] = "exe default";
     char p1[] = "-max_body_size=314217728";
     char p2[] = "-bthread_concurrency=40";

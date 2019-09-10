@@ -23,6 +23,30 @@ std::pair<std::string, std::string> FileSystem::path_split(const std::string& pa
     return {path.substr(0, pos), path.substr(pos + 1)};
 }
 
+int FileSystem::append_line(const std::string& path, 
+    const std::string& line, size_t reserve_line_num) {
+    std::string tail_data;
+    if (exists(path)) {
+        tail_data = paddle::string::trim_spaces(tail(path, reserve_line_num)); 
+    }
+    if (tail_data.size() > 0) {
+        tail_data = tail_data + "\n" + line;
+    } else {
+        tail_data = line;
+    }
+    VLOG(2) << "Append to file:" << path << ", line str:" << line;
+    while (true) {
+        remove(path);
+        auto fp = open_write(path, "");
+        if (fwrite(tail_data.c_str(), tail_data.length(), 1, &*fp) == 1) {
+            break;
+        }     
+        sleep(10);   
+        VLOG(0) << "Retry Append to file:" << path << ", line str:" << line;
+    }
+    return 0;
+}
+
 }  // namespace feed
 }  // namespace custom_trainer
 }  // namespace paddle
