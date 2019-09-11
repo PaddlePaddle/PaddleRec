@@ -131,6 +131,11 @@ class ModelBuilder:
                 main_program=test_program,
                 model_filename='inference_program',
                 program_only=True)
+        with open(os.path.join(self._save_path, 'inference_program'), "rb") as f:
+            program_desc_str = f.read()
+        infer_program = fluid.Program.parse_from_string(program_desc_str)
+        with open(os.path.join(self._save_path, 'inference_program.pbtxt'), 'w') as fout:
+            fout.write(str(infer_program))
 
         params = filter(fluid.io.is_parameter, main_program.list_vars())
         vars = []
