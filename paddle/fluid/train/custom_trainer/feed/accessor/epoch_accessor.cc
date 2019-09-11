@@ -150,6 +150,8 @@ namespace feed {
                     return true;
                 }
                 return delta_id(epoch_id) % 24 == 0;
+            case ModelSaveWay::ModelSaveTrainCheckpointBase:
+                return is_last_epoch(epoch_id);
         }
         return false;
     }
@@ -165,6 +167,7 @@ namespace feed {
             case ModelSaveWay::ModelSaveInferenceBase:
                 return _trainer_context->file_system->path_join(_inference_model_path, 
                     string::format_string("%s/base", date.c_str()));
+            case ModelSaveWay::ModelSaveTrainCheckpointBase:
             case ModelSaveWay::ModelSaveTrainCheckpoint:
                 return _trainer_context->file_system->path_join(_model_root_path, 
                     string::format_string("batch_model/%s", date_with_hour.c_str()));

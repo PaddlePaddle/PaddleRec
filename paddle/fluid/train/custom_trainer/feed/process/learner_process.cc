@@ -175,7 +175,11 @@ int LearnerProcess::run() {
         {
             wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
             environment->barrier(EnvironmentRole::WORKER); 
-            wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
+            if (epoch_accessor->is_last_epoch(epoch_id)) {
+                wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpointBase);
+            } else {
+                wait_save_model(epoch_id, ModelSaveWay::ModelSaveTrainCheckpoint);
+            }
             environment->barrier(EnvironmentRole::WORKER); 
             if (epoch_accessor->is_last_epoch(epoch_id) &&
                 environment->is_master_node(EnvironmentRole::WORKER)) {

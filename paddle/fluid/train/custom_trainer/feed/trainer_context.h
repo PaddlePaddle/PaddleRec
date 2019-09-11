@@ -26,7 +26,8 @@ const uint32_t SecondsPerDay = 24 * 3600;
 enum class ModelSaveWay {
     ModelSaveTrainCheckpoint = 0,
     ModelSaveInferenceDelta = 1,
-    ModelSaveInferenceBase = 2
+    ModelSaveInferenceBase = 2,
+    ModelSaveTrainCheckpointBase = 3,
 };
 
 enum class TrainerStatus {
