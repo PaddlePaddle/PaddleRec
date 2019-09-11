@@ -21,6 +21,7 @@ public:
     // only support text-file 
     virtual int append_line(const std::string& path, const std::string& line, size_t reserve_line_num);
     virtual int64_t file_size(const std::string& path) = 0;
+    virtual int copy(const std::string& ori_path, const std::string& dest_path);
     virtual void remove(const std::string& path) = 0;
     virtual std::vector<std::string> list(const std::string& path) = 0;
     virtual std::string tail(const std::string& path, size_t tail_num = 1) = 0;

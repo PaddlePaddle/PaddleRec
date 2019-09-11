@@ -109,9 +109,10 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
     return ret;
 }
 
-int32_t MultiThreadExecutor::save_persistables(const std::string& filename) {
-    // auto fs = _trainer_context->file_system;
-    // fs->mkdir(fs->path_split(filename).first);
+int32_t MultiThreadExecutor::save_persistables(const std::string& file_path) {
+    auto fs = _trainer_context->file_system;
+    auto file_name = fs->path_split(file_path).second;
+    fs->remove(file_name);
     auto scope_obj = _scope_obj_pool->get();
     for (size_t i = 0; i < _input_accessors.size(); ++i) {
         _input_accessors[i]->collect_persistables(scope_obj.get());
@@ -121,12 +122,14 @@ int32_t MultiThreadExecutor::save_persistables(const std::string& filename) {
     auto* op = block->AppendOp();
     op->SetType("save_combine");
     op->SetInput("X", _persistables);
-    op->SetAttr("file_path", filename);
+    op->SetAttr("file_path", file_name);
     op->CheckAttrs();
 
     platform::CPUPlace place;
     framework::Executor exe(place);
     exe.Run(prog, scope_obj.get(), 0, true, true);
+    // exe只能将模型产出在本地，这里通过cp方式兼容其他文件系统
+    fs->copy(file_name, file_path);
     return 0;
 }
 

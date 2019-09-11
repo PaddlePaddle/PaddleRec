@@ -132,13 +132,31 @@ class DenseInputAccessor : public DataInputAccessor {
 public:
     DenseInputAccessor() {}
     virtual ~DenseInputAccessor() {
-        if (_data_buffer) {
-            delete[] _data_buffer;
+        for (float* buffer : _data_buffer_list) {
+            delete[] buffer;
         }
         _need_async_pull = false;
         if (_async_pull_thread) {
             _async_pull_thread->join();
         }
+    }
+
+    // 返回当前可用的Dense buffer
+    inline float* data_buffer() {
+        return _data_buffer_list[_current_buffer_idx];
+    }
+    inline float* backend_data_buffer() {
+        return _data_buffer_list[next_buffer_idx()];
+    }
+    inline void switch_data_buffer() {
+        _current_buffer_idx = next_buffer_idx(); 
+    }
+    inline size_t next_buffer_idx() {
+        auto buffer_idx = _current_buffer_idx + 1;
+        if (buffer_idx >= _data_buffer_list.size()) {
+            return 0;
+        }
+        return buffer_idx;
     }
     
     virtual int initialize(YAML::Node config,
@@ -158,11 +176,12 @@ public:
     virtual int32_t collect_persistables(paddle::framework::Scope* scope);
 protected:
     virtual int32_t pull_dense(size_t table_id);
-
     size_t _total_dim = 0;
     std::mutex _pull_mutex;
     bool _need_async_pull = false;
-    float* _data_buffer = nullptr;
+    bool _is_data_buffer_init = false;
+    std::vector<float*> _data_buffer_list;
+    size_t _current_buffer_idx = 0;
     std::atomic<int> _pull_request_num;
     std::vector<DenseInputVariable> _x_variables; 
     std::shared_ptr<std::thread> _async_pull_thread;

@@ -31,6 +31,10 @@ int DenseInputAccessor::initialize(YAML::Node config,
     if (config["async_pull"] && config["async_pull"].as<bool>()) {
         _need_async_pull = true;
     }
+    _data_buffer_list.resize(6); // 6 buffer顺序循环使用, 降低更新时的写冲突
+    for (auto*& buffer : _data_buffer_list) {
+        buffer = new float[_total_dim];
+    }
     return 0;
 }
 
@@ -52,11 +56,8 @@ int32_t DenseInputAccessor::create(::paddle::framework::Scope* scope) {
 
 // rpc拉取数据，需保证单线程运行
 int32_t DenseInputAccessor::pull_dense(size_t table_id) {
-    float* data_buffer =  _data_buffer;
-    if (data_buffer == NULL) {
-        data_buffer = new float[_total_dim];
-    }
     size_t data_buffer_idx = 0;
+    float* data_buffer = backend_data_buffer(); 
     std::vector<paddle::ps::Region> regions;
     for (auto& variable : _x_variables) {
         regions.emplace_back(data_buffer + data_buffer_idx, variable.dim);
@@ -66,7 +67,8 @@ int32_t DenseInputAccessor::pull_dense(size_t table_id) {
     auto push_status = ps_client->pull_dense(regions.data(), regions.size(), table_id);
     int32_t ret = push_status.get();
     // TODO 使用双buffer DataBuffer,避免训练期改写，当前异步SGD下，问题不大
-    _data_buffer = data_buffer;
+    switch_data_buffer();
+    _is_data_buffer_init = true;
     return ret;
 }
 
@@ -82,9 +84,9 @@ int32_t DenseInputAccessor::forward(SampleInstance* samples, size_t num,
 
 int32_t DenseInputAccessor::collect_persistables(paddle::framework::Scope* scope) {
     // 首次同步pull，之后异步pull
-    if (_data_buffer == nullptr) {
+    if (!_is_data_buffer_init) {
         _pull_mutex.lock();
-        if (_data_buffer == nullptr) {
+        if (!_is_data_buffer_init) {
             CHECK(pull_dense(_table_id) == 0);
             _async_pull_thread = std::make_shared<std::thread>(
                 [this]() {
@@ -101,16 +103,17 @@ int32_t DenseInputAccessor::collect_persistables(paddle::framework::Scope* scope
         _pull_mutex.unlock();
     }
     size_t data_buffer_idx = 0;
+    auto* data_buff = data_buffer();
     for (auto& variable : _x_variables) {
         auto* shape_ptr = &(variable.shape[0]);
         paddle::framework::DDim ddim(shape_ptr, variable.shape.size());
         auto* tensor = ScopeHelper::resize_lod_tensor(scope, variable.name, ddim);  
         auto* grad_tensor = ScopeHelper::resize_lod_tensor(scope, variable.gradient_name, ddim);
         VLOG(5) << "fill scope variable:" << variable.name << ", " << variable.gradient_name
-            << ", data_buffer: " << _data_buffer + data_buffer_idx
+            << ", data_buffer: " << data_buff + data_buffer_idx
             << ", dim: " << variable.dim * sizeof(float);
         auto* var_data = tensor->mutable_data<float>(_trainer_context->cpu_place);
-        memcpy(var_data, _data_buffer + data_buffer_idx, variable.dim * sizeof(float));
+        memcpy(var_data, data_buff + data_buffer_idx, variable.dim * sizeof(float));
         data_buffer_idx += variable.dim;
     }
     if (!FLAGS_feed_trainer_debug_dense_name.empty()) {
