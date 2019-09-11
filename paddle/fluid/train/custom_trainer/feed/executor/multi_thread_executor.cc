@@ -79,7 +79,7 @@ int MultiThreadExecutor::initialize(YAML::Node exe_config,
         CHECK(accessor_ptr->collect_persistables_name(_persistables) == 0)
             << "collect_persistables Failed, class:" << accessor_class;
     }
-    // std::sort(_persistables.begin(), _persistables.end()); // 持久化变量名一定要排序
+    std::sort(_persistables.begin(), _persistables.end()); // 持久化变量名一定要排序
 
     // Monitor组件
     for (const auto& monitor_config : _model_config["monitor"]) {

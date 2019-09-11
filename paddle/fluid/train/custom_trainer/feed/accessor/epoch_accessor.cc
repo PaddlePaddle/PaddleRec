@@ -32,7 +32,7 @@ namespace feed {
         _inference_model_base_done_path = fs->path_join(_inference_model_path, 
             config["inference_base_done_name"].as<std::string>("xbox_base_done.txt"));
         _inference_model_delta_done_path = fs->path_join(_inference_model_path, 
-            config["inference_delta_done_name"].as<std::string>("xbox_delta_done.txt"));
+            config["inference_delta_done_name"].as<std::string>("xbox_patch_done.txt"));
         return 0;
     }
     
@@ -149,7 +149,7 @@ namespace feed {
                 if (is_last_epoch(epoch_id)) {
                     return true;
                 }
-                return delta_id(epoch_id) % 24 == 0;
+                return delta_id(epoch_id) % 78 == 0;
             case ModelSaveWay::ModelSaveTrainCheckpointBase:
                 return is_last_epoch(epoch_id);
         }
