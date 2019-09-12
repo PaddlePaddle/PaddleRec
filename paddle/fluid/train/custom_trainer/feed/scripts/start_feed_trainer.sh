@@ -20,7 +20,6 @@ export PATH=/usr/local/openmpi/bin:$PATH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openmpi/lib/
 if [ "${run_mode}" = "mpi" ];then
     mpirun mv package/* .
-    mpirun mkdir -p log
     export HADOOP_HOME="./hadoop-client/hadoop"
     export PATH=$HADOOP_HOME/bin/:./bin:$PATH
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./so

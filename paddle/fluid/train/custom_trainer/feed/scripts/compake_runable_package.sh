@@ -39,6 +39,6 @@ done
 
 #输出package包
 rm -rf package
-mkdir package
+mkdir -p package/log
 cp -r bin conf tool scripts model so package
 cp -r ${TRAINER_HODOOP_HOME} package/hadoop-client
