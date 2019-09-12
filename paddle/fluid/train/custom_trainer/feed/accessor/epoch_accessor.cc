@@ -49,11 +49,15 @@ namespace feed {
         set_status(EpochStatusFiled::CheckpointPathField, _last_checkpoint_path);
         set_status(EpochStatusFiled::DateField, format_timestamp(epoch_id, "%Y%m%d-%H%M"));
         set_status(EpochStatusFiled::InferenceBaseKeyField, _inference_base_model_key);
-        if (epoch_id > _last_done_epoch_id) {
-            // 保留末尾1000数据
-            auto fs = _trainer_context->file_system.get();
-            std::string done_str = paddle::string::join_strings(_done_status, '\t');
-            fs->append_line(_done_file_path, done_str, 1000); 
+        
+        auto* env = _trainer_context->environment.get();
+        if (env->is_master_node(EnvironmentRole::WORKER)) {
+            if (epoch_id > _last_done_epoch_id) {
+                // 保留末尾1000数据
+                auto fs = _trainer_context->file_system.get();
+                std::string done_str = paddle::string::join_strings(_done_status, '\t');
+                fs->append_line(_done_file_path, done_str, 1000); 
+            }
         }
         return 0;
     }
