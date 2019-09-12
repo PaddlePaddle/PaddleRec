@@ -16,6 +16,7 @@ namespace feed {
 int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     int ret = Process::initialize(context_ptr);
     auto& config = _context_ptr->trainer_config;
+    _startup_dump_inference_base = config["startup_dump_inference_base"].as<bool>(false);
     if (config["executor"]) {
         _executors.resize(config["executor"].size());
         for (size_t i = 0; i < _executors.size(); ++i) {
@@ -26,7 +27,7 @@ int LearnerProcess::initialize(std::shared_ptr<TrainerContext> context_ptr) {
     return 0;
 }
 
-int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
+int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way, bool is_force_dump) {
     auto fs = _context_ptr->file_system;
     auto* ps_client = _context_ptr->pslib->ps_client();
     auto* environment = _context_ptr->environment.get();
@@ -34,7 +35,7 @@ int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way) {
     if (!environment->is_master_node(EnvironmentRole::WORKER)) {
         return 0;
     }
-    if (!epoch_accessor->need_save_model(epoch_id, way)) {
+    if (!is_force_dump && !epoch_accessor->need_save_model(epoch_id, way)) {
         return 0;
     }
     paddle::platform::Timer timer;
@@ -112,8 +113,8 @@ int LearnerProcess::run() {
     CHECK(load_model(epoch_id) == 0);
     environment->barrier(EnvironmentRole::WORKER); 
 
-    //判断是否先dump出base
-    wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase);
+    //判断是否先dump出base TODO
+    wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase, _startup_dump_inference_base);
     environment->barrier(EnvironmentRole::WORKER); 
     
     while (true) {

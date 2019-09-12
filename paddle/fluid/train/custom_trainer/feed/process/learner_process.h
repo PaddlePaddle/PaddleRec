@@ -20,10 +20,11 @@ public:
 protected:
 // 加载所有模型
 virtual int load_model(uint64_t epoch_id);
-// 同步保存所有模型
-virtual int wait_save_model(uint64_t epoch_id, ModelSaveWay way);
+// 同步保存所有模型, is_force_dump:不判断dump条件,强制dump出模型
+virtual int wait_save_model(uint64_t epoch_id, ModelSaveWay way, bool is_force_dump = false);
 
 private:
+    bool _startup_dump_inference_base;  //启动立即dump base
     std::vector<std::shared_ptr<MultiThreadExecutor>> _executors;
 };
 
