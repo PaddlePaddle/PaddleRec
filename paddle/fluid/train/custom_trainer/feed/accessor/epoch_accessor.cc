@@ -96,6 +96,7 @@ namespace feed {
         std::shared_ptr<TrainerContext> context_ptr) {
         _time_zone_seconds = config["time_zone_seconds"].as<int>();
         _train_time_interval = config["train_time_interval"].as<int>();
+        _checkpoint_time_interval = config["checkpoint_time_interval"].as<int>(3600 * 18); // 默认每18小时dump一个
         CHECK(_train_time_interval > 0 && (_train_time_interval % SecondsPerMin) == 0);
         _train_num_per_day = SecondsPerDay / _train_time_interval;
         return EpochAccessor::initialize(config, context_ptr); 
@@ -123,7 +124,7 @@ namespace feed {
 
     bool TimelyEpochAccessor::is_last_epoch(uint64_t epoch_id) {
         auto delta = delta_id(epoch_id);
-        return delta == _train_num_per_day;
+        return delta == 0; // 最后一个delta恰好整除
     }
  
     uint64_t TimelyEpochAccessor::epoch_time_interval() {
@@ -149,7 +150,7 @@ namespace feed {
                 if (is_last_epoch(epoch_id)) {
                     return true;
                 }
-                return delta_id(epoch_id) % 78 == 0;
+                return delta_id(epoch_id) % (_checkpoint_time_interval / _train_time_interval) == 0;
             case ModelSaveWay::ModelSaveTrainCheckpointBase:
                 return is_last_epoch(epoch_id);
         }

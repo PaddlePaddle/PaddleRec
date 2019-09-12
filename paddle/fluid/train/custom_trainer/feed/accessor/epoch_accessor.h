@@ -103,6 +103,7 @@ private:
     uint32_t _time_zone_seconds;   // 相对UTC时差(秒)
     uint32_t _train_time_interval; // 训练时间间隔(秒)
     uint32_t _train_num_per_day;   // 天级训练总轮数
+    uint32_t _checkpoint_time_interval; // 每隔n秒，dump出CheckPoint
 };
 
 }  // namespace feed
