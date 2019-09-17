@@ -64,7 +64,7 @@ int LearnerProcess::update_cache_model(uint64_t epoch_id, ModelSaveWay way) {
                     if (line_len <= 1) {
                         continue;
                     }
-                    char* data_ptr;
+                    char* data_ptr = NULL;
                     cache_dict.append(strtoul(buffer, &data_ptr, 10));
                 }
                 if (buffer != nullptr) {
