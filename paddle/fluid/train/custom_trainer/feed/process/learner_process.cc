@@ -77,6 +77,7 @@ int LearnerProcess::update_cache_model(uint64_t epoch_id, ModelSaveWay way) {
     return 0;
 }
 int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way, bool is_force_dump) {
+    ContextStatusGurad status_guard(_context_ptr, TrainerStatus::Saving);
     auto fs = _context_ptr->file_system;
     auto* ps_client = _context_ptr->pslib->ps_client();
     auto* environment = _context_ptr->environment.get();
@@ -154,6 +155,7 @@ int LearnerProcess::load_model(uint64_t epoch_id) {
     if (!environment->is_master_node(EnvironmentRole::WORKER)) {
         return 0;
     }
+    VLOG(2) << "Start Load Model";
     auto* fs = _context_ptr->file_system.get();
     std::set<uint32_t> loaded_table_set;
     auto model_dir = _context_ptr->epoch_accessor->checkpoint_path();
@@ -177,6 +179,7 @@ int LearnerProcess::load_model(uint64_t epoch_id) {
             loaded_table_set.insert(itr.first);
         }
     }
+    VLOG(2) << "Finish Load Model";
     return 0;
 }
 
@@ -223,6 +226,7 @@ int LearnerProcess::run() {
     
         //Step2. 运行训练网络
         {
+            ContextStatusGurad status_guard(_context_ptr, TrainerStatus::Training);
             std::map<std::string, paddle::framework::Channel<DataItem>> backup_input_map;
             for (auto& executor : _executors) {
                 environment->barrier(EnvironmentRole::WORKER); 

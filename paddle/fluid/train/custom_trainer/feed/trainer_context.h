@@ -95,20 +95,23 @@ private:
 
 class TrainerContext {
 public:
+    TrainerContext() {
+        trainer_status.resize(2, 0);
+    }
     inline paddle::ps::PSClient* ps_client() {
         return pslib->ps_client();
     }
     inline bool is_status(TrainerStatus status) {
-        auto bit_idx = static_cast<uint32_t>(status);
-        return ((trainer_status >> bit_idx) & 1) > 0;
+        auto status_idx = static_cast<uint32_t>(status);
+        return trainer_status[status_idx] > 0;
     }
     // 非线程安全, 其实TrainerContext所有成员的线程安全性 取决于 成员本身的线程安全性
     inline void set_status(TrainerStatus status, bool on) {
-        auto bit_idx = static_cast<uint32_t>(status);
-        trainer_status = trainer_status & (1L << bit_idx);
+        auto status_idx = static_cast<uint32_t>(status);
+        trainer_status[status_idx] = on ? 1 : 0;
     }
 
-    uint32_t trainer_status;      // trainer当前，由于可同时处于多种状态，这里分bit存储状态
+    std::vector<uint32_t> trainer_status;
     YAML::Node trainer_config;
     paddle::platform::CPUPlace cpu_place;
 
@@ -120,6 +123,20 @@ public:
     std::shared_ptr<RuntimeEnvironment> environment;           //运行环境
     std::vector<std::shared_ptr<Process>> process_list;        //训练流程
     std::shared_ptr<SignCacheDict> cache_dict;                 //大模型cache词典
+};
+
+class ContextStatusGurad {
+public:
+    ContextStatusGurad(TrainerContext* context, TrainerStatus status) :
+        _context(context), _status(status) {
+        _context->set_status(_status, true);
+    }
+    virtual ~ContextStatusGurad() {
+        _context->set_status(_status, false);
+    }
+private:
+    TrainerStatus _status;
+    TrainerContext* _context = nullptr;
 };
 
 }  // namespace feed

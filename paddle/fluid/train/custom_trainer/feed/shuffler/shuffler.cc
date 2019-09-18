@@ -39,8 +39,8 @@ public:
     virtual int initialize(YAML::Node config,
         std::shared_ptr<TrainerContext> context_ptr) {
         Shuffler::initialize(config, context_ptr);
-        _max_concurrent_num = config["max_concurrent_num"].as<int>(4); // 最大并发发送数
-        _max_package_size = config["max_package_size"].as<int>(1024);  // 最大包个数，一次发送package个数据
+        _max_concurrent_num = config["max_concurrent_num"].as<int>(6); // 最大并发发送数
+        _max_package_size = config["max_package_size"].as<int>(256);  // 最大包个数，一次发送package个数据
         _shuffle_data_msg_type = config["shuffle_data_msg_type"].as<int>(3);  // c2c msg type
         _finish_msg_type = config["finish_msg_type"].as<int>(4);  // c2c msg type
 
@@ -62,6 +62,8 @@ public:
         data_channel.swap(input_channel);
         set_channel(data_channel);
 
+        _item_send_count = 0;
+        _item_receive_count = 0;
         auto* environment = _trainer_context->environment.get();
         auto worker_num = environment->node_num(EnvironmentRole::WORKER);
         std::vector<std::vector<std::future<int>>> waits(concurrent_num);
@@ -86,8 +88,9 @@ public:
                     status = 1;
                     break;
                 }
+                _item_send_count += read_size;
                 for (int i = 0; i < worker_num; ++i) {
-                    send_buffer_worker.clear();
+                    send_buffer_worker[i].clear();
                 }
                 for (int i = 0; i < read_size; ++i) {
                     auto worker_idx = _shuffle_key_func(send_buffer[i].id) % worker_num;
@@ -119,19 +122,19 @@ public:
                 }
             }
         }
-        VLOG(5) << "start send finish, worker_num: " << worker_num;
+        VLOG(2) << "start send finish, worker_num: " << worker_num;
         waits[0].clear();
         for (int i = 0; i < worker_num; ++i) {
              waits[0].push_back(send_finish(i));
         }
-        VLOG(5) << "wait all finish";
+        VLOG(2) << "wait all finish";
         for (int i = 0; i < worker_num; ++i) {
             if (waits[0][i].get() != 0) {
                 LOG(WARNING) << "fail to send finish " << i;
                 status = -1;
             }
         }
-        VLOG(5) << "finish shuffler, status: " << status;
+        VLOG(2) << "finish shuffler_send_channel, total_send:" << _item_send_count;
         return status < 0 ? status : 0;
     }
 
@@ -174,6 +177,7 @@ private:
         // 同步所有worker，在所有写入完成后，c2c_msg返回前，重置channel
         if (wait_num == 0) {
             reset_channel();
+            VLOG(2) << "finish shuffle_receive_channel, receive_count: " << _item_receive_count;
             _wait_num_mutex.unlock();
         } else {
             std::lock_guard<bthread::Mutex> lock(_wait_num_mutex);
@@ -182,7 +186,7 @@ private:
     }
     int32_t write_to_channel(std::vector<DataItem>&& items) {
         size_t items_size = items.size();
-        VLOG(5) << "write_to_channel, items_size: " << items_size;
+        _item_receive_count += items_size;
         return _out_channel->Write(std::move(items)) == items_size ? 0 : -1;
     }
 
@@ -207,6 +211,8 @@ private:
     }
 
     std::future<int32_t> send_shuffle_data(int to_client_id, std::vector<DataItem>& items) {
+        // server端也开启了client, worker节点为偶数编号
+        to_client_id = 2 * to_client_id;
         VLOG(5) << "send_shuffle_data, to_client_id: " << to_client_id << ", items_size: " << items.size();
         paddle::framework::BinaryArchive ar;
         ar << items;
@@ -215,6 +221,8 @@ private:
     }
 
     std::future<int32_t> send_finish(int to_client_id) {
+        // server端也开启了client, worker节点为偶数编号
+        to_client_id = 2 * to_client_id;
         VLOG(5) << "send_finish, to_client_id: " << to_client_id;
         static const std::string empty_str;
         return _trainer_context->pslib->ps_client()->send_client2client_msg(_finish_msg_type, to_client_id, empty_str);
@@ -230,6 +238,8 @@ private:
 
     bthread::Mutex _wait_num_mutex;
     std::atomic<int> _wait_num;
+    std::atomic<uint32_t> _item_send_count;
+    std::atomic<uint32_t> _item_receive_count;
 };
 REGIST_CLASS(Shuffler, GlobalShuffler);
 
