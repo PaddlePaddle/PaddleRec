@@ -5,6 +5,7 @@
 #include "paddle/fluid/train/custom_trainer/feed/trainer_context.h"
 #include "paddle/fluid/train/custom_trainer/feed/executor/executor.h"
 #include "paddle/fluid/train/custom_trainer/feed/dataset/data_reader.h"
+#include "paddle/fluid/train/custom_trainer/feed/common/runtime_environment.h"
 
 namespace paddle {
 namespace custom_trainer {

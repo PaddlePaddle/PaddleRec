@@ -75,8 +75,8 @@ public:
     // 环境定制化log
     template<class... ARGS>
     void log(EnvironmentRole role, EnvironmentLogType type, 
-        EnvironmentLogLevel level, const char* fmt, ARGS && ... args) {
-        print_log(role, type, level, paddle::string::format_string(fmt, args...));
+        EnvironmentLogLevel level, ARGS && ... args) {
+        print_log(role, type, level, paddle::string::format_string(args...));
     }
     // 多线程可调用接口      End
 
@@ -106,14 +106,14 @@ protected:
 };
 REGIST_REGISTERER(RuntimeEnvironment);
 
-#define ENVLOG_WORKER_ALL_NOTICE \
-environment->log(EnvironmentRole::WORKER, EnvironmentLogType::ALL_LOG, EnvironmentLogType::NOTICE, 
-#define ENVLOG_WORKER_MASTER_NOTICE \
-environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogType::NOTICE, 
-#define ENVLOG_WORKER_ALL_ERROR \
-environment->log(EnvironmentRole::WORKER, EnvironmentLogType::ALL_LOG, EnvironmentLogType::ERROR, 
-#define ENVLOG_WORKER_MASTER_ERROR \
-environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogType::ERROR, 
+#define ENVLOG_WORKER_ALL_NOTICE(...) \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::ALL_LOG, EnvironmentLogLevel::NOTICE, __VA_ARGS__);
+#define ENVLOG_WORKER_MASTER_NOTICE(...) \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::NOTICE, __VA_ARGS__);
+#define ENVLOG_WORKER_ALL_ERROR(...) \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::ALL_LOG, EnvironmentLogLevel::ERROR, __VA_ARGS__);
+#define ENVLOG_WORKER_MASTER_ERROR(...) \
+environment->log(EnvironmentRole::WORKER, EnvironmentLogType::MASTER_LOG, EnvironmentLogLevel::ERROR, __VA_ARGS__);
 
 std::string format_timestamp(time_t time, const char* format);
 inline std::string format_timestamp(time_t time, const std::string& format) {
