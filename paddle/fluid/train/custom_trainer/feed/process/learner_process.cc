@@ -198,9 +198,11 @@ int LearnerProcess::run() {
     environment->barrier(EnvironmentRole::WORKER); 
 
     //判断是否先dump出base TODO
-    wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase, _startup_dump_inference_base);
-    environment->barrier(EnvironmentRole::WORKER); 
-    
+    if (_startup_dump_inference_base) {
+        wait_save_model(epoch_id, ModelSaveWay::ModelSaveInferenceBase, _startup_dump_inference_base);
+        environment->barrier(EnvironmentRole::WORKER); 
+    }
+
     while (true) {
         epoch_accessor->next_epoch();
         _context_ptr->monitor_ssm.str(""); 
