@@ -68,6 +68,16 @@ public:
     std::string data;//样本数据， maybe压缩格式
 };
 
+template <class AR>
+paddle::framework::Archive<AR>& operator>>(paddle::framework::Archive<AR>& ar, DataItem& x) {
+    return ar >> x.id >> x.data;
+}
+
+template <class AR>
+paddle::framework::Archive<AR>& operator<<(paddle::framework::Archive<AR>& ar, const DataItem& x) {
+    return ar << x.id << x.data;
+}
+
 typedef std::shared_ptr<Pipeline<DataItem, SampleInstance>> SampleInstancePipe;
 inline SampleInstancePipe make_sample_instance_channel() {
     return std::make_shared<Pipeline<DataItem, SampleInstance>>();
