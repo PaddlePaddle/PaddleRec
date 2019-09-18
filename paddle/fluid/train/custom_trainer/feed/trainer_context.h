@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <sstream>
+#include <tsl/bhopscotch_map.h>
 #include "paddle/fluid/platform/place.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/yaml_helper.h"
 #include "paddle/fluid/train/custom_trainer/feed/common/pslib_warpper.h"
@@ -35,15 +36,61 @@ enum class TrainerStatus {
     Saving    = 1  // 模型存储状态
 };
 
+const uint32_t SignCacheMaxValueNum = 13;
+struct SignCacheData {
+    SignCacheData() {
+        memset(cache_value, 0, sizeof(float) * SignCacheMaxValueNum);
+    }
+    uint32_t idx;
+    float cache_value[SignCacheMaxValueNum];
+};
 class SignCacheDict {
 public:
-    int32_t sign2index(uint64_t sign) {
-        return -1;
+    inline int32_t sign2index(uint64_t sign) {
+        auto itr = _sign2data_map.find(sign);
+        if (itr == _sign2data_map.end()) {  
+            return -1;
+        } 
+        return itr->second.idx;
     }
 
-    uint64_t index2sign(int32_t index) {
-        return 0;
+    inline uint64_t index2sign(int32_t index) {
+        if (index >= _sign_list.size()) {
+            return 0;
+        } 
+        return _sign_list[index];
     }
+
+    inline void reserve(uint32_t size) {
+        _sign_list.reserve(size);
+        _sign2data_map.reserve(size);
+    }
+
+    inline void clear() {
+        _sign_list.clear();
+        _sign2data_map.clear();
+    }
+
+    inline void append(uint64_t sign) {
+        if (_sign2data_map.find(sign) != _sign2data_map.end()) {
+            return;
+        }
+        SignCacheData data;
+        data.idx = _sign_list.size();
+        _sign_list.push_back(sign);
+        _sign2data_map.emplace(sign, std::move(data));
+    }
+
+    inline SignCacheData* data(uint64_t sign) {
+        tsl::bhopscotch_pg_map<uint64_t, SignCacheData>::iterator itr = _sign2data_map.find(sign);
+        if (itr == _sign2data_map.end()) {
+            return nullptr;
+        }
+        return const_cast<SignCacheData*>(&(itr->second));
+    }
+private:
+    std::vector<uint64_t> _sign_list;
+    tsl::bhopscotch_pg_map<uint64_t, SignCacheData> _sign2data_map;
 };
 
 class TrainerContext {

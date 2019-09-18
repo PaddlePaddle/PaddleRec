@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
 
     //load trainer config
     auto trainer_context_ptr = std::make_shared<TrainerContext>();
+    trainer_context_ptr->cache_dict.reset(new SignCacheDict);
     trainer_context_ptr->trainer_config = YAML::LoadFile(FLAGS_feed_trainer_conf_path);    
 
     //environment

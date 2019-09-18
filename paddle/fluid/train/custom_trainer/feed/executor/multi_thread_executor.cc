@@ -243,7 +243,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     for (auto& monitor : _monitors) {
         if (monitor->need_compute_result(epoch_id)) {
             monitor->compute_result();
-            ENVLOG_WORKER_MASTER_NOTICE("[Monitor]%s, monitor:%s, , result:%s",
+            ENVLOG_WORKER_MASTER_NOTICE("[Monitor]%s, monitor:%s, result:%s",
                 _train_exe_name.c_str(), monitor->get_name().c_str(), monitor->format_result().c_str());
             _trainer_context->monitor_ssm << _train_exe_name << ":" << 
                 monitor->get_name() << ":" << monitor->format_result() << ","; 
