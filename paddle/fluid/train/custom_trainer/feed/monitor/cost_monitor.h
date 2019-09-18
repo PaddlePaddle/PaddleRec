@@ -46,7 +46,7 @@ private:
     uint64_t _total_time_ms;
     uint64_t _total_cnt;
     uint64_t _avg_time_ms;
-    uint32_t  _compute_interval;
+    uint32_t _compute_interval;
 };
 
 }  // namespace feed

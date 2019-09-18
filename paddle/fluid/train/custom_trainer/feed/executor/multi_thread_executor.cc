@@ -137,7 +137,7 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     paddle::framework::Channel<DataItem> input, const DataParser* parser) {
 
     uint64_t epoch_id = _trainer_context->epoch_accessor->current_epoch_id();
-
+    auto* environment = _trainer_context->environment.get();
     // 输入流
     PipelineOptions input_pipe_option;
     input_pipe_option.need_hold_input_data = true;
@@ -243,8 +243,8 @@ paddle::framework::Channel<DataItem> MultiThreadExecutor::run(
     for (auto& monitor : _monitors) {
         if (monitor->need_compute_result(epoch_id)) {
             monitor->compute_result();
-            VLOG(2) << "[Monitor]" << _train_exe_name << ", monitor:" << monitor->get_name()
-                << ", result:" << monitor->format_result();
+            ENVLOG_WORKER_MASTER_NOTICE("[Monitor]%s, monitor:%s, , result:%s",
+                _train_exe_name.c_str(), monitor->get_name().c_str(), monitor->format_result().c_str());
             _trainer_context->monitor_ssm << _train_exe_name << ":" << 
                 monitor->get_name() << ":" << monitor->format_result() << ","; 
             monitor->reset();

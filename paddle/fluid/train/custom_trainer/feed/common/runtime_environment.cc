@@ -161,7 +161,12 @@ public:
 protected:
     virtual void print_log(EnvironmentRole role, EnvironmentLogType type, 
         EnvironmentLogLevel level,  const std::string& log_str) {
-        if (type == EnvironmentLogType::MASTER_LOG && !is_master_node(role)) {
+        if (type == EnvironmentLogType::MASTER_LOG) {
+            if (is_master_node(role)) {
+                fprintf(stdout, log_str.c_str());
+                fprintf(stdout, "\n");
+                fflush(stdout);
+            }
             return;
         }
         VLOG(static_cast<int>(level)) << log_str;
