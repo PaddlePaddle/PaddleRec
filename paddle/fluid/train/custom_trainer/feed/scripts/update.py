@@ -51,7 +51,8 @@ def inference():
     accessors = [
         { "class": "AbacusSparseUpdateAccessor", "input": "sparses", "table_id": 0, "need_gradient": True},
         { "class": "DenseInputAccessor", "input": "vars", "table_id": 5, "need_gradient": True, "async_pull": True},
-        { "class": "WeightsAdjustAccessor", "input": "ins_weight", "slot_id": 6002, "adjw_ratio": 20, "adjw_threshold": 1000 },
+        { "class": "WeightsAdjustAccessor", "input": "ins_weight", 
+                   "slot_id": 6002, "adjw_ratio": 20, "adjw_threshold": 1000},
         { "class": "LabelInputAccessor", "input": "labels"}
     ]
     monitors = [
