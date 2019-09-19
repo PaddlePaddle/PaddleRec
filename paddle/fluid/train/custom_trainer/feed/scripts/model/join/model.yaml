@@ -87,6 +87,8 @@ input_accessor:
     shape: [4488]
   need_gradient: true
   table_id: 2
+- {adjw_ratio: 20, adjw_threshold: 1000, class: WeightsAdjustAccessor, input: ins_weight,
+  slot_id: 6002}
 - class: LabelInputAccessor
   input:
   - label_name: label_ctr

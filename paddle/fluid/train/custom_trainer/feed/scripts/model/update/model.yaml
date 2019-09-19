@@ -67,7 +67,9 @@ input_accessor:
   - name: fc_5.b_0
     shape: [1]
   need_gradient: true
-  table_id: 3
+  table_id: 5
+- {adjw_ratio: 20, adjw_threshold: 1000, class: WeightsAdjustAccessor, input: ins_weight,
+  slot_id: 6002}
 - class: LabelInputAccessor
   input:
   - label_name: label_ctr

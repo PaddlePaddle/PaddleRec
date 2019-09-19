@@ -17,14 +17,28 @@ blocks {
     persistable: false
   }
   vars {
-    name: "fc_7.tmp_1"
+    name: "fc_6.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_2.tmp_1"
     type {
       type: LOD_TENSOR
       lod_tensor {
         tensor {
           data_type: FP32
           dims: -1
-          dims: 1
+          dims: 255
         }
         lod_level: 0
       }
@@ -74,6 +88,21 @@ blocks {
     persistable: true
   }
   vars {
+    name: "fc_7.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
     name: "fc_1.tmp_2"
     type {
       type: LOD_TENSOR
@@ -82,6 +111,115 @@ blocks {
           data_type: FP32
           dims: -1
           dims: 255
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "_generated_var_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 4488
+        }
+        lod_level: 0
+      }
+    }
+  }
+  vars {
+    name: "fc_4.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "_generated_var_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 4488
+        }
+      }
+    }
+  }
+  vars {
+    name: "fc_5.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 127
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "save_infer_model/scale_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_0.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 511
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_1.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_0.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 511
         }
         lod_level: 0
       }
@@ -117,7 +255,81 @@ blocks {
     persistable: false
   }
   vars {
-    name: "fc_0.tmp_2"
+    name: "fc_4.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "_generated_var_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 4488
+        }
+      }
+    }
+  }
+  vars {
+    name: "bn6048.batch_size"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 4488
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_2.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+          dims: 255
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "feed"
+    type {
+      type: FEED_MINIBATCH
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_2.b_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 255
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_0.tmp_0"
     type {
       type: LOD_TENSOR
       lod_tensor {
@@ -132,7 +344,7 @@ blocks {
     persistable: false
   }
   vars {
-    name: "_generated_var_0"
+    name: "bn6048.batch_sum"
     type {
       type: LOD_TENSOR
       lod_tensor {
@@ -142,20 +354,82 @@ blocks {
         }
       }
     }
+    persistable: true
   }
   vars {
-    name: "fc_4.w_0"
+    name: "fc_1.tmp_0"
     type {
       type: LOD_TENSOR
       lod_tensor {
         tensor {
           data_type: FP32
-          dims: 127
-          dims: 127
+          dims: -1
+          dims: 255
         }
+        lod_level: 0
       }
     }
-    persistable: true
+    persistable: false
+  }
+  vars {
+    name: "ctr.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "cvm_input"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 4488
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_2.tmp_2"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
   }
   vars {
     name: "clip_0.tmp_0"
@@ -187,259 +461,6 @@ blocks {
     persistable: true
   }
   vars {
-    name: "fc_2.tmp_2"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 255
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "cvm_input"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 4488
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "fc_0.tmp_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 511
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "bn6048.batch_sum"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 4488
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "fc_2.tmp_1"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 255
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "fc_5.tmp_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 127
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "fc_0.b_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 511
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "fc_1.b_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 255
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "fc_5.b_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 127
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "bn6048.batch_size"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 4488
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "fc_2.w_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 255
-          dims: 255
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "ctr.tmp_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 1
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "fc_1.tmp_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 255
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "fc_2.b_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 255
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "fc_4.tmp_2"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 127
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "_generated_var_1"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 4488
-        }
-      }
-    }
-  }
-  vars {
-    name: "_generated_var_2"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 4488
-        }
-        lod_level: 0
-      }
-    }
-  }
-  vars {
-    name: "fc_3.tmp_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 127
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
     name: "fc_3.b_0"
     type {
       type: LOD_TENSOR
@@ -453,7 +474,29 @@ blocks {
     persistable: true
   }
   vars {
+    name: "fetch"
+    type {
+      type: FETCH_LIST
+    }
+    persistable: true
+  }
+  vars {
     name: "fc_6.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_3.tmp_0"
     type {
       type: LOD_TENSOR
       lod_tensor {
@@ -526,49 +569,6 @@ blocks {
     persistable: true
   }
   vars {
-    name: "fc_1.w_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 511
-          dims: 255
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
-    name: "fc_1.tmp_1"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 255
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "fc_5.w_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 127
-          dims: 127
-        }
-      }
-    }
-    persistable: true
-  }
-  vars {
     name: "fc_5.tmp_1"
     type {
       type: LOD_TENSOR
@@ -629,7 +629,36 @@ blocks {
     persistable: false
   }
   vars {
-    name: "fc_6.w_0"
+    name: "fc_1.w_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 511
+          dims: 255
+        }
+      }
+    }
+    persistable: true
+  }
+  vars {
+    name: "fc_1.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 255
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_5.w_0"
     type {
       type: LOD_TENSOR
       lod_tensor {
@@ -686,6 +715,46 @@ blocks {
   }
   ops {
     inputs {
+      parameter: "X"
+      arguments: "feed"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "cvm_input"
+    }
+    type: "feed"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1851, in _prepend_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/io.py\", line 905, in prepend_feed_ops\n    attrs={\'col\': i})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/io.py\", line 1090, in save_inference_model\n    prepend_feed_ops(main_program, feeded_var_names)\n"
+      strings: "  File \"create_programs.py\", line 133, in build_and_save\n    program_only=True)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "col"
+      type: INT
+      i: 0
+    }
+  }
+  ops {
+    inputs {
       parameter: "BatchSize"
       arguments: "bn6048.batch_size"
     }
@@ -715,13 +784,19 @@ blocks {
     }
     type: "data_norm"
     attrs {
-      name: "data_layout"
-      type: STRING
-      s: "NCHW"
+      name: "epsilon"
+      type: FLOAT
+      f: 9.99999974738e-05
     }
     attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -735,19 +810,13 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "data_layout"
       type: STRING
-      s: "/"
-    }
-    attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "epsilon"
-      type: FLOAT
-      f: 9.99999974738e-05
+      s: "NCHW"
     }
   }
   ops {
@@ -769,6 +838,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -787,11 +861,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -815,14 +884,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -840,23 +909,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -871,19 +936,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -897,23 +966,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -928,14 +988,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -957,6 +1026,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -975,11 +1049,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1003,14 +1072,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -1028,23 +1097,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1059,19 +1124,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -1085,23 +1154,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1116,14 +1176,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -1145,6 +1214,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -1163,11 +1237,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1191,14 +1260,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -1216,23 +1285,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1247,19 +1312,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -1273,23 +1342,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1304,14 +1364,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -1333,6 +1402,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -1351,11 +1425,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1379,14 +1448,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -1404,23 +1473,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1435,19 +1500,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -1461,23 +1530,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1492,14 +1552,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -1521,6 +1590,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -1539,11 +1613,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1567,14 +1636,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -1592,23 +1661,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1623,19 +1688,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -1649,23 +1718,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1680,14 +1740,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -1709,6 +1778,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -1727,11 +1801,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1755,14 +1824,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -1780,23 +1849,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1811,19 +1876,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -1837,23 +1906,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1868,14 +1928,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -1897,6 +1966,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -1915,11 +1989,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1943,14 +2012,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -1968,23 +2037,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -1999,19 +2064,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -2025,23 +2094,14 @@ blocks {
     }
     type: "relu"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -2056,14 +2116,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
+      name: "op_role_var"
+      type: STRINGS
     }
     attrs {
-      name: "op_role"
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
       type: INT
-      i: 0
+      i: 1
     }
   }
   ops {
@@ -2085,6 +2154,11 @@ blocks {
       type: STRINGS
     }
     attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
       name: "x_num_col_dims"
       type: INT
       i: 1
@@ -2103,11 +2177,6 @@ blocks {
       name: "op_role"
       type: INT
       i: 0
-    }
-    attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -2131,14 +2200,14 @@ blocks {
       f: 1.0
     }
     attrs {
-      name: "scale_x"
-      type: FLOAT
-      f: 1.0
-    }
-    attrs {
       name: "scale_y"
       type: FLOATS
       floats: 1.0
+    }
+    attrs {
+      name: "scale_x"
+      type: FLOAT
+      f: 1.0
     }
   }
   ops {
@@ -2156,23 +2225,19 @@ blocks {
     }
     type: "elementwise_add"
     attrs {
-      name: "y_data_format"
+      name: "axis"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
       type: STRING
-      s: ""
-    }
-    attrs {
-      name: "x_data_format"
-      type: STRING
-      s: ""
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -2187,19 +2252,23 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "x_data_format"
       type: STRING
-      s: "/"
+      s: ""
     }
     attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "axis"
-      type: INT
-      i: 1
+      name: "y_data_format"
+      type: STRING
+      s: ""
     }
   }
   ops {
@@ -2213,8 +2282,24 @@ blocks {
     }
     type: "clip"
     attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "min"
+      type: FLOAT
+      f: -15.0
+    }
+    attrs {
+      name: "max"
+      type: FLOAT
+      f: 15.0
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -2228,24 +2313,8 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
-      name: "op_namescope"
-      type: STRING
-      s: "/"
-    }
-    attrs {
-      name: "op_role"
-      type: INT
-      i: 0
-    }
-    attrs {
-      name: "max"
-      type: FLOAT
-      f: 15.0
-    }
-    attrs {
-      name: "min"
-      type: FLOAT
-      f: -15.0
+      name: "op_role_var"
+      type: STRINGS
     }
   }
   ops {
@@ -2259,23 +2328,14 @@ blocks {
     }
     type: "sigmoid"
     attrs {
-      name: "is_test"
+      name: "op_role"
       type: INT
-      i: 1
+      i: 0
     }
     attrs {
-      name: "use_cudnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "use_mkldnn"
-      type: BOOLEAN
-      b: false
-    }
-    attrs {
-      name: "op_role_var"
-      type: STRINGS
+      name: "op_namescope"
+      type: STRING
+      s: "/"
     }
     attrs {
       name: "op_callstack"
@@ -2289,6 +2349,101 @@ blocks {
       strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "use_cudnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "is_test"
+      type: INT
+      i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "ctr.tmp_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "save_infer_model/scale_0"
+    }
+    type: "scale"
+    attrs {
+      name: "scale"
+      type: FLOAT
+      f: 1.0
+    }
+    attrs {
+      name: "bias"
+      type: FLOAT
+      f: 0.0
+    }
+    attrs {
+      name: "bias_after_scale"
+      type: BOOLEAN
+      b: true
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10410, in scale\n    \'bias_after_scale\': bias_after_scale\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/io.py\", line 1045, in save_inference_model\n    var, 1., name=\"save_infer_model/scale_{}\".format(i))\n"
+      strings: "  File \"create_programs.py\", line 133, in build_and_save\n    program_only=True)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "save_infer_model/scale_0"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "fetch"
+    }
+    type: "fetch"
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/io.py\", line 922, in append_fetch_ops\n    attrs={\'col\': i})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/io.py\", line 1091, in save_inference_model\n    append_fetch_ops(main_program, fetch_var_names)\n"
+      strings: "  File \"create_programs.py\", line 133, in build_and_save\n    program_only=True)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
       name: "op_namescope"
       type: STRING
       s: "/"
@@ -2298,8 +2453,10 @@ blocks {
       type: INT
       i: 0
     }
+    attrs {
+      name: "col"
+      type: INT
+      i: 0
+    }
   }
-}
-version {
-  version: 0
 }

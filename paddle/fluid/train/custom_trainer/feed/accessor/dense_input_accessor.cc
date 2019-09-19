@@ -66,7 +66,6 @@ int32_t DenseInputAccessor::pull_dense(size_t table_id) {
     auto* ps_client = _trainer_context->pslib->ps_client();
     auto push_status = ps_client->pull_dense(regions.data(), regions.size(), table_id);
     int32_t ret = push_status.get();
-    // TODO 使用双buffer DataBuffer,避免训练期改写，当前异步SGD下，问题不大
     switch_data_buffer();
     _is_data_buffer_init = true;
     return ret;
@@ -95,7 +94,7 @@ int32_t DenseInputAccessor::collect_persistables(paddle::framework::Scope* scope
                         pull_dense(_table_id);
                         _pull_request_num = 0; 
                     } else {
-                        usleep(50000);
+                        usleep(10000);
                     }     
                 }
             });

@@ -55,7 +55,9 @@ def inference():
         { "class": "AbacusSparseJoinAccessor", "input": "sparses", "table_id": 0, "need_gradient": False},
         { "class": "DenseInputAccessor", "input": "vars", "table_id": 1, "need_gradient": True, "async_pull": True},
         { "class": "DenseInputAccessor", "input": "sums", "table_id": 2, "need_gradient": True, "async_pull": True},
+        { "class": "WeightsAdjustAccessor", "input": "ins_weight", "slot_id": 6002, "adjw_ratio": 20, "adjw_threshold": 1000 },
         { "class": "LabelInputAccessor", "input": "labels"}
+        
     ]
     monitors = [
         { "name": "epoch_auc", "class": "AucMonitor", "target": ctr_output, "compute_interval": 600 },
@@ -81,9 +83,17 @@ def loss_function(ctr_output):
         list<Variable>: labels
     """
     # TODO: calc loss here
+    ins_weight = fluid.layers.data(
+        name="ins_weight",
+        shape=[-1, 1],
+        dtype="float32",
+        lod_level=0,
+        append_batch_size=False,
+        stop_gradient=True)
 
     label = fluid.layers.data(name='label_ctr', shape=ctr_output.shape, dtype='float32')
     loss = fluid.layers.log_loss(input=ctr_output, label=label)
+    loss = fluid.layers.elementwise_mul(loss, ins_weight)
     loss = fluid.layers.mean(loss, name='loss_ctr')
 
     return loss, [label]

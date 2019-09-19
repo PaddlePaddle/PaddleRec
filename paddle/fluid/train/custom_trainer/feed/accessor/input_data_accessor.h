@@ -76,19 +76,20 @@ protected:
 };
 
 struct SparseInputVariable {
-    size_t slot_dim;
-    size_t total_dim;
-    std::string name;
-    std::string gradient_name;
-    std::vector<int32_t> slot_idx;
-    std::vector<uint16_t> slot_list;
+    size_t slot_dim;                                        // slot下dim数
+    size_t total_dim;                                       // slot_dim * slot_num
+    std::string name;                                       // 对应参数变量名称
+    std::string gradient_name;                              // 对应梯度变量名称
+    std::vector<int32_t> slot_idx;                          // 通过slot_id 反查 slot在参数层的idx
+    std::vector<uint16_t> slot_list;                        // slot_id列表
 };
 
 struct SparseVarRuntimeData {
-    uint32_t row_size;
-    uint32_t total_size;
-    float* variable_data;
-    float* gradient_data;
+    uint32_t row_size;                                      // batch_size
+    uint32_t total_size;                                    // batch_size * input_dim
+    float* variable_data;                                   // 参数
+    float* gradient_data;                                   // 梯度
+    SparseInputVariable* sparse_var_metas;                  // metas
 };
 
 class BaseSparseInputAccessor : public DataInputAccessor {
@@ -102,15 +103,18 @@ public:
     // forword过程的input填充
     virtual int32_t forward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);
+
     // 取得单个SparseKey的PullValue, 实现单个SparseValue的填充
     virtual void fill_input(float* var_data, const float* pull_raw,
         paddle::ps::ValueAccessor&, SparseInputVariable&, SampleInstance&) = 0;
+
     // 所有SparseValue填充完成后，调用，可进一步全局处理
     virtual void post_process_input(float* var_data, SparseInputVariable&, SampleInstance*, size_t num) = 0;
 
     // backward过程的梯度push
     virtual std::future<int32_t> backward(SampleInstance* samples, size_t num,
         paddle::framework::Scope* scope);    
+
     // SparseGradValue会被依次调用，用于整理push的梯度
     virtual void fill_gradient(float* push_value, const float* gradient_raw, 
         paddle::ps::ValueAccessor&, SparseInputVariable&, 

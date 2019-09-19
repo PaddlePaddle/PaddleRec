@@ -39,6 +39,19 @@ blocks {
     }
   }
   vars {
+    name: "fc_0.w_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 4488
+          dims: 511
+        }
+      }
+    }
+  }
+  vars {
     name: "fc_7.tmp_0"
     type {
       type: LOD_TENSOR
@@ -168,14 +181,27 @@ blocks {
     persistable: false
   }
   vars {
-    name: "fc_4.tmp_1"
+    name: "_generated_var_2@GRAD"
     type {
       type: LOD_TENSOR
       lod_tensor {
         tensor {
           data_type: FP32
           dims: -1
-          dims: 127
+          dims: 4488
+        }
+      }
+    }
+  }
+  vars {
+    name: "label_ctr"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
         }
         lod_level: 0
       }
@@ -682,19 +708,6 @@ blocks {
     persistable: false
   }
   vars {
-    name: "fc_0.w_0@GRAD"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 4488
-          dims: 511
-        }
-      }
-    }
-  }
-  vars {
     name: "fc_5.b_0"
     type {
       type: LOD_TENSOR
@@ -719,34 +732,6 @@ blocks {
       }
     }
     persistable: true
-  }
-  vars {
-    name: "label_ctr"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 1
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "_generated_var_2@GRAD"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 4488
-        }
-      }
-    }
   }
   vars {
     name: "fc_1.tmp_0"
@@ -837,7 +822,79 @@ blocks {
     persistable: false
   }
   vars {
+    name: "bn6048.batch_size@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: 4488
+        }
+      }
+    }
+  }
+  vars {
+    name: "clip_0.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "fc_4.tmp_1"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 127
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "ins_weight"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
     name: "log_loss_0.tmp_0"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
+      }
+    }
+    persistable: false
+  }
+  vars {
+    name: "elementwise_mul_0"
     type {
       type: LOD_TENSOR
       lod_tensor {
@@ -1069,33 +1126,6 @@ blocks {
     }
   }
   vars {
-    name: "clip_0.tmp_0"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: -1
-          dims: 1
-        }
-        lod_level: 0
-      }
-    }
-    persistable: false
-  }
-  vars {
-    name: "bn6048.batch_size@GRAD"
-    type {
-      type: LOD_TENSOR
-      lod_tensor {
-        tensor {
-          data_type: FP32
-          dims: 4488
-        }
-      }
-    }
-  }
-  vars {
     name: "fc_6.w_0@GRAD"
     type {
       type: LOD_TENSOR
@@ -1118,6 +1148,20 @@ blocks {
           dims: 127
           dims: 127
         }
+      }
+    }
+  }
+  vars {
+    name: "elementwise_mul_0@GRAD"
+    type {
+      type: LOD_TENSOR
+      lod_tensor {
+        tensor {
+          data_type: FP32
+          dims: -1
+          dims: 1
+        }
+        lod_level: 0
       }
     }
   }
@@ -1411,8 +1455,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 3474, in data_norm\n    attrs={\"epsilon\": epsilon})\n"
       strings: "  File \"join.py\", line 31, in inference\n    param_attr={\"batch_size\":1e4, \"batch_sum_default\":0.0, \"batch_square\":1e4})\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -1481,8 +1525,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -1547,8 +1591,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -1604,8 +1648,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -1669,8 +1713,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -1735,8 +1779,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -1792,8 +1836,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -1857,8 +1901,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -1923,8 +1967,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -1980,8 +2024,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2045,8 +2089,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -2111,8 +2155,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2168,8 +2212,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2233,8 +2277,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -2299,8 +2343,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2356,8 +2400,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2421,8 +2465,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -2487,8 +2531,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2544,8 +2588,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2609,8 +2653,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -2675,8 +2719,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2732,8 +2776,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2797,8 +2841,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -2863,8 +2907,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2904,8 +2948,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10681, in clip\n    outputs={\"Out\": out})\n"
       strings: "  File \"join.py\", line 52, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -2965,8 +3009,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/layer_function_generator.py\", line 247, in func\n    helper.append_op(type=op_type, inputs={\"X\": x}, outputs={\"Out\": output})\n"
       strings: "  File \"join.py\", line 52, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3003,10 +3047,10 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 11422, in log_loss\n    attrs={\'epsilon\': epsilon})\n"
-      strings: "  File \"join.py\", line 86, in loss_function\n    loss = fluid.layers.log_loss(input=ctr_output, label=label)\n"
+      strings: "  File \"join.py\", line 95, in loss_function\n    loss = fluid.layers.log_loss(input=ctr_output, label=label)\n"
       strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3029,6 +3073,67 @@ blocks {
       parameter: "X"
       arguments: "log_loss_0.tmp_0"
     }
+    inputs {
+      parameter: "Y"
+      arguments: "ins_weight"
+    }
+    outputs {
+      parameter: "Out"
+      arguments: "elementwise_mul_0"
+    }
+    type: "elementwise_mul"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10367, in _elementwise_op\n    \'use_mkldnn\': use_mkldnn})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10428, in elementwise_mul\n    return _elementwise_op(LayerHelper(\'elementwise_mul\', **locals()))\n"
+      strings: "  File \"join.py\", line 96, in loss_function\n    loss = fluid.layers.elementwise_mul(loss, ins_weight)\n"
+      strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 0
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: -1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "X"
+      arguments: "elementwise_mul_0"
+    }
     outputs {
       parameter: "Out"
       arguments: "loss_ctr"
@@ -3044,10 +3149,10 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10756, in mean\n    type=\"mean\", inputs={\"X\": x}, attrs={}, outputs={\"Out\": out})\n"
-      strings: "  File \"join.py\", line 87, in loss_function\n    loss = fluid.layers.mean(loss, name=\'loss_ctr\')\n"
+      strings: "  File \"join.py\", line 97, in loss_function\n    loss = fluid.layers.mean(loss, name=\'loss_ctr\')\n"
       strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3099,17 +3204,85 @@ blocks {
     }
     inputs {
       parameter: "X"
-      arguments: "log_loss_0.tmp_0"
+      arguments: "elementwise_mul_0"
     }
     outputs {
       parameter: "X@GRAD"
-      arguments: "log_loss_0.tmp_0@GRAD"
+      arguments: "elementwise_mul_0@GRAD"
     }
     type: "mean_grad"
     attrs {
       name: "op_role"
       type: INT
       i: 1
+    }
+  }
+  ops {
+    inputs {
+      parameter: "Out@GRAD"
+      arguments: "elementwise_mul_0@GRAD"
+    }
+    inputs {
+      parameter: "X"
+      arguments: "log_loss_0.tmp_0"
+    }
+    inputs {
+      parameter: "Y"
+      arguments: "ins_weight"
+    }
+    outputs {
+      parameter: "X@GRAD"
+      arguments: "log_loss_0.tmp_0@GRAD"
+    }
+    outputs {
+      parameter: "Y@GRAD"
+    }
+    type: "elementwise_mul_grad"
+    attrs {
+      name: "y_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "op_role_var"
+      type: STRINGS
+    }
+    attrs {
+      name: "op_callstack"
+      type: STRINGS
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10367, in _elementwise_op\n    \'use_mkldnn\': use_mkldnn})\n"
+      strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10428, in elementwise_mul\n    return _elementwise_op(LayerHelper(\'elementwise_mul\', **locals()))\n"
+      strings: "  File \"join.py\", line 96, in loss_function\n    loss = fluid.layers.elementwise_mul(loss, ins_weight)\n"
+      strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
+    }
+    attrs {
+      name: "op_namescope"
+      type: STRING
+      s: "/"
+    }
+    attrs {
+      name: "op_role"
+      type: INT
+      i: 1
+    }
+    attrs {
+      name: "x_data_format"
+      type: STRING
+      s: ""
+    }
+    attrs {
+      name: "use_mkldnn"
+      type: BOOLEAN
+      b: false
+    }
+    attrs {
+      name: "axis"
+      type: INT
+      i: -1
     }
   }
   ops {
@@ -3140,10 +3313,10 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/framework.py\", line 1780, in append_op\n    attrs=kwargs.get(\"attrs\", None))\n"
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layer_helper.py\", line 43, in append_op\n    return self.main_program.current_block().append_op(*args, **kwargs)\n"
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 11422, in log_loss\n    attrs={\'epsilon\': epsilon})\n"
-      strings: "  File \"join.py\", line 86, in loss_function\n    loss = fluid.layers.log_loss(input=ctr_output, label=label)\n"
+      strings: "  File \"join.py\", line 95, in loss_function\n    loss = fluid.layers.log_loss(input=ctr_output, label=label)\n"
       strings: "  File \"create_programs.py\", line 108, in build_and_save\n    loss, labels = self._loss_function(*outputs)\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3202,8 +3375,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/layer_function_generator.py\", line 247, in func\n    helper.append_op(type=op_type, inputs={\"X\": x}, outputs={\"Out\": output})\n"
       strings: "  File \"join.py\", line 52, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3242,8 +3415,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 10681, in clip\n    outputs={\"Out\": out})\n"
       strings: "  File \"join.py\", line 52, in inference\n    ctr_output = fluid.layers.sigmoid(fluid.layers.clip(net, min=-15.0, max=15.0), name=\"ctr\")\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3314,8 +3487,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3394,8 +3567,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -3460,8 +3633,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3522,8 +3695,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3602,8 +3775,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -3668,8 +3841,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3730,8 +3903,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3810,8 +3983,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -3876,8 +4049,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -3938,8 +4111,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4018,8 +4191,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -4084,8 +4257,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4146,8 +4319,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4226,8 +4399,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -4292,8 +4465,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4354,8 +4527,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4434,8 +4607,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -4500,8 +4673,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4562,8 +4735,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4642,8 +4815,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -4708,8 +4881,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 360, in fc\n    return helper.append_activation(pre_activation)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4770,8 +4943,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 358, in fc\n    pre_activation = helper.append_bias_op(pre_bias, dim_start=num_flatten_dims)\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"
@@ -4850,8 +5023,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 345, in fc\n    \"y_num_col_dims\": 1})\n"
       strings: "  File \"join.py\", line 51, in inference\n    initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=1.0 * scales[i])))\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "use_mkldnn"
@@ -4943,8 +5116,8 @@ blocks {
       strings: "  File \"/home/xiexionghang/paddle/py-paddle/python/lib/python2.7/site-packages/paddle/fluid/layers/nn.py\", line 3474, in data_norm\n    attrs={\"epsilon\": epsilon})\n"
       strings: "  File \"join.py\", line 31, in inference\n    param_attr={\"batch_size\":1e4, \"batch_sum_default\":0.0, \"batch_square\":1e4})\n"
       strings: "  File \"create_programs.py\", line 100, in build_and_save\n    inference_info = self._inference()\n"
-      strings: "  File \"create_programs.py\", line 187, in main\n    builder.build_and_save()\n"
-      strings: "  File \"create_programs.py\", line 190, in <module>\n    main(sys.argv)\n"
+      strings: "  File \"create_programs.py\", line 200, in main\n    builder.build_and_save()\n"
+      strings: "  File \"create_programs.py\", line 203, in <module>\n    main(sys.argv)\n"
     }
     attrs {
       name: "op_namescope"

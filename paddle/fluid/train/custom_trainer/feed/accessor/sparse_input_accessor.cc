@@ -77,6 +77,7 @@ int32_t BaseSparseInputAccessor::forward(SampleInstance* samples,
         const auto& variable = _x_variables[i];
         var_runtime_data[i].row_size = num;
         var_runtime_data[i].total_size = num * variable.total_dim;
+        var_runtime_data[i].sparse_var_metas = &(_x_variables[i]);
         auto* tensor = ScopeHelper::resize_lod_tensor(
             scope, variable.name, {num, variable.total_dim});
         auto* grad_tensor = ScopeHelper::resize_lod_tensor(
