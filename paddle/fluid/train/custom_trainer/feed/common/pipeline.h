@@ -116,7 +116,7 @@ private:
                 }
                 parsing_num += read_size;
                 BthreadTaskRunner::instance().add_task(
-                    [this, &parsing_num, read_size, input_data_buffer](){
+                    [this, &parsing_num, read_size, input_data_buffer]() {
                     size_t write_size = 0;
                     std::vector<TypeOut> output_data_buffer(_options.batch_size);
                     _converter(input_data_buffer->data(), read_size,

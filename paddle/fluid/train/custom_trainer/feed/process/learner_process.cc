@@ -215,6 +215,7 @@ int LearnerProcess::run() {
         //Step1. 等待样本ready
         {
             ENVLOG_WORKER_MASTER_NOTICE("      %s, wait data ready:%s", epoch_log_title.c_str(), data_path.c_str());
+            dataset->pre_detect_data(epoch_id);
             while (dataset->epoch_data_status(epoch_id) != DatasetStatus::Ready) {
                 sleep(30);  
                 dataset->pre_detect_data(epoch_id);
