@@ -98,14 +98,14 @@ int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way, bool is
             table_set.insert(itr.first);
         }
         auto save_path = fs->path_join(model_dir, executor->train_exe_name() + "_param");
-        VLOG(2) << "Start save model, save_path:" << save_path;
+        ENVLOG_WORKER_MASTER_NOTICE("Start save model, save_path: %s", save_path.c_str());
         executor->save_persistables(save_path);
     }
     int ret_size = 0;
     auto table_num = table_set.size();
     std::future<int> rets[table_num];
     for (auto table_id : table_set) {
-        VLOG(2) << "Start save model, table_id:" << table_id;
+        ENVLOG_WORKER_MASTER_NOTICE("Start save model, table_id: %d", table_id);
         rets[ret_size++] = ps_client->save(table_id, model_dir, std::to_string((int)way));
     }
     int all_ret = 0;
@@ -114,7 +114,7 @@ int LearnerProcess::wait_save_model(uint64_t epoch_id, ModelSaveWay way, bool is
         all_ret |= rets[i].get();
     }
     timer.Pause();
-    VLOG(2) << "Save Model Cost(s):" << timer.ElapsedSec();
+    ENVLOG_WORKER_MASTER_NOTICE("Save Model Cost(s): %f", timer.ElapsedSec());
     
     // save cache model, 只有inference需要cache_model
     auto* ps_param = _context_ptr->pslib->get_param();
@@ -173,7 +173,7 @@ int LearnerProcess::load_model(uint64_t epoch_id) {
                 auto scope = std::move(executor->fetch_scope());
                 CHECK(itr.second[0]->create(scope.get()) == 0);
             } else {
-                ENVLOG_WORKER_MASTER_NOTICE("Loading model %s", model_dir.c_str());
+                ENVLOG_WORKER_MASTER_NOTICE("Loading model %s", table_model_path.c_str());
                 auto status = _context_ptr->ps_client()->load(itr.first, 
                     model_dir, std::to_string((int)ModelSaveWay::ModelSaveTrainCheckpoint));
                 CHECK(status.get() == 0) << "table load failed, id:" << itr.first;
