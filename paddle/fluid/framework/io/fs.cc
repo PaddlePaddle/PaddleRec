@@ -149,7 +149,7 @@ std::vector<std::string> localfs_list(const std::string& path) {
   std::shared_ptr<FILE> pipe;
   int err_no = 0;
   pipe = shell_popen(
-      string::format_string("find %s -maxdepth 1 -type f", path.c_str()), "r",
+      string::format_string("find %s -type f -maxdepth 1", path.c_str()), "r",
       &err_no);
   string::LineFileReader reader;
   std::vector<std::string> list;
@@ -452,24 +452,5 @@ void fs_mkdir(const std::string& path) {
       LOG(FATAL) << "Not supported";
   }
 }
-
-std::string fs_path_join(const std::string& dir, const std::string &path) {
-  if (dir.empty()) {
-    return path;
-  }
-  if (dir.back() == '/') {
-    return dir + path;
-  }
-  return dir + '/' + path;
-}
-
-std::pair<std::string, std::string> fs_path_split(const std::string &path) {
-  size_t pos = path.find_last_of('/');
-  if (pos == std::string::npos) {
-    return {".", path};
-  }
-  return {path.substr(0, pos), path.substr(pos + 1)};
-}
-
 }  // end namespace framework
 }  // end namespace paddle

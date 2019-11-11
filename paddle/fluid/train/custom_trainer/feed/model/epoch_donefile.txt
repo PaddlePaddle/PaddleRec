@@ -1,3 +1,0 @@
-20190710	1562775817	afs:/user/feed/mlarch/feed_multiTarget_model/magnet_duration_model_new_label2/batch_model/20190710_18	21	18
-20190710	1562779976	afs:/user/feed/mlarch/feed_multiTarget_model/magnet_duration_model_new_label2/batch_model/20190710_18	22	18
-20190711	1562783841	afs:/user/feed/mlarch/feed_multiTarget_model/magnet_duration_model_new_label2/batch_model/20190711_0	1565625600	1565625600

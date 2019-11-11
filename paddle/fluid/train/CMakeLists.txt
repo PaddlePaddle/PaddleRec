@@ -29,7 +29,3 @@ endfunction(train_test)
 if(WITH_TESTING)
   train_test(recognize_digits ARGS mlp conv)
 endif()
-
-if(WITH_CUSTOM_TRAINER)
-   add_subdirectory(custom_trainer)
-endif()

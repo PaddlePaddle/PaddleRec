@@ -26,25 +26,9 @@
 namespace paddle {
 namespace string {
 
-inline size_t count_spaces(const char* s) {
-  size_t count = 0;
+inline size_t count_spaces(const char* s);
 
-  while (*s != 0 && isspace(*s++)) {
-    count++;
-  }
-
-  return count;
-}
-
-inline size_t count_nonspaces(const char* s) {
-  size_t count = 0;
-
-  while (*s != 0 && !isspace(*s++)) {
-    count++;
-  }
-
-  return count;
-}
+inline size_t count_nonspaces(const char* s);
 
 template <class... ARGS>
 void format_string_append(std::string& str, const char* fmt,  // NOLINT
@@ -151,18 +135,6 @@ std::string join_strings(const Container& strs, char delim) {
 
   return str;
 }
-
-
-  static inline bool end_with(const std::string& main_str, const std::string& str) {
-      return main_str.length() >= str.length() &&
-              strncmp(main_str.c_str() + main_str.length() - str.length(), str.c_str(), str.length()) ==
-              0;
-  }
-
-  static inline bool begin_with(const std::string& main_str, const std::string& str) {
-      return main_str.length() >= str.length() &&
-              strncmp(main_str.c_str(), str.c_str(), str.length()) == 0;
-  }
 
 // A helper class for reading lines from file. A line buffer is maintained. It
 // doesn't need to know the maximum possible length of a line.

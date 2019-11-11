@@ -15,7 +15,6 @@ limitations under the License. */
 #pragma once
 #include <sstream>
 #include <string>
-#include <vector>
 #include <typeindex>
 
 namespace paddle {
@@ -30,15 +29,6 @@ inline std::string to_string(T v) {
   std::ostringstream sout;
   sout << v;
   return sout.str();
-}
-
-template <typename T>
-inline std::string to_string(const std::vector<T>& v_list) {
-    std::ostringstream sout;
-    for (const auto& v : v_list) {
-        sout << v << " ";
-    }
-    return sout.str();
 }
 
 template <>

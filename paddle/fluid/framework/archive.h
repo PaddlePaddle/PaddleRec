@@ -168,10 +168,10 @@ class ArchiveBase {
 #else
     if (newsize > Capacity()) {
 #endif
-      Reserve(std::max(Capacity() * 2, newsize));
+      Reserve((std::max)(Capacity() * 2, newsize));
     }
     finish_ = buffer_ + newsize;
-    cursor_ = std::min(cursor_, finish_);
+    cursor_ = (std::min)(cursor_, finish_);
   }
 
   void Reserve(size_t newcap) {
@@ -207,7 +207,7 @@ class ArchiveBase {
 #else
     if (size > size_t(limit_ - finish_)) {
 #endif
-      Reserve(std::max(Capacity() * 2, Length() + size));
+      Reserve((std::max)(Capacity() * 2, Length() + size));
     }
   }
 
@@ -310,6 +310,18 @@ class Archive<BinaryArchiveType> : public ArchiveBase {
     T x;
     *this >> x;
     return x;
+  }
+
+  template <class... ARGS>
+  void Printf(const char* fmt, ARGS&&... args) {
+    size_t temp = Limit() - Finish();
+    int len = snprintf(Finish(), temp, fmt, args...);
+    CHECK(len >= 0);  // NOLINT
+    if ((size_t)len >= temp) {
+      PrepareWrite(len + 1);
+      CHECK(snprintf(Finish(), (size_t)len + 1, fmt, args...) == len);
+    }
+    AdvanceFinish(len);
   }
 };
 
@@ -518,11 +530,11 @@ Archive<AR>& operator>>(Archive<AR>& ar, std::tuple<T...>& x) {
   }                                                                            \
   template <class AR, class KEY, class VALUE, class... ARGS>                   \
   Archive<AR>& operator>>(Archive<AR>& ar, MAP_TYPE<KEY, VALUE, ARGS...>& p) { \
-    size_t size = ar.template Get<size_t>();                                   \
+    size_t size = ar.template get<size_t>();                                   \
     p.clear();                                                                 \
     RESERVE_STATEMENT;                                                         \
     for (size_t i = 0; i < size; i++) {                                        \
-      p.insert(ar.template Get<std::pair<KEY, VALUE>>());                      \
+      p.insert(ar.template get<std::pair<KEY, VALUE>>());                      \
     }                                                                          \
     return ar;                                                                 \
   }
@@ -539,11 +551,11 @@ Archive<AR>& operator>>(Archive<AR>& ar, std::tuple<T...>& x) {
   }                                                                            \
   template <class AR, class KEY, class VALUE, class... ARGS>                   \
   Archive<AR>& operator>>(Archive<AR>& ar, MAP_TYPE<KEY, VALUE, ARGS...>& p) { \
-    size_t size = ar.template Get<uint64_t>();                                 \
+    size_t size = ar.template get<uint64_t>();                                 \
     p.clear();                                                                 \
     RESERVE_STATEMENT;                                                         \
     for (size_t i = 0; i < size; i++) {                                        \
-      p.insert(ar.template Get<std::pair<KEY, VALUE>>());                      \
+      p.insert(ar.template get<std::pair<KEY, VALUE>>());                      \
     }                                                                          \
     return ar;                                                                 \
   }
@@ -568,11 +580,11 @@ ARCHIVE_REPEAT(std::unordered_multimap, p.reserve(size))
   }                                                                           \
   template <class AR, class KEY, class... ARGS>                               \
   Archive<AR>& operator>>(Archive<AR>& ar, SET_TYPE<KEY, ARGS...>& p) {       \
-    size_t size = ar.template Get<size_t>();                                  \
+    size_t size = ar.template get<size_t>();                                  \
     p.clear();                                                                \
     RESERVE_STATEMENT;                                                        \
     for (size_t i = 0; i < size; i++) {                                       \
-      p.insert(ar.template Get<KEY>());                                       \
+      p.insert(ar.template get<KEY>());                                       \
     }                                                                         \
     return ar;                                                                \
   }
@@ -588,11 +600,11 @@ ARCHIVE_REPEAT(std::unordered_multimap, p.reserve(size))
   }                                                                           \
   template <class AR, class KEY, class... ARGS>                               \
   Archive<AR>& operator>>(Archive<AR>& ar, SET_TYPE<KEY, ARGS...>& p) {       \
-    size_t size = ar.template Get<uint64_t>();                                \
+    size_t size = ar.template get<uint64_t>();                                \
     p.clear();                                                                \
     RESERVE_STATEMENT;                                                        \
     for (size_t i = 0; i < size; i++) {                                       \
-      p.insert(ar.template Get<KEY>());                                       \
+      p.insert(ar.template get<KEY>());                                       \
     }                                                                         \
     return ar;                                                                \
   }
