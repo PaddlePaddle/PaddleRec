@@ -62,34 +62,16 @@ HEADERS(GLOB_GEN_SRCS('paddle/fluid/platform/*pb.h'), '$INC/paddle/fluid/platfor
 PROTOC('../../third-party/protobuf/bin/protoc')
 #proto
 StaticLibrary("fake_paddle_proto", Sources(GLOB("paddle/fluid/framework/*.proto"), GLOB("paddle/fluid/platform/*.proto")))
-#feed
-HEADERS('paddle/fluid/train/custom_trainer/feed/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/common/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/common/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/executor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/executor/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/monitor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/monitor/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/dataset/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/dataset/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/process/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/process/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/shuffler/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/shuffler/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/accessor/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/accessor/')
-HEADERS('paddle/fluid/train/custom_trainer/feed/io/*.h', '$INC/paddle/fluid/train/custom_trainer/feed/io/')
 NEED_OUTPUT("baidu/third-party/mklml")
 NEED_OUTPUT("baidu/third-party/openmpi")
-OUTPUT('paddle/fluid/train/custom_trainer/feed/conf', '$OUT')
-OUTPUT('paddle/fluid/train/custom_trainer/feed/scripts', '$OUT')
 
-
-def UT_FILE(filename):
-    UT_DIR = 'paddle/fluid/train/custom_trainer/feed/unit_test'
-    import os
-    return os.path.join(UT_DIR, filename)
-custom_trainer_src = GLOB('paddle/fluid/train/custom_trainer/feed/*/*.cc', Exclude(UT_FILE('*')))
 CPPFLAGS_STR = '-DHPPL_STUB_FUNC -DLAPACK_FOUND -DPADDLE_DISABLE_PROFILER -DPADDLE_NO_PYTHON -DCUSTOM_TRAINER -DPADDLE_ON_INFERENCE -DPADDLE_USE_DSO -DPADDLE_USE_PTHREAD_BARRIER -DPADDLE_USE_PTHREAD_SPINLOCK -DPADDLE_VERSION=0.0.0 -DPADDLE_WITH_AVX -DPADDLE_WITH_MKLML -DPADDLE_WITH_XBYAK -DXBYAK64 -DXBYAK_NO_OP_NAMES -D_GNU_SOURCE -D__STDC_LIMIT_MACROS -DPYBIND_AVX_MKLML' + r" -DPADDLE_REVISION=\"%s@%s@%s\"" % (REPO_URL(), REPO_BRANCH(), REPO_REVISION())
 
 CFLAGS_STR = '-m64 -fPIC -fno-omit-frame-pointer -Werror -Wall -Wextra -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-unused-parameter -Wno-unused-function -Wno-error=literal-suffix -Wno-error=sign-compare -Wno-error=unused-local-typedefs -Wno-error=maybe-uninitialized -Wno-narrowing -Wnarrowing -fopenmp -mavx -O3 -DNDEBUG '
 #CFLAGS_STR = '-m64 -fPIC -fsanitize=address -fsanitize-recover=address -fno-omit-frame-pointer -Werror -Wall -Wextra -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wno-unused-parameter -Wno-unused-function -Wno-error=literal-suffix -Wno-error=sign-compare -Wno-error=unused-local-typedefs -Wno-error=maybe-uninitialized -Wno-narrowing -Wnarrowing -fopenmp -mavx -O3 -DNDEBUG '
 CXXFLAGS_STR = '-std=c++11 ' + CFLAGS_STR
 
-SharedLibrary("paddle_fluid_avx_mklml", PreBuilt(True))
+#SharedLibrary("paddle_fluid_avx_mklml", PreBuilt(True))
 
 application_args = [
     CppFlags(CPPFLAGS_STR),
@@ -98,12 +80,3 @@ application_args = [
     Libs(libs=['libpaddle_fluid_avx_mklml.so']),
     Libs(module='baidu/third-party/openmpi', libs=['libmpi.so', 'libmpi_cxx.so', 'libopen-pal.so', 'libopen-rte.so']),
 ]
-
-StaticLibrary("feed_trainer", Sources(custom_trainer_src), *application_args)
-
-Application('feed_trainer', Sources('paddle/fluid/train/custom_trainer/feed/main.cc'), WholeArchives("$OUT/lib/libfeed_trainer.a"), *application_args)
-
-#feed unit test
-
-# bug: shared librarys can not be found when run on server
-UTApplication('unit_test', UTOnServer(False), Sources(UT_FILE('main.cc'), GLOB(UT_FILE('test_*.cc'))), WholeArchives("$OUT/lib/libfeed_trainer.a"), *application_args)
