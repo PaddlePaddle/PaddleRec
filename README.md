@@ -1,5 +1,5 @@
 # PaddlePaddle
-Fork From http://icode.baidu.com/repos/baidu/paddlepaddle/paddle/tree/paddle_feed_news_201910  (commitid:f50e701) v1.4
+Fork From  http://icode.baidu.com/repos/baidu/paddlepaddle/paddle/tree/paddle_feed_news_201910  (commitid:f50e701) v1.4
 English | [简体中文](./README_cn.md)
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/Paddle.svg?branch=develop)](https://travis-ci.org/PaddlePaddle/Paddle)
