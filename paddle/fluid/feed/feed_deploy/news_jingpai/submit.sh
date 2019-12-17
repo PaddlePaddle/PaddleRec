@@ -9,12 +9,14 @@ cd tmp
 mkdir ./package
 cp -r ../package/python ./package
 cp -r ../package/my_nets/* ./package
+cp -r ../hadoop-client_mpi ./package/hadoop-client
 cp ../qsub_f.conf ./
 cp ../job.sh ./
 cp ../job.sh ./package
 
 if [ "a${sparse_table_storage}" = "assd" ];then
-    sed -i 's/DownpourSparseTable/DownpourSparseSSDTable' ./package/my_nets/reqi_fleet_desc
+    sed -i 's/DownpourSparseTable/DownpourSparseSSDTable/g' ./package/reqi_fleet_desc
+    sed -i 's/sparse_table_cache_rate: 0.00055/sparse_table_cache_rate: 0.0025/g' ./package/reqi_fleet_desc
 fi
 
 current=`date "+%Y-%m-%d %H:%M:%S"`

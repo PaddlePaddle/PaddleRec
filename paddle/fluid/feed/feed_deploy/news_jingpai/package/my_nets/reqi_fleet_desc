@@ -2,9 +2,9 @@ server_param {
   downpour_server_param {
     downpour_table_param {
       table_id: 0
-      table_class: "DownpourSparseSSDTable"
+      table_class: "DownpourSparseTable"
       shard_num: 1950
-      sparse_table_cache_rate: 0.0035
+      sparse_table_cache_rate: 0.00055
       accessor {
         accessor_class: "DownpourCtrAccessor"
         sparse_sgd_param {

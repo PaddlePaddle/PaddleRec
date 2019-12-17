@@ -6,16 +6,11 @@ echo "current:"$WORKDIR
 mpirun -npernode 1 mv package/* ./
 
 export LIBRARY_PATH=$WORKDIR/python/lib:$LIBRARY_PATH
+export HADOOP_HOME="${WORKDIR}/hadoop-client/hadoop"
 
 ulimit -c unlimited
 
-#export FLAGS_check_nan_inf=True
-#export check_nan_inf=True
-
-#FLAGS_check_nan_inf=True check_nan_inf=True
-
-#mpirun -npernode 2 -timestamp-output -tag-output -machinefile ${PBS_NODEFILE} python/bin/python -u trainer_online.py
-
+mpirun -npernode 1 sh clear_ssd.sh
 mpirun -npernode 2 -timestamp-output -tag-output python/bin/python -u trainer_online.py
 
 if [[ $? -ne 0 ]]; then

@@ -19,6 +19,21 @@ fleet_util = FleetUtil()
 def time_prefix_str():
     return "\n" + time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) + "[0]:"
 
+auc_record = {}
+def check_auc_ok(auc_label, auc_log, auc_alarm):
+    auc_datas = auc_log.split(' AUC=')
+    if len(auc_datas) < 2:
+        return True
+    if auc_label not in auc_record:
+        auc_record[auc_label] = 0.0
+    auc = float(auc_datas[1].split(' ')[0])
+    if auc < auc_record[auc_label] and auc < auc_alarm:
+        fleet_util.rank0_print("label:%s, auc:%s, check bad" % (auc_label, auc)) 
+        return False
+    auc_record[auc_label] = auc
+    fleet_util.rank0_print("label:%s, auc:%s, check ok" % (auc_label, auc)) 
+    return True
+
 def create_model(slot_file, slot_common_file, all_slot_file):
     join_common_model = ModelJoinCommon(slot_file, slot_common_file, all_slot_file, 20)
     update_model = Model(slot_file, all_slot_file, False, 0, True)
@@ -444,6 +459,7 @@ if __name__ == "__main__":
                                                    join_common_model.join_prob.name,
                                                    join_common_model.join_q.name, join_common_model.join_pos.name,
                                                    join_common_model.join_total.name, "joining pass:")#"join pass:")
+                    check_auc_ok("joining pass:", log_str, 0.79)
                     monitor_data += log_str
                     stdout_str += time_prefix_str() + "joining pass:"
                     stdout_str += time_prefix_str() + log_str
@@ -453,6 +469,7 @@ if __name__ == "__main__":
                                                    join_common_model.common_prob.name,
                                                    join_common_model.common_q.name, join_common_model.common_pos.name,
                                                    join_common_model.common_total.name, "common pass:")
+                    check_auc_ok("common pass:", log_str, 0.70)
                     monitor_data += " " + log_str
                     stdout_str += time_prefix_str() + "common pass:"
                     stdout_str += time_prefix_str() + log_str
@@ -491,6 +508,7 @@ if __name__ == "__main__":
                                                    update_model.sqrerr.name, update_model.abserr.name, update_model.prob.name,
                                                    update_model.q.name, update_model.pos.name, update_model.total.name,
                                                    "updating pass:")#"update pass:")
+                    check_auc_ok("updating pass:", log_str, 0.79)
                     stdout_str += time_prefix_str() + "updating pass:"
                     stdout_str += time_prefix_str() + log_str
                     fleet_util.rank0_print("End update pass")
@@ -540,16 +558,6 @@ if __name__ == "__main__":
                 stdout_str = ""
                 continue
 
-            fleet_util.rank0_print("shrink table")
-            begin = time.time()
-            fleet.shrink_sparse_table()
-            fleet.shrink_dense_table(0.98, scope=scope2, table_id=1)
-            fleet.shrink_dense_table(0.98, scope=scope2, table_id=2)
-            fleet.shrink_dense_table(0.98, scope=scope3, table_id=3)
-            end = time.time()
-            log_str = "shrink table done, cost %s min" % ((end - begin) / 60.0)
-            fleet_util.rank0_print(log_str)
-            stdout_str += time_prefix_str() + log_str
 
             fleet_util.rank0_print("going to save batch model/base xbox model")
             last_base_day, last_base_path, _ = fleet_util.get_last_save_xbox_base(config.output_path, config.fs_name, config.fs_ugi)
@@ -562,6 +570,18 @@ if __name__ == "__main__":
                 stdout_str += save_delta(nextday, -1, xbox_base_key, cur_path, exe, scope2, scope2, scope3,
                                          join_common_model, join_common_model, update_model,
                                          join_save_params, common_save_params, update_save_params, monitor_data)
+                
+                fleet_util.rank0_print("shrink table")
+                begin = time.time()
+                fleet.shrink_sparse_table()
+                fleet.shrink_dense_table(0.98, scope=scope2, table_id=1)
+                fleet.shrink_dense_table(0.98, scope=scope2, table_id=2)
+                fleet.shrink_dense_table(0.98, scope=scope3, table_id=3)
+                end = time.time()
+                log_str = "shrink table done, cost %s min" % ((end - begin) / 60.0)
+                fleet_util.rank0_print(log_str)
+                stdout_str += time_prefix_str() + log_str
+
                 begin = time.time()
                 fleet_util.save_batch_model(config.output_path, nextday)
                 fleet_util.write_model_donefile(config.output_path, nextday, -1, xbox_base_key, config.fs_name, config.fs_ugi)
