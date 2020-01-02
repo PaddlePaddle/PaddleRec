@@ -10,7 +10,7 @@ export HADOOP_HOME="${WORKDIR}/hadoop-client/hadoop"
 
 ulimit -c unlimited
 
-mpirun -npernode 1 sh clear_ssd.sh
+mpirun -npernode 1 sh clear_ssd.sh $WORKDIR
 mpirun -npernode 2 -timestamp-output -tag-output python/bin/python -u trainer_online.py
 
 if [[ $? -ne 0 ]]; then
