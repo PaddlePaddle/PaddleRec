@@ -312,7 +312,9 @@ class FleetUtil(object):
                       data_path,
                       hadoop_fs_name,
                       monitor_data={},
-                      mode="patch"):
+                      mode="patch",
+                      dir_name="000",
+                      base_only=False):
         xbox_dict = collections.OrderedDict()
         if mode == "base":
             xbox_dict["id"] = str(xbox_base_key)
@@ -322,10 +324,13 @@ class FleetUtil(object):
             print("warning: unknown mode %s, set it to patch" % mode)
             mode = "patch"
             xbox_dict["id"] = str(int(time.time()))
-        xbox_dict["key"] = str(xbox_base_key)
+        if base_only:
+            xbox_dict["key"] = str(int(time.time()))
+        else:
+            xbox_dict["key"] = str(xbox_base_key)
         if model_path.startswith("hdfs:") or model_path.startswith("afs:"):
             model_path = model_path[model_path.find(":") + 1:]
-        xbox_dict["input"] = hadoop_fs_name + model_path.rstrip("/") + "/000"
+        xbox_dict["input"] = hadoop_fs_name + model_path.rstrip("/") + "/%s" % dir_name
         xbox_dict["record_count"] = "111111"
         xbox_dict["partition_type"] = "2"
         xbox_dict["job_name"] = "default_job_name"
@@ -449,7 +454,9 @@ class FleetUtil(object):
                             hadoop_fs_ugi,
                             monitor_data={},
                             hadoop_home="$HADOOP_HOME",
-                            donefile_name=None):
+                            donefile_name=None,
+                            dir_name=None,
+                            base_only=False):
         """
         write delta donefile or xbox base donefile
 
@@ -501,14 +508,17 @@ class FleetUtil(object):
             if donefile_name is None:
                 donefile_name = "xbox_base_done.txt"
 
+        if dir_name is None:
+            dir_name = "000"
+
         if isinstance(data_path, list):
             data_path = ",".join(data_path)
 
         if fleet.worker_index() == 0:
             donefile_path = output_path + "/" + donefile_name
             xbox_str = self._get_xbox_str(output_path, day, model_path, \
-                    xbox_base_key, data_path, hadoop_fs_name, monitor_data={},
-                    mode=mode)
+                    xbox_base_key, data_path, hadoop_fs_name, {}, \
+                    mode, dir_name, base_only)
             configs = {
                 "fs.default.name": hadoop_fs_name,
                 "hadoop.job.ugi": hadoop_fs_ugi
@@ -519,6 +529,8 @@ class FleetUtil(object):
                 last_dict = json.loads(pre_content.split("\n")[-1])
                 last_day = last_dict["input"].split("/")[-3]
                 last_pass = last_dict["input"].split("/")[-2].split("-")[-1]
+                if last_pass == "base":
+                    last_pass = "-1"
                 exist = False
                 if int(day) < int(last_day) or \
                         int(day) == int(last_day) and \

@@ -34,6 +34,7 @@ void DistMultiTrainer::Initialize(const TrainerDesc &trainer_desc,
   if (trainer_desc.dump_fields_size() != 0 && dump_fields_path_ != "") {
     need_dump_field_ = true;
   }
+  user_define_dump_filename_ = trainer_desc.user_define_dump_filename();
   if (need_dump_field_) {
     auto &file_list = dataset->GetFileList();
     if (file_list.size() == 0) {
@@ -95,6 +96,11 @@ void DistMultiTrainer::InitDumpEnv() {
   int err_no = 0;
   std::string path = string::format_string(
       "%s/part-%03d", dump_fields_path_.c_str(), mpi_rank_);
+
+  if (user_define_dump_filename_ != "") {
+    path = string::format_string("%s/part-%s", dump_fields_path_.c_str(),
+                                 user_define_dump_filename_.c_str());
+  }
 
   fp_ = fs_open_write(path, &err_no, dump_converter_);
   for (int i = 0; i < thread_num_; ++i) {

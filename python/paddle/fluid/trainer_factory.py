@@ -38,13 +38,23 @@ class TrainerFactory(object):
             if "fleet_desc" in opt_info:
                 device_worker._set_fleet_desc(opt_info["fleet_desc"])
                 trainer._set_fleet_desc(opt_info["fleet_desc"])
-                trainer._set_use_cvm(opt_info["use_cvm"])
-                trainer._set_scale_datanorm(opt_info["scale_datanorm"])
-                trainer._set_dump_slot(opt_info["dump_slot"])
-                trainer._set_mpi_rank(opt_info["mpi_rank"])
-                trainer._set_dump_fields(opt_info["dump_fields"])
-                trainer._set_dump_fields_path(opt_info["dump_fields_path"])
-                trainer._set_dump_converter(opt_info["dump_converter"])
-                trainer._set_adjust_ins_weight(opt_info["adjust_ins_weight"])
+                if opt_info.get("use_cvm") is not None:
+                    trainer._set_use_cvm(opt_info["use_cvm"])
+                if opt_info.get("scale_datanorm") is not None:
+                    trainer._set_scale_datanorm(opt_info["scale_datanorm"])
+                if opt_info.get("dump_slot") is not None:
+                    trainer._set_dump_slot(opt_info["dump_slot"])
+                if opt_info.get("mpi_rank") is not None:
+                    trainer._set_mpi_rank(opt_info["mpi_rank"])
+                if opt_info.get("dump_fields") is not None:
+                    trainer._set_dump_fields(opt_info["dump_fields"])
+                if opt_info.get("dump_fields_path") is not None:
+                    trainer._set_dump_fields_path(opt_info["dump_fields_path"])
+                if opt_info.get("user_define_dump_filename") is not None:
+                    trainer._set_user_define_dump_filename(opt_info["user_define_dump_filename"])
+                if opt_info.get("dump_converter") is not None:
+                    trainer._set_dump_converter(opt_info["dump_converter"])
+                if opt_info.get("adjust_ins_weight") is not None:
+                    trainer._set_adjust_ins_weight(opt_info["adjust_ins_weight"])
             trainer._set_device_worker(device_worker)
         return trainer
