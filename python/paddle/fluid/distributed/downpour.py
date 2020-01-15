@@ -91,8 +91,9 @@ class DownpourSGD(object):
         dense_table_index = 1
         program_configs = []
         param_grads_list = []
+        tp = ps_param.trainer_param.add()
         for loss_index in range(len(losses)):
-            program_config = ps_param.trainer_param.program_config.add()
+            program_config = tp.program_config.add()
             program_config.program_id = str(
                 id(losses[loss_index].block.program))
             program_config.pull_sparse_table_id.extend([sparse_table_index])
@@ -140,13 +141,13 @@ class DownpourSGD(object):
             dense_table_index += 1
             program_configs.append(program_config)
         ps_param.server_param.CopyFrom(server.get_desc())
-        ps_param.trainer_param.CopyFrom(worker.get_desc())
+        ps_param.trainer_param[0].CopyFrom(worker.get_desc())
         for program_config in program_configs:
-            ps_param.trainer_param.program_config.extend([program_config])
+            ps_param.trainer_param[0].program_config.extend([program_config])
         # Todo(guru4elephant): figure out how to support more sparse parameters
         # currently only support lookup_table
         worker_skipped_ops = ["lookup_table", "lookup_table_grad"]
-        ps_param.trainer_param.skip_op.extend(worker_skipped_ops)
+        ps_param.trainer_param[0].skip_op.extend(worker_skipped_ops)
 
         # all fleet operations should be defined in operators in the future
         # we want to return an object here containing:

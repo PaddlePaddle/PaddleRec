@@ -144,7 +144,7 @@ class DistributedAdam(DistributedOptimizerImplBase):
             with open(fleet_desc_file) as f:
                 text_format.Merge(f.read(), ps_param)
             server.get_desc().CopyFrom(ps_param.server_param)
-            worker.get_desc().CopyFrom(ps_param.trainer_param)
+            worker.get_desc().CopyFrom(ps_param.trainer_param[0])
 
         sparse_table_index = 0
         for tn in sparse_table_names:
@@ -231,12 +231,16 @@ class DistributedAdam(DistributedOptimizerImplBase):
                     [dense_table_index])
             dense_table_index += 1
         ps_param.server_param.CopyFrom(server.get_desc())
-        ps_param.trainer_param.CopyFrom(worker.get_desc())
+        if len(ps_param.trainer_param) == 0:
+            tp = ps_param.trainer_param.add()
+            tp.CopyFrom(worker.get_desc())
+        else:
+            ps_param.trainer_param[0].CopyFrom(worker.get_desc())
         # Todo(guru4elephant): figure out how to support more sparse parameters
         # currently only support lookup_table
         worker_skipped_ops = ["lookup_table", "lookup_table_grad"]
-        if len(ps_param.trainer_param.skip_op) == 0:
-            ps_param.trainer_param.skip_op.extend(worker_skipped_ops)
+        if len(ps_param.trainer_param[0].skip_op) == 0:
+            ps_param.trainer_param[0].skip_op.extend(worker_skipped_ops)
 
         opt_info = {}
         opt_info["program_configs"] = program_configs

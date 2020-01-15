@@ -89,7 +89,7 @@ class PSLib(Fleet):
             # barrier for init model
             self._role_maker._barrier_worker()
             if self._role_maker.is_first_worker():
-                tables = self._dist_desc.trainer_param.dense_table
+                tables = self._dist_desc.trainer_param[0].dense_table
                 for prog, scope in zip(self._main_programs, self._scopes):
                     prog_id = str(id(prog))
                     prog_conf = self._opt_info['program_configs'][prog_id]
@@ -304,7 +304,7 @@ class PSLib(Fleet):
         """
         self._role_maker._barrier_worker()
         if self._role_maker.is_first_worker():
-            for i in self._opt_info["fleet_desc"].trainer_param.sparse_table:
+            for i in self._opt_info["fleet_desc"].trainer_param[0].sparse_table:
                 self._fleet_ptr.shrink_sparse_table(i.table_id)
         self._role_maker._barrier_worker()
 
@@ -330,7 +330,7 @@ class PSLib(Fleet):
             scope = fluid.global_scope()
         self._role_maker._barrier_worker()
         if self._role_maker.is_first_worker():
-            for i in self._opt_info["fleet_desc"].trainer_param.dense_table:
+            for i in self._opt_info["fleet_desc"].trainer_param[0].dense_table:
                 if table_id is not None and table_id != i.table_id:
                     continue
                 var_list = [var for var in i.dense_variable_name]
@@ -476,7 +476,7 @@ class PSLib(Fleet):
                 if ret != 0:
                     raise RuntimeError("download model proto file failed")
                 model_proto_file = dest
-            for i in self._opt_info["fleet_desc"].trainer_param.dense_table:
+            for i in self._opt_info["fleet_desc"].trainer_param[0].dense_table:
                 if table_id is not None and table_id != i.table_id:
                     continue
                 table_var_names = [var for var in i.dense_variable_name]

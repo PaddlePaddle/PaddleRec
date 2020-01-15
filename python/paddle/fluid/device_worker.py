@@ -140,23 +140,23 @@ class DownpourSGD(DeviceWorker):
         trainer_desc.device_worker_name = "DownpourWorker"
         pull_thread = trainer_desc.pull_dense_param
         pull_thread.device_num = trainer_desc.thread_num
-        for i in self._fleet_desc.trainer_param.dense_table:
+        for i in self._fleet_desc.trainer_param[0].dense_table:
             if i.table_id in dense_table_set:
                 dense_table = pull_thread.dense_table.add()
                 dense_table.dense_value_name.extend(i.dense_variable_name)
                 dense_table.table_id = \
                     i.table_id
-        sparse_len = len(self._fleet_desc.trainer_param.sparse_table)
+        sparse_len = len(self._fleet_desc.trainer_param[0].sparse_table)
         for i in range(sparse_len):
             sparse_table = downpour.sparse_table.add()
             sparse_table.table_id = \
-                        self._fleet_desc.trainer_param.sparse_table[i].table_id
+                        self._fleet_desc.trainer_param[0].sparse_table[i].table_id
             sparse_table.sparse_key_name.extend(
-                self._fleet_desc.trainer_param.sparse_table[i].slot_key)
+                self._fleet_desc.trainer_param[0].sparse_table[i].slot_key)
             sparse_table.sparse_value_name.extend(
-                self._fleet_desc.trainer_param.sparse_table[i].slot_value)
+                self._fleet_desc.trainer_param[0].sparse_table[i].slot_value)
             sparse_table.sparse_grad_name.extend(
-                self._fleet_desc.trainer_param.sparse_table[i].slot_gradient)
+                self._fleet_desc.trainer_param[0].sparse_table[i].slot_gradient)
             if opt_info["use_cvm"]:
                 sparse_table.emb_dim = \
                     self._fleet_desc.server_param.downpour_server_param.downpour_table_param[
@@ -173,14 +173,14 @@ class DownpourSGD(DeviceWorker):
             for i in opt_info["stat_var_names"]:
                 downpour.stat_var_names.extend([i])
 
-        for i in self._fleet_desc.trainer_param.dense_table:
+        for i in self._fleet_desc.trainer_param[0].dense_table:
             if i.table_id in dense_table_set:
                 dense_table = downpour.dense_table.add()
                 dense_table.table_id = i.table_id
                 dense_table.dense_value_name.extend(i.dense_variable_name)
                 dense_table.dense_grad_name.extend(
                     i.dense_gradient_variable_name)
-                downpour.skip_ops.extend(self._fleet_desc.trainer_param.skip_op)
+                downpour.skip_ops.extend(self._fleet_desc.trainer_param[0].skip_op)
         if self._infer:
             downpour.push_dense = False
             downpour.push_sparse = False
