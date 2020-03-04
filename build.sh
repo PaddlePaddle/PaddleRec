@@ -1,4 +1,6 @@
 #!bash
+RUN_DIR="$(cd "$(dirname "$0")"&&pwd)"
+cd ${RUN_DIR}
 build_mode=$1
 function print_usage() {
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -25,10 +27,23 @@ if [ ! -f ${python_binary} ];then
     exit -1
 fi
 
-#apply feed code
-if [ -f "paddle/fluid/feed/apply_feed_code.sh" ];then
-    sh paddle/fluid/feed/apply_feed_code.sh
-fi 
+
+function copy_paddle_env() {
+    cd ${RUN_DIR}
+    rm -rf build_env
+    mkdir build_env
+    echo "xxh copy"
+    cp -r ../../paddlepaddle/paddle/* build_env
+    cp -r feed ./build_env/paddlepaddle/paddle/paddle/fluid/
+    cd build_env
+}
+
+function apply_feed_code() {
+    #apply feed code
+    if [ -f "paddle/fluid/feed/apply_feed_code.sh" ];then
+        sh paddle/fluid/feed/apply_feed_code.sh
+    fi 
+}
 
 function makeit() {
     cd build
@@ -44,12 +59,18 @@ function cmake_all() {
     cd ..
 }
 
+if [ ! -d build_env ];then
+    copy_paddle_env
+fi
+cd ${RUN_DIR}/build_env
+
 if [ "${build_mode}" = "all" ];then
     cmake_all
     makeit
 elif [ "${build_mode}" = "make" ];then
     makeit
 elif "${build_mode}" = "clean" ];then
-    cd build
-    make clean
+    copy_paddle_env
+    #cd build
+    #make clean
 fi 
