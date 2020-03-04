@@ -1,8 +1,8 @@
 WORKROOT('../../../')
-COMPILER('gcc482')
+COMPILER('gcc82')
 CPPFLAGS('-D_GNU_SOURCE -DNDEBUG')
 GLOBAL_CFLAGS_STR = '-g -O3 -pipe -fopenmp '
 CFLAGS(GLOBAL_CFLAGS_STR)
 GLOBAL_CXXFLAGS_STR = GLOBAL_CFLAGS_STR + ' -std=c++11 '
 CXXFLAGS(GLOBAL_CXXFLAGS_STR)
-CONFIGS('baidu/paddlepaddle/paddle@develop@git_branch')
+CONFIGS('baidu/paddlepaddle/paddle@feed_paddle_gcc8@git_branch')
