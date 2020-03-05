@@ -66,7 +66,7 @@ class EmbeddingInputLayer(Layer):
             emb = fluid.layers.continuous_value_model(emb, show_clk, self._cvm)
             self._emb_layers.append(emb)
         output = fluid.layers.concat(input=self._emb_layers, axis=1, name=self._name)
-        return output, {'data_var' : data_var}
+        return output, {'data_var': data_var}
 
 
 class LabelInputLayer(Layer):
@@ -167,7 +167,8 @@ class NormalizetionLayer(Layer):
         bn = fluid.layers.data_norm(input=input_layer, name=self._name, epsilon=1e-4, param_attr={
              "batch_size": 1e4, "batch_sum_default": 0.0, "batch_square": 1e4})
         inference_param = [self._name + '.batch_size', self._name + '.batch_sum', self._name + '.batch_square_sum']
-        return bn, {'inference_param' : {'name':'summary', 'params': inference_param, 'table_id': summary_layer.get('table_id', -1)}}
+        return bn, {'inference_param': {'name':'summary', \
+            'params': inference_param, 'table_id': summary_layer.get('table_id', -1)}}
 
 
 class NeuralLayer(Layer): 
@@ -205,8 +206,9 @@ class NeuralLayer(Layer):
                 fluid.ParamAttr(learning_rate=1.0, \
                 initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=scale)),
             bias_attr = bias)
-        inference_param = [self._name + '.w_0',  self._name + '.b_0']
-        return fc, {'inference_param' : {'name':'param', 'params': inference_param, 'table_id': param_layer.get('table_id', -1)}}
+        inference_param = [self._name + '.w_0', self._name + '.b_0']
+        return fc, {'inference_param': {'name':'param', 'params': inference_param, \
+            'table_id': param_layer.get('table_id', -1)}}
 
 
 class SigmoidLossLayer(Layer):
@@ -239,7 +241,6 @@ class SigmoidLossLayer(Layer):
             }
         }
         
-
     def generate_fluid(self, param): 
         """R
         """

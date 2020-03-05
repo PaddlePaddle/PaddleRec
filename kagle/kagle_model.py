@@ -10,13 +10,13 @@ import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 def create(config):
-   """
-   Create a model instance by config
-   Args:
-       config(dict) : desc model type and net 
-   Return:
-       Model Instance
-   """
+    """
+    Create a model instance by config
+    Args:
+        config(dict) : desc model type and net 
+    Return:
+        Model Instance
+    """
     model = None
     if config['mode'] == 'fluid':
         model = FluidModel(config)
