@@ -4,12 +4,13 @@ Do metric jobs. calculate AUC, MSE, COCP ...
 import math
 import time
 import numpy as np
-import kagle_util
+import kagle.kagle_util
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 class Metric(object):
-    """ """
+    """R 
+    """
     __metaclass__=abc.ABCMeta
 
     def __init__(self, config):
@@ -51,6 +52,7 @@ class Metric(object):
             result(string) : calculate result with string format, for output 
         """
         pass
+
 
 class PaddleAUCMetric(Metric):
     """
@@ -117,7 +119,8 @@ class PaddleAUCMetric(Metric):
         return result
 
     def calculate_auc(self, global_pos, global_neg):
-        """ """
+        """R 
+        """
         num_bucket = len(global_pos)
         area = 0.0
         pos = 0.0
@@ -142,7 +145,8 @@ class PaddleAUCMetric(Metric):
         return auc_value
 
     def calculate_bucket_error(self, global_pos, global_neg):
-        """ """
+        """R 
+        """
         num_bucket = len(global_pos)
         last_ctr = -1.0
         impression_sum = 0.0

@@ -1,16 +1,35 @@
+"""
+util for file_system io
+"""
 import os
 import time
 from paddle.fluid.incubate.fleet.utils.hdfs import HDFSClient
 
 def is_afs_path(path):
+    """R 
+    """
     if path.startswith("afs") or path.startswith("hdfs"):
         return True
     return False
 
 class LocalFSClient:
+    """
+    Util for local disk file_system io 
+    """
+    
     def __init__(self):
+        """R
+        """
         pass
+    
     def write(self, content, path, mode):
+        """
+        write to file
+        Args:
+            content(string)
+            path(string)
+            mode(string): w/a  w:clear_write a:append_write
+        """
         temp_dir = os.path.dirname(path)
         if not os.path.exists(temp_dir): 
             os.makedirs(temp_dir)
@@ -20,35 +39,52 @@ class LocalFSClient:
         f.close()
 
     def cp(self, org_path, dest_path):
+        """R
+        """
         temp_dir = os.path.dirname(dest_path)
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
         return os.system("cp -r " + org_path + " " + dest_path)
 
     def cat(self, file_path):
+        """R
+        """
         f = open(file_path)
         content = f.read()
         f.close()
         return content
 
     def mkdir(self, dir_name):
-        os.system("mkdir -p " + path)
+        """R
+        """
+        os.makedirs(dir_name)
 
     def remove(self, path):
+        """R
+        """
         os.system("rm -rf " + path)
     
     def is_exist(self, path):
+        """R
+        """
         if os.system("ls " + path) == 0:
             return True
         return False
 
     def ls(self, path):
+        """R
+        """
         files = os.listdir(path)
         files = [ path + '/' + fi for fi in files ]
         return files
 
 class FileHandler:
+    """
+    A Smart file handler. auto judge local/afs by path 
+    """
     def __init__(self, config):
+        """R
+        """
         if 'fs_name' in config:
             hadoop_home="$HADOOP_HOME"
             hdfs_configs = {
@@ -59,16 +95,22 @@ class FileHandler:
         self._local_fs_client = LocalFSClient()
 
     def is_exist(self, path):
+        """R
+        """
         if is_afs_path(path):
             return self._hdfs_client.is_exist(path)
         else:
             return self._local_fs_client.is_exist(path)
 
     def get_file_name(self, path):
+        """R
+        """
         sub_paths = path.split('/')
         return sub_paths[-1]
 
     def write(self, content, dest_path, mode='w'):
+        """R
+        """
         if is_afs_path(dest_path):
             file_name = self.get_file_name(dest_path)
             temp_local_file = "./tmp/" + file_name
@@ -88,6 +130,8 @@ class FileHandler:
             
     
     def cat(self, path):
+        """R
+        """
         if is_afs_path(path):
             print("xxh go cat " + path)
             hdfs_cat = self._hdfs_client.cat(path)
@@ -97,6 +141,8 @@ class FileHandler:
             return self._local_fs_client.cat(path)
     
     def ls(self, path):
+        """R
+        """
         if is_afs_path(path):
             return self._hdfs_client.ls(path)
         else:
@@ -104,6 +150,8 @@ class FileHandler:
 
     
     def cp(self, org_path, dest_path):
+        """R
+        """
         org_is_afs = is_afs_path(org_path)
         dest_is_afs = is_afs_path(dest_path)
         if not org_is_afs and not dest_is_afs:
