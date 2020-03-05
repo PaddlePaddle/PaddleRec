@@ -1,38 +1,76 @@
+"""
+Do metric jobs. calculate AUC, MSE, COCP ...
+"""
 import math
 import time
 import numpy as np
 import kagle_util
 import paddle.fluid as fluid
-from abc import ABCMeta, abstractmethod
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 class Metric(object):
-    __metaclass__=ABCMeta
+    """ """
+    __metaclass__=abc.ABCMeta
 
     def __init__(self, config):
+    """ """
         pass
         
-    @abstractmethod
+    @abc.abstractmethod
     def clear(self, scope, params):
+    """
+    clear current value
+    Args:
+        scope: value container
+        params: extend varilable for clear
+    """
         pass
         
-    @abstractmethod
+    @abc.abstractmethod
     def calculate(self, scope, params):
+    """
+    calculate result
+    Args:
+        scope: value container
+        params: extend varilable for clear
+    """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def get_result(self):
+    """
+    Return:
+        result(dict) : calculate result 
+    """
         pass
     
-    @abstractmethod
+    @abc.abstractmethod
     def get_result_to_string(self):
+    """
+    Return:
+        result(string) : calculate result with string format, for output 
+    """
         pass
 
 class PaddleAUCMetric(Metric):
+    """
+    Metric For Paddle Model
+    """
     def __init__(self, config):
+    """ """
         pass
     
     def clear(self, scope, params):
+    """
+    Clear current metric value, usually set to zero
+    Args:
+        scope : paddle runtime var container
+        params(dict) : 
+            label : a group name for metric
+            metric_dict : current metric_items in group
+    Return:
+        None 
+    """
         self._label = params['label']
         self._metric_dict = params['metric_dict']
         self._result = {}
@@ -47,10 +85,13 @@ class PaddleAUCMetric(Metric):
                 data_type =  metric_config['data_type']
             data_array = np.zeros(metric_var._get_dims()).astype(data_type)
             metric_var.set(data_array, place)
-        pass
-        
     
     def get_metric(self, scope, metric_name):
+    """
+    reduce metric named metric_name from all worker
+    Return:
+        metric reduce result
+    """
         metric = np.array(scope.find_var(metric_name).get_tensor())
         old_metric_shape = np.array(metric.shape)
         metric = metric.reshape(-1)
@@ -60,6 +101,11 @@ class PaddleAUCMetric(Metric):
         return global_metric[0]
         
     def get_global_metrics(self, scope, metric_dict):
+    """
+    reduce all metric in metric_dict from all worker
+    Return:
+        dict : {matric_name : metric_result}
+    """
         fleet._role_maker._barrier_worker()
         result = {}
         for metric_name in metric_dict:
@@ -71,6 +117,7 @@ class PaddleAUCMetric(Metric):
         return result
 
     def calculate_auc(self, global_pos, global_neg):
+    """ """
         num_bucket = len(global_pos)
         area = 0.0
         pos = 0.0
@@ -95,6 +142,7 @@ class PaddleAUCMetric(Metric):
         return auc_value
 
     def calculate_bucket_error(self, global_pos, global_neg):
+    """ """
         num_bucket = len(global_pos)
         last_ctr = -1.0
         impression_sum = 0.0
@@ -141,6 +189,7 @@ class PaddleAUCMetric(Metric):
         return bucket_error
         
     def calculate(self, scope, params):
+    """ """
         self._label = params['label']
         self._metric_dict = params['metric_dict']
         fleet._role_maker._barrier_worker()
@@ -165,9 +214,11 @@ class PaddleAUCMetric(Metric):
         return result
 
     def get_result(self):
+    """ """
         return self._result
 
     def get_result_to_string(self):
+    """ """
         result = self.get_result()
         result_str = "%s AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f "\
         "Actural_CTR=%.6f Predicted_CTR=%.6f COPC=%.6f MEAN Q_VALUE=%.6f Ins number=%s" % \
