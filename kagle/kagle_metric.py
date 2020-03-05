@@ -53,9 +53,9 @@ class Metric(object):
         pass
 
 class PaddleAUCMetric(Metric):
-        """
-        Metric For Paddle Model
-        """
+    """
+    Metric For Paddle Model
+    """
     def __init__(self, config):
         """ """
         pass

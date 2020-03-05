@@ -1,17 +1,19 @@
 """
+Define Dataset
 """
 import copy
 import yaml
 import time
 import datetime
-import kagle_fs
-import kagle_util
-import kagle_layer
+import kagle.kagle_fs
+import kagle.kagle_util
+import kagle.kagle_layer
 import paddle.fluid as fluid
 import abc
 
 class Dataset(object):
     """
+    Dataset Base
     """
     __metaclass__ = abc.ABCMeta
     def __init__(self, config):
@@ -31,19 +33,19 @@ class Dataset(object):
 
     @abc.abstractmethod
     def load_dataset(self, params): 
-        """ 
+        """R
         """
         pass
     
     @abc.abstractmethod
     def preload_dataset(self, params): 
-        """
+        """R
         """
         pass
     
     @abc.abstractmethod
     def release_dataset(self, params): 
-        """ 
+        """R 
         """
         pass
 
