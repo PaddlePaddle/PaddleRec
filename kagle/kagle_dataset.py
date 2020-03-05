@@ -6,32 +6,49 @@ import kagle_fs
 import kagle_util
 import kagle_layer
 import paddle.fluid as fluid
-from abc import ABCMeta, abstractmethod
+import abc
 
 class Dataset(object):
-    __metaclass__=ABCMeta
+    """
+    """
+    __metaclass__ = abc.ABCMeta
     def __init__(self, config):
+        """ """
         self._datasets = {}
         self._config = config
     
-    @abstractmethod
+    @abc.abstractmethod
     def check_ready(self, params):
+        """
+        check data ready or not
+        Return:
+            True/False
+        """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def load_dataset(self, params): 
+        """ """
         pass
     
-    @abstractmethod
+    @abc.abstractmethod
     def preload_dataset(self, params): 
+        """ """
         pass
     
-    @abstractmethod
+    @abc.abstractmethod
     def release_dataset(self, params): 
+        """ """
         pass
 
 class TimeSplitDataset(Dataset):
+    """
+    Dataset with time split dir.  root_path/$DAY/$HOUR
+    """
     def __init__(self, config):
+        """
+        init data root_path, time_split_interval, data_path_format
+        """
         Dataset.__init__(self, config)
         if 'data_donefile' not in config or config['data_donefile'] is None:
             config['data_donefile'] = config['data_path'] + "/to.hadoop.done" 
@@ -43,6 +60,7 @@ class TimeSplitDataset(Dataset):
         self._data_file_handler = kagle_fs.FileHandler(config)
 
     def _format_data_time(self, daytime_str, time_window_mins):
+        """ """
         data_time = kagle_util.make_datetime(daytime_str)  
         mins_of_day = data_time.hour * 60 + data_time.minute
         begin_stage = mins_of_day / self._split_interval
@@ -57,6 +75,14 @@ class TimeSplitDataset(Dataset):
         return data_time,time_window_mins
     
     def check_ready(self, daytime_str, time_window_mins):
+        """
+        data in [daytime_str, daytime_str + time_window_mins] is ready or not
+        Args:
+            daytime_str: datetime with str format, such as "202001122200" meanings "2020-01-12 22:00"
+            time_window_mins(int): from daytime_str to daytime_str + time_window_mins
+        Return:
+            True/False
+        """
         is_ready = True
         data_time,windows_mins = self._format_data_time(daytime_str, time_window_mins)
         while time_window_mins > 0:
@@ -69,6 +95,16 @@ class TimeSplitDataset(Dataset):
         return is_ready
         
     def get_file_list(self, daytime_str, time_window_mins, node_num=1, node_idx=0):
+        """
+        data in  [daytime_str, daytime_str + time_window_mins], random shard to node_num, return shard[node_idx]
+        Args:
+            daytime_str: datetime with str format, such as "202001122200" meanings "2020-01-12 22:00"
+            time_window_mins(int): from daytime_str to daytime_str + time_window_mins
+            node_num(int): data split shard num
+            node_idx(int): shard_idx
+        Return:
+            list, data_shard[node_idx]
+        """
         data_file_list = []
         data_time,windows_mins = self._format_data_time(daytime_str, time_window_mins)
         while time_window_mins > 0:
@@ -85,10 +121,15 @@ class TimeSplitDataset(Dataset):
         return data_file_list 
         
 class FluidTimeSplitDataset(TimeSplitDataset):
+    """
+    A Dataset with time split for PaddleFluid
+    """
     def __init__(self, config):
+        """ """
         TimeSplitDataset.__init__(self, config)
     
     def _alloc_dataset(self, file_list):
+        """ """
         dataset = fluid.DatasetFactory().create_dataset(self._config['dataset_type'])
         dataset.set_batch_size(self._config['batch_size'])
         dataset.set_thread(self._config['load_thread'])
@@ -100,7 +141,8 @@ class FluidTimeSplitDataset(TimeSplitDataset):
         #dataset.set_fleet_send_batch_size(80000)
         return dataset
 
-    def load_dataset(self, params): 
+    def load_dataset(self, params):
+        """ """ 
         begin_time = params['begin_time']
         windown_min = params['time_window_min']
         if begin_time not in self._datasets:
@@ -115,6 +157,7 @@ class FluidTimeSplitDataset(TimeSplitDataset):
         return self._datasets[begin_time]
     
     def preload_dataset(self, params): 
+        """ """
         begin_time = params['begin_time']
         windown_min = params['time_window_min']
         if begin_time not in self._datasets:
@@ -126,6 +169,7 @@ class FluidTimeSplitDataset(TimeSplitDataset):
         return False
 
     def release_dataset(self, params): 
+        """ """
         begin_time = params['begin_time']
         windown_min = params['time_window_min']
         if begin_time in self._datasets:
