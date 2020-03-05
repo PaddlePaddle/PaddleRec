@@ -5,8 +5,8 @@ import os
 import sys
 import time
 import datetime
-import kagle.kagle_fs
 import numpy as np
+import kagle.kagle_fs as kagle_fs
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 def get_env_value(env_name):

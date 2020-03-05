@@ -1,11 +1,12 @@
 """
 Do metric jobs. calculate AUC, MSE, COCP ...
 """
+import abc
 import math
 import time
 import numpy as np
-import kagle.kagle_util
 import paddle.fluid as fluid
+import kagle.kagle_util as kagle_util
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 class Metric(object):

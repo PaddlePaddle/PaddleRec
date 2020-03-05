@@ -1,15 +1,15 @@
 """
 Define Dataset
 """
+import abc
 import copy
 import yaml
 import time
 import datetime
-import kagle.kagle_fs
-import kagle.kagle_util
-import kagle.kagle_layer
 import paddle.fluid as fluid
-import abc
+import kagle.kagle_fs as kagle_fs
+import kagle.kagle_util as kagle_util
+import kagle.kagle_layer as kagle_layer
 
 class Dataset(object):
     """

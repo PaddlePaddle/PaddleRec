@@ -4,9 +4,9 @@ Model Net: analyse layer config, and parse to Paddle Pragram
 import abc
 import copy
 import yaml
-import kagle.kagle_layer
-import kagle.kagle_table
-import paddle.fluid as fluid
+import paddle.fluid as fluid 
+import kagle.kagle_layer as kagle_layer
+import kagle.kagle_table as kagle_table
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 def create(config):

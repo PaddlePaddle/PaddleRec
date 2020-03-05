@@ -8,13 +8,13 @@ import yaml
 import time
 import json
 import datetime
-import kagle.kagle_fs
-import kagle.kagle_util
-import kagle.kagle_model
-import kagle.kagle_metric
-import kagle.kagle_dataset
-import kagle.trainer.kagle_trainer
 import paddle.fluid as fluid
+import kagle.kagle_fs as kagle_fs
+import kagle.kagle_util as kagle_util
+import kagle.kagle_model as kagle_model
+import kagle.kagle_metric as kagle_metric
+import kagle.kagle_dataset as kagle_dataset
+import kagle.trainer.kagle_trainer as kagle_trainer
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 class AbacusPaddleTrainer(kagle_trainer.Trainer):
