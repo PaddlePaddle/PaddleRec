@@ -1,3 +1,5 @@
+"""
+"""
 import copy
 import yaml
 import time
@@ -13,7 +15,8 @@ class Dataset(object):
     """
     __metaclass__ = abc.ABCMeta
     def __init__(self, config):
-        """ """
+        """ 
+        """
         self._datasets = {}
         self._config = config
     
@@ -28,18 +31,22 @@ class Dataset(object):
 
     @abc.abstractmethod
     def load_dataset(self, params): 
-        """ """
+        """ 
+        """
         pass
     
     @abc.abstractmethod
     def preload_dataset(self, params): 
-        """ """
+        """
+        """
         pass
     
     @abc.abstractmethod
     def release_dataset(self, params): 
-        """ """
+        """ 
+        """
         pass
+
 
 class TimeSplitDataset(Dataset):
     """
@@ -52,7 +59,7 @@ class TimeSplitDataset(Dataset):
         Dataset.__init__(self, config)
         if 'data_donefile' not in config or config['data_donefile'] is None:
             config['data_donefile'] = config['data_path'] + "/to.hadoop.done" 
-        self._path_generator = kagle_util.PathGenerator({'templates' : [
+        self._path_generator = kagle_util.PathGenerator({'templates': [
             {'name': 'data_path', 'template': config['data_path']},        
             {'name': 'donefile_path', 'template': config['data_donefile']}        
         ]})
@@ -72,7 +79,7 @@ class TimeSplitDataset(Dataset):
             skip_mins = self._split_interval - (mins_of_day % self._split_interval)
             data_time = data_time + datetime.timedelta(minutes=skip_mins)
             time_window_mins = time_window_mins - skip_mins 
-        return data_time,time_window_mins
+        return data_time, time_window_mins
     
     def check_ready(self, daytime_str, time_window_mins):
         """
@@ -84,7 +91,7 @@ class TimeSplitDataset(Dataset):
             True/False
         """
         is_ready = True
-        data_time,windows_mins = self._format_data_time(daytime_str, time_window_mins)
+        data_time, windows_mins = self._format_data_time(daytime_str, time_window_mins)
         while time_window_mins > 0:
             file_path = self._path_generator.generate_path('donefile_path', {'time_format': data_time}) 
             if not self._data_file_handler.is_exist(file_path):
@@ -106,7 +113,7 @@ class TimeSplitDataset(Dataset):
             list, data_shard[node_idx]
         """
         data_file_list = []
-        data_time,windows_mins = self._format_data_time(daytime_str, time_window_mins)
+        data_time, windows_mins = self._format_data_time(daytime_str, time_window_mins)
         while time_window_mins > 0:
             file_path = self._path_generator.generate_path('data_path', {'time_format': data_time}) 
             sub_file_list = self._data_file_handler.ls(file_path)
@@ -120,6 +127,7 @@ class TimeSplitDataset(Dataset):
             data_time = data_time + datetime.timedelta(minutes=self._split_interval)
         return data_file_list 
         
+
 class FluidTimeSplitDataset(TimeSplitDataset):
     """
     A Dataset with time split for PaddleFluid
