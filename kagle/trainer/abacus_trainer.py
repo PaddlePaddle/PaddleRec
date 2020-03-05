@@ -32,7 +32,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         self._exector_context = {}
         self._metrics = {}
         self._path_generator = kagle_util.PathGenerator({
-            'templates' : [
+            'templates': [
                 {'name': 'xbox_base_done', 'template': config['output_path'] + '/xbox_base_done.txt'},
                 {'name': 'xbox_delta_done', 'template': config['output_path'] + '/xbox_patch_done.txt'},
                 {'name': 'xbox_base', 'template': config['output_path'] + '/xbox/{day}/base/'},
@@ -75,8 +75,8 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
                 data_var_name_dict[var.name] = var 
 
         optimizer = kagle_model.FluidModel.build_optimizer({
-	    'metrics' : self._metrics,
-            'optimizer_conf' : self.global_config['optimizer']
+	    'metrics': self._metrics,
+            'optimizer_conf': self.global_config['optimizer']
         })
         optimizer.minimize(runnnable_cost_op, runnnable_scope)
         for executor in self.global_config['executor']:
@@ -227,7 +227,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             self._exe.train_from_dataset(program, dataset, scope,
                 thread=executor_config['train_thread_num'], debug=self.global_config['debug'])
             end = time.time()
-            local_cost = (end-begin) / 60.0
+            local_cost = (end - begin) / 60.0
             avg_cost = kagle_util.worker_numric_avg(local_cost)
             min_cost = kagle_util.worker_numric_min(local_cost)
             max_cost = kagle_util.worker_numric_max(local_cost)
@@ -251,7 +251,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         self._train_pass = kagle_util.TimeTrainPass(self.global_config)
         if not self.global_config['cold_start']:
             cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, 
-                {'master': True, 'log_format' : 'load model cost %s sec', 'stdout' : stdout_str})
+                {'master': True, 'log_format': 'load model cost %s sec', 'stdout': stdout_str})
             self.print_log("going to load model %s" % self._train_pass._checkpoint_model_path, {'master': True})
             #if config.need_reqi_changeslot and config.reqi_dnn_plugin_day >= self._train_pass.date()
             #    and config.reqi_dnn_plugin_pass >= self._pass_id:
@@ -317,7 +317,8 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         self.print_log("    ==== begin delta:%s ========" % pass_id, {'master': True, 'stdout': stdout_str})
         train_begin_time = time.time()
 
-        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 'log_format': 'load into memory done, cost %s sec', 'stdout': stdout_str})
+        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, \
+            {'master': True, 'log_format': 'load into memory done, cost %s sec', 'stdout': stdout_str})
         current_dataset = {}
         for name in self._dataset:
             current_dataset[name] = self._dataset[name].load_dataset({

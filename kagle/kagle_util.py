@@ -15,11 +15,13 @@ def get_env_value(env_name):
     """
     return os.popen("echo -n ${" + env_name + "}").read().strip()
 
+
 def now_time_str():
     """
     get current format str_time
     """
     return "\n" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "[0]:"
+
 
 def get_absolute_path(path, params):
     """R
@@ -32,6 +34,7 @@ def get_absolute_path(path, params):
             return params['fs_name'] + sub_path
     else:
         return path
+
 
 def make_datetime(date_str, fmt = None):
     """
@@ -64,22 +67,26 @@ def wroker_numric_opt(value, opt):
     fleet._role_maker._node_type_comm.Allreduce(local_value, global_value, op=opt)
     return global_value[0]
 
+
 def worker_numric_sum(value):
     """R
     """
     from mpi4py import MPI
     return wroker_numric_opt(value, MPI.SUM)
 
+
 def worker_numric_avg(value):
     """R
     """
     return worker_numric_sum(value) / fleet.worker_num()
+
 
 def worker_numric_min(value):
     """R
     """
     from mpi4py import MPI
     return wroker_numric_opt(value, MPI.MIN)
+
 
 def worker_numric_max(value):
     """R
@@ -93,6 +100,7 @@ def rank0_print(log_str):
     """
     print_log(log_str, {'master': True})
 
+
 def print_log(log_str, params):
     """R
     """
@@ -105,6 +113,7 @@ def print_log(log_str, params):
     if 'stdout' in params:
         params['stdout'] += str(datetime.datetime.now()) + log_str
              
+
 def print_cost(cost, params):
     """R
     """
@@ -113,7 +122,7 @@ def print_cost(cost, params):
     return log_str
         
 
-class CostPrinter:
+class CostPrinter(object):
     """
     For count cost time && print cost log
     """
@@ -147,7 +156,8 @@ class CostPrinter:
         self._done = True
         return cost, log_str
 
-class PathGenerator:
+
+class PathGenerator(object):
     """
     generate path with template & runtime variables
     """
@@ -178,7 +188,7 @@ class PathGenerator:
             return ""
 
 
-class TimeTrainPass:
+class TimeTrainPass(object):
     """
     timely pass
     define pass time_interval && start_time && end_time
@@ -266,7 +276,7 @@ class TimeTrainPass:
             date_str: example "20200110000" -> "%Y%m%d%H%M"
         """
         self._current_train_time = make_datetime(datetime_str)
-        minus = self._current_train_time.hour * 60 + self._current_train_time.minute;
+        minus = self._current_train_time.hour * 60 + self._current_train_time.minute
         self._pass_id = minus / self._interval_per_pass + 1
 
     def current_pass(self):

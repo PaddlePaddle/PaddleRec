@@ -231,7 +231,7 @@ class FluidModel(Model):
         scope = params['scope']
         executor = params['executor']
         program = self._build_param['model']['train_program']
-        for table_name,table in self._build_param['table'].items():
+        for table_name, table in self._build_param['table'].items():
             fleet._fleet_ptr.pull_dense(scope, table['_meta']._table_id, table['params'])
         for infernce_item in params['inference_list']:
             params_name_list = self.inference_params(infernce_item['layer_name'])
