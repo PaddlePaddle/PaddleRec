@@ -36,7 +36,7 @@ def get_absolute_path(path, params):
         return path
 
 
-def make_datetime(date_str, fmt = None):
+def make_datetime(date_str, fmt=None):
     """
     create a datetime instance by date_string
     Args:
