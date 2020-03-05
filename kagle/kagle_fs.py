@@ -12,7 +12,8 @@ def is_afs_path(path):
         return True
     return False
 
-class LocalFSClient:
+
+class LocalFSClient(object):
     """
     Util for local disk file_system io 
     """
@@ -75,10 +76,11 @@ class LocalFSClient:
         """R
         """
         files = os.listdir(path)
-        files = [ path + '/' + fi for fi in files ]
+        files = [path + '/' + fi for fi in files]
         return files
 
-class FileHandler:
+
+class FileHandler(object):
     """
     A Smart file handler. auto judge local/afs by path 
     """
@@ -127,7 +129,6 @@ class FileHandler:
             self._hdfs_client.rename(dest_path + ".tmp", dest_path)
         else:
             self._local_fs_client.write(content, dest_path, mode)
-            
     
     def cat(self, path):
         """R
@@ -147,7 +148,6 @@ class FileHandler:
             return self._hdfs_client.ls(path)
         else:
             return self._local_fs_client.ls(path)
-
     
     def cp(self, org_path, dest_path):
         """R
