@@ -1,22 +1,37 @@
+"""
+Model Net: analyse layer config, and parse to Paddle Pragram
+"""
+import abc
 import copy
 import yaml
-import kagle_layer
-import kagle_table
+import kagle.kagle_layer
+import kagle.kagle_table
 import paddle.fluid as fluid
-from abc import ABCMeta, abstractmethod
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 def create(config):
+   """
+   Create a model instance by config
+   Args:
+       config(dict) : desc model type and net 
+   Return:
+       Model Instance
+   """
     model = None
     if config['mode'] == 'fluid':
         model = FluidModel(config)
         model.build_model()
     return model
    
+
 class Model(object):
-    __metaclass__=ABCMeta
+    """R
+    """
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
+        """R
+        """
         self._config = config
         self._name = config['name']
         f = open(config['layer_file'], 'r')
@@ -30,31 +45,52 @@ class Model(object):
         pass
     
     def get_cost_op(self):
+        """R
+        """
         return self._cost
 
     def get_metrics(self):
+        """R
+        """
         return self._metrics
 
-    @abstractmethod
+    @abc.abstractmethod
     def shrink(self, params):
+        """R
+        """
         pass    
 
-    @abstractmethod
+    @abc.abstractmethod
     def build_model(self): 
+        """R
+        """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def dump_model_program(self, path):
+        """R
+        """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def dump_inference_param(self, params):
+        """R
+        """
         pass
-    @abstractmethod
+    @abc.abstractmethod
     def dump_inference_program(self, inference_layer, path):
+        """R
+        """
         pass
     
     def inference_params(self, inference_layer):
+        """
+        get params name for inference_layer 
+        Args:
+            inference_layer(str): layer for inference
+        Return:
+            params(list): params name list that for inference layer
+        """
         layer = inference_layer
         if layer in self._inference_meta['params']:
             return self._inference_meta['params'][layer]
@@ -69,6 +105,13 @@ class Model(object):
         return self._inference_meta['params'][layer]
 
     def get_dependency(self, layer_graph, dest_layer):
+        """
+        get layers of dest_layer depends on
+        Args:
+            layer_graph(dict) : all layers in graph
+        Return:
+            depend_layers(list) : sub-graph layers for calculate dest_layer
+        """
         dependency_list = []
         if dest_layer in layer_graph:
             dependencys = copy.deepcopy(layer_graph[dest_layer]['input'])
@@ -79,11 +122,24 @@ class Model(object):
 
     
 class FluidModel(Model):
+    """R
+    """
     def __init__(self, config):
+        """R
+        """
         Model.__init__(self, config)
         pass
     
     def build_model(self): 
+        """R
+        build a fluid model with config
+        Return:
+            modle_instance(dict)
+                train_program
+                startup_program
+                inference_param : all params name list
+                table: table-meta to ps-server
+        """
         for layer in self._build_nodes['layer']:
             self._build_param['inner_layer'][layer['name']] = layer
         
@@ -91,7 +147,8 @@ class FluidModel(Model):
         self._build_param['table'] = {}
         self._build_param['model']['train_program'] = fluid.Program()
         self._build_param['model']['startup_program'] = fluid.Program()
-        with fluid.program_guard(self._build_param['model']['train_program'], self._build_param['model']['startup_program']):
+        with fluid.program_guard(self._build_param['model']['train_program'], \
+            self._build_param['model']['startup_program']):
             with fluid.unique_name.guard():
                 for phase in self._build_phase:
                     if self._build_nodes[phase] is None:
@@ -114,16 +171,19 @@ class FluidModel(Model):
                             self._metrics[extend_output['metric_label']] = extend_output['metric_dict']
 
                         if 'inference_param' in extend_output:
-                            param_name = extend_output['inference_param']['name']
+                            inference_param = extend_output['inference_param']
+                            param_name = inference_param['name']
                             if param_name not in self._build_param['table']:
                                 self._build_param['table'][param_name] = {'params':[]}
-                                table_meta = kagle_table.TableMeta.alloc_new_table(extend_output['inference_param']['table_id'])
+                                table_meta = kagle_table.TableMeta.alloc_new_table(inference_param['table_id'])
                                 self._build_param['table'][param_name]['_meta'] = table_meta
-                            self._build_param['table'][param_name]['params'] += extend_output['inference_param']['params']
+                            self._build_param['table'][param_name]['params'] += inference_param['params']
         pass
     
     @classmethod
     def build_optimizer(self, params):
+        """R
+        """
         optimizer_conf = params['optimizer_conf']
         strategy = None
         if 'strategy' in optimizer_conf:
@@ -134,12 +194,15 @@ class FluidModel(Model):
                 model_metrics = metrics[name]
                 stat_var_names += [ model_metrics[metric]['var'].name for metric in model_metrics]
             strategy['stat_var_names'] = list(set(stat_var_names))
-        optimizer_generator = 'optimizer = fluid.optimizer.' + optimizer_conf['class'] + '(learning_rate=' +  str(optimizer_conf['learning_rate']) + ')'
+        optimizer_generator = 'optimizer = fluid.optimizer.' + optimizer_conf['class'] + \
+            '(learning_rate=' +  str(optimizer_conf['learning_rate']) + ')'
         exec(optimizer_generator)            
         optimizer = fleet.distributed_optimizer(optimizer, strategy=strategy)
         return optimizer
 
     def dump_model_program(self, path):
+        """R
+        """
         with open(path + '/' + self._name + '_main_program.pbtxt', "w") as fout:
             print >> fout, self._build_param['model']['train_program']
         with open(path + '/' + self._name + '_startup_program.pbtxt', "w") as fout:
@@ -147,6 +210,8 @@ class FluidModel(Model):
         pass
 
     def shrink(self, params):
+        """R
+        """
         scope = params['scope']
         decay = params['decay']
         for param_table in self._build_param['table']:
@@ -154,9 +219,13 @@ class FluidModel(Model):
             fleet.shrink_dense_table(decay, scope=scope, table_id=table_id)
 
     def dump_inference_program(self, inference_layer, path):
+        """R
+        """
         pass
 
     def dump_inference_param(self, params):
+        """R
+        """
         scope = params['scope']
         executor = params['executor']
         program = self._build_param['model']['train_program']
