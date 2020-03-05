@@ -77,6 +77,7 @@ class Model(object):
         """R
         """
         pass
+
     @abc.abstractmethod
     def dump_inference_program(self, inference_layer, path):
         """R
@@ -101,7 +102,8 @@ class Model(object):
             if node['name'] not in self._inference_meta['dependency'][layer]:
                 continue
             if 'inference_param' in self._build_param['layer_extend'][node['name']]:
-                self._inference_meta['params'][layer] += self._build_param['layer_extend'][node['name']]['inference_param']['params'] 
+                self._inference_meta['params'][layer] += \
+                self._build_param['layer_extend'][node['name']]['inference_param']['params'] 
         return self._inference_meta['params'][layer]
 
     def get_dependency(self, layer_graph, dest_layer):
@@ -192,10 +194,10 @@ class FluidModel(Model):
             metrics = params['metrics']
             for name in metrics:
                 model_metrics = metrics[name]
-                stat_var_names += [ model_metrics[metric]['var'].name for metric in model_metrics]
+                stat_var_names += [model_metrics[metric]['var'].name for metric in model_metrics]
             strategy['stat_var_names'] = list(set(stat_var_names))
         optimizer_generator = 'optimizer = fluid.optimizer.' + optimizer_conf['class'] + \
-            '(learning_rate=' +  str(optimizer_conf['learning_rate']) + ')'
+            '(learning_rate=' + str(optimizer_conf['learning_rate']) + ')'
         exec(optimizer_generator)            
         optimizer = fleet.distributed_optimizer(optimizer, strategy=strategy)
         return optimizer
@@ -233,12 +235,12 @@ class FluidModel(Model):
             fleet._fleet_ptr.pull_dense(scope, table['_meta']._table_id, table['params'])
         for infernce_item in params['inference_list']:
             params_name_list = self.inference_params(infernce_item['layer_name'])
-            params_var_list = [ program.global_block().var(i) for i in params_name_list ]
+            params_var_list = [program.global_block().var(i) for i in params_name_list]
             params_file_name = infernce_item['save_file_name']
             with fluid.scope_guard(scope):
                 if params['save_combine']:
-                    fluid.io.save_vars(
-                    executor, "./", program, vars=params_var_list, filename=params_file_name)
+                    fluid.io.save_vars(executor, "./", \
+                    program, vars=params_var_list, filename=params_file_name)
                 else:
                     fluid.io.save_vars(executor, params_file_name, program, vars=params_var_list)
         pass

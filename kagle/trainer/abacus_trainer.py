@@ -1,21 +1,28 @@
+"""
+A paddle trainer Adapt to Abacus
+"""
+import abc
 import sys
 import copy
 import yaml
 import time
 import json
 import datetime
-import kagle_trainer
-from .. import kagle_fs
-from .. import kagle_util
-from .. import kagle_model
-from .. import kagle_metric
-from .. import kagle_dataset
+import kagle.kagle_fs
+import kagle.kagle_util
+import kagle.kagle_model
+import kagle.kagle_metric
+import kagle.kagle_dataset
+import kagle.trainer.kagle_trainer
 import paddle.fluid as fluid
-from abc import ABCMeta, abstractmethod
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 class AbacusPaddleTrainer(kagle_trainer.Trainer):
+    """R
+    """
     def __init__(self, config):
+        """R
+        """
 	kagle_trainer.Trainer.__init__(self, config)
         config['output_path'] = kagle_util.get_absolute_path(
             config['output_path'], config['io']['afs'])
@@ -43,6 +50,8 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         self.regist_context_processor('end_day', self.end_day)
 
     def init(self, context):
+        """R
+        """
         fleet.init(self._exe)
         data_var_list = []
         data_var_name_dict = {}
@@ -77,7 +86,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             if not executor['is_update_sparse']:
                 program._fleet_opt["program_configs"][str(id(model.get_cost_op().block.program))]["push_sparse"] = []
             if 'train_thread_num' not in executor:
-                executor['train_thread_num'] = global_config['train_thread_num']
+                executor['train_thread_num'] = self.global_config['train_thread_num']
             with fluid.scope_guard(scope):
                 self._exe.run(model._build_param['model']['startup_program'])
             model.dump_model_program('./')
@@ -98,23 +107,29 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         pass
 
     def print_log(self, log_str, params):
+        """R
+        """
         params['index'] = fleet.worker_index()
         return kagle_util.print_log(log_str, params)
 
     def print_global_metrics(self, scope, model, monitor_data, stdout_str):
+        """R
+        """
         metrics = model.get_metrics()
         metric_calculator = kagle_metric.PaddleAUCMetric(None)
         for metric in metrics:
-            metric_param =  {'label' : metric, 'metric_dict' : metrics[metric]}
+            metric_param =  {'label': metric, 'metric_dict': metrics[metric]}
             metric_calculator.calculate(scope, metric_param)
             metric_result = metric_calculator.get_result_to_string() 
-            self.print_log(metric_result, {'master': True, 'stdout' : stdout_str})
+            self.print_log(metric_result, {'master': True, 'stdout': stdout_str})
             monitor_data += metric_result
             metric_calculator.clear(scope, metric_param)
        
     def save_model(self, day, pass_index, base_key):
+        """R
+        """
         cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, 
-            {'master': True, 'log_format' : 'save model cost %s sec'}) 
+            {'master': True, 'log_format': 'save model cost %s sec'}) 
         model_path = self._path_generator.generate_path('batch_model', {'day': day, 'pass_id': pass_index})
         save_mode = 0     # just save all 
         if pass_index < 1: #batch_model
@@ -126,27 +141,30 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         return model_path
         
     def save_xbox_model(self, day, pass_index, xbox_base_key, monitor_data):
+        """R
+        """
         stdout_str = ""
         xbox_patch_id = str(int(time.time()))
         kagle_util.rank0_print("begin save delta model")
         
         model_path = ""
         xbox_model_donefile = ""
-        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 'log_format' : 'save xbox model cost %s sec', 'stdout' : stdout_str})
+        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, \
+            'log_format': 'save xbox model cost %s sec', 'stdout': stdout_str})
         if pass_index < 1:
             save_mode = 2
             xbox_patch_id = xbox_base_key
-            model_path = self._path_generator.generate_path('xbox_base', {'day' : day})
-            xbox_model_donefile = self._path_generator.generate_path('xbox_base_done', {'day' : day})
+            model_path = self._path_generator.generate_path('xbox_base', {'day': day})
+            xbox_model_donefile = self._path_generator.generate_path('xbox_base_done', {'day': day})
         else:
             save_mode = 1
-            model_path = self._path_generator.generate_path('xbox_delta', {'day' : day, 'pass_id':pass_index})
-            xbox_model_donefile = self._path_generator.generate_path('xbox_delta_done', {'day' : day})
+            model_path = self._path_generator.generate_path('xbox_delta', {'day': day, 'pass_id': pass_index})
+            xbox_model_donefile = self._path_generator.generate_path('xbox_delta_done', {'day': day})
         total_save_num = fleet.save_persistables(None, model_path, mode=save_mode)
         cost_printer.done()
 
         cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 
-                'log_format' : 'save cache model cost %s sec', 'stdout' : stdout_str})
+                'log_format': 'save cache model cost %s sec', 'stdout': stdout_str})
         model_file_handler = kagle_fs.FileHandler(self.global_config['io']['afs'])
         if self.global_config['save_cache_model']:
             cache_save_num = fleet.save_cache_model(None, model_path, mode=save_mode)
@@ -161,7 +179,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             'save_combine': True
         }
         cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 
-                'log_format' : 'save dense model cost %s sec', 'stdout' : stdout_str})
+                'log_format': 'save dense model cost %s sec', 'stdout': stdout_str})
         for executor in self.global_config['executor']:
             if 'layer_for_inference' not in executor:
                 continue
@@ -176,17 +194,17 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         cost_printer.done()
 
         xbox_done_info = {
-            "id" : xbox_patch_id,
-            "key" : xbox_base_key,
-            "ins_path" : "",
-            "ins_tag" : "feasign",
-            "partition_type" : "2",
-            "record_count" : "111111",
-            "monitor_data" : monitor_data,
-            "mpi_size" : str(fleet.worker_num()),
-            "input" : model_path.rstrip("/") + "/000",
-            "job_id" : kagle_util.get_env_value("JOB_ID"),
-            "job_name" : kagle_util.get_env_value("JOB_NAME")
+            "id": xbox_patch_id,
+            "key": xbox_base_key,
+            "ins_path": "",
+            "ins_tag": "feasign",
+            "partition_type": "2",
+            "record_count": "111111",
+            "monitor_data": monitor_data,
+            "mpi_size": str(fleet.worker_num()),
+            "input": model_path.rstrip("/") + "/000",
+            "job_id": kagle_util.get_env_value("JOB_ID"),
+            "job_name": kagle_util.get_env_value("JOB_NAME")
         }
         model_file_handler.write(json.dumps(xbox_done_info) + "\n", xbox_model_donefile, 'a')
         if pass_index > 0:
@@ -194,6 +212,8 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         return stdout_str 
                 
     def run_executor(self, executor_config, dataset, stdout_str):
+        """R
+        """
         day = self._train_pass.date()
         pass_id = self._train_pass._pass_id
         xbox_base_key = self._train_pass._base_key
@@ -221,6 +241,8 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
                 stdout_str += self.save_xbox_model(day, pass_id, xbox_base_key, monitor_data)
 
     def startup(self, context):
+        """R
+        """
         if fleet.is_server():
             fleet.run_server()
             context['status'] = 'wait'
@@ -239,24 +261,28 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             cost_printer.done()
         if self.global_config['save_first_base']:
             self.print_log("save_first_base=True", {'master': True})
-            self.print_log("going to save xbox base model", {'master': True, 'stdout' : stdout_str})
+            self.print_log("going to save xbox base model", {'master': True, 'stdout': stdout_str})
             self._train_pass._base_key = int(time.time())
-            stdout_str += self.save_xbox_model(day, 0, self._train_pass._base_key, "")
+            stdout_str += self.save_xbox_model(self._train_pass.date(), 0, self._train_pass._base_key, "")
         context['status'] = 'begin_day'
     
     def begin_day(self, context):
+        """R
+        """
         stdout_str = ""
         if not self._train_pass.next():
             context['is_exit'] = True
         day = self._train_pass.date()
         pass_id = self._train_pass._pass_id
-        self.print_log("======== BEGIN DAY:%s ========" % day, {'master': True, 'stdout' : stdout_str})
+        self.print_log("======== BEGIN DAY:%s ========" % day, {'master': True, 'stdout': stdout_str})
         if pass_id == self._train_pass.max_pass_num_day():
             context['status'] = 'end_day'
         else:
             context['status'] = 'train_pass'
     
     def end_day(self, context):
+        """R
+        """
         day = self._train_pass.date()
         pass_id = self._train_pass._pass_id
         xbox_base_key = int(time.time())
@@ -264,7 +290,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
 
         kagle_util.rank0_print("shrink table")
         cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, 
-            {'master': True, 'log_format' : 'shrink table done, cost %s sec'})
+            {'master': True, 'log_format': 'shrink table done, cost %s sec'})
         fleet.shrink_sparse_table()
         for executor in self._exector_context:
             self._exector_context[executor]['model'].shrink({
@@ -281,27 +307,29 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         self._train_pass._base_key = xbox_base_key
 
     def train_pass(self, context):
+        """R
+        """
         stdout_str = ""
         day = self._train_pass.date()
         pass_id = self._train_pass._pass_id
         base_key = self._train_pass._base_key
         pass_time = self._train_pass._current_train_time.strftime("%Y%m%d%H%M")
-        self.print_log("    ==== begin delta:%s ========" % pass_id, {'master': True, 'stdout' : stdout_str})
+        self.print_log("    ==== begin delta:%s ========" % pass_id, {'master': True, 'stdout': stdout_str})
         train_begin_time = time.time()
 
-        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 'log_format' : 'load into memory done, cost %s sec', 'stdout' : stdout_str})
+        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 'log_format': 'load into memory done, cost %s sec', 'stdout': stdout_str})
         current_dataset = {}
         for name in self._dataset:
             current_dataset[name] = self._dataset[name].load_dataset({
                 'node_num': fleet.worker_num(), 'node_idx': fleet.worker_index(),
-                'begin_time': pass_time,        'time_window_min': self._train_pass._interval_per_pass
+                'begin_time': pass_time, 'time_window_min': self._train_pass._interval_per_pass
             })
         cost_printer.done()
                 
         kagle_util.rank0_print("going to global shuffle")
         cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, { 
-            'master': True, 'stdout' : stdout_str,
-            'log_format' : 'global shuffle done, cost %s sec'}) 
+            'master': True, 'stdout': stdout_str,
+            'log_format': 'global shuffle done, cost %s sec'}) 
         for name in current_dataset:
             current_dataset[name].global_shuffle(fleet, self.global_config['dataset']['shuffle_thread'])
         cost_printer.done()
@@ -313,13 +341,14 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             for name in self._dataset:
                 self._dataset[name].preload_dataset({
                     'node_num': fleet.worker_num(), 'node_idx': fleet.worker_index(),
-                    'begin_time': next_pass_time,   'time_window_min': self._train_pass._interval_per_pass
+                    'begin_time': next_pass_time, 'time_window_min': self._train_pass._interval_per_pass
                 })
         
         pure_train_begin = time.time()
         for executor in self.global_config['executor']:
             self.run_executor(executor, current_dataset[executor['dataset_name']], stdout_str)
-        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 'log_format' : 'release_memory cost %s sec'}) 
+        cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, \
+            {'master': True, 'log_format': 'release_memory cost %s sec'}) 
         for name in current_dataset:
             current_dataset[name].release_memory()
         pure_train_cost = time.time() - pure_train_begin
