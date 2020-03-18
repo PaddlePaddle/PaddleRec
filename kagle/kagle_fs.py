@@ -76,7 +76,6 @@ class LocalFSClient(object):
         """R
         """
         files = os.listdir(path)
-        files = [path + '/' + fi for fi in files]
         return files
 
 
@@ -144,10 +143,13 @@ class FileHandler(object):
     def ls(self, path):
         """R
         """
+        files = []
         if is_afs_path(path):
-            return self._hdfs_client.ls(path)
+            files = self._hdfs_client.ls(path)
         else:
-            return self._local_fs_client.ls(path)
+            files = self._local_fs_client.ls(path)
+        files = [path + '/' + fi for fi in files]
+        return files
     
     def cp(self, org_path, dest_path):
         """R
