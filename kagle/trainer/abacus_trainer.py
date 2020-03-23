@@ -16,6 +16,7 @@ import kagle.kagle_metric as kagle_metric
 import kagle.kagle_dataset as kagle_dataset
 import kagle.trainer.kagle_trainer as kagle_trainer
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
+from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
 
 class AbacusPaddleTrainer(kagle_trainer.Trainer):
     """R
@@ -52,7 +53,14 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
     def init(self, context):
         """R
         """
-        fleet.init(self._exe)
+        role_maker = None
+        if self.global_config.get('process_mode', 'mpi') == 'brilliant_cpu':
+            afs_config = self.global_config['io']['afs']
+            role_maker = fluid.incubate.fleet.base.role_maker.GeneralRoleMaker(
+                hdfs_name=afs_config['fs_name'], hdfs_ugi=afs_config['fs_ugi'],
+                path=self.global_config['output_path'] + "/gloo",
+                init_timeout_seconds=1200, run_timeout_seconds=1200)
+        fleet.init(role_maker)
         data_var_list = []
         data_var_name_dict = {}
         runnnable_scope = []
@@ -136,7 +144,8 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             save_mode = 3     # unseen_day++, save all
         kagle_util.rank0_print("going to save_model %s" % model_path)
         fleet.save_persistables(None, model_path, mode=save_mode)
-        self._train_pass.save_train_progress(day, pass_index, base_key, model_path, is_checkpoint=True)
+        if fleet._role_maker.is_first_worker():
+            self._train_pass.save_train_progress(day, pass_index, base_key, model_path, is_checkpoint=True)
         cost_printer.done()
         return model_path
         
@@ -180,17 +189,19 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         }
         cost_printer = kagle_util.CostPrinter(kagle_util.print_cost, {'master': True, 
                 'log_format': 'save dense model cost %s sec', 'stdout': stdout_str})
-        for executor in self.global_config['executor']:
-            if 'layer_for_inference' not in executor:
-                continue
-            executor_name = executor['name']
-            model = self._exector_context[executor_name]['model']
-            save_env_param['inference_list'] = executor['layer_for_inference']
-            save_env_param['scope'] =  self._exector_context[executor_name]['scope']
-            model.dump_inference_param(save_env_param)
-            for dnn_layer in executor['layer_for_inference']:
-                model_file_handler.cp(dnn_layer['save_file_name'], 
-                    model_path + '/dnn_plugin/' + dnn_layer['save_file_name'])
+        if fleet._role_maker.is_first_worker():
+            for executor in self.global_config['executor']:
+                if 'layer_for_inference' not in executor:
+                    continue
+                executor_name = executor['name']
+                model = self._exector_context[executor_name]['model']
+                save_env_param['inference_list'] = executor['layer_for_inference']
+                save_env_param['scope'] =  self._exector_context[executor_name]['scope']
+                model.dump_inference_param(save_env_param)
+                for dnn_layer in executor['layer_for_inference']:
+                    model_file_handler.cp(dnn_layer['save_file_name'], 
+                        model_path + '/dnn_plugin/' + dnn_layer['save_file_name'])
+        fleet._role_maker._barrier_worker()
         cost_printer.done()
 
         xbox_done_info = {
@@ -206,9 +217,11 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             "job_id": kagle_util.get_env_value("JOB_ID"),
             "job_name": kagle_util.get_env_value("JOB_NAME")
         }
-        model_file_handler.write(json.dumps(xbox_done_info) + "\n", xbox_model_donefile, 'a')
-        if pass_index > 0:
-            self._train_pass.save_train_progress(day, pass_index, xbox_base_key, model_path, is_checkpoint=False)
+        if fleet._role_maker.is_first_worker():
+            model_file_handler.write(json.dumps(xbox_done_info) + "\n", xbox_model_donefile, 'a')
+            if pass_index > 0:
+                self._train_pass.save_train_progress(day, pass_index, xbox_base_key, model_path, is_checkpoint=False)
+        fleet._role_maker._barrier_worker()
         return stdout_str 
                 
     def run_executor(self, executor_config, dataset, stdout_str):
@@ -239,6 +252,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             kagle_util.rank0_print("End " + executor_name + " pass")
             if self._train_pass.need_dump_inference(pass_id) and executor_config['dump_inference_model']:
                 stdout_str += self.save_xbox_model(day, pass_id, xbox_base_key, monitor_data)
+        fleet._role_maker._barrier_worker()
 
     def startup(self, context):
         """R
@@ -305,6 +319,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         kagle_util.rank0_print("going to save batch model")
         self.save_model(next_date, 0, xbox_base_key)
         self._train_pass._base_key = xbox_base_key
+        fleet._role_maker._barrier_worker()
 
     def train_pass(self, context):
         """R
@@ -325,6 +340,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
                 'node_num': fleet.worker_num(), 'node_idx': fleet.worker_index(),
                 'begin_time': pass_time, 'time_window_min': self._train_pass._interval_per_pass
             })
+        fleet._role_maker._barrier_worker()
         cost_printer.done()
                 
         kagle_util.rank0_print("going to global shuffle")
@@ -335,6 +351,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
             current_dataset[name].global_shuffle(fleet, self.global_config['dataset']['shuffle_thread'])
         cost_printer.done()
         # str(dataset.get_shuffle_data_size(fleet))
+        fleet._role_maker._barrier_worker()
 
         if self.global_config['prefetch_data']:
             next_pass_time = (self._train_pass._current_train_time + 
@@ -345,6 +362,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
                     'begin_time': next_pass_time, 'time_window_min': self._train_pass._interval_per_pass
                 })
         
+        fleet._role_maker._barrier_worker()
         pure_train_begin = time.time()
         for executor in self.global_config['executor']:
             self.run_executor(executor, current_dataset[executor['dataset_name']], stdout_str)
@@ -367,6 +385,7 @@ class AbacusPaddleTrainer(kagle_trainer.Trainer):
         kagle_util.rank0_print(log_str)
         stdout_str += kagle_util.now_time_str() + log_str
         sys.stdout.write(stdout_str)
+        fleet._role_maker._barrier_worker()
         stdout_str = ""
         if pass_id == self._train_pass.max_pass_num_day():
             context['status'] = 'end_day'

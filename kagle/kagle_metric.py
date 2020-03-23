@@ -199,6 +199,17 @@ class PaddleAUCMetric(Metric):
         self._metric_dict = params['metric_dict']
         fleet._role_maker._barrier_worker()
         result = self.get_global_metrics(scope, self._metric_dict)
+        if result['total_ins_num'] == 0:
+            self._result = result
+            self._result['auc'] = 0
+            self._result['bucket_error'] = 0
+            self._result['actual_ctr'] = 0
+            self._result['predict_ctr'] = 0
+            self._result['mae'] = 0
+            self._result['rmse'] = 0
+            self._result['copc'] = 0
+            self._result['mean_q'] = 0
+            return self._result
         if 'stat_pos' in result and 'stat_neg' in result:
             result['auc'] = self.calculate_auc(result['stat_pos'], result['stat_neg'])
             result['bucket_error'] = self.calculate_auc(result['stat_pos'], result['stat_neg'])

@@ -41,7 +41,7 @@ class Trainer(object):
             None, just sleep in base
         """
         print('unknow context_status:%s, do nothing' % context['status'])
-	time.sleep(60)
+        time.sleep(60)
 
     def reload_train_context(self):
         """

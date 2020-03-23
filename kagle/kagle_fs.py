@@ -133,9 +133,7 @@ class FileHandler(object):
         """R
         """
         if is_afs_path(path):
-            print("xxh go cat " + path)
             hdfs_cat = self._hdfs_client.cat(path)
-            print(hdfs_cat)
             return hdfs_cat
         else:
             return self._local_fs_client.cat(path)
@@ -146,9 +144,10 @@ class FileHandler(object):
         files = []
         if is_afs_path(path):
             files = self._hdfs_client.ls(path)
+            files = [path + '/' + self.get_file_name(fi) for fi in files]  # absulte path
         else:
             files = self._local_fs_client.ls(path)
-        files = [path + '/' + fi for fi in files]
+            files = [path + '/' + fi for fi in files]  # absulte path
         return files
     
     def cp(self, org_path, dest_path):

@@ -53,46 +53,43 @@ def make_datetime(date_str, fmt=None):
     return datetime.datetime.strptime(date_str, fmt)
 
 
-def wroker_numric_opt(value, opt):
+def wroker_numric_opt(value, env, opt):
     """
     numric count opt for workers
     Args:
         value: value for count
+        env: mpi/gloo
         opt: count operator, SUM/MAX/MIN/AVG
     Return:
         count result
     """
     local_value = np.array([value])
     global_value = np.copy(local_value) * 0
-    fleet._role_maker._node_type_comm.Allreduce(local_value, global_value, op=opt)
+    fleet._role_maker.all_reduce_worker(local_value, global_value, opt)
     return global_value[0]
 
-
-def worker_numric_sum(value):
+def worker_numric_sum(value, env="mpi"):
     """R
     """
-    from mpi4py import MPI
-    return wroker_numric_opt(value, MPI.SUM)
+    return wroker_numric_opt(value, env, "sum")
 
 
-def worker_numric_avg(value):
+def worker_numric_avg(value, env="mpi"):
     """R
     """
-    return worker_numric_sum(value) / fleet.worker_num()
+    return worker_numric_sum(value, env) / fleet.worker_num()
 
 
-def worker_numric_min(value):
+def worker_numric_min(value, env="mpi"):
     """R
     """
-    from mpi4py import MPI
-    return wroker_numric_opt(value, MPI.MIN)
+    return wroker_numric_opt(value, env, "min")
 
 
-def worker_numric_max(value):
+def worker_numric_max(value, env="mpi"):
     """R
     """
-    from mpi4py import MPI
-    return wroker_numric_opt(value, MPI.MAX)
+    return wroker_numric_opt(value, env, "max")
     
 
 def rank0_print(log_str):
@@ -267,7 +264,6 @@ class TimeTrainPass(object):
         self._pass_id = pass_id
         mins = self._interval_per_pass * (pass_id - 1)
         self._current_train_time = date_time + datetime.timedelta(minutes=mins)
-        print(self._current_train_time)
     
     def init_pass_by_time(self, datetime_str):
         """
