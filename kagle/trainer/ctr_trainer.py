@@ -1,5 +1,5 @@
 """
-A paddle trainer Adapt to Abacus
+A paddle trainer Adapt to Ctr
 """
 import abc
 import sys
@@ -18,7 +18,7 @@ import kagle.trainer.kagle_trainer as kagle_trainer
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
 
-class AbacusPaddleTrainer(kagle_trainer.Trainer):
+class CtrPaddleTrainer(kagle_trainer.Trainer):
     """R
     """
     def __init__(self, config):
