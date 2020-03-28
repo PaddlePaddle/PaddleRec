@@ -2,13 +2,14 @@
 Define A Trainer Base
 """
 import abc
-import sys
 import time
+
 
 class Trainer(object):
     """R
     """   
     __metaclass__ = abc.ABCMeta
+
     def __init__(self, config):
         """R
         """
