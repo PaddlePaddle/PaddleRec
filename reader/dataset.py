@@ -7,8 +7,8 @@ import yaml
 import time
 import datetime
 import paddle.fluid as fluid
-import kagle.utils.kagle_fs as kagle_fs
-import kagle.utils.kagle_util as kagle_util
+from .. utils import fs as fs
+from .. utils import util as util
 
 
 class Dataset(object):
@@ -61,16 +61,16 @@ class TimeSplitDataset(Dataset):
         Dataset.__init__(self, config)
         if 'data_donefile' not in config or config['data_donefile'] is None:
             config['data_donefile'] = config['data_path'] + "/to.hadoop.done" 
-        self._path_generator = kagle_util.PathGenerator({'templates': [
+        self._path_generator = util.PathGenerator({'templates': [
             {'name': 'data_path', 'template': config['data_path']},        
             {'name': 'donefile_path', 'template': config['data_donefile']}        
         ]})
         self._split_interval = config['split_interval'] # data split N mins per dir
-        self._data_file_handler = kagle_fs.FileHandler(config)
+        self._data_file_handler = fs.FileHandler(config)
 
     def _format_data_time(self, daytime_str, time_window_mins):
         """ """
-        data_time = kagle_util.make_datetime(daytime_str)  
+        data_time = util.make_datetime(daytime_str)  
         mins_of_day = data_time.hour * 60 + data_time.minute
         begin_stage = mins_of_day / self._split_interval
         end_stage = (mins_of_day + time_window_mins) / self._split_interval

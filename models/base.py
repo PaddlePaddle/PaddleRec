@@ -5,7 +5,7 @@ import abc
 import copy
 import yaml
 import paddle.fluid as fluid
-import kagle.utils.kagle_table as kagle_table
+from ..utils import table as table
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
 
@@ -187,7 +187,7 @@ class YamlModel(Model):
                     if self._build_nodes[phase] is None:
                         continue
                     for node in self._build_nodes[phase]:
-                        exec("""layer=kagle_layer.{}(node)""".format(node['class']))
+                        exec("""layer=layer.{}(node)""".format(node['class']))
                         layer_output, extend_output = layer.generate(self._config['mode'], self._build_param)
                         self._build_param['layer'][node['name']] = layer_output
                         self._build_param['layer_extend'][node['name']] = extend_output
@@ -208,7 +208,7 @@ class YamlModel(Model):
                             param_name = inference_param['name']
                             if param_name not in self._build_param['table']:
                                 self._build_param['table'][param_name] = {'params' :[]}
-                                table_meta = kagle_table.TableMeta.alloc_new_table(inference_param['table_id'])
+                                table_meta = table.TableMeta.alloc_new_table(inference_param['table_id'])
                                 self._build_param['table'][param_name]['_meta'] = table_meta
                             self._build_param['table'][param_name]['params'] += inference_param['params']
         pass

@@ -4,7 +4,7 @@ Util lib
 import os
 import time
 import datetime
-import kagle.utils.kagle_fs as kagle_fs
+from .. utils import fs as fs
 
 
 def get_env_value(env_name):
@@ -168,10 +168,10 @@ class TimeTrainPass(object):
         self._pass_donefile_handler = None
         if 'pass_donefile_name' in self._config:
             self._train_pass_donefile = global_config['output_path'] + '/' + self._config['pass_donefile_name']
-            if kagle_fs.is_afs_path(self._train_pass_donefile):
-                self._pass_donefile_handler = kagle_fs.FileHandler(global_config['io']['afs'])
+            if fs.is_afs_path(self._train_pass_donefile):
+                self._pass_donefile_handler = fs.FileHandler(global_config['io']['afs'])
             else:
-                self._pass_donefile_handler = kagle_fs.FileHandler(global_config['io']['local_fs'])
+                self._pass_donefile_handler = fs.FileHandler(global_config['io']['local_fs'])
 
             last_done = self._pass_donefile_handler.cat(self._train_pass_donefile).strip().split('\n')[-1]
             done_fileds = last_done.split('\t')
