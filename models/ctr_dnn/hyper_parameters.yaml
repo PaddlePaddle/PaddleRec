@@ -1,0 +1,8 @@
+{
+  "sparse_inputs_slots": 27,
+  "sparse_feature_number": 1000001,
+  "sparse_feature_dim": 8,
+  "dense_input_dim": 13,
+  "fc_sizes": [400, 400, 40],
+  "learning_rate": 0.001
+}
