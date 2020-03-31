@@ -57,6 +57,12 @@ class Train(object):
         self.dense_input, self.dense_input_varname = dense_input()
         self.label_input, self.label_input_varname = label_input()
 
+    def input_vars(self):
+        return self.sparse_inputs + [self.dense_input] + [self.label_input]
+
+    def input_varnames(self):
+        return [input.name for input in self.input_vars()]
+
     def net(self):
         def embedding_layer(input):
             sparse_feature_number = envs.get_global_env("sparse_feature_number")
@@ -101,21 +107,27 @@ class Train(object):
 
         self.predict = predict
 
-    def loss(self, predict):
+    def avg_loss(self, predict):
         cost = fluid.layers.cross_entropy(input=predict, label=self.label_input)
         avg_cost = fluid.layers.reduce_sum(cost)
         self.loss = avg_cost
+        return avg_cost
 
-    def metric(self):
+    def metrics(self):
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
                                              label=self.label_input,
                                              num_thresholds=2 ** 12,
                                              slide_steps=20)
+        self.metrics = (auc, batch_auc)
 
     def optimizer(self):
         learning_rate = envs.get_global_env("learning_rate")
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
+
+    def optimize(self):
+        optimizer = self.optimizer()
+        optimizer.minimize(self.loss)
 
 
 class Evaluate(object):

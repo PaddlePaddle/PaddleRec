@@ -24,10 +24,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+train:
+  batch_size: 32
+  threads: 12
+  epochs: 10
+  trainer:  "SingleTraining"
 
-sparse_inputs_slots: 27,
-sparse_feature_number: 1000001,
-sparse_feature_dim: 8,
-dense_input_dim: 13,
-fc_sizes: [400, 400, 40],
-learning_rate: 0.001
+  reader:
+    mode: "dataset"
+    pipe_command: "python reader.py dataset"
+    train_data_path: "raw_data"
+
+  model:
+    models: "eleps.models.ctr_dnn.model.py"
+    hyper_parameters:
+      sparse_inputs_slots: 27,
+      sparse_feature_number: 1000001,
+      sparse_feature_dim: 8,
+      dense_input_dim: 13,
+      fc_sizes: [1024, 512, 32],
+      learning_rate: 0.001
+
+  save:
+    increment:
+      dirname: "models_for_increment"
+      epoch_interval: 2
+      save_last: True
+    inference:
+      dirname: "models_for_inference"
+      epoch_interval: 4
+      feed_varnames: ["C1", "C2", "C3"]
+      fetch_varnames: "predict"
+      save_last: True
+
+evaluate:
+  batch_size: 32
+  train_thread_num: 12
+  reader: "reader.py"
+
+

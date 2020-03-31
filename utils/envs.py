@@ -24,17 +24,17 @@ def decode_value(v):
     return v
 
 
-def set_global_envs(yaml, envs):
+def set_global_envs(yaml):
     for k, v in yaml.items():
-        envs[k] = encode_value(v)
+        os.environ[k] = encode_value(v)
 
 
-def get_global_env(env_name):
+def get_global_env(env_name, default_value=None):
     """
     get os environment value
     """
     if env_name not in os.environ:
-        raise ValueError("can not find config of {}".format(env_name))
+        return default_value
 
     v = os.environ[env_name]
     return decode_value(v)
