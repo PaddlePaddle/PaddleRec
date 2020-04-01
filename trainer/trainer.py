@@ -24,20 +24,7 @@ class Trainer(object):
     """   
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, config=None, yaml_file=None):
-
-        if not config and not yaml_file:
-            raise ValueError("config and yaml file have at least one not empty")
-
-        if config and yaml_file:
-            print("config and yaml file are all assigned, will use yaml file: {}".format(yaml_file))
-
-        if yaml_file:
-            with open(yaml_file, "r") as rb:
-                config = yaml.load(rb.read())
-
-        envs.set_global_envs(config)
-
+    def __init__(self, config=None):
         self._status_processor = {}
         self._context = {'status': 'uninit', 'is_exit': False}
        

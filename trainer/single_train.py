@@ -39,9 +39,8 @@ def need_save(epoch_id, epoch_interval, is_last=False):
 
 
 class SingleTrainer(Trainer):
-
-    def __init__(self, config=None, yaml_file=None):
-        Trainer.__init__(self, config, yaml_file)
+    def __init__(self, config=None):
+        Trainer.__init__(self, config)
 
         self.exe = fluid.Executor(fluid.CPUPlace())
 
