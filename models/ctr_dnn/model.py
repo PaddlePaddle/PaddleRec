@@ -125,10 +125,6 @@ class Train(object):
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 
-    def optimize(self):
-        optimizer = self.optimizer()
-        optimizer.minimize(self.loss)
-
 
 class Evaluate(object):
     def input(self):

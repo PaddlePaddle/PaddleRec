@@ -29,6 +29,9 @@ train:
   threads: 12
   epochs: 10
   trainer:  "SingleTraining"
+  role_maler: "PaddleCloudRoleMaker"
+  strategy:
+    mode: "async"
 
   reader:
     mode: "dataset"
