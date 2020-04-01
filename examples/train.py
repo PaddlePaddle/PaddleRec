@@ -32,5 +32,5 @@ if __name__ == "__main__":
     with open('ctr-dnn_train.yaml', 'r') as rb:
         global_config = yaml.load(rb.read())
 
-    trainer = TrainerFactory.craete(global_config)
+    trainer = TrainerFactory.create(global_config)
     trainer.run()
