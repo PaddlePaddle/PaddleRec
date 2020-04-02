@@ -15,7 +15,7 @@
 import math
 import paddle.fluid as fluid
 
-from ...utils import envs
+from eleps.utils import envs
 
 
 class Train(object):
@@ -28,10 +28,12 @@ class Train(object):
         self.sparse_input_varnames = []
         self.dense_input_varname = None
         self.label_input_varname = None
+        
+        self.namespace = "train.model"
 
     def input(self):
         def sparse_inputs():
-            ids = envs.get_global_env("sparse_inputs_counts")
+            ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None ,self.namespace)
 
             sparse_input_ids = [
                 fluid.layers.data(name="C" + str(i),
@@ -42,10 +44,10 @@ class Train(object):
             return sparse_input_ids, [var.name for var in sparse_input_ids]
 
         def dense_input():
-            dense_input_dim = envs.get_global_env("dense_input_dim")
+            dim = envs.get_global_env("hyper_parameters.dense_input_dim", None ,self.namespace)
 
             dense_input_var = fluid.layers.data(name="dense_input",
-                                                shape=dense_input_dim,
+                                                shape=[dim],
                                                 dtype="float32")
             return dense_input_var, dense_input_var.name
 
@@ -65,13 +67,13 @@ class Train(object):
 
     def net(self):
         def embedding_layer(input):
-            sparse_feature_number = envs.get_global_env("sparse_feature_number")
-            sparse_feature_dim = envs.get_global_env("sparse_feature_dim")
+            sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None ,self.namespace)
+            sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None ,self.namespace)
 
             emb = fluid.layers.embedding(
                 input=input,
                 is_sparse=True,
-                size=[{sparse_feature_number}, {sparse_feature_dim}],
+                size=[sparse_feature_number, sparse_feature_dim],
                 param_attr=fluid.ParamAttr(
                     name="SparseFeatFactors",
                     initializer=fluid.initializer.Uniform()),
@@ -92,7 +94,7 @@ class Train(object):
         concated = fluid.layers.concat(sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
-        hidden_layers = envs.get_global_env("fc_sizes")
+        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None ,self.namespace)
 
         for size in hidden_layers:
             fcs.append(fc(fcs[-1], size))
@@ -107,8 +109,8 @@ class Train(object):
 
         self.predict = predict
 
-    def avg_loss(self, predict):
-        cost = fluid.layers.cross_entropy(input=predict, label=self.label_input)
+    def avg_loss(self):
+        cost = fluid.layers.cross_entropy(input=self.predict, label=self.label_input)
         avg_cost = fluid.layers.reduce_sum(cost)
         self.loss = avg_cost
         return avg_cost
@@ -120,8 +122,10 @@ class Train(object):
                                              slide_steps=20)
         self.metrics = (auc, batch_auc)
 
+        return self.metrics
+
     def optimizer(self):
-        learning_rate = envs.get_global_env("learning_rate")
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None ,self.namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 

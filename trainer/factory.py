@@ -80,6 +80,9 @@ class TrainerFactory(object):
             raise ValueError("unknown config about eleps")
 
         envs.set_global_envs(_config)
+
+        print(envs.pretty_print_envs())
+
         trainer = TrainerFactory._build_trainer(_config)
 
         return trainer

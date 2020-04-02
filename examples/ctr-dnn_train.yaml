@@ -25,7 +25,6 @@
 # limitations under the License.
 
 train:
-  batch_size: 32
   threads: 12
   epochs: 10
   trainer:  "SingleTraining"
@@ -35,11 +34,12 @@ train:
 
   reader:
     mode: "dataset"
-    pipe_command: "python reader.py dataset"
-    train_data_path: "raw_data"
+    batch_size: 32
+    pipe_command: "python /paddle/eleps/models/ctr_dnn/dataset.py"
+    train_data_path: "/paddle/eleps/models/ctr_dnn/data/train"
 
   model:
-    models: "eleps.models.ctr_dnn.model.py"
+    models: "eleps.models.ctr_dnn.model"
     hyper_parameters:
       sparse_inputs_slots: 27
       sparse_feature_number: 1000001

@@ -51,7 +51,10 @@ class SingleTrainer(Trainer):
         self.regist_context_processor('terminal_pass', self.terminal)
 
     def instance(self, context):
-        model_package = __import__(envs.get_global_env("train.model.models"))
+
+        models = envs.get_global_env("train.model.models")
+        model_package = __import__(models, globals(), locals(), models.split("."))
+
         train_model = getattr(model_package, 'Train')
 
         self.model = train_model()
@@ -64,7 +67,7 @@ class SingleTrainer(Trainer):
         self.metrics = self.model.metrics()
         loss = self.model.avg_loss()
 
-        optimizer = self.model.get_optimizer()
+        optimizer = self.model.optimizer()
         optimizer.minimize(loss)
 
         # run startup program at once
@@ -89,15 +92,24 @@ class SingleTrainerWithDataloader(SingleTrainer):
 
 
 class SingleTrainerWithDataset(SingleTrainer):
-    def _get_dataset(self, inputs, threads, batch_size, pipe_command, train_files_path):
+    def _get_dataset(self):
+        namespace = "train.reader"
+
+        inputs = self.model.input_vars()
+        threads = envs.get_global_env("train.threads", None)
+        batch_size = envs.get_global_env("batch_size", None, namespace)
+        pipe_command = envs.get_global_env("pipe_command", None, namespace)
+        train_data_path = envs.get_global_env("train_data_path", None, namespace)
+
+
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
         dataset.set_pipe_command(pipe_command)
         dataset.set_batch_size(batch_size)
         dataset.set_thread(threads)
         file_list = [
-            os.path.join(train_files_path, x)
-            for x in os.listdir(train_files_path)
+            os.path.join(train_data_path, x)
+            for x in os.listdir(train_data_path)
         ]
 
         dataset.set_filelist(file_list)
@@ -146,21 +158,17 @@ class SingleTrainerWithDataset(SingleTrainer):
         save_inference_model()
 
     def train(self, context):
-        inputs = self.model.input_vars()
-        threads = envs.get_global_env("threads")
-        batch_size = envs.get_global_env("batch_size")
-        pipe_command = envs.get_global_env("pipe_command")
-        train_data_path = envs.get_global_env("train_data_path")
+        dataset = self._get_dataset()
 
-        dataset = self._get_dataset(inputs, threads, batch_size, pipe_command, train_data_path)
+        epochs = envs.get_global_env("train.epochs")
 
-        epochs = envs.get_global_env("epochs")
+        print("fetch_list: {}".format(len(self.metrics)))
 
         for i in range(epochs):
             self.exe.train_from_dataset(program=fluid.default_main_program(),
                                         dataset=dataset,
-                                        fetch_list=[self.metrics],
-                                        fetch_info=["epoch {} auc ".format(i)],
+                                        fetch_list=self.metrics,
+                                        fetch_info=["auc ", "batch auc"],
                                         print_period=100)
         context['status'] = 'infer_pass'
 

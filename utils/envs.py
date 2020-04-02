@@ -14,27 +14,62 @@
 
 
 import os
+import copy
+
+global_envs = {}
 
 
-def encode_value(v):
-    return v
+def set_global_envs(envs):
+    assert isinstance(envs, dict)
+
+    def fatten_env_namespace(namespace_nests, local_envs):
+        for k, v in local_envs.items():
+            if isinstance(v, dict):
+                nests = copy.deepcopy(namespace_nests)
+                nests.append(k)
+                fatten_env_namespace(nests, v)
+            else:
+                global_k = ".".join(namespace_nests + [k])
+                global_envs[global_k] = v
+
+    for k, v in envs.items():
+        fatten_env_namespace([k], v)
 
 
-def decode_value(v):
-    return v
-
-
-def set_global_envs(yaml):
-    for k, v in yaml.items():
-        os.environ[k] = encode_value(v)
-
-
-def get_global_env(env_name, default_value=None):
+def get_global_env(env_name, default_value=None, namespace=None):
     """
     get os environment value
     """
-    if env_name not in os.environ:
-        return default_value
+    _env_name = env_name if namespace is None else ".".join([namespace, env_name])
+    return global_envs.get(_env_name, default_value)
 
-    v = os.environ[env_name]
-    return decode_value(v)
+
+def pretty_print_envs():
+    spacing = 5
+    max_k = 45
+    max_v = 20
+
+    for k, v in global_envs.items():
+        max_k = max(max_k, len(k))
+        max_v = max(max_v, len(str(v)))
+
+    h_format = "{{:^{}s}}{{:<{}s}}\n".format(max_k, max_v)
+    l_format = "{{:<{}s}}{{}}{{:<{}s}}\n".format(max_k, max_v)
+    length = max_k + max_v + spacing
+
+    border = "".join(["="] * length)
+    line = "".join(["-"] * length)
+
+    draws = ""
+    draws += border + "\n"
+    draws += h_format.format("Eleps Global Envs", "Value")
+    draws += line + "\n"
+
+    for k, v in global_envs.items():
+        draws += l_format.format(k, " " * spacing, str(v))
+
+    draws += border
+
+    _str = "\n{}\n".format(draws)
+    return _str
+
