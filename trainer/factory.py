@@ -27,15 +27,15 @@
 import os
 import yaml
 
-from .single_train import SingleTrainerWithDataloader
-from .single_train import SingleTrainerWithDataset
+from eleps.trainer.single_train import SingleTrainerWithDataloader
+from eleps.trainer.single_train import SingleTrainerWithDataset
 
-from .cluster_train import ClusterTrainerWithDataloader
-from .cluster_train import ClusterTrainerWithDataset
+from eleps.trainer.cluster_train import ClusterTrainerWithDataloader
+from eleps.trainer.cluster_train import ClusterTrainerWithDataset
 
-from .ctr_trainer import CtrPaddleTrainer
+from eleps.trainer.ctr_trainer import CtrPaddleTrainer
 
-from ..utils import envs
+from eleps.utils import envs
 
 
 class TrainerFactory(object):
@@ -83,3 +83,4 @@ class TrainerFactory(object):
         trainer = TrainerFactory._build_trainer(_config)
 
         return trainer
+

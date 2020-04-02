@@ -41,11 +41,14 @@ train:
   model:
     models: "eleps.models.ctr_dnn.model.py"
     hyper_parameters:
-      sparse_inputs_slots: 27,
-      sparse_feature_number: 1000001,
-      sparse_feature_dim: 8,
-      dense_input_dim: 13,
-      fc_sizes: [1024, 512, 32],
+      sparse_inputs_slots: 27
+      sparse_feature_number: 1000001
+      sparse_feature_dim: 8
+      dense_input_dim: 13
+      fc_sizes: [101, 512, 32] 
+      #  - 1024
+      #  - 512
+      #  - 32
       learning_rate: 0.001
 
   save:
