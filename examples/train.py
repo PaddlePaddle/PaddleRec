@@ -24,13 +24,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import yaml
-from .. trainer.factory import TrainerFactory
+from eleps.trainer.factory import TrainerFactory
 
 if __name__ == "__main__":
 
     with open('ctr-dnn_train.yaml', 'r') as rb:
         global_config = yaml.load(rb.read())
+
+    print global_config
+
+    os.exit() 
 
     trainer = TrainerFactory.create(global_config)
     trainer.run()
