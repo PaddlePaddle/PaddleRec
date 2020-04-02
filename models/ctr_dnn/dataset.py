@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
+import sys
 
 import paddle.fluid.incubate.data_generator as dg
 
@@ -37,6 +39,7 @@ class CriteoDataset(dg.MultiSlotDataGenerator):
             This function needs to be implemented by the user, based on data format
             """
             features = line.rstrip('\n').split('\t')
+
             dense_feature = []
             sparse_feature = []
             for idx in continuous_range_:
@@ -46,6 +49,7 @@ class CriteoDataset(dg.MultiSlotDataGenerator):
                     dense_feature.append(
                         (float(features[idx]) - cont_min_[idx - 1]) /
                         cont_diff_[idx - 1])
+
             for idx in categorical_range_:
                 sparse_feature.append(
                     [hash(str(idx) + features[idx]) % hash_dim_])

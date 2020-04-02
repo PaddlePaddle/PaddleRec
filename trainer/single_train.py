@@ -169,7 +169,7 @@ class SingleTrainerWithDataset(SingleTrainer):
                                         dataset=dataset,
                                         fetch_list=self.metrics,
                                         fetch_info=["auc ", "batch auc"],
-                                        print_period=100)
+                                        print_period=1)
         context['status'] = 'infer_pass'
 
 

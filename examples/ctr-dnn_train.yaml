@@ -34,7 +34,7 @@ train:
 
   reader:
     mode: "dataset"
-    batch_size: 32
+    batch_size: 2 
     pipe_command: "python /paddle/eleps/models/ctr_dnn/dataset.py"
     train_data_path: "/paddle/eleps/models/ctr_dnn/data/train"
 
@@ -45,10 +45,7 @@ train:
       sparse_feature_number: 1000001
       sparse_feature_dim: 8
       dense_input_dim: 13
-      fc_sizes: [101, 512, 32] 
-      #  - 1024
-      #  - 512
-      #  - 32
+      fc_sizes: [512, 256, 128, 32] 
       learning_rate: 0.001
 
   save:

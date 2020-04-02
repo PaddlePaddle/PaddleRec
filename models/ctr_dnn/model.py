@@ -39,7 +39,7 @@ class Train(object):
                 fluid.layers.data(name="C" + str(i),
                                   shape=[1],
                                   lod_level=1,
-                                  dtype="int64") for i in range(ids)
+                                  dtype="int64") for i in range(1, ids)
             ]
             return sparse_input_ids, [var.name for var in sparse_input_ids]
 
@@ -60,7 +60,7 @@ class Train(object):
         self.label_input, self.label_input_varname = label_input()
 
     def input_vars(self):
-        return self.sparse_inputs + [self.dense_input] + [self.label_input]
+        return [self.dense_input] + self.sparse_inputs + [self.label_input]
 
     def input_varnames(self):
         return [input.name for input in self.input_vars()]
