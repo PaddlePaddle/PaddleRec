@@ -42,10 +42,9 @@ class ClusterTrainerWithDataloader(TranspileTrainer):
 class ClusterTrainerWithDataset(TranspileTrainer):
     def processor_register(self):
         role = PaddleCloudRoleMaker()
-
         fleet.init(role)
 
-        if role.is_server():
+        if fleet.is_server():
             self.regist_context_processor('uninit', self.instance)
             self.regist_context_processor('init_pass', self.init)
             self.regist_context_processor('server_pass', self.server)
@@ -74,6 +73,9 @@ class ClusterTrainerWithDataset(TranspileTrainer):
         return strategy
 
     def init(self, context):
+
+        print("init pass")
+
         self.model.input()
         self.model.net()
         self.metrics = self.model.metrics()

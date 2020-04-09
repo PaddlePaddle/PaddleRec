@@ -38,7 +38,8 @@ def start_procs(args, yaml):
     user_endpoints_ips = [x.split(":")[0] for x in user_endpoints.split(",")]
     user_endpoints_port = [x.split(":")[1] for x in user_endpoints.split(",")]
 
-    factory = os.path.join(os.path.abspath(os.path.dirname(__file__)), "factory.py")
+    factory = "eleps.trainer.factory"
+    cmd = [sys.executable, "-u", "-m", factory, yaml]
 
     for i in range(server_num):
         current_env.update({
@@ -48,15 +49,14 @@ def start_procs(args, yaml):
             "PADDLE_TRAINERS_NUM": str(worker_num),
             "POD_IP": user_endpoints_ips[i]
         })
-        cmd = [sys.executable, "-u", factory, yaml]
 
-        if args.log_dir is not None:
+        if logs_dir is not None:
             os.system("mkdir -p {}".format(logs_dir))
             fn = open("%s/server.%d" % (logs_dir, i), "w")
             log_fns.append(fn)
-            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn)
+            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
         else:
-            proc = subprocess.Popen(cmd, env=current_env)
+            proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
         procs.append(proc)
 
     for i in range(worker_num):
@@ -66,16 +66,14 @@ def start_procs(args, yaml):
             "TRAINING_ROLE": "TRAINER",
             "PADDLE_TRAINER_ID": str(i)
         })
-        cmd = [sys.executable, "-u", args.training_script
-               ] + args.training_script_args
 
-        if args.log_dir is not None:
+        if logs_dir is not None:
             os.system("mkdir -p {}".format(logs_dir))
             fn = open("%s/worker.%d" % (logs_dir, i), "w")
             log_fns.append(fn)
-            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn)
+            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
         else:
-            proc = subprocess.Popen(cmd, env=current_env)
+            proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
         procs.append(proc)
 
     # only wait worker to finish here
@@ -93,6 +91,11 @@ def start_procs(args, yaml):
         procs[i].terminate()
     print("all parameter server are killed", file=sys.stderr)
 
+class Launch():
+    def __init__(self, envs, trainer):
+        self.envs = envs
+        self.trainer = trainer
 
-def local_launch(envs, trainer):
-    start_procs(envs, trainer)
+    def run(self):
+        start_procs(self.envs, self.trainer)
+

@@ -48,7 +48,7 @@ def get_global_envs():
     return global_envs
 
 
-def pretty_print_envs(envs, header):
+def pretty_print_envs(envs, header=None):
     spacing = 5
     max_k = 45
     max_v = 20

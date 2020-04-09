@@ -27,7 +27,8 @@
 train:
   threads: 12
   epochs: 10
-  trainer:  "LocalClusterTraining"
+  trainer:  "ClusterTraining"
+  container: "local"
 
   pserver_num: 2
   trainer_num: 2

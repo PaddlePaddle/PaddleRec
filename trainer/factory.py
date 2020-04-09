@@ -35,7 +35,7 @@ from eleps.trainer.single_trainer import SingleTrainerWithDataset
 from eleps.trainer.cluster_trainer import ClusterTrainerWithDataloader
 from eleps.trainer.cluster_trainer import ClusterTrainerWithDataset
 
-from eleps.trainer.local_engine import local_launch
+from eleps.trainer.local_engine import Launch
 from eleps.trainer.ctr_trainer import CtrPaddleTrainer
 
 from eleps.utils import envs
@@ -91,24 +91,26 @@ class TrainerFactory(object):
         cluster_envs["start_port"] = envs.get_global_env("train.start_port")
         cluster_envs["log_dir"] = envs.get_global_env("train.log_dirname")
 
-        envs.pretty_print_envs(cluster_envs, ("Cluster Global Envs", "Value"))
+        print(envs.pretty_print_envs(cluster_envs, ("Cluster Global Envs", "Value")))
 
-        local_launch(cluster_envs, yaml_config)
+        launch = Launch(cluster_envs, yaml_config)
+        return launch
 
     @staticmethod
     def create(config):
         _config = None
         if os.path.exists(config) and os.path.isfile(config):
             with open(config, 'r') as rb:
-                _config = yaml.load(rb.read())
+                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
         else:
             raise ValueError("eleps's config only support yaml")
 
         envs.set_global_envs(_config)
-        train_mode = envs.get_global_env("train.trainer")
+        mode = envs.get_global_env("train.trainer")
+        container = envs.get_global_env("train.container")
         instance = str2bool(os.getenv("CLUSTER_INSTANCE", "0"))
 
-        if train_mode == "LocalClusterTraining" and not instance:
+        if mode == "ClusterTraining" and container == "local" and not instance:
             trainer = TrainerFactory._build_engine(config)
         else:
             trainer = TrainerFactory._build_trainer(_config)
@@ -120,4 +122,6 @@ class TrainerFactory(object):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         raise ValueError("need a yaml file path argv")
-    TrainerFactory.create(sys.argv[1])
+    trainer = TrainerFactory.create(sys.argv[1])
+    trainer.run()
+

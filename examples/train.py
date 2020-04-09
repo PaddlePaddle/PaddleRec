@@ -26,15 +26,11 @@
 
 import os
 
-import yaml
 from eleps.trainer.factory import TrainerFactory
 
 if __name__ == "__main__":
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
-
-    with open(os.path.join(abs_dir, 'ctr-dnn_train_single.yaml'), 'r') as rb:
-        global_config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
-    trainer = TrainerFactory.create(global_config)
+    yaml = os.path.join(abs_dir, 'ctr-dnn_train_cluster.yaml')
+    trainer = TrainerFactory.create(yaml)
     trainer.run()
