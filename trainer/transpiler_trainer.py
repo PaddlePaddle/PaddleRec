@@ -28,7 +28,6 @@ from ..utils import envs
 class TranspileTrainer(Trainer):
     def __init__(self, config=None):
         Trainer.__init__(self, config)
-        self.exe = fluid.Executor(fluid.CPUPlace())
         self.processor_register()
 
         self.inference_models = []
@@ -87,9 +86,9 @@ class TranspileTrainer(Trainer):
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                fleet.save_inference_model(dirname, feed_varnames, fetch_vars, self.exe)
+                fleet.save_inference_model(dirname, feed_varnames, fetch_vars)
             else:
-                fluid.io.save_inference_model(dirname, feed_varnames, fetch_vars, self.exe)
+                fluid.io.save_inference_model(dirname, feed_varnames, fetch_vars, self._exe)
             self.inference_models.append((epoch_id, dirname))
 
         def save_persistables():
@@ -104,9 +103,9 @@ class TranspileTrainer(Trainer):
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                fleet.save_persistables(self.exe, dirname)
+                fleet.save_persistables(dirname)
             else:
-                fluid.io.save_persistables(self.exe, dirname)
+                fluid.io.save_persistables(self._exe, dirname)
             self.increment_models.append((epoch_id, dirname))
 
         save_persistables()
