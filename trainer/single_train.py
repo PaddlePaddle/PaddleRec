@@ -65,6 +65,7 @@ class SingleTrainer(Trainer):
         self.model.input()
         self.model.net()
         self.metrics = self.model.metrics()
+        self.metric_extras = self.model.metric_extras()
         loss = self.model.avg_loss()
 
         optimizer = self.model.optimizer()
@@ -80,10 +81,10 @@ class SingleTrainer(Trainer):
         context['is_exit'] = True
 
     def infer(self, context):
-        print("Need to be implement")
         context['is_exit'] = True
 
     def terminal(self, context):
+        print("clean up and exit")
         context['is_exit'] = True
 
 
@@ -162,16 +163,14 @@ class SingleTrainerWithDataset(SingleTrainer):
 
         epochs = envs.get_global_env("train.epochs")
 
-        print("fetch_list: {}".format(len(self.metrics)))
-
         for i in range(epochs):
             self.exe.train_from_dataset(program=fluid.default_main_program(),
                                         dataset=dataset,
-                                        fetch_list=self.metrics,
-                                        fetch_info=["auc ", "batch auc"],
-                                        print_period=1)
+                                        fetch_list=self.metric_extras[0],
+                                        fetch_info=self.metric_extras[1],
+                                        print_period=self.metric_extras[2])
         context['status'] = 'infer_pass'
 
 
-def infer(self, context):
-    context['status'] = 'terminal_pass'
+    def infer(self, context):
+        context['status'] = 'terminal_pass'

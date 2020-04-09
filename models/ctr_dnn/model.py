@@ -124,6 +124,12 @@ class Train(object):
 
         return self.metrics
 
+    def metric_extras(self):
+        self.metric_vars = [self.metrics[0]]
+        self.metric_alias = ["AUC"]
+        self.fetch_interval_batchs = 10 
+        return (self.metric_vars, self.metric_alias, self.fetch_interval_batchs)
+
     def optimizer(self):
         learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None ,self.namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)

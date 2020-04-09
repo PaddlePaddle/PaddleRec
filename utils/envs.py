@@ -53,7 +53,7 @@ def pretty_print_envs():
         max_k = max(max_k, len(k))
         max_v = max(max_v, len(str(v)))
 
-    h_format = "{{:^{}s}}{{:<{}s}}\n".format(max_k, max_v)
+    h_format = "{{:^{}s}}{}{{:<{}s}}\n".format(max_k, " " * spacing, max_v)
     l_format = "{{:<{}s}}{{}}{{:<{}s}}\n".format(max_k, max_v)
     length = max_k + max_v + spacing
 
