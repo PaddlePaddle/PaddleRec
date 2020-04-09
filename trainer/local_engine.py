@@ -38,7 +38,7 @@ def start_procs(args, yaml):
     user_endpoints_ips = [x.split(":")[0] for x in user_endpoints.split(",")]
     user_endpoints_port = [x.split(":")[1] for x in user_endpoints.split(",")]
 
-    factory = "eleps.trainer.factory"
+    factory = "fleet_rec.trainer.factory"
     cmd = [sys.executable, "-u", "-m", factory, yaml]
 
     for i in range(server_num):

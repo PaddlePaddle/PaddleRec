@@ -23,11 +23,11 @@ import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
 
-from eleps.utils import fs as fs
-from eleps.utils import util as util
-from eleps.metrics.auc_metrics import AUCMetric
-from eleps.models import base as model_basic
-from eleps.reader import dataset
+from fleet_rec.utils import fs as fs
+from fleet_rec.utils import util as util
+from fleet_rec.metrics.auc_metrics import AUCMetric
+from fleet_rec.models import base as model_basic
+from fleet_rec.reader import dataset
 from .trainer import Trainer
 
 

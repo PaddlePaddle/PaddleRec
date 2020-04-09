@@ -26,7 +26,7 @@
 
 import os
 
-from eleps.trainer.factory import TrainerFactory
+from fleet_rec.trainer.factory import TrainerFactory
 
 if __name__ == "__main__":
 

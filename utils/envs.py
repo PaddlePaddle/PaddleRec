@@ -70,7 +70,7 @@ def pretty_print_envs(envs, header=None):
     if header:
         draws += h_format.format(header[0], header[1])
     else:
-        draws += h_format.format("Eleps Global Envs", "Value")
+        draws += h_format.format("fleet_rec Global Envs", "Value")
 
     draws += line + "\n"
 

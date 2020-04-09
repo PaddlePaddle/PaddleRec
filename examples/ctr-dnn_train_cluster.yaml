@@ -41,11 +41,11 @@ train:
   reader:
     mode: "dataset"
     batch_size: 2
-    pipe_command: "python /paddle/eleps/models/ctr_dnn/dataset.py"
-    train_data_path: "/paddle/eleps/models/ctr_dnn/data/train"
+    pipe_command: "python /paddle/fleet_rec/models/ctr_dnn/dataset.py"
+    train_data_path: "/paddle/fleet_rec/models/ctr_dnn/data/train"
 
   model:
-    models: "eleps.models.ctr_dnn.model"
+    models: "fleet_rec.models.ctr_dnn.model"
     hyper_parameters:
       sparse_inputs_slots: 27
       sparse_feature_number: 1000001

@@ -15,7 +15,7 @@
 import math
 import paddle.fluid as fluid
 
-from eleps.utils import envs
+from fleet_rec.utils import envs
 
 
 class Train(object):
