@@ -29,16 +29,16 @@ import sys
 
 import yaml
 
-from fleet_rec.trainer.single_trainer import SingleTrainerWithDataloader
-from fleet_rec.trainer.single_trainer import SingleTrainerWithDataset
+from fleetrec.trainer.single_trainer import SingleTrainerWithDataloader
+from fleetrec.trainer.single_trainer import SingleTrainerWithDataset
 
-from fleet_rec.trainer.cluster_trainer import ClusterTrainerWithDataloader
-from fleet_rec.trainer.cluster_trainer import ClusterTrainerWithDataset
+from fleetrec.trainer.cluster_trainer import ClusterTrainerWithDataloader
+from fleetrec.trainer.cluster_trainer import ClusterTrainerWithDataset
 
-from fleet_rec.trainer.local_engine import Launch
-from fleet_rec.trainer.ctr_trainer import CtrPaddleTrainer
+from fleetrec.trainer.local_engine import Launch
+from fleetrec.trainer.ctr_trainer import CtrPaddleTrainer
 
-from fleet_rec.utils import envs
+from fleetrec.utils import envs
 
 
 def str2bool(v):
@@ -103,7 +103,7 @@ class TrainerFactory(object):
             with open(config, 'r') as rb:
                 _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
         else:
-            raise ValueError("fleet_rec's config only support yaml")
+            raise ValueError("fleetrec's config only support yaml")
 
         envs.set_global_envs(_config)
         mode = envs.get_global_env("train.trainer")

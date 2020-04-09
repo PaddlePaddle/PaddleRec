@@ -24,51 +24,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-train:
-  threads: 12
-  epochs: 10
-  trainer:  "ClusterTraining"
-  container: "local"
+import os
 
-  pserver_num: 2
-  trainer_num: 2
-  start_port: 36001
-  log_dirname: "logs"
+from fleetrec.trainer.factory import TrainerFactory
 
-  strategy:
-    mode: "async"
+if __name__ == "__main__":
 
-  reader:
-    mode: "dataset"
-    batch_size: 2
-    pipe_command: "python /paddle/fleet_rec/models/ctr_dnn/dataset.py"
-    train_data_path: "/paddle/fleet_rec/models/ctr_dnn/data/train"
-
-  model:
-    models: "fleet_rec.models.ctr_dnn.model"
-    hyper_parameters:
-      sparse_inputs_slots: 27
-      sparse_feature_number: 1000001
-      sparse_feature_dim: 8
-      dense_input_dim: 13
-      fc_sizes: [512, 256, 128, 32]
-      learning_rate: 0.001
-
-  save:
-    increment:
-      dirname: "models_for_increment"
-      epoch_interval: 2
-      save_last: True
-    inference:
-      dirname: "models_for_inference"
-      epoch_interval: 4
-      feed_varnames: ["C1", "C2", "C3"]
-      fetch_varnames: "predict"
-      save_last: True
-
-evaluate:
-  batch_size: 32
-  train_thread_num: 12
-  reader: "reader.py"
-
-
+    abs_dir = os.path.dirname(os.path.abspath(__file__))
+    yaml = os.path.join(abs_dir, 'ctr-dnn_train_cluster.yaml')
+    trainer = TrainerFactory.create(yaml)
+    trainer.run()
