@@ -25,17 +25,31 @@
 # limitations under the License.
 
 import os
+import sys
+
 import yaml
 
-from eleps.trainer.single_train import SingleTrainerWithDataloader
-from eleps.trainer.single_train import SingleTrainerWithDataset
+from eleps.trainer.single_trainer import SingleTrainerWithDataloader
+from eleps.trainer.single_trainer import SingleTrainerWithDataset
 
-from eleps.trainer.cluster_train import ClusterTrainerWithDataloader
-from eleps.trainer.cluster_train import ClusterTrainerWithDataset
+from eleps.trainer.cluster_trainer import ClusterTrainerWithDataloader
+from eleps.trainer.cluster_trainer import ClusterTrainerWithDataset
 
+from eleps.trainer.local_engine import local_launch
 from eleps.trainer.ctr_trainer import CtrPaddleTrainer
 
 from eleps.utils import envs
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise ValueError('Boolean value expected.')
 
 
 class TrainerFactory(object):
@@ -44,6 +58,8 @@ class TrainerFactory(object):
 
     @staticmethod
     def _build_trainer(config):
+        print(envs.pretty_print_envs(envs.get_global_envs()))
+
         train_mode = envs.get_global_env("train.trainer")
         reader_mode = envs.get_global_env("train.reader.mode")
         if train_mode == "SingleTraining":
@@ -68,22 +84,40 @@ class TrainerFactory(object):
         return trainer
 
     @staticmethod
+    def _build_engine(yaml_config):
+        cluster_envs = {}
+        cluster_envs["server_num"] = envs.get_global_env("train.pserver_num")
+        cluster_envs["worker_num"] = envs.get_global_env("train.pserver_num")
+        cluster_envs["start_port"] = envs.get_global_env("train.start_port")
+        cluster_envs["log_dir"] = envs.get_global_env("train.log_dirname")
+
+        envs.pretty_print_envs(cluster_envs, ("Cluster Global Envs", "Value"))
+
+        local_launch(cluster_envs, yaml_config)
+
+    @staticmethod
     def create(config):
         _config = None
-        if isinstance(config, dict):
-            _config = config
-        elif isinstance(config, str):
-            if os.path.exists(config) and os.path.isfile(config):
-                with open(config, 'r') as rb:
-                    _config = yaml.load(rb.read())
+        if os.path.exists(config) and os.path.isfile(config):
+            with open(config, 'r') as rb:
+                _config = yaml.load(rb.read())
         else:
-            raise ValueError("unknown config about eleps")
+            raise ValueError("eleps's config only support yaml")
 
         envs.set_global_envs(_config)
+        train_mode = envs.get_global_env("train.trainer")
+        instance = str2bool(os.getenv("CLUSTER_INSTANCE", "0"))
 
-        print(envs.pretty_print_envs())
-
-        trainer = TrainerFactory._build_trainer(_config)
+        if train_mode == "LocalClusterTraining" and not instance:
+            trainer = TrainerFactory._build_engine(config)
+        else:
+            trainer = TrainerFactory._build_trainer(_config)
 
         return trainer
 
+
+# server num, worker num
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        raise ValueError("need a yaml file path argv")
+    TrainerFactory.create(sys.argv[1])

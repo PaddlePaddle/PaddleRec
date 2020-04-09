@@ -13,82 +13,30 @@
 # limitations under the License.
 
 """
-Training use fluid with one node only.
+Training use fluid with DistributeTranspiler
 """
-
-from __future__ import print_function
 import os
-import time
-import numpy as np
-import logging
+
 import paddle.fluid as fluid
+
+from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 
 from .trainer import Trainer
 from ..utils import envs
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("fluid")
-logger.setLevel(logging.INFO)
 
-
-class SingleTrainer(Trainer):
+class TranspileTrainer(Trainer):
     def __init__(self, config=None):
         Trainer.__init__(self, config)
+        self.exe = fluid.Executor(fluid.CPUPlace())
+        self.processor_register()
 
         self.inference_models = []
         self.increment_models = []
 
-        self.exe = fluid.Executor(fluid.CPUPlace())
+    def processor_register(self):
+        print("Need implement by trainer, `self.regist_context_processor('uninit', self.instance)` must be the first")
 
-        self.regist_context_processor('uninit', self.instance)
-        self.regist_context_processor('init_pass', self.init)
-        self.regist_context_processor('train_pass', self.train)
-        self.regist_context_processor('infer_pass', self.infer)
-        self.regist_context_processor('terminal_pass', self.terminal)
-
-    def instance(self, context):
-
-        models = envs.get_global_env("train.model.models")
-        model_package = __import__(models, globals(), locals(), models.split("."))
-
-        train_model = getattr(model_package, 'Train')
-
-        self.model = train_model()
-
-        context['status'] = 'init_pass'
-
-    def init(self, context):
-        self.model.input()
-        self.model.net()
-        self.metrics = self.model.metrics()
-        self.metric_extras = self.model.metric_extras()
-        loss = self.model.avg_loss()
-
-        optimizer = self.model.optimizer()
-        optimizer.minimize(loss)
-
-        # run startup program at once
-        self.exe.run(fluid.default_startup_program())
-
-        context['status'] = 'train_pass'
-
-    def train(self, context):
-        print("Need to be implement")
-        context['is_exit'] = True
-
-    def infer(self, context):
-        context['is_exit'] = True
-
-    def terminal(self, context):
-        print("clean up and exit")
-        context['is_exit'] = True
-
-
-class SingleTrainerWithDataloader(SingleTrainer):
-    pass
-
-
-class SingleTrainerWithDataset(SingleTrainer):
     def _get_dataset(self):
         namespace = "train.reader"
 
@@ -97,7 +45,6 @@ class SingleTrainerWithDataset(SingleTrainer):
         batch_size = envs.get_global_env("batch_size", None, namespace)
         pipe_command = envs.get_global_env("pipe_command", None, namespace)
         train_data_path = envs.get_global_env("train_data_path", None, namespace)
-
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
@@ -112,14 +59,14 @@ class SingleTrainerWithDataset(SingleTrainer):
         dataset.set_filelist(file_list)
         return dataset
 
-    def save(self, epoch_id, namespace):
+    def save(self, epoch_id, namespace, is_fleet=False):
         def need_save(epoch_id, epoch_interval, is_last=False):
             if is_last:
                 return True
-        
+
             if epoch_id == -1:
                 return False
-        
+
             return epoch_id % epoch_interval == 0
 
         def save_inference_model():
@@ -138,9 +85,12 @@ class SingleTrainerWithDataset(SingleTrainer):
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
-            fluid.io.save_inference_model(dirname, feed_varnames, fetch_vars, self.exe)
+
+            if is_fleet:
+                fleet.save_inference_model(dirname, feed_varnames, fetch_vars, self.exe)
+            else:
+                fluid.io.save_inference_model(dirname, feed_varnames, fetch_vars, self.exe)
             self.inference_models.append((epoch_id, dirname))
-            
 
         def save_persistables():
             save_interval = envs.get_global_env("save.increment.epoch_interval", -1, namespace)
@@ -152,31 +102,34 @@ class SingleTrainerWithDataset(SingleTrainer):
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
-            fluid.io.save_persistables(self.exe, dirname)
+
+            if is_fleet:
+                fleet.save_persistables(self.exe, dirname)
+            else:
+                fluid.io.save_persistables(self.exe, dirname)
             self.increment_models.append((epoch_id, dirname))
 
         save_persistables()
         save_inference_model()
 
+    def instance(self, context):
+        models = envs.get_global_env("train.model.models")
+        model_package = __import__(models, globals(), locals(), models.split("."))
+        train_model = getattr(model_package, 'Train')
+        self.model = train_model()
+        context['status'] = 'init_pass'
+
+    def init(self, context):
+        print("Need to be implement")
+        context['is_exit'] = True
+
     def train(self, context):
-        dataset = self._get_dataset()
-
-        epochs = envs.get_global_env("train.epochs")
-
-        for i in range(epochs):
-            self.exe.train_from_dataset(program=fluid.default_main_program(),
-                                        dataset=dataset,
-                                        fetch_list=self.metric_extras[0],
-                                        fetch_info=self.metric_extras[1],
-                                        print_period=self.metric_extras[2])
-            self.save(i, "train")
-        context['status'] = 'infer_pass'
-
+        print("Need to be implement")
+        context['is_exit'] = True
 
     def infer(self, context):
-        context['status'] = 'terminal_pass'
+        context['is_exit'] = True
 
     def terminal(self, context):
-        for model in self.increment_models:
-            print("epoch :{}, dir: {}".format(model[0], model[1]))
+        print("clean up and exit")
         context['is_exit'] = True

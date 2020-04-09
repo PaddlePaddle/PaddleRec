@@ -44,12 +44,16 @@ def get_global_env(env_name, default_value=None, namespace=None):
     return global_envs.get(_env_name, default_value)
 
 
-def pretty_print_envs():
+def get_global_envs():
+    return global_envs
+
+
+def pretty_print_envs(envs, header):
     spacing = 5
     max_k = 45
     max_v = 20
 
-    for k, v in global_envs.items():
+    for k, v in envs.items():
         max_k = max(max_k, len(k))
         max_v = max(max_v, len(str(v)))
 
@@ -62,14 +66,18 @@ def pretty_print_envs():
 
     draws = ""
     draws += border + "\n"
-    draws += h_format.format("Eleps Global Envs", "Value")
+
+    if header:
+        draws += h_format.format(header[0], header[1])
+    else:
+        draws += h_format.format("Eleps Global Envs", "Value")
+
     draws += line + "\n"
 
-    for k, v in global_envs.items():
+    for k, v in envs.items():
         draws += l_format.format(k, " " * spacing, str(v))
 
     draws += border
 
     _str = "\n{}\n".format(draws)
     return _str
-
