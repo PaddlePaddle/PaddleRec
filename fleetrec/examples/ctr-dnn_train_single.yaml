@@ -35,8 +35,8 @@ train:
   reader:
     mode: "dataset"
     batch_size: 2 
-    pipe_command: "python /paddle/fleetrec/models/ctr_dnn/dataset.py"
-    train_data_path: "/paddle/fleetrec/models/ctr_dnn/data/train"
+    pipe_command: "python /paddle/eleps/fleetrec/models/ctr_dnn/dataset.py"
+    train_data_path: "/paddle/eleps/fleetrec/models/ctr_dnn/data/train"
 
   model:
     models: "fleetrec.models.ctr_dnn.model"

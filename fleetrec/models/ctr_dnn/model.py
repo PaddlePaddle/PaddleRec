@@ -21,7 +21,7 @@ from fleetrec.models.base import Model
 
 class Train(Model):
     def __init__(self, config):
-        super().__init__(config)
+        Model.__init__(self, config)
         self.namespace = "train.model"
 
     def input(self):

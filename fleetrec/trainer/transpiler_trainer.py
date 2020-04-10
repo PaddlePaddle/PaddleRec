@@ -29,7 +29,7 @@ class TranspileTrainer(Trainer):
     def __init__(self, config=None):
         Trainer.__init__(self, config)
         self.processor_register()
-
+        self.model = None
         self.inference_models = []
         self.increment_models = []
 
@@ -115,7 +115,7 @@ class TranspileTrainer(Trainer):
         models = envs.get_global_env("train.model.models")
         model_package = __import__(models, globals(), locals(), models.split("."))
         train_model = getattr(model_package, 'Train')
-        self.model = train_model()
+        self.model = train_model(None)
         context['status'] = 'init_pass'
 
     def init(self, context):
