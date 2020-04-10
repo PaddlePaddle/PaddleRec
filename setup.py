@@ -4,7 +4,8 @@ setup for fleet-rec.
 
 from setuptools import setup
 
-packages = ["fleetrec", "fleetrec.examples", "fleetrec.metrics", "fleetrec.models", "fleetrec.reader",
+packages = ["fleetrec", "fleetrec.examples", "fleetrec.metrics", "fleetrec.models", "fleetrec.models.ctr_dnn",
+            "fleetrec.reader",
             "fleetrec.trainer", "fleetrec.utils"]
 
 requires = [
@@ -18,7 +19,6 @@ about["__description__"] = "fleet-rec"
 about["__author__"] = "seiriosPlus"
 about["__author_email__"] = "tangwei12@baidu.com"
 about["__url__"] = "https://github.com/seiriosPlus/FleetRec"
-
 
 readme = "..."
 

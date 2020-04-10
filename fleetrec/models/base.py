@@ -78,7 +78,7 @@ class Model(object):
         self._cost = None
         self._metrics = {}
         self._data_var = []
-        self._fetch_interval = 10
+        self._fetch_interval = 20
 
     def get_cost_op(self):
         """R
