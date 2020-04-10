@@ -71,7 +71,7 @@ class ClusterTrainerWithDataset(TranspileTrainer):
 
     def init(self, context):
         self.model.input()
-        self.model.net()
+        self.model.build_model()
         self.model.metrics()
         self.model.avg_loss()
         optimizer = self.model.optimizer()
@@ -112,7 +112,7 @@ class ClusterTrainerWithDataset(TranspileTrainer):
                                          fetch_info=self.fetch_alias,
                                          print_period=self.fetch_period)
             self.save(i, "train", is_fleet=True)
-        context['status'] = 'infer_pass'
+        context['status'] = 'terminal_pass'
         fleet.stop_worker()
 
     def infer(self, context):

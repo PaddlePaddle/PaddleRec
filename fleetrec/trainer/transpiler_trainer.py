@@ -103,7 +103,7 @@ class TranspileTrainer(Trainer):
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                fleet.save_persistables(dirname)
+                fleet.save_persistables(self._exe, dirname)
             else:
                 fluid.io.save_persistables(self._exe, dirname)
             self.increment_models.append((epoch_id, dirname))
