@@ -8,13 +8,17 @@ packages = ["fleetrec", "fleetrec.examples", "fleetrec.metrics", "fleetrec.model
             "fleetrec.trainer", "fleetrec.utils"]
 
 requires = [
-    "paddlepaddle>=1.6.2"
+    "paddlepaddle"
 ]
 
 about = {}
 about["__title__"] = "fleet-rec"
 about["__version__"] = "0.0.2"
 about["__description__"] = "fleet-rec"
+about["__author__"] = "seiriosPlus"
+about["__author_email__"] = "tangwei12@baidu.com"
+about["__url__"] = "https://github.com/seiriosPlus/FleetRec"
+
 
 readme = "..."
 
@@ -27,19 +31,17 @@ setup(
     author_email=about["__author_email__"],
     url=about["__url__"],
     packages=packages,
-    python_requires=">=3.0, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3*",
+    python_requires=">=2.7",
     install_requires=requires,
     zip_safe=False
 )
 
 print('''
 \033[32m
-███████╗██╗     ███████╗███████╗████████╗
-██╔════╝██║     ██╔════╝██╔════╝╚══██╔══╝
-█████╗  ██║     █████╗  █████╗     ██║   
-██╔══╝  ██║     ██╔══╝  ██╔══╝     ██║   
-██║     ███████╗███████╗███████╗   ██║   
-╚═╝     ╚══════╝╚══════╝╚══════╝   ╚═╝   
+  _   _   _   _   _   _   _   _   _  
+ / \ / \ / \ / \ / \ / \ / \ / \ / \ 
+( F | L | E | E | T | - | R | E | C )
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
 \033[0m
 \033[34m
 Installation Complete. Congratulations!
