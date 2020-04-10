@@ -46,29 +46,35 @@ class SingleTrainerWithDataset(TranspileTrainer):
     def init(self, context):
         self.model.input()
         self.model.net()
-        self.metrics = self.model.metrics()
-        self.metric_extras = self.model.metric_extras()
-
-        loss = self.model.avg_loss()
+        self.model.metrics()
+        self.model.avg_loss()
         optimizer = self.model.optimizer()
-        optimizer.minimize(loss)
+        optimizer.minimize(self.model._cost)
 
+        self.fetch_vars = []
+        self.fetch_alias = []
+        self.fetch_period = self.model.get_fetch_period()
+
+        metrics = self.model.get_metrics()
+        if metrics:
+            self.fetch_vars = metrics.values()
+            self.fetch_alias = metrics.keys()
         context['status'] = 'train_pass'
 
     def train(self, context):
         # run startup program at once
-        self.exe.run(fluid.default_startup_program())
+        self._exe.run(fluid.default_startup_program())
 
         dataset = self._get_dataset()
 
         epochs = envs.get_global_env("train.epochs")
 
         for i in range(epochs):
-            self.exe.train_from_dataset(program=fluid.default_main_program(),
-                                        dataset=dataset,
-                                        fetch_list=self.metric_extras[0],
-                                        fetch_info=self.metric_extras[1],
-                                        print_period=self.metric_extras[2])
+            self._exe.train_from_dataset(program=fluid.default_main_program(),
+                                         dataset=dataset,
+                                         fetch_list=self.fetch_vars,
+                                         fetch_info=self.fetch_alias,
+                                         print_period=self.fetch_period)
             self.save(i, "train", is_fleet=False)
         context['status'] = 'infer_pass'
 

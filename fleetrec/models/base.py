@@ -85,7 +85,7 @@ class Model(object):
         self._cost = None
         self._metrics = {}
         self._data_var = []
-        pass
+        self._fetch_interval = 10
 
     def get_cost_op(self):
         """R
@@ -96,6 +96,9 @@ class Model(object):
         """R
         """
         return self._metrics
+
+    def get_fetch_period(self):
+        return self._fetch_interval
 
     @abc.abstractmethod
     def shrink(self, params):
@@ -169,6 +172,7 @@ class Model(object):
 class YamlModel(Model):
     """R
     """
+
     def __init__(self, config):
         """R
         """
@@ -218,7 +222,7 @@ class YamlModel(Model):
                             inference_param = extend_output['inference_param']
                             param_name = inference_param['name']
                             if param_name not in self._build_param['table']:
-                                self._build_param['table'][param_name] = {'params' :[]}
+                                self._build_param['table'][param_name] = {'params': []}
                                 table_meta = table.TableMeta.alloc_new_table(inference_param['table_id'])
                                 self._build_param['table'][param_name]['_meta'] = table_meta
                             self._build_param['table'][param_name]['params'] += inference_param['params']

@@ -16,24 +16,17 @@ import math
 import paddle.fluid as fluid
 
 from fleetrec.utils import envs
+from fleetrec.models.base import Model
 
 
-class Train(object):
-
-    def __init__(self):
-        self.sparse_inputs = []
-        self.dense_input = None
-        self.label_input = None
-
-        self.sparse_input_varnames = []
-        self.dense_input_varname = None
-        self.label_input_varname = None
-        
+class Train(Model):
+    def __init__(self, config):
+        super().__init__(config)
         self.namespace = "train.model"
 
     def input(self):
         def sparse_inputs():
-            ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None ,self.namespace)
+            ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None, self.namespace)
 
             sparse_input_ids = [
                 fluid.layers.data(name="C" + str(i),
@@ -44,7 +37,7 @@ class Train(object):
             return sparse_input_ids, [var.name for var in sparse_input_ids]
 
         def dense_input():
-            dim = envs.get_global_env("hyper_parameters.dense_input_dim", None ,self.namespace)
+            dim = envs.get_global_env("hyper_parameters.dense_input_dim", None, self.namespace)
 
             dense_input_var = fluid.layers.data(name="dense_input",
                                                 shape=[dim],
@@ -65,10 +58,10 @@ class Train(object):
     def input_varnames(self):
         return [input.name for input in self.input_vars()]
 
-    def net(self):
+    def build_model(self):
         def embedding_layer(input):
-            sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None ,self.namespace)
-            sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None ,self.namespace)
+            sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self.namespace)
+            sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self.namespace)
 
             emb = fluid.layers.embedding(
                 input=input,
@@ -94,7 +87,7 @@ class Train(object):
         concated = fluid.layers.concat(sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
-        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None ,self.namespace)
+        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None, self.namespace)
 
         for size in hidden_layers:
             fcs.append(fc(fcs[-1], size))
@@ -111,29 +104,33 @@ class Train(object):
 
     def avg_loss(self):
         cost = fluid.layers.cross_entropy(input=self.predict, label=self.label_input)
-        avg_cost = fluid.layers.reduce_sum(cost)
-        self.loss = avg_cost
-        return avg_cost
+        avg_cost = fluid.layers.reduce_mean(cost)
+        self._cost = avg_cost
 
     def metrics(self):
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
                                              label=self.label_input,
                                              num_thresholds=2 ** 12,
                                              slide_steps=20)
-        self.metrics = (auc, batch_auc)
-
-        return self.metrics
-
-    def metric_extras(self):
-        self.metric_vars = [self.metrics[0]]
-        self.metric_alias = ["AUC"]
-        self.fetch_interval_batchs = 10 
-        return (self.metric_vars, self.metric_alias, self.fetch_interval_batchs)
+        self._metrics["AUC"] = auc
+        self._metrics["BATCH_AUC"] = batch_auc
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None ,self.namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self.namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
+
+    def dump_model_program(self, path):
+        pass
+
+    def dump_inference_param(self, params):
+        pass
+
+    def dump_inference_program(self, inference_layer, path):
+        pass
+
+    def shrink(self, params):
+        pass
 
 
 class Evaluate(object):

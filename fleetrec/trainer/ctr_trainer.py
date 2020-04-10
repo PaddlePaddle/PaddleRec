@@ -82,10 +82,6 @@ class CtrPaddleTrainer(Trainer):
         config['output_path'] = util.get_absolute_path(
             config['output_path'], config['io']['afs'])
 
-        self._place = fluid.CPUPlace()
-        self._exe = fluid.Executor(self._place)
-        self._exector_context = {}
-
         self.global_config = config
         self._metrics = {}
 

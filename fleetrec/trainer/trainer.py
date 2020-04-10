@@ -15,19 +15,23 @@
 import abc
 import time
 import yaml
+from paddle import fluid
 
-from .. utils import envs
+from ..utils import envs
 
 
 class Trainer(object):
     """R
-    """   
+    """
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config=None):
         self._status_processor = {}
+        self._place = fluid.CPUPlace()
+        self._exe = fluid.Executor(self._place)
+        self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
-       
+
     def regist_context_processor(self, status_name, processor):
         """
         regist a processor for specify status
@@ -46,7 +50,7 @@ class Trainer(object):
             self._status_processor[context['status']](context)
         else:
             self.other_status_processor(context)
-    
+
     def other_status_processor(self, context):
         """
         if no processor match context.status, use defalut processor
