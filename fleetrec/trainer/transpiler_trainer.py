@@ -38,7 +38,7 @@ class TranspileTrainer(Trainer):
     def _get_dataset(self):
         namespace = "train.reader"
 
-        inputs = self.model.inputs()
+        inputs = self.model.get_inputs()
         threads = envs.get_global_env("train.threads", None)
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
@@ -115,7 +115,7 @@ class TranspileTrainer(Trainer):
 
     def instance(self, context):
         models = envs.get_global_env("train.model.models")
-        model_class = envs.lazy_instance(models, "TrainModel")
+        model_class = envs.lazy_instance(models, "Model")
         self.model = model_class(None)
         context['status'] = 'init_pass'
 

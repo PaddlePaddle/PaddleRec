@@ -80,7 +80,7 @@ class ModelBase(object):
         self._data_var = []
         self._fetch_interval = 20
 
-    def get_input(self):
+    def get_inputs(self):
         return self._data_var
 
     def get_cost_op(self):

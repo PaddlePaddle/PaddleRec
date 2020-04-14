@@ -52,9 +52,11 @@ class Model(ModelBase):
         self.dense_input = dense_input()
         self.label_input = label_input()
 
+        self._data_var.append(self.dense_input)
+
         for input in self.sparse_inputs:
             self._data_var.append(input)
-        self._data_var.append(self.dense_input)
+
         self._data_var.append(self.label_input)
 
     def net(self):
