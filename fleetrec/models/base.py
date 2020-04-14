@@ -99,30 +99,6 @@ class Model(object):
         """
         pass
 
-    @abc.abstractmethod
-    def shrink(self, params):
-        """R
-        """
-        pass
-
-    @abc.abstractmethod
-    def dump_model_program(self, path):
-        """R
-        """
-        pass
-
-    @abc.abstractmethod
-    def dump_inference_param(self, params):
-        """R
-        """
-        pass
-
-    @abc.abstractmethod
-    def dump_inference_program(self, inference_layer, path):
-        """R
-        """
-        pass
-
 
 class YamlModel(Model):
     """R
