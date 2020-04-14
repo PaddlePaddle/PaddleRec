@@ -26,7 +26,8 @@ class Reader(dg.MultiSlotDataGenerator):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
-        super().__init__()
+        dg.MultiSlotDataGenerator.__init__(self)
+
         if os.path.exists(config) and os.path.isfile(config):
             with open(config, 'r') as rb:
                 _config = yaml.load(rb.read(), Loader=yaml.FullLoader)

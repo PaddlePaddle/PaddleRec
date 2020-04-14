@@ -30,14 +30,14 @@ class TrainerFactory(object):
         pass
 
     @staticmethod
-    def _build_trainer(config):
+    def _build_trainer(config, yaml_path):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
         train_mode = envs.get_global_env("train.trainer")
         if train_mode == "SingleTraining":
-            trainer = SingleTrainer(config)
+            trainer = SingleTrainer(yaml_path)
         elif train_mode == "ClusterTraining":
-            trainer = ClusterTrainer(config)
+            trainer = ClusterTrainer(yaml_path)
         elif train_mode == "CtrTrainer":
             trainer = CtrPaddleTrainer(config)
         else:
@@ -75,7 +75,7 @@ class TrainerFactory(object):
         if mode == "ClusterTraining" and container == "local" and not instance:
             trainer = TrainerFactory._build_engine(config)
         else:
-            trainer = TrainerFactory._build_trainer(_config)
+            trainer = TrainerFactory._build_trainer(_config, config)
 
         return trainer
 
