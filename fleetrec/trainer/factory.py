@@ -42,7 +42,7 @@ class TrainerFactory(object):
         elif train_mode == "CtrTrainer":
             trainer = CtrPaddleTrainer(config)
         elif train_mode == "UserDefineTrainer":
-            train_location = envs.get_global_env("train.trainer.location")
+            train_location = envs.get_global_env("train.location")
             train_dirname = os.path.dirname(train_location)
             base_name = os.path.splitext(os.path.basename(train_location))[0]
             sys.path.append(train_dirname)
