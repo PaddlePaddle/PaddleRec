@@ -28,6 +28,7 @@ class Trainer(object):
         self._exe = fluid.Executor(self._place)
         self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
+        self._config = config
 
     def regist_context_processor(self, status_name, processor):
         """

@@ -16,8 +16,8 @@ import sys
 
 from fleetrec.utils.envs import lazy_instance
 
-if len(sys.argv) != 3:
-    raise ValueError("reader only accept two argument: initialized reader class name and TRAIN/EVALUATE")
+if len(sys.argv) != 4:
+    raise ValueError("reader only accept 3 argument: 1. reader_class 2.train/evaluate 3.yaml_abs_path")
 
 reader_package = sys.argv[1]
 
@@ -26,6 +26,8 @@ if sys.argv[2] == "TRAIN":
 else:
     reader_name = "EvaluateReader"
 
+yaml_abs_path = sys.argv[3]
 reader_class = lazy_instance(reader_package, reader_name)
-reader = reader_class()
+reader = reader_class(yaml_abs_path)
+reader.init()
 reader.run_from_stdin()

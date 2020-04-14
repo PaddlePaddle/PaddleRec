@@ -44,7 +44,7 @@ class TranspileTrainer(Trainer):
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '..', 'reader_implement.py')
-        pipe_cmd = "python {} {} {}".format(reader, reader_class, "TRAIN")
+        pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN", self._config)
         train_data_path = envs.get_global_env("train_data_path", None, namespace)
 
         dataset = fluid.DatasetFactory().create_dataset()

@@ -35,9 +35,9 @@ class TrainerFactory(object):
 
         train_mode = envs.get_global_env("train.trainer")
         if train_mode == "SingleTraining":
-            trainer = SingleTrainer()
+            trainer = SingleTrainer(config)
         elif train_mode == "ClusterTraining":
-            trainer = ClusterTrainer()
+            trainer = ClusterTrainer(config)
         elif train_mode == "CtrTrainer":
             trainer = CtrPaddleTrainer(config)
         else:

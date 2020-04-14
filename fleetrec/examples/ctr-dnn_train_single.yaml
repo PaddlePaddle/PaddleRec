@@ -29,12 +29,8 @@ train:
   epochs: 10
   trainer:  "SingleTraining"
 
-  strategy:
-    mode: "async"
-
   reader:
-    mode: "dataset"
-    batch_size: 2 
+    batch_size: 2
     pipe_command: "python /paddle/eleps/fleetrec/models/ctr_dnn/dataset.py"
     train_data_path: "/paddle/eleps/fleetrec/models/ctr_dnn/data/train"
 
@@ -56,8 +52,6 @@ train:
     inference:
       dirname: "models_for_inference"
       epoch_interval: 4
-      feed_varnames: ["C1", "C2", "C3"]
-      fetch_varnames: "predict"
       save_last: True
 
 evaluate:

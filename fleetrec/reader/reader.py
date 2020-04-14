@@ -14,12 +14,26 @@
 from __future__ import print_function
 
 import abc
+import os
 
 import paddle.fluid.incubate.data_generator as dg
+import yaml
+
+from fleetrec.utils import envs
 
 
 class Reader(dg.MultiSlotDataGenerator):
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, config):
+        super().__init__()
+        if os.path.exists(config) and os.path.isfile(config):
+            with open(config, 'r') as rb:
+                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        else:
+            raise ValueError("reader config only support yaml")
+
+        envs.set_global_envs(_config)
 
     @abc.abstractmethod
     def init(self):

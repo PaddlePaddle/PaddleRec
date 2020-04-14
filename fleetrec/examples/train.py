@@ -31,6 +31,6 @@ from fleetrec.trainer.factory import TrainerFactory
 if __name__ == "__main__":
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
-    yaml = os.path.join(abs_dir, 'ctr-dnn_train_cluster.yaml')
+    yaml = os.path.join(abs_dir, 'ctr-dnn_train_single.yaml')
     trainer = TrainerFactory.create(yaml)
     trainer.run()
