@@ -37,12 +37,9 @@ class SingleTrainer(TranspileTrainer):
         self.regist_context_processor('terminal_pass', self.terminal)
 
     def init(self, context):
-        self.model.input()
-        self.model.net()
-        self.model.metrics()
-        self.model.avg_loss()
+        self.model.train_net()
         optimizer = self.model.optimizer()
-        optimizer.minimize(self.model._cost)
+        optimizer.minimize((self.model.get_cost_op()))
 
         self.fetch_vars = []
         self.fetch_alias = []

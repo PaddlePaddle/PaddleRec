@@ -28,7 +28,6 @@ class UserDefineTrainer(TranspileTrainer):
         self.regist_context_processor('train_pass', self.train)
 
     def init(self, context):
-        self.model.input()
         self.model.net()
         self.model.metrics()
         self.model.avg_loss()

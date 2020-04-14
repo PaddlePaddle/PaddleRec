@@ -63,11 +63,11 @@ def create(config):
     model = None
     if config['mode'] == 'fluid':
         model = YamlModel(config)
-        model.net()
+        model.train_net()
     return model
 
 
-class Model(object):
+class ModelBase(object):
     """R
     """
     __metaclass__ = abc.ABCMeta
@@ -79,6 +79,9 @@ class Model(object):
         self._metrics = {}
         self._data_var = []
         self._fetch_interval = 20
+
+    def get_input(self):
+        return self._data_var
 
     def get_cost_op(self):
         """R
@@ -94,20 +97,23 @@ class Model(object):
         return self._fetch_interval
 
     @abc.abstractmethod
-    def net(self):
+    def train_net(self):
         """R
         """
         pass
 
+    def infer_net(self):
+        pass
 
-class YamlModel(Model):
+
+class YamlModel(ModelBase):
     """R
     """
 
     def __init__(self, config):
         """R
         """
-        Model.__init__(self, config)
+        ModelBase.__init__(self, config)
         self._config = config
         self._name = config['name']
         f = open(config['layer_file'], 'r')
@@ -116,7 +122,7 @@ class YamlModel(Model):
         self._build_param = {'layer': {}, 'inner_layer': {}, 'layer_extend': {}, 'model': {}}
         self._inference_meta = {'dependency': {}, 'params': {}}
 
-    def net(self):
+    def train_net(self):
         """R
         build a fluid model with config
         Return:

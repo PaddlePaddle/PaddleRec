@@ -16,12 +16,12 @@ import math
 import paddle.fluid as fluid
 
 from fleetrec.utils import envs
-from fleetrec.models.base import Model
+from fleetrec.models.base import ModelBase
 
 
-class TrainModel(Model):
+class Model(ModelBase):
     def __init__(self, config):
-        Model.__init__(self, config)
+        ModelBase.__init__(self, config)
         self.namespace = "train.model"
 
     def input(self):
@@ -52,8 +52,10 @@ class TrainModel(Model):
         self.dense_input = dense_input()
         self.label_input = label_input()
 
-    def inputs(self):
-        return [self.dense_input] + self.sparse_inputs + [self.label_input]
+        for input in self.sparse_inputs:
+            self._data_var.append(input)
+        self._data_var.append(self.dense_input)
+        self._data_var.append(self.label_input)
 
     def net(self):
         def embedding_layer(input):
@@ -112,15 +114,17 @@ class TrainModel(Model):
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
 
+    def train_net(self):
+        self.input()
+        self.net()
+        self.avg_loss()
+        self.metrics()
+
     def optimizer(self):
         learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self.namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 
-
-class EvaluateModel(object):
-    def input(self):
-        pass
-
-    def net(self):
-        pass
+    def infer_net(self):
+        self.input()
+        self.net()

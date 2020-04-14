@@ -66,15 +66,11 @@ class ClusterTrainer(TranspileTrainer):
         return strategy
 
     def init(self, context):
-        self.model.input()
-        self.model.net()
-        self.model.metrics()
-        self.model.avg_loss()
+        self.model.train_net()
         optimizer = self.model.optimizer()
-
         strategy = self.build_strategy()
         optimizer = fleet.distributed_optimizer(optimizer, strategy)
-        optimizer.minimize(self.model._cost)
+        optimizer.minimize(self.model.get_cost_op())
 
         if fleet.is_server():
             context['status'] = 'server_pass'
