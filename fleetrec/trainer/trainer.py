@@ -14,10 +14,7 @@
 
 import abc
 import time
-import yaml
 from paddle import fluid
-
-from ..utils import envs
 
 
 class Trainer(object):

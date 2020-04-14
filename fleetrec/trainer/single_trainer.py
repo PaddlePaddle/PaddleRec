@@ -17,25 +17,18 @@ Training use fluid with one node only.
 """
 
 from __future__ import print_function
-import os
-import time
-import numpy as np
 import logging
 import paddle.fluid as fluid
 
-from .transpiler_trainer import TranspileTrainer
-from ..utils import envs
+from fleetrec.trainer.transpiler_trainer import TranspileTrainer
+from fleetrec.utils import envs
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
 
 
-class SingleTrainerWithDataloader(TranspileTrainer):
-    pass
-
-
-class SingleTrainerWithDataset(TranspileTrainer):
+class SingleTrainer(TranspileTrainer):
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('init_pass', self.init)

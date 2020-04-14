@@ -19,7 +19,7 @@ from fleetrec.utils import envs
 from fleetrec.models.base import Model
 
 
-class Train(Model):
+class TrainModel(Model):
     def __init__(self, config):
         Model.__init__(self, config)
         self.namespace = "train.model"
@@ -34,7 +34,7 @@ class Train(Model):
                                   lod_level=1,
                                   dtype="int64") for i in range(1, ids)
             ]
-            return sparse_input_ids, [var.name for var in sparse_input_ids]
+            return sparse_input_ids
 
         def dense_input():
             dim = envs.get_global_env("hyper_parameters.dense_input_dim", None, self.namespace)
@@ -42,23 +42,20 @@ class Train(Model):
             dense_input_var = fluid.layers.data(name="dense_input",
                                                 shape=[dim],
                                                 dtype="float32")
-            return dense_input_var, dense_input_var.name
+            return dense_input_var
 
         def label_input():
             label = fluid.layers.data(name="label", shape=[1], dtype="int64")
-            return label, label.name
+            return label
 
-        self.sparse_inputs, self.sparse_input_varnames = sparse_inputs()
-        self.dense_input, self.dense_input_varname = dense_input()
-        self.label_input, self.label_input_varname = label_input()
+        self.sparse_inputs = sparse_inputs()
+        self.dense_input = dense_input()
+        self.label_input = label_input()
 
-    def input_vars(self):
+    def inputs(self):
         return [self.dense_input] + self.sparse_inputs + [self.label_input]
 
-    def input_varnames(self):
-        return [input.name for input in self.input_vars()]
-
-    def build_model(self):
+    def net(self):
         def embedding_layer(input):
             sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self.namespace)
             sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self.namespace)
@@ -120,20 +117,8 @@ class Train(Model):
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 
-    def dump_model_program(self, path):
-        pass
 
-    def dump_inference_param(self, params):
-        pass
-
-    def dump_inference_program(self, inference_layer, path):
-        pass
-
-    def shrink(self, params):
-        pass
-
-
-class Evaluate(object):
+class EvaluateModel(object):
     def input(self):
         pass
 

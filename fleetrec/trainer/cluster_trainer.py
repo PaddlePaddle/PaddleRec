@@ -32,11 +32,7 @@ logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
 
 
-class ClusterTrainerWithDataloader(TranspileTrainer):
-    pass
-
-
-class ClusterTrainerWithDataset(TranspileTrainer):
+class ClusterTrainer(TranspileTrainer):
     def processor_register(self):
         role = PaddleCloudRoleMaker()
         fleet.init(role)
@@ -71,7 +67,7 @@ class ClusterTrainerWithDataset(TranspileTrainer):
 
     def init(self, context):
         self.model.input()
-        self.model.build_model()
+        self.model.net()
         self.model.metrics()
         self.model.avg_loss()
         optimizer = self.model.optimizer()

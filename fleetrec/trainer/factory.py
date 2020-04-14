@@ -10,46 +10,19 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
 # limitations under the License.
 
 import os
 import sys
 
 import yaml
-
-from fleetrec.trainer.single_trainer import SingleTrainerWithDataloader
-from fleetrec.trainer.single_trainer import SingleTrainerWithDataset
-
-from fleetrec.trainer.cluster_trainer import ClusterTrainerWithDataloader
-from fleetrec.trainer.cluster_trainer import ClusterTrainerWithDataset
-
 from fleetrec.trainer.local_engine import Launch
+from fleetrec.trainer.single_trainer import SingleTrainer
+from fleetrec.trainer.cluster_trainer import ClusterTrainer
 from fleetrec.trainer.ctr_trainer import CtrPaddleTrainer
 
 from fleetrec.utils import envs
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise ValueError('Boolean value expected.')
+from fleetrec.utils import util
 
 
 class TrainerFactory(object):
@@ -61,21 +34,10 @@ class TrainerFactory(object):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
         train_mode = envs.get_global_env("train.trainer")
-        reader_mode = envs.get_global_env("train.reader.mode")
         if train_mode == "SingleTraining":
-            if reader_mode == "dataset":
-                trainer = SingleTrainerWithDataset()
-            elif reader_mode == "dataloader":
-                trainer = SingleTrainerWithDataloader()
-            else:
-                raise ValueError("reader only support dataset/dataloader")
+            trainer = SingleTrainer()
         elif train_mode == "ClusterTraining":
-            if reader_mode == "dataset":
-                trainer = ClusterTrainerWithDataset()
-            elif reader_mode == "dataloader":
-                trainer = ClusterTrainerWithDataloader()
-            else:
-                raise ValueError("reader only support dataset/dataloader")
+            trainer = ClusterTrainer()
         elif train_mode == "CtrTrainer":
             trainer = CtrPaddleTrainer(config)
         else:
@@ -108,7 +70,7 @@ class TrainerFactory(object):
         envs.set_global_envs(_config)
         mode = envs.get_global_env("train.trainer")
         container = envs.get_global_env("train.container")
-        instance = str2bool(os.getenv("CLUSTER_INSTANCE", "0"))
+        instance = util.str2bool(os.getenv("CLUSTER_INSTANCE", "0"))
 
         if mode == "ClusterTraining" and container == "local" and not instance:
             trainer = TrainerFactory._build_engine(config)
@@ -124,4 +86,3 @@ if __name__ == "__main__":
         raise ValueError("need a yaml file path argv")
     trainer = TrainerFactory.create(sys.argv[1])
     trainer.run()
-

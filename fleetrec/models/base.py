@@ -63,7 +63,7 @@ def create(config):
     model = None
     if config['mode'] == 'fluid':
         model = YamlModel(config)
-        model.build_model()
+        model.net()
     return model
 
 
@@ -94,13 +94,13 @@ class Model(object):
         return self._fetch_interval
 
     @abc.abstractmethod
-    def shrink(self, params):
+    def net(self):
         """R
         """
         pass
 
     @abc.abstractmethod
-    def build_model(self):
+    def shrink(self, params):
         """R
         """
         pass
@@ -140,7 +140,7 @@ class YamlModel(Model):
         self._build_param = {'layer': {}, 'inner_layer': {}, 'layer_extend': {}, 'model': {}}
         self._inference_meta = {'dependency': {}, 'params': {}}
 
-    def build_model(self):
+    def net(self):
         """R
         build a fluid model with config
         Return:

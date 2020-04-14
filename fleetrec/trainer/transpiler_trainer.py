@@ -18,10 +18,9 @@ Training use fluid with DistributeTranspiler
 import os
 
 import paddle.fluid as fluid
-
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 
-from fleetrec.trainer import Trainer
+from fleetrec.trainer.trainer import Trainer
 from fleetrec.utils import envs
 
 
@@ -39,15 +38,18 @@ class TranspileTrainer(Trainer):
     def _get_dataset(self):
         namespace = "train.reader"
 
-        inputs = self.model.input_vars()
+        inputs = self.model.inputs()
         threads = envs.get_global_env("train.threads", None)
         batch_size = envs.get_global_env("batch_size", None, namespace)
-        pipe_command = envs.get_global_env("pipe_command", None, namespace)
+        reader_class = envs.get_global_env("class", None, namespace)
+        abs_dir = os.path.dirname(os.path.abspath(__file__))
+        reader = os.path.join(abs_dir, '..', 'reader_implement.py')
+        pipe_cmd = "python {} {} {}".format(reader, reader_class, "TRAIN")
         train_data_path = envs.get_global_env("train_data_path", None, namespace)
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
-        dataset.set_pipe_command(pipe_command)
+        dataset.set_pipe_command(pipe_cmd)
         dataset.set_batch_size(batch_size)
         dataset.set_thread(threads)
         file_list = [
