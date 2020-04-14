@@ -21,8 +21,8 @@ import paddle.fluid as fluid
 
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 
-from .trainer import Trainer
-from ..utils import envs
+from fleetrec.trainer import Trainer
+from fleetrec.utils import envs
 
 
 class TranspileTrainer(Trainer):
@@ -113,9 +113,8 @@ class TranspileTrainer(Trainer):
 
     def instance(self, context):
         models = envs.get_global_env("train.model.models")
-        model_package = __import__(models, globals(), locals(), models.split("."))
-        train_model = getattr(model_package, 'Train')
-        self.model = train_model(None)
+        model_class = envs.lazy_instance(models, "TrainNet")
+        self.model = model_class(None)
         context['status'] = 'init_pass'
 
     def init(self, context):

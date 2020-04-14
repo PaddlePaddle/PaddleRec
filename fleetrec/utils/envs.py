@@ -81,3 +81,11 @@ def pretty_print_envs(envs, header=None):
 
     _str = "\n{}\n".format(draws)
     return _str
+
+
+def lazy_instance(package, class_name):
+    models = get_global_env("train.model.models")
+    model_package = __import__(package, globals(), locals(), package.split("."))
+    instance = getattr(model_package, class_name)
+    return instance
+
