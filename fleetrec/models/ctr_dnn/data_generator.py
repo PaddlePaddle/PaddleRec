@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import print_function
-from abc import ABC
 
 from fleetrec.reader.reader import Reader
 from fleetrec.utils import envs
@@ -59,7 +58,3 @@ class TrainReader(Reader):
             yield zip(feature_name, [dense_feature] + sparse_feature + [label])
 
         return reader
-
-
-class EvaluateReader(Reader, ABC):
-    pass
