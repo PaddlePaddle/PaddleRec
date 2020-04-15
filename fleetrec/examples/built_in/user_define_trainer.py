@@ -21,6 +21,7 @@ from fleetrec.utils import envs
 class UserDefineTrainer(TranspileTrainer):
     def __init__(self, config=None):
         TranspileTrainer.__init__(self, config)
+        print("this is a demo about how to use user define trainer in fleet-rec")
 
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)

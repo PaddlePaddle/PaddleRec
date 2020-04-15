@@ -14,7 +14,7 @@
 
 import os
 
-from fleetrec.trainer.factory import TrainerFactory
+from fleetrec.core.factory import TrainerFactory
 
 if __name__ == "__main__":
 

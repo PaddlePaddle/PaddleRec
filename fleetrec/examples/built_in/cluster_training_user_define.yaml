@@ -1,0 +1,2 @@
+trainer:  "UserDefineTrainer"
+location: "/root/FleetRec/fleetrec/examples/user_define_trainer.py"

@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 train:
   threads: 12
   epochs: 10
-  trainer:  "UserDefineTrainer"
-  location: "/root/FleetRec/fleetrec/examples/user_define_trainer.py"
+  trainer:  "single_training.yaml"
 
   reader:
+    mode: "dataset"
     batch_size: 2
     class: "fleetrec.models.ctr_dnn.data_generator"
     train_data_path: "/root/FleetRec/fleetrec/models/ctr_dnn/data/train/"
@@ -31,7 +30,7 @@ train:
       sparse_feature_number: 1000001
       sparse_feature_dim: 8
       dense_input_dim: 13
-      fc_sizes: [512, 256, 128, 32] 
+      fc_sizes: [512, 256, 128, 32]
       learning_rate: 0.001
 
   save:
@@ -42,6 +41,8 @@ train:
     inference:
       dirname: "models_for_inference"
       epoch_interval: 4
+      feed_varnames: ["C1", "C2", "C3"]
+      fetch_varnames: "predict"
       save_last: True
 
 evaluate:

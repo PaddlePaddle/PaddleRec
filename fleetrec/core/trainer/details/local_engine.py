@@ -38,7 +38,7 @@ def start_procs(args, yaml):
     user_endpoints_ips = [x.split(":")[0] for x in user_endpoints.split(",")]
     user_endpoints_port = [x.split(":")[1] for x in user_endpoints.split(",")]
 
-    factory = "fleetrec.trainer.factory"
+    factory = "fleetrec.core.factory"
     cmd = [sys.executable, "-u", "-m", factory, yaml]
 
     for i in range(server_num):
@@ -91,11 +91,11 @@ def start_procs(args, yaml):
         procs[i].terminate()
     print("all parameter server are killed", file=sys.stderr)
 
-class Launch():
+
+class Launch:
     def __init__(self, envs, trainer):
         self.envs = envs
         self.trainer = trainer
 
     def run(self):
         start_procs(self.envs, self.trainer)
-
