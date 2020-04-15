@@ -20,8 +20,8 @@ import os
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 
-from fleetrec.trainer.trainer import Trainer
-from fleetrec.utils import envs
+from fleetrec.core.trainer import Trainer
+from fleetrec.core.utils import envs
 
 
 class TranspileTrainer(Trainer):
