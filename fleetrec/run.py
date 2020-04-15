@@ -54,21 +54,21 @@ if __name__ == "__main__":
         print("use 1X1 ClusterTraining at localhost to run model: {}".format(args.model))
 
         cluster_envs = {}
-        cluster_envs["train.server_num"] = 1
-        cluster_envs["train.worker_num"] = 1
-        cluster_envs["train.start_port"] = 36001
-        cluster_envs["train.log_dir"] = "logs"
-        cluster_envs["train.trainer"] = "SingleTraining"
+        cluster_envs["server_num"] = 1
+        cluster_envs["worker_num"] = 1
+        cluster_envs["start_port"] = 36001
+        cluster_envs["log_dir"] = "logs"
+        cluster_envs["train.trainer"] = "ClusterTraining"
 
         local_cluster_engine(cluster_envs, args.model)
     elif args.engine == "LocalMPI":
         print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
 
         cluster_envs = {}
-        cluster_envs["train.server_num"] = 1
-        cluster_envs["train.worker_num"] = 1
-        cluster_envs["train.start_port"] = 36001
-        cluster_envs["train.log_dir"] = "logs"
+        cluster_envs["server_num"] = 1
+        cluster_envs["worker_num"] = 1
+        cluster_envs["start_port"] = 36001
+        cluster_envs["log_dir"] = "logs"
         cluster_envs["train.trainer"] = "CtrTraining"
 
         local_mpi_engine(cluster_envs, args.model)
