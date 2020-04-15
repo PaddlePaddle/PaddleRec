@@ -12,10 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import os
 import copy
 
 global_envs = {}
+
+
+def set_runtime_envions(envs):
+    assert isinstance(envs, dict)
+
+    for k, v in envs.items():
+        os.environ[k] = v
+
+
+def get_runtime_envion(key):
+    return os.getenv(key, None)
 
 
 def set_global_envs(envs):
@@ -87,4 +98,3 @@ def lazy_instance(package, class_name):
     model_package = __import__(package, globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
-

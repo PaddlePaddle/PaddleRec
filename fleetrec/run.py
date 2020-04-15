@@ -11,11 +11,10 @@ def run(model_yaml):
     trainer.run()
 
 
-def single_engine(model_yaml):
-    single_envs = {}
-    single_envs["singleTraning"] = True
-
+def single_engine(single_envs, model_yaml):
     print(envs.pretty_print_envs(single_envs, ("Single Envs", "Value")))
+
+    envs.set_runtime_envions(single_envs)
     run(model_yaml)
 
 
@@ -47,25 +46,30 @@ if __name__ == "__main__":
 
     if args.engine == "Single":
         print("use SingleTraining to run model: {}".format(args.model))
-        single_engine(args.model)
+        single_envs = {}
+        single_envs["train.trainer"] = "SingleTraining"
+
+        single_engine(single_envs, args.model)
     elif args.engine == "LocalCluster":
         print("use 1X1 ClusterTraining at localhost to run model: {}".format(args.model))
 
         cluster_envs = {}
-        cluster_envs["server_num"] = 1
-        cluster_envs["worker_num"] = 1
-        cluster_envs["start_port"] = 36001
-        cluster_envs["log_dir"] = "logs"
+        cluster_envs["train.server_num"] = 1
+        cluster_envs["train.worker_num"] = 1
+        cluster_envs["train.start_port"] = 36001
+        cluster_envs["train.log_dir"] = "logs"
+        cluster_envs["train.trainer"] = "SingleTraining"
 
         local_cluster_engine(cluster_envs, args.model)
     elif args.engine == "LocalMPI":
         print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
 
         cluster_envs = {}
-        cluster_envs["server_num"] = 1
-        cluster_envs["worker_num"] = 1
-        cluster_envs["start_port"] = 36001
-        cluster_envs["log_dir"] = "logs"
+        cluster_envs["train.server_num"] = 1
+        cluster_envs["train.worker_num"] = 1
+        cluster_envs["train.start_port"] = 36001
+        cluster_envs["train.log_dir"] = "logs"
+        cluster_envs["train.trainer"] = "CtrTraining"
 
         local_mpi_engine(cluster_envs, args.model)
     else:

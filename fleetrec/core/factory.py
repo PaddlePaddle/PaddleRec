@@ -33,15 +33,15 @@ class TrainerFactory(object):
     def _build_trainer(config, yaml_path):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
-        train_mode = envs.get_global_env("train.trainer")
+        train_mode = envs.get_runtime_envion("train.trainer")
 
         if train_mode == "SingleTraining":
             trainer = SingleTrainer(yaml_path)
         elif train_mode == "ClusterTraining":
             trainer = ClusterTrainer(yaml_path)
-        elif train_mode == "CtrTrainer":
+        elif train_mode == "CtrTraining":
             trainer = CtrPaddleTrainer(config)
-        elif train_mode == "UserDefineTrainer":
+        elif train_mode == "UserDefineTraining":
             train_location = envs.get_global_env("train.location")
             train_dirname = os.path.dirname(train_location)
             base_name = os.path.splitext(os.path.basename(train_location))[0]
