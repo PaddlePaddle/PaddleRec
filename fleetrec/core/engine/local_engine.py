@@ -84,12 +84,11 @@ def start_procs(args, yaml):
         if len(log_fns) > 0:
             log_fns[i].close()
 
-    print("all workers exit, going to finish parameter server", file=sys.stderr)
     for i in range(server_num):
         if len(log_fns) > 0:
             log_fns[i].close()
         procs[i].terminate()
-    print("all parameter server are killed", file=sys.stderr)
+    print("all workers and parameter servers already completed", file=sys.stderr)
 
 
 class Launch:
