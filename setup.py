@@ -4,9 +4,8 @@ setup for fleet-rec.
 
 from setuptools import setup
 
-packages = ["fleetrec", "fleetrec.examples", "fleetrec.metrics", "fleetrec.models", "fleetrec.models.ctr_dnn",
-            "fleetrec.reader",
-            "fleetrec.trainer", "fleetrec.utils"]
+packages = ["fleetrec", "fleetrec.models", "fleetrec.examples", "fleetrec.core", "fleetrec.core.engine",
+            "fleetrec.core.metrics", "fleetrec.core.models", "fleetrec.core.trainers", "fleetrec.core.utils"]
 
 requires = [
     "paddlepaddle"
