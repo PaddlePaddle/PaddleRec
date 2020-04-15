@@ -34,7 +34,7 @@ class TrainerFactory(object):
 
         train_mode = envs.get_global_env("train.strategy.mode")
 
-        if train_mode is not None:
+        if train_mode is None:
             train_mode = envs.get_runtime_envion("train.trainer")
 
         if train_mode == "SingleTraining":
