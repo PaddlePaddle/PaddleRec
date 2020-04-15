@@ -15,7 +15,6 @@
 train:
   threads: 12
   epochs: 10
-  trainer:  "single_training.yaml"
 
   reader:
     mode: "dataset"

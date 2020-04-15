@@ -32,7 +32,10 @@ class TrainerFactory(object):
     def _build_trainer(config, yaml_path):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
-        train_mode = envs.get_runtime_envion("train.trainer")
+        train_mode = envs.get_global_env("train.strategy.mode")
+
+        if train_mode is not None:
+            train_mode = envs.get_runtime_envion("train.trainer")
 
         if train_mode == "SingleTraining":
             trainer = SingleTrainer(yaml_path)

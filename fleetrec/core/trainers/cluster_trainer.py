@@ -44,6 +44,12 @@ class ClusterTrainer(TranspileTrainer):
 
     def build_strategy(self):
         mode = envs.get_global_env("train.strategy.mode")
+
+        if mode is None:
+            mode = envs.get_runtime_envion("train.strategy.mode")
+
+        assert mode is not None
+
         strategy = None
 
         if mode == "async":

@@ -60,6 +60,7 @@ if __name__ == "__main__":
         cluster_envs["start_port"] = 36001
         cluster_envs["log_dir"] = "logs"
         cluster_envs["train.trainer"] = "ClusterTraining"
+        cluster_envs["train.strategy.mode"] = "async"
 
         local_cluster_engine(cluster_envs, args.model)
     elif args.engine == "LocalMPI":
