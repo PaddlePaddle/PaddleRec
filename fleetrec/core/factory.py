@@ -16,13 +16,13 @@ import os
 import sys
 
 import yaml
+
 from fleetrec.trainer.local_engine import Launch
 from fleetrec.trainer.single_trainer import SingleTrainer
 from fleetrec.trainer.cluster_trainer import ClusterTrainer
 from fleetrec.trainer.ctr_trainer import CtrPaddleTrainer
 
 from fleetrec.utils import envs
-from fleetrec.utils import util
 
 
 class TrainerFactory(object):
@@ -53,19 +53,6 @@ class TrainerFactory(object):
         return trainer
 
     @staticmethod
-    def _build_engine(yaml_config):
-        cluster_envs = {}
-        cluster_envs["server_num"] = envs.get_global_env("train.pserver_num")
-        cluster_envs["worker_num"] = envs.get_global_env("train.pserver_num")
-        cluster_envs["start_port"] = envs.get_global_env("train.start_port")
-        cluster_envs["log_dir"] = envs.get_global_env("train.log_dirname")
-
-        print(envs.pretty_print_envs(cluster_envs, ("Cluster Global Envs", "Value")))
-
-        launch = Launch(cluster_envs, yaml_config)
-        return launch
-
-    @staticmethod
     def create(config):
         _config = None
         if os.path.exists(config) and os.path.isfile(config):
@@ -75,15 +62,7 @@ class TrainerFactory(object):
             raise ValueError("fleetrec's config only support yaml")
 
         envs.set_global_envs(_config)
-        mode = envs.get_global_env("train.trainer")
-        container = envs.get_global_env("train.container")
-        instance = util.str2bool(os.getenv("CLUSTER_INSTANCE", "0"))
-
-        if mode == "ClusterTraining" and container == "local" and not instance:
-            trainer = TrainerFactory._build_engine(config)
-        else:
-            trainer = TrainerFactory._build_trainer(_config, config)
-
+        trainer = TrainerFactory._build_trainer(_config, config)
         return trainer
 
 

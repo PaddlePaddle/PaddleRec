@@ -13,13 +13,13 @@
 # limitations under the License.
 
 import abc
-import copy
-import yaml
 import time
 import datetime
+
 import paddle.fluid as fluid
-from .. utils import fs as fs
-from .. utils import util as util
+
+from fleetrec.core.utils import fs as fs
+from fleetrec.core.utils import util as util
 
 
 class Dataset(object):
@@ -27,12 +27,13 @@ class Dataset(object):
     Dataset Base
     """
     __metaclass__ = abc.ABCMeta
+
     def __init__(self, config):
         """ 
         """
         self._datasets = {}
         self._config = config
-    
+
     @abc.abstractmethod
     def check_ready(self, params):
         """
@@ -43,19 +44,19 @@ class Dataset(object):
         pass
 
     @abc.abstractmethod
-    def load_dataset(self, params): 
+    def load_dataset(self, params):
         """R
         """
         pass
-    
+
     @abc.abstractmethod
-    def preload_dataset(self, params): 
+    def preload_dataset(self, params):
         """R
         """
         pass
-    
+
     @abc.abstractmethod
-    def release_dataset(self, params): 
+    def release_dataset(self, params):
         """R 
         """
         pass
@@ -65,23 +66,24 @@ class TimeSplitDataset(Dataset):
     """
     Dataset with time split dir.  root_path/$DAY/$HOUR
     """
+
     def __init__(self, config):
         """
         init data root_path, time_split_interval, data_path_format
         """
         Dataset.__init__(self, config)
         if 'data_donefile' not in config or config['data_donefile'] is None:
-            config['data_donefile'] = config['data_path'] + "/to.hadoop.done" 
+            config['data_donefile'] = config['data_path'] + "/to.hadoop.done"
         self._path_generator = util.PathGenerator({'templates': [
-            {'name': 'data_path', 'template': config['data_path']},        
-            {'name': 'donefile_path', 'template': config['data_donefile']}        
+            {'name': 'data_path', 'template': config['data_path']},
+            {'name': 'donefile_path', 'template': config['data_donefile']}
         ]})
-        self._split_interval = config['split_interval'] # data split N mins per dir
+        self._split_interval = config['split_interval']  # data split N mins per dir
         self._data_file_handler = fs.FileHandler(config)
 
     def _format_data_time(self, daytime_str, time_window_mins):
         """ """
-        data_time = util.make_datetime(daytime_str)  
+        data_time = util.make_datetime(daytime_str)
         mins_of_day = data_time.hour * 60 + data_time.minute
         begin_stage = mins_of_day / self._split_interval
         end_stage = (mins_of_day + time_window_mins) / self._split_interval
@@ -91,9 +93,9 @@ class TimeSplitDataset(Dataset):
         if mins_of_day % self._split_interval != 0:
             skip_mins = self._split_interval - (mins_of_day % self._split_interval)
             data_time = data_time + datetime.timedelta(minutes=skip_mins)
-            time_window_mins = time_window_mins - skip_mins 
+            time_window_mins = time_window_mins - skip_mins
         return data_time, time_window_mins
-    
+
     def check_ready(self, daytime_str, time_window_mins):
         """
         data in [daytime_str, daytime_str + time_window_mins] is ready or not
@@ -106,14 +108,14 @@ class TimeSplitDataset(Dataset):
         is_ready = True
         data_time, windows_mins = self._format_data_time(daytime_str, time_window_mins)
         while time_window_mins > 0:
-            file_path = self._path_generator.generate_path('donefile_path', {'time_format': data_time}) 
+            file_path = self._path_generator.generate_path('donefile_path', {'time_format': data_time})
             if not self._data_file_handler.is_exist(file_path):
                 is_ready = False
                 break
             time_window_mins = time_window_mins - self._split_interval
             data_time = data_time + datetime.timedelta(minutes=self._split_interval)
         return is_ready
-        
+
     def get_file_list(self, daytime_str, time_window_mins, node_num=1, node_idx=0):
         """
         data in  [daytime_str, daytime_str + time_window_mins], random shard to node_num, return shard[node_idx]
@@ -128,7 +130,7 @@ class TimeSplitDataset(Dataset):
         data_file_list = []
         data_time, windows_mins = self._format_data_time(daytime_str, time_window_mins)
         while time_window_mins > 0:
-            file_path = self._path_generator.generate_path('data_path', {'time_format': data_time}) 
+            file_path = self._path_generator.generate_path('data_path', {'time_format': data_time})
             sub_file_list = self._data_file_handler.ls(file_path)
             for sub_file in sub_file_list:
                 sub_file_name = self._data_file_handler.get_file_name(sub_file)
@@ -138,17 +140,18 @@ class TimeSplitDataset(Dataset):
                     data_file_list.append(sub_file)
             time_window_mins = time_window_mins - self._split_interval
             data_time = data_time + datetime.timedelta(minutes=self._split_interval)
-        return data_file_list 
-        
+        return data_file_list
+
 
 class FluidTimeSplitDataset(TimeSplitDataset):
     """
     A Dataset with time split for PaddleFluid
     """
+
     def __init__(self, config):
         """ """
         TimeSplitDataset.__init__(self, config)
-    
+
     def _alloc_dataset(self, file_list):
         """ """
         dataset = fluid.DatasetFactory().create_dataset(self._config['dataset_type'])
@@ -158,12 +161,12 @@ class FluidTimeSplitDataset(TimeSplitDataset):
         dataset.set_pipe_command(self._config['data_converter'])
         dataset.set_filelist(file_list)
         dataset.set_use_var(self._config['data_vars'])
-        #dataset.set_fleet_send_sleep_seconds(2)
-        #dataset.set_fleet_send_batch_size(80000)
+        # dataset.set_fleet_send_sleep_seconds(2)
+        # dataset.set_fleet_send_batch_size(80000)
         return dataset
 
     def load_dataset(self, params):
-        """ """ 
+        """ """
         begin_time = params['begin_time']
         windown_min = params['time_window_min']
         if begin_time not in self._datasets:
@@ -176,8 +179,8 @@ class FluidTimeSplitDataset(TimeSplitDataset):
         else:
             self._datasets[begin_time].wait_preload_done()
         return self._datasets[begin_time]
-    
-    def preload_dataset(self, params): 
+
+    def preload_dataset(self, params):
         """ """
         begin_time = params['begin_time']
         windown_min = params['time_window_min']
@@ -189,7 +192,7 @@ class FluidTimeSplitDataset(TimeSplitDataset):
                 return True
         return False
 
-    def release_dataset(self, params): 
+    def release_dataset(self, params):
         """ """
         begin_time = params['begin_time']
         windown_min = params['time_window_min']

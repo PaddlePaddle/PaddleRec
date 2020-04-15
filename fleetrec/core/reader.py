@@ -19,7 +19,7 @@ import os
 import paddle.fluid.incubate.data_generator as dg
 import yaml
 
-from fleetrec.utils import envs
+from fleetrec.core.utils import envs
 
 
 class Reader(dg.MultiSlotDataGenerator):

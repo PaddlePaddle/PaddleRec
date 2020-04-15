@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import time
 from paddle.fluid.incubate.fleet.utils.hdfs import HDFSClient
 
 

@@ -17,19 +17,14 @@ Training use fluid with one node only.
 """
 
 from __future__ import print_function
-import logging
 
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distributed_strategy import StrategyFactory
 from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
 
-from ..utils import envs
-from .transpiler_trainer import TranspileTrainer
-
-logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("fluid")
-logger.setLevel(logging.INFO)
+from fleetrec.core.utils import envs
+from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
 
 
 class ClusterTrainer(TranspileTrainer):

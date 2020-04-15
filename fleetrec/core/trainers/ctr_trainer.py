@@ -23,12 +23,13 @@ import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
 
-from fleetrec.utils import fs as fs
-from fleetrec.utils import util as util
-from fleetrec.metrics.auc_metrics import AUCMetric
-from fleetrec.models import base as model_basic
-from fleetrec.reader import dataset
-from .trainer import Trainer
+
+from fleetrec.core.utils import fs as fs
+from fleetrec.core.utils import util as util
+from fleetrec.core.metrics.auc_metrics import AUCMetric
+from fleetrec.core.models.modul import build as model_basic
+from fleetrec.core.utils import dataset
+from fleetrec.core.trainer import Trainer
 
 
 def wroker_numric_opt(value, env, opt):

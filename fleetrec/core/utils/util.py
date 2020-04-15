@@ -15,7 +15,8 @@
 import os
 import time
 import datetime
-from ..utils import fs as fs
+
+from fleetrec.core.utils import fs as fs
 
 
 def str2bool(v):

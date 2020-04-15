@@ -1,3 +1,11 @@
+import yaml
+import copy
+import paddle.fluid as fluid
+from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
+
+from fleetrec.core.model import Model
+from fleetrec.core.utils import table
+
 
 def create(config):
     """
@@ -14,14 +22,14 @@ def create(config):
     return model
 
 
-class YamlModel(ModelBase):
+class YamlModel(Model):
     """R
     """
 
     def __init__(self, config):
         """R
         """
-        ModelBase.__init__(self, config)
+        Model.__init__(self, config)
         self._config = config
         self._name = config['name']
         f = open(config['layer_file'], 'r')
