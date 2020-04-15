@@ -20,13 +20,14 @@ def single_engine(single_envs, model_yaml):
 
 def local_cluster_engine(cluster_envs, model_yaml):
     print(envs.pretty_print_envs(cluster_envs, ("Local Cluster Envs", "Value")))
-
+    envs.set_runtime_envions(cluster_envs)
     launch = local_engine.Launch(cluster_envs, model_yaml)
     launch.run()
 
 
 def local_mpi_engine(cluster_envs, model_yaml):
     print(envs.pretty_print_envs(cluster_envs, ("Local MPI Cluster Envs", "Value")))
+    envs.set_runtime_envions(cluster_envs)
     print("coming soon")
 
 

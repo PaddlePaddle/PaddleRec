@@ -22,7 +22,7 @@ def set_runtime_envions(envs):
     assert isinstance(envs, dict)
 
     for k, v in envs.items():
-        os.environ[k] = v
+        os.environ[k] = str(v)
 
 
 def get_runtime_envion(key):
