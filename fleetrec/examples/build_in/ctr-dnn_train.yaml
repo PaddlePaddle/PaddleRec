@@ -19,7 +19,7 @@ train:
   reader:
     mode: "dataset"
     batch_size: 2
-    class: "fleetrec.models.ctr_dnn.data_generator"
+    class: "fleetrec.models.ctr_dnn.reader"
     train_data_path: "/root/FleetRec/fleetrec/models/ctr_dnn/data/train/"
 
   model:

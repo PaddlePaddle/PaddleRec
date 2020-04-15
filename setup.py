@@ -4,7 +4,7 @@ setup for fleet-rec.
 
 from setuptools import setup
 
-packages = ["fleetrec", "fleetrec.models",
+packages = ["fleetrec", "fleetrec.models", "fleetrec.models.ctr_dnn",
             "fleetrec.examples", "fleetrec.examples.user_define", "fleetrec.examples.build_in",
             "fleetrec.core", "fleetrec.core.engine",
             "fleetrec.core.metrics", "fleetrec.core.models", "fleetrec.core.trainers", "fleetrec.core.utils"]
