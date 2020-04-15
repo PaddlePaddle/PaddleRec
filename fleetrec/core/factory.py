@@ -17,12 +17,11 @@ import sys
 
 import yaml
 
-from fleetrec.trainer.local_engine import Launch
-from fleetrec.trainer.single_trainer import SingleTrainer
-from fleetrec.trainer.cluster_trainer import ClusterTrainer
-from fleetrec.trainer.ctr_trainer import CtrPaddleTrainer
+from fleetrec.core.trainers.single_trainer import SingleTrainer
+from fleetrec.core.trainers.cluster_trainer import ClusterTrainer
+from fleetrec.core.trainers.ctr_trainer import CtrPaddleTrainer
 
-from fleetrec.utils import envs
+from fleetrec.core.utils import envs
 
 
 class TrainerFactory(object):

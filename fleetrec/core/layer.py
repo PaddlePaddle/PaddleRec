@@ -13,12 +13,7 @@
 # limitations under the License.
 
 import abc
-import copy
-import yaml
-import paddle.fluid as fluid
-from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
-from fleetrec.core.utils import table as table
 
 class Layer(object):
     """R
