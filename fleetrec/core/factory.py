@@ -17,10 +17,6 @@ import sys
 
 import yaml
 
-from fleetrec.core.trainers.single_trainer import SingleTrainer
-from fleetrec.core.trainers.cluster_trainer import ClusterTrainer
-from fleetrec.core.trainers.ctr_trainer import CtrPaddleTrainer
-
 from fleetrec.core.utils import envs
 
 
@@ -38,10 +34,13 @@ class TrainerFactory(object):
             train_mode = envs.get_runtime_envion("train.trainer")
 
         if train_mode == "SingleTraining":
+            from fleetrec.core.trainers.single_trainer import SingleTrainer
             trainer = SingleTrainer(yaml_path)
         elif train_mode == "ClusterTraining":
+            from fleetrec.core.trainers.cluster_trainer import ClusterTrainer
             trainer = ClusterTrainer(yaml_path)
         elif train_mode == "CtrTraining":
+            from fleetrec.core.trainers.ctr_modul_trainer import CtrPaddleTrainer
             trainer = CtrPaddleTrainer(config)
         elif train_mode == "UserDefineTraining":
             train_location = envs.get_global_env("train.location")
