@@ -45,7 +45,7 @@ class Model(ModelBase):
             return dense_input_var
 
         def label_input():
-            label = fluid.layers.data(name="label", shape=[1], dtype="int64")
+            label = fluid.layers.data(name="click", shape=[1], dtype="int64")
             return label
 
         self.sparse_inputs = sparse_inputs()
