@@ -27,9 +27,8 @@ python setup.py install
 cd FleetRec
 
 python -m fleetrec.run \
-       --model fleetrec/examples/build_in/ctr-dnn_train.yaml 
+       --model fleetrec/examples/build_in/ctr-dnn_train.yaml \
        --engine single
-
 
 ```
 
@@ -39,7 +38,7 @@ python -m fleetrec.run \
 cd FleetRec
 
 python -m fleetrec.run \
-       --model fleetrec/examples/build_in/ctr-dnn_train.yaml 
+       --model fleetrec/examples/build_in/ctr-dnn_train.yaml \
        --engine local_cluster
 
 ```
