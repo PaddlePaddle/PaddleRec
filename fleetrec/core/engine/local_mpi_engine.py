@@ -34,8 +34,8 @@ class LocalMPIEngine(Engine):
         log_fns = []
 
         factory = "fleetrec.core.factory"
-        mpi_cmd = "mpirun -npernode 2 -timestamp-output -tag-output".split(" ")
-        cmd = mpi_cmd.extend([sys.executable, "-u", "-m", factory, self.trainer])
+        cmd = "mpirun -npernode 2 -timestamp-output -tag-output".split(" ")
+        cmd.extend([sys.executable, "-u", "-m", factory, self.trainer])
 
         if logs_dir is not None:
             os.system("mkdir -p {}".format(logs_dir))
@@ -49,7 +49,7 @@ class LocalMPIEngine(Engine):
         for i in range(len(procs)):
             if len(log_fns) > 0:
                 log_fns[i].close()
-            procs[i].terminate()
+            procs[i].wait()
         print("all workers and parameter servers already completed", file=sys.stderr)
 
     def run(self):
