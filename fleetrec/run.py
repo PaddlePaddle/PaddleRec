@@ -7,7 +7,9 @@ from paddle.fluid.incubate.fleet.parameter_server import version
 
 from fleetrec.core.factory import TrainerFactory
 from fleetrec.core.utils import envs
-from fleetrec.core.engine import local_engine
+from fleetrec.core.utils import util
+from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
+from fleetrec.core.engine.local_mpi_engine import LocalMPIEngine
 
 
 def run(model_yaml):
@@ -25,23 +27,25 @@ def single_engine(single_envs, model_yaml):
 def local_cluster_engine(cluster_envs, model_yaml):
     print(envs.pretty_print_envs(cluster_envs, ("Local Cluster Envs", "Value")))
     envs.set_runtime_envions(cluster_envs)
-    launch = local_engine.Launch(cluster_envs, model_yaml)
+    launch = LocalClusterEngine(cluster_envs, model_yaml)
     launch.run()
 
 
 def local_mpi_engine(model_yaml):
     print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
 
-    cluster_envs = {}
-    cluster_envs["server_num"] = 1
-    cluster_envs["worker_num"] = 1
-    cluster_envs["start_port"] = 36001
-    cluster_envs["log_dir"] = "logs"
-    cluster_envs["train.trainer"] = "CtrTraining"
+    mpi_path = util.run_which("mpirun")
+
+    if not mpi_path:
+        raise RuntimeError("can not find mpirun, please check environment")
+
+    cluster_envs = {"mpirun": mpi_path, "train.trainer": "CtrTraining"}
 
     print(envs.pretty_print_envs(cluster_envs, ("Local MPI Cluster Envs", "Value")))
+
     envs.set_runtime_envions(cluster_envs)
-    print("coming soon")
+    launch = LocalMPIEngine(cluster_envs, model_yaml)
+    launch.run()
 
 
 def yaml_engine(engine_yaml, model_yaml):
@@ -55,7 +59,7 @@ def yaml_engine(engine_yaml, model_yaml):
     train_dirname = os.path.dirname(train_location)
     base_name = os.path.splitext(os.path.basename(train_location))[0]
     sys.path.append(train_dirname)
-    trainer_class = envs.lazy_instance(base_name, "UserDefineTrainer")
+    trainer_class = envs.lazy_instance(base_name, "UserDefineTraining")
     trainer = trainer_class(model_yaml)
     trainer.run()
 

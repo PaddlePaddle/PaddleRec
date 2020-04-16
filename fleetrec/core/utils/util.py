@@ -30,6 +30,20 @@ def str2bool(v):
         raise ValueError('Boolean value expected.')
 
 
+def run_which(command):
+    regex = "/usr/bin/which: no {} in"
+    ret = run_shell_cmd("which {}".format(command))
+    if ret.startswith(regex.format(command)):
+        return None
+    else:
+        return ret
+
+
+def run_shell_cmd(command):
+    assert command is not None and isinstance(command, str)
+    return os.popen(command).read().strip()
+
+
 def get_env_value(env_name):
     """
     get os environment value
