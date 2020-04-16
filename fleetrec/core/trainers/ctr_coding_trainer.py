@@ -104,6 +104,7 @@ class CtrPaddleTrainer(Trainer):
 
     def server(self, context):
         fleet.run_server()
+        fleet.stop_worker()
         context['is_exit'] = True
 
     def train(self, context):
