@@ -60,13 +60,18 @@ class Model(ModelBase):
         self._data_var.append(self.label_input)
 
     def net(self):
-        def embedding_layer(input):
-            sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self.namespace)
-            sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self.namespace)
+        train_mode = envs.get_training_mode()
 
+        is_distributed = True if train_mode == "CtrTraining" else False
+        sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self.namespace)
+        sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self.namespace)
+        sparse_feature_dim = 9 if train_mode == "CtrTraining" else sparse_feature_dim
+
+        def embedding_layer(input):
             emb = fluid.layers.embedding(
                 input=input,
                 is_sparse=True,
+                is_distributed=is_distributed,
                 size=[sparse_feature_number, sparse_feature_dim],
                 param_attr=fluid.ParamAttr(
                     name="SparseFeatFactors",

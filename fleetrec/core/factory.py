@@ -28,10 +28,7 @@ class TrainerFactory(object):
     def _build_trainer(yaml_path):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
-        train_mode = envs.get_global_env("train.trainer")
-
-        if train_mode is None:
-            train_mode = envs.get_runtime_envion("train.trainer")
+        train_mode = envs.get_training_mode()
 
         if train_mode == "SingleTraining":
             from fleetrec.core.trainers.single_trainer import SingleTrainer

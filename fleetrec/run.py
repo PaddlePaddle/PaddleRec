@@ -103,6 +103,15 @@ if __name__ == "__main__":
             local_mpi_engine(cluster_envs, args.model)
     elif args.engine.upper() == "CLUSTER":
         print("launch ClusterTraining with cluster to run model: {}".format(args.model))
+
+        if version.is_transpiler():
+            print("use ClusterTraining to run model: {}".format(args.model))
+            cluster_envs = {"train.trainer": "ClusterTraining"}
+            envs.set_runtime_envions(cluster_envs)
+        else:
+            cluster_envs = {"train.trainer": "CtrTraining"}
+            envs.set_runtime_envions(cluster_envs)
+
         run(args.model)
     elif args.engine.upper() == "USER_DEFINE":
         engine_file = args.engine_extras
