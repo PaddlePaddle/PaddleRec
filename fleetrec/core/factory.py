@@ -25,7 +25,7 @@ class TrainerFactory(object):
         pass
 
     @staticmethod
-    def _build_trainer(config, yaml_path):
+    def _build_trainer(yaml_path):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
         train_mode = envs.get_global_env("train.trainer")
@@ -40,8 +40,8 @@ class TrainerFactory(object):
             from fleetrec.core.trainers.cluster_trainer import ClusterTrainer
             trainer = ClusterTrainer(yaml_path)
         elif train_mode == "CtrTraining":
-            from fleetrec.core.trainers.ctr_modul_trainer import CtrPaddleTrainer
-            trainer = CtrPaddleTrainer(config)
+            from fleetrec.core.trainers.ctr_coding_trainer import CtrPaddleTrainer
+            trainer = CtrPaddleTrainer(yaml_path)
         elif train_mode == "UserDefineTraining":
             train_location = envs.get_global_env("train.location")
             train_dirname = os.path.dirname(train_location)
@@ -63,7 +63,7 @@ class TrainerFactory(object):
             raise ValueError("fleetrec's config only support yaml")
 
         envs.set_global_envs(_config)
-        trainer = TrainerFactory._build_trainer(_config, config)
+        trainer = TrainerFactory._build_trainer(config)
         return trainer
 
 

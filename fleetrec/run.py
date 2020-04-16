@@ -17,7 +17,6 @@ def run(model_yaml):
 
 def single_engine(single_envs, model_yaml):
     print(envs.pretty_print_envs(single_envs, ("Single Envs", "Value")))
-
     envs.set_runtime_envions(single_envs)
     run(model_yaml)
 
@@ -33,8 +32,8 @@ def local_cluster_engine(cluster_envs, model_yaml):
 
 def local_mpi_engine(cluster_envs, model_yaml):
     from fleetrec.core.engine.local_mpi_engine import LocalMPIEngine
-    print(envs.pretty_print_envs(cluster_envs, ("Local MPI Cluster Envs", "Value")))
 
+    print(envs.pretty_print_envs(cluster_envs, ("Local MPI Cluster Envs", "Value")))
     envs.set_runtime_envions(cluster_envs)
     launch = LocalMPIEngine(cluster_envs, model_yaml)
     launch.run()
@@ -79,7 +78,7 @@ if __name__ == "__main__":
             if not mpi_path:
                 raise RuntimeError("can not find mpirun, please check environment")
 
-            cluster_envs = {"mpirun": mpi_path, "train.trainer": "CtrTraining"}
+            cluster_envs = {"mpirun": mpi_path, "train.trainer": "CtrTraining", "log_dir": "logs"}
             local_mpi_engine(cluster_envs, args.model)
     elif args.engine.upper() == "LOCAL_CLUSTER":
         print("use 1X1 ClusterTraining at localhost to run model: {}".format(args.model))
@@ -100,7 +99,7 @@ if __name__ == "__main__":
             if not mpi_path:
                 raise RuntimeError("can not find mpirun, please check environment")
 
-            cluster_envs = {"mpirun": mpi_path, "train.trainer": "CtrTraining"}
+            cluster_envs = {"mpirun": mpi_path, "train.trainer": "CtrTraining", "log_dir": "logs"}
             local_mpi_engine(cluster_envs, args.model)
     elif args.engine.upper() == "CLUSTER":
         print("launch ClusterTraining with cluster to run model: {}".format(args.model))

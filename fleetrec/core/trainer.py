@@ -14,6 +14,8 @@
 
 import abc
 import time
+
+import yaml
 from paddle import fluid
 
 
@@ -28,7 +30,10 @@ class Trainer(object):
         self._exe = fluid.Executor(self._place)
         self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
-        self._config = config
+        self._config_yaml = config
+
+        with open(config, 'r') as rb:
+            self._config = yaml.load(rb.read(), Loader=yaml.FullLoader)
 
     def regist_context_processor(self, status_name, processor):
         """
