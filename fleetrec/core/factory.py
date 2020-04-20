@@ -50,9 +50,8 @@ class TrainerFactory(object):
             trainer_abs = train_mode
             train_mode = "UserDefineTrainer"
 
-        train_location = envs.get_global_env("train.location")
         train_dirname = os.path.dirname(trainer_abs)
-        base_name = os.path.splitext(os.path.basename(train_location))[0]
+        base_name = os.path.splitext(os.path.basename(trainer_abs))[0]
         sys.path.append(train_dirname)
         trainer_class = envs.lazy_instance(base_name, train_mode)
         trainer = trainer_class(yaml_path)

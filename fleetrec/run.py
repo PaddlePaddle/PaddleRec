@@ -40,10 +40,8 @@ def get_engine(engine):
 
 def single_engine(args):
     print("use single engine to run model: {}".format(args.model))
-    single_envs = {"trainer.trainer": "SingleTrainer"}
-
+    single_envs = {"trainer.trainer": "SingleTrainer", "trainer.threads": "2"}
     set_runtime_envs(single_envs, args.engine_extras)
-
     trainer = TrainerFactory.create(args.model)
     return trainer
 
