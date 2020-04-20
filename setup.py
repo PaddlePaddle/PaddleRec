@@ -5,8 +5,7 @@ setup for fleet-rec.
 from setuptools import setup
 
 packages = ["fleetrec", "fleetrec.models", "fleetrec.models.ctr_dnn",
-            "fleetrec.examples", "fleetrec.examples.user_define",
-            "fleetrec.core", "fleetrec.core.engine",
+            "fleetrec.examples", "fleetrec.core", "fleetrec.core.engine",
             "fleetrec.core.metrics", "fleetrec.core.models", "fleetrec.core.trainers", "fleetrec.core.utils"]
 
 requires = [
