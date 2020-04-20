@@ -39,7 +39,7 @@ class TranspileTrainer(Trainer):
         namespace = "train.reader"
 
         inputs = self.model.get_inputs()
-        threads = envs.get_global_env("train.threads", None)
+        threads = int(envs.get_runtime_envion("trainer.threads"))
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
