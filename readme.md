@@ -27,8 +27,9 @@ python setup.py install
 cd FleetRec
 
 python -m fleetrec.run \
-       --model fleetrec/examples/build_in/ctr-dnn_train.yaml \
-       --engine single
+       -m fleetrec/examples/ctr-dnn_train.yaml \
+       -e single \
+       -ex fleetrec/examples/runtime.yaml
 
 ```
 
@@ -38,8 +39,21 @@ python -m fleetrec.run \
 cd FleetRec
 
 python -m fleetrec.run \
-       --model fleetrec/examples/build_in/ctr-dnn_train.yaml \
-       --engine local_cluster
+       -m fleetrec/examples/ctr-dnn_train.yaml \
+       -e local_cluster \
+       -ex fleetrec/examples/runtime.yaml
+
+```
+
+### 集群提交分布式训练<需要用户预先配置好集群环境，本提交命令不包含提交客户端>
+
+```bash
+cd FleetRec
+
+python -m fleetrec.run \
+       -m fleetrec/examples/ctr-dnn_train.yaml \
+       -e cluster \
+       -ex fleetrec/examples/runtime.yaml
 
 ```
 
