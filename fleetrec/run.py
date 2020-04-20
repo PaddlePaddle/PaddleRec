@@ -26,7 +26,7 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
     need_print = {}
     for k, v in os.environ.items():
-        if k.startswith() == "trainer.":
+        if k.startswith("trainer."):
             need_print[k] = v
 
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))

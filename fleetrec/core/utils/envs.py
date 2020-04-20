@@ -22,14 +22,18 @@ def set_runtime_envions(envs):
     assert isinstance(envs, dict)
 
     def fatten_env_namespace(namespace_nests, local_envs):
-        for k, v in local_envs.items():
-            if isinstance(v, dict):
-                nests = copy.deepcopy(namespace_nests)
-                nests.append(k)
-                fatten_env_namespace(nests, v)
-            else:
-                global_k = ".".join(namespace_nests + [k])
-                os.environ[global_k] = str(v)
+        if not isinstance(local_envs, dict):
+            global_k = ".".join(namespace_nests)
+            os.environ[global_k] = str(local_envs)
+        else:
+            for k, v in local_envs.items():
+                if isinstance(v, dict):
+                    nests = copy.deepcopy(namespace_nests)
+                    nests.append(k)
+                    fatten_env_namespace(nests, v)
+                else:
+                    global_k = ".".join(namespace_nests + [k])
+                    os.environ[global_k] = str(v)
 
     for k, v in envs.items():
         fatten_env_namespace([k], v)
