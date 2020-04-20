@@ -13,7 +13,6 @@
 # limitations under the License.
 
 train:
-  threads: 12
   epochs: 10
 
   reader:

@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+
 import abc
 import time
-
 import yaml
+
 from paddle import fluid
+from fleetrec.core.utils import envs
 
 
 class Trainer(object):
@@ -78,3 +82,18 @@ class Trainer(object):
             self.context_process(self._context)
             if self._context['is_exit']:
                 break
+
+
+def user_define_engine(engine_yaml):
+    with open(engine_yaml, 'r') as rb:
+        _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    assert _config is not None
+
+    envs.set_runtime_envions(_config)
+
+    train_location = envs.get_global_env("engine.file")
+    train_dirname = os.path.dirname(train_location)
+    base_name = os.path.splitext(os.path.basename(train_location))[0]
+    sys.path.append(train_dirname)
+    trainer_class = envs.lazy_instance(base_name, "UserDefineTraining")
+    return trainer_class
