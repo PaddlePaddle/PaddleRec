@@ -46,7 +46,7 @@ class TrainerFactory(object):
 
         if trainer_abs is None:
             if not os.path.exists(train_mode) or os.path.isfile(train_mode):
-                raise ValueError("trainer {} can not be recognized")
+                raise ValueError("trainer {} can not be recognized".format(train_mode))
             trainer_abs = train_mode
             train_mode = "UserDefineTrainer"
 
