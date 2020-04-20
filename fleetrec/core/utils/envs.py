@@ -21,8 +21,18 @@ global_envs = {}
 def set_runtime_envions(envs):
     assert isinstance(envs, dict)
 
+    def fatten_env_namespace(namespace_nests, local_envs):
+        for k, v in local_envs.items():
+            if isinstance(v, dict):
+                nests = copy.deepcopy(namespace_nests)
+                nests.append(k)
+                fatten_env_namespace(nests, v)
+            else:
+                global_k = ".".join(namespace_nests + [k])
+                os.environ[global_k] = str(v)
+
     for k, v in envs.items():
-        os.environ[k] = str(v)
+        fatten_env_namespace([k], v)
 
 
 def get_runtime_envion(key):

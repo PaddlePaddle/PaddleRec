@@ -3,10 +3,11 @@ trainer:
   threads: 4
 
   # for cluster training
+  strategy: "async"
   communicator:
-    strategy: "async"
     send_queue_size: 4
     min_send_grad_num_before_recv: 4
     thread_pool_size: 5
     max_merge_var_num: 4
+
 

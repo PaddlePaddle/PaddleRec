@@ -21,8 +21,9 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
     if cluster_envs is None:
         cluster_envs = {}
+    cluster_envs.update(cluster_envs)
     cluster_envs.update(_envs)
-    envs.set_runtime_envions(cluster_envs)
+    # envs.set_runtime_envions(cluster_envs)
     print(envs.pretty_print_envs(cluster_envs, ("Runtime Envs", "Value")))
 
 
@@ -40,7 +41,10 @@ def get_engine(engine):
 
 def single_engine(args):
     print("use single engine to run model: {}".format(args.model))
-    single_envs = {"trainer.trainer": "SingleTrainer", "trainer.threads": "2"}
+
+    single_envs = {}
+    single_envs["trainer.trainer"] = "SingleTrainer"
+    single_envs["trainer.threads"] = "2"
     set_runtime_envs(single_envs, args.engine_extras)
     trainer = TrainerFactory.create(args.model)
     return trainer
@@ -49,7 +53,8 @@ def single_engine(args):
 def cluster_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
 
-    cluster_envs = {"trainer.trainer": "ClusterTrainer"}
+    cluster_envs = {}
+    cluster_envs["trainer.trainer"] = "ClusterTrainer"
     set_runtime_envs(cluster_envs, args.engine_extras)
 
     envs.set_runtime_envions(cluster_envs)
@@ -60,7 +65,8 @@ def cluster_engine(args):
 def cluster_mpi_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
 
-    cluster_envs = {"trainer.trainer": "CtrCodingTrainer"}
+    cluster_envs = {}
+    cluster_envs["trainer.trainer"] = "CtrCodingTrainer"
     set_runtime_envs(cluster_envs, args.engine_extras)
 
     trainer = TrainerFactory.create(args.model)
@@ -77,7 +83,9 @@ def local_cluster_engine(args):
     cluster_envs["start_port"] = 36001
     cluster_envs["log_dir"] = "logs"
     cluster_envs["trainer.trainer"] = "ClusterTrainer"
-    cluster_envs["trainer.strategy.mode"] = "async"
+    cluster_envs["trainer.strategy"] = "async"
+    cluster_envs["trainer.threads"] = "2"
+    cluster_envs["CPU_NUM"] = "2"
 
     set_runtime_envs(cluster_envs, args.engine_extras)
 
