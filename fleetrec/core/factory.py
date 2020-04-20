@@ -19,6 +19,19 @@ import yaml
 
 from fleetrec.core.utils import envs
 
+trainer_abs = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trainers")
+trainers = {}
+
+
+def trainer_registry():
+    trainers["SingleTrainer"] = os.path.join(trainer_abs, "single_trainer.py")
+    trainers["ClusterTrainer"] = os.path.join(trainer_abs, "cluster_trainer.py")
+    trainers["CtrCodingTrainer"] = os.path.join(trainer_abs, "ctr_coding_trainer.py")
+    trainers["CtrModulTrainer"] = os.path.join(trainer_abs, "ctr_modul_trainer.py")
+
+
+trainer_registry()
+
 
 class TrainerFactory(object):
     def __init__(self):
@@ -28,26 +41,21 @@ class TrainerFactory(object):
     def _build_trainer(yaml_path):
         print(envs.pretty_print_envs(envs.get_global_envs()))
 
-        train_mode = envs.get_training_mode()
+        train_mode = envs.get_trainer()
+        trainer_abs = trainers.get(train_mode, None)
 
-        if train_mode == "SingleTraining":
-            from fleetrec.core.trainers.single_trainer import SingleTrainer
-            trainer = SingleTrainer(yaml_path)
-        elif train_mode == "ClusterTraining":
-            from fleetrec.core.trainers.cluster_trainer import ClusterTrainer
-            trainer = ClusterTrainer(yaml_path)
-        elif train_mode == "CtrTraining":
-            from fleetrec.core.trainers.ctr_coding_trainer import CtrPaddleTrainer
-            trainer = CtrPaddleTrainer(yaml_path)
-        elif train_mode == "UserDefineTraining":
-            train_location = envs.get_global_env("train.location")
-            train_dirname = os.path.dirname(train_location)
-            base_name = os.path.splitext(os.path.basename(train_location))[0]
-            sys.path.append(train_dirname)
-            trainer_class = envs.lazy_instance(base_name, "UserDefineTrainer")
-            trainer = trainer_class(yaml_path)
-        else:
-            raise ValueError("trainer only support SingleTraining/ClusterTraining")
+        if trainer_abs is None:
+            if not os.path.exists(train_mode) or os.path.isfile(train_mode):
+                raise ValueError("trainer {} can not be recognized")
+            trainer_abs = train_mode
+            train_mode = "UserDefineTrainer"
+
+        train_location = envs.get_global_env("train.location")
+        train_dirname = os.path.dirname(trainer_abs)
+        base_name = os.path.splitext(os.path.basename(train_location))[0]
+        sys.path.append(train_dirname)
+        trainer_class = envs.lazy_instance(base_name, train_mode)
+        trainer = trainer_class(yaml_path)
         return trainer
 
     @staticmethod
