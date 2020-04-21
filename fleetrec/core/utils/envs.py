@@ -49,7 +49,6 @@ def set_runtime_environs(environs):
 def get_runtime_environ(key):
     return os.getenv(key, None)
 
-
 def get_trainer():
     train_mode = get_runtime_environ("trainer.trainer")
     return train_mode

@@ -58,7 +58,7 @@ def single_engine(args):
     single_envs["trainer.trainer"] = "SingleTrainer"
     single_envs["trainer.threads"] = "2"
     single_envs["trainer.engine"] = "single"
-    set_runtime_envs(single_envs, args.engine_extras)
+    set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
 
@@ -80,7 +80,7 @@ def cluster_mpi_engine(args):
 
     cluster_envs = {}
     cluster_envs["trainer.trainer"] = "CtrCodingTrainer"
-    set_runtime_envs(cluster_envs, args.engine_extras)
+    set_runtime_envs(cluster_envs, args.model)
 
     trainer = TrainerFactory.create(args.model)
     return trainer
@@ -101,7 +101,7 @@ def local_cluster_engine(args):
     cluster_envs["trainer.engine"] = "local_cluster"
     cluster_envs["CPU_NUM"] = "2"
 
-    set_runtime_envs(cluster_envs, args.engine_extras)
+    set_runtime_envs(cluster_envs, args.model)
 
     launch = LocalClusterEngine(cluster_envs, args.model)
     return launch
@@ -122,7 +122,7 @@ def local_mpi_engine(args):
     cluster_envs["log_dir"] = "logs"
     cluster_envs["trainer.engine"] = "local_cluster"
 
-    set_runtime_envs(cluster_envs, args.engine_extras)
+    set_runtime_envs(cluster_envs, args.model)
     launch = LocalMPIEngine(cluster_envs, args.model)
     return launch
 
@@ -142,7 +142,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
     parser.add_argument("-e", "--engine", type=str)
-    parser.add_argument("-ex", "--engine_extras", default=None, type=str)
 
     args = parser.parse_args()
 

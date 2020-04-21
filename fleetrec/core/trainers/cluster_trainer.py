@@ -43,7 +43,7 @@ class ClusterTrainer(TranspileTrainer):
             self.regist_context_processor('terminal_pass', self.terminal)
 
     def build_strategy(self):
-        mode = envs.get_runtime_envion("trainer.strategy")
+        mode = envs.get_runtime_environ("trainer.strategy")
         assert mode in ["async", "geo", "sync", "half_async"]
 
         strategy = None
