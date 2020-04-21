@@ -18,13 +18,14 @@ import copy
 global_envs = {}
 
 
-def set_runtime_envions(envs):
+def flatten_environs(envs):
+    flatten_dict = {}
     assert isinstance(envs, dict)
 
     def fatten_env_namespace(namespace_nests, local_envs):
         if not isinstance(local_envs, dict):
             global_k = ".".join(namespace_nests)
-            os.environ[global_k] = str(local_envs)
+            flatten_dict[global_k] = str(local_envs)
         else:
             for k, v in local_envs.items():
                 if isinstance(v, dict):
@@ -33,18 +34,24 @@ def set_runtime_envions(envs):
                     fatten_env_namespace(nests, v)
                 else:
                     global_k = ".".join(namespace_nests + [k])
-                    os.environ[global_k] = str(v)
+                    flatten_dict[global_k] = str(v)
 
     for k, v in envs.items():
         fatten_env_namespace([k], v)
 
+    return flatten_dict
 
-def get_runtime_envion(key):
+
+def set_runtime_environs(environs):
+    for k, v in environs.items():
+        os.environ[k] = v
+
+def get_runtime_environ(key):
     return os.getenv(key, None)
 
 
 def get_trainer():
-    train_mode = get_runtime_envion("trainer.trainer")
+    train_mode = get_runtime_environ("trainer.trainer")
     return train_mode
 
 

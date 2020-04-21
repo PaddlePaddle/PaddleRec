@@ -13,16 +13,23 @@ clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 
 
 def set_runtime_envs(cluster_envs, engine_yaml):
-    if engine_yaml is not None:
+    def get_engine_extras():
         with open(engine_yaml, 'r') as rb:
             _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-    else:
-        _envs = {}
+
+        flattens = envs.flatten_environs(_envs)
+
+        engine_extras = {}
+        for k, v in flattens.items():
+            if k.startswith("train.trainer."):
+                engine_extras[k] = v
+        return engine_extras
 
     if cluster_envs is None:
         cluster_envs = {}
-    envs.set_runtime_envions(cluster_envs)
-    envs.set_runtime_envions(_envs)
+
+    envs.set_runtime_environs(cluster_envs)
+    envs.set_runtime_environs(get_engine_extras())
 
     need_print = {}
     for k, v in os.environ.items():
@@ -62,9 +69,8 @@ def cluster_engine(args):
     cluster_envs = {}
     cluster_envs["trainer.trainer"] = "ClusterTrainer"
     cluster_envs["trainer.engine"] = "cluster"
-    set_runtime_envs(cluster_envs, args.engine_extras)
+    set_runtime_envs(cluster_envs, args.model)
 
-    envs.set_runtime_envions(cluster_envs)
     trainer = TrainerFactory.create(args.model)
     return trainer
 
@@ -145,11 +151,6 @@ if __name__ == "__main__":
 
     if args.engine.upper() not in clusters:
         raise ValueError("argument engine: {} error, must in {}".format(args.engine, clusters))
-
-    if args.engine_extras is not None:
-        if not os.path.exists(args.engine_extras) or not os.path.isfile(args.engine_extras):
-            raise ValueError(
-                "argument engine_extras: {} error, must specify an existed YAML file".format(args.engine_extras))
 
     which_engine = get_engine(args.engine)
     engine = which_engine(args)

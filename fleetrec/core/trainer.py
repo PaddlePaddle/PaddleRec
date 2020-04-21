@@ -89,7 +89,7 @@ def user_define_engine(engine_yaml):
         _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
     assert _config is not None
 
-    envs.set_runtime_envions(_config)
+    envs.set_runtime_environs(_config)
 
     train_location = envs.get_global_env("engine.file")
     train_dirname = os.path.dirname(train_location)
