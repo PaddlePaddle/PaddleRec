@@ -44,7 +44,7 @@ def flatten_environs(envs):
 
 def set_runtime_environs(environs):
     for k, v in environs.items():
-        os.environ[k] = v
+        os.environ[k] = str(v)
 
 def get_runtime_environ(key):
     return os.getenv(key, None)
