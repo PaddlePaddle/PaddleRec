@@ -1,8 +1,7 @@
 import argparse
 import os
-
+import subprocess
 import yaml
-from paddle.fluid.incubate.fleet.parameter_server import version
 
 from fleetrec.core.factory import TrainerFactory
 from fleetrec.core.utils import envs
@@ -10,6 +9,18 @@ from fleetrec.core.utils import util
 
 engines = {"TRAINSPILER": {}, "PSLIB": {}}
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
+
+
+def is_transpiler():
+    FNULL = open(os.devnull, 'w')
+    cmd = ["python", "-c",
+           "import paddle.fluid as fluid; fleet_ptr = fluid.core.Fleet(); [fleet_ptr.copy_table_by_feasign(10, 10, [2020, 1010])];"]
+    proc = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL, cwd=os.getcwd())
+    ret = proc.wait()
+    if ret == -11:
+        return False
+    else:
+        return True
 
 
 def set_runtime_envs(cluster_envs, engine_yaml):
