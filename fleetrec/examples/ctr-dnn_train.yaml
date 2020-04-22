@@ -14,7 +14,7 @@
 
 train:
   trainer:
-    trainer: "/root/FleetRec/fleetrec/examples/user_define_trainer.py"
+    trainer: "fleetrec/examples/user_define_trainer.py"
     threads: 4
     # for cluster training
     strategy: "async"
@@ -30,7 +30,7 @@ train:
     mode: "dataset"
     batch_size: 2
     class: "fleetrec.models.ctr_dnn.reader"
-    train_data_path: "/root/FleetRec/fleetrec/models/ctr_dnn/data/train/"
+    train_data_path: "fleetrec/models/ctr_dnn/data/train/"
 
   model:
     models: "fleetrec.models.ctr_dnn.model"
