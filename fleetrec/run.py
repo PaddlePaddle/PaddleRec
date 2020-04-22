@@ -52,7 +52,7 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
 def get_engine(engine):
     engine = engine.upper()
-    if version.is_transpiler():
+    if is_transpiler():
         run_engine = engines["TRAINSPILER"].get(engine, None)
     else:
         run_engine = engines["PSLIB"].get(engine, None)
