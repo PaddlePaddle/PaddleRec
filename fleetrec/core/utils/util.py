@@ -16,7 +16,18 @@ import os
 import time
 import datetime
 
+from paddle import fluid
 from fleetrec.core.utils import fs as fs
+
+
+def save_program_proto(path, program=None):
+    if program is None:
+        _program = fluid.default_main_program()
+    else:
+        _program = program
+
+    with open(path, "wb") as f:
+        f.write(_program.desc.serialize_to_string())
 
 
 def str2bool(v):
