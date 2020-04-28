@@ -2,19 +2,18 @@
 setup for fleet-rec.
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
-models_ctr = ["fleetrec.models.ctr", "fleetrec.models.ctr.dnn", "fleetrec.models.ctr.deepfm"]
-models_ot = ["fleetrec.models.other", "fleetrec.models.tdm", "fleetrec.models.multi_task"]
-models_recall = ["fleetrec.models.recall", "fleetrec.models.recall.word2vec"]
-models = ["fleetrec.models"] + models_ctr + models_ot + models_recall
+models = find_packages("models")
+tools = find_packages("tools")
+dataset = find_packages("dataset")
+core = find_packages("fleetrec")
 
-core = ["fleetrec.core", "fleetrec.core.engine",
-        "fleetrec.core.metrics", "fleetrec.core.modules",
-        "fleetrec.core.trainers", "fleetrec.core.utils"]
-
-packages = ["fleetrec", "fleetrec.contrib", "fleetrec.dataset", "fleetrec.doc", "fleetrec.examples",
-            "fleetrec.tools"] + models + core
+package_dir = {}
+package_dir["fleetrec.models"] = models
+package_dir["fleetrec.tools"] = tools
+package_dir["fleetrec.dataset"] = dataset
+package_dir["fleetrec"] = core
 
 requires = [
     "paddlepaddle >= 0.0.0",
@@ -39,7 +38,7 @@ setup(
     author=about["__author__"],
     author_email=about["__author_email__"],
     url=about["__url__"],
-    packages=packages,
+    package_dir=package_dir,
     python_requires=">=2.7",
     install_requires=requires,
     zip_safe=False
