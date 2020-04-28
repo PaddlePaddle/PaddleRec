@@ -27,7 +27,7 @@ setup(
     author=about["__author__"],
     author_email=about["__author_email__"],
     url=about["__url__"],
-    packages=find_packages("fleetrec"),
+    packages=find_packages(),
     python_requires=">=2.7",
     install_requires=requires,
     zip_safe=False
