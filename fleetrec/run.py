@@ -172,9 +172,10 @@ if __name__ == "__main__":
     args.device = args.device.upper()
 
     if not os.path.isfile(args.model):
-        raise FileNotFoundError("argument model: {} do not exist".format(args.model))
+        raise IOError("argument model: {} do not exist".format(args.model))
     engine_registry()
 
     which_engine = get_engine(args.engine, args.device)
+
     engine = which_engine(args)
     engine.run()
