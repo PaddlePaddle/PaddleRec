@@ -4,17 +4,6 @@ setup for fleet-rec.
 
 from setuptools import setup, find_packages
 
-models = find_packages("models")
-tools = find_packages("tools")
-dataset = find_packages("dataset")
-core = find_packages("fleetrec")
-
-package_dir = {}
-package_dir["fleetrec.models"] = models
-package_dir["fleetrec.tools"] = tools
-package_dir["fleetrec.dataset"] = dataset
-package_dir["fleetrec"] = core
-
 requires = [
     "paddlepaddle >= 0.0.0",
     "netron >= 0.0.0"
@@ -38,7 +27,7 @@ setup(
     author=about["__author__"],
     author_email=about["__author_email__"],
     url=about["__url__"],
-    package_dir=package_dir,
+    packages=find_packages("fleetrec"),
     python_requires=">=2.7",
     install_requires=requires,
     zip_safe=False
