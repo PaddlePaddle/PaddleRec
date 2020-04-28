@@ -27,7 +27,7 @@ from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
 from fleetrec.core.utils import fs as fs
 from fleetrec.core.utils import util as util
 from fleetrec.core.metrics.auc_metrics import AUCMetric
-from fleetrec.core.models.modul import build as model_basic
+from fleetrec.core.modules.modul import build as model_basic
 from fleetrec.core.utils import dataset
 from fleetrec.core.trainer import Trainer
 

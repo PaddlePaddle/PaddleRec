@@ -10,7 +10,7 @@ models_recall = ["fleetrec.models.recall", "fleetrec.models.recall.word2vec"]
 models = ["fleetrec.models"] + models_ctr + models_ot + models_recall
 
 core = ["fleetrec.core", "fleetrec.core.engine",
-        "fleetrec.core.metrics", "fleetrec.core.models",
+        "fleetrec.core.metrics", "fleetrec.core.modules",
         "fleetrec.core.trainers", "fleetrec.core.utils"]
 
 packages = ["fleetrec", "fleetrec.contrib", "fleetrec.dataset", "fleetrec.doc", "fleetrec.examples",
