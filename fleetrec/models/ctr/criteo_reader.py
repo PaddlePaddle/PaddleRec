@@ -51,9 +51,9 @@ class TrainReader(Reader):
                 sparse_feature.append(
                     [hash(str(idx) + features[idx]) % self.hash_dim_])
             label = [int(features[0])]
-            feature_name = ["dense_input"]
+            feature_name = ["D"]
             for idx in self.categorical_range_:
-                feature_name.append("C" + str(idx - 13))
+                feature_name.append("S" + str(idx - 13))
             feature_name.append("label")
             yield zip(feature_name, [dense_feature] + sparse_feature + [label])
 

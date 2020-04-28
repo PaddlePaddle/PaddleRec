@@ -4,12 +4,21 @@ setup for fleet-rec.
 
 from setuptools import setup
 
-packages = ["fleetrec", "fleetrec.models", "fleetrec.models.ctr_dnn",
-            "fleetrec.examples", "fleetrec.core", "fleetrec.core.engine",
-            "fleetrec.core.metrics", "fleetrec.core.models", "fleetrec.core.trainers", "fleetrec.core.utils"]
+models_ctr = ["fleetrec.models.ctr", "fleetrec.models.ctr.dnn", "fleetrec.models.ctr.deepfm"]
+models_ot = ["fleetrec.models.other", "fleetrec.models.tdm", "fleetrec.models.multi_task"]
+models_recall = ["fleetrec.models.recall", "fleetrec.models.recall.word2vec"]
+models = ["fleetrec.models"] + models_ctr + models_ot + models_recall
+
+core = ["fleetrec.core", "fleetrec.core.engine",
+        "fleetrec.core.metrics", "fleetrec.core.models",
+        "fleetrec.core.trainers", "fleetrec.core.utils"]
+
+packages = ["fleetrec", "fleetrec.contrib", "fleetrec.dataset", "fleetrec.doc", "fleetrec.examples",
+            "fleetrec.tools"] + models + core
 
 requires = [
-    "paddlepaddle >= 0.0.0"
+    "paddlepaddle >= 0.0.0",
+    "netron >= 0.0.0"
 ]
 
 about = {}

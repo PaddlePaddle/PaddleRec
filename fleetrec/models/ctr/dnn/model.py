@@ -22,14 +22,13 @@ from fleetrec.core.model import Model as ModelBase
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
-        self.namespace = "train.model"
 
     def input(self):
         def sparse_inputs():
-            ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None, self.namespace)
+            ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None, self._namespace)
 
             sparse_input_ids = [
-                fluid.layers.data(name="C" + str(i),
+                fluid.layers.data(name="S" + str(i),
                                   shape=[1],
                                   lod_level=1,
                                   dtype="int64") for i in range(1, ids)
@@ -37,9 +36,9 @@ class Model(ModelBase):
             return sparse_input_ids
 
         def dense_input():
-            dim = envs.get_global_env("hyper_parameters.dense_input_dim", None, self.namespace)
+            dim = envs.get_global_env("hyper_parameters.dense_input_dim", None, self._namespace)
 
-            dense_input_var = fluid.layers.data(name="dense_input",
+            dense_input_var = fluid.layers.data(name="D",
                                                 shape=[dim],
                                                 dtype="float32")
             return dense_input_var
@@ -63,8 +62,8 @@ class Model(ModelBase):
         trainer = envs.get_trainer()
 
         is_distributed = True if trainer == "CtrTrainer" else False
-        sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self.namespace)
-        sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self.namespace)
+        sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self._namespace)
+        sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
         sparse_feature_dim = 9 if trainer == "CtrTrainer" else sparse_feature_dim
 
         def embedding_layer(input):
@@ -93,7 +92,7 @@ class Model(ModelBase):
         concated = fluid.layers.concat(sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
-        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None, self.namespace)
+        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None, self._namespace)
 
         for size in hidden_layers:
             fcs.append(fc(fcs[-1], size))
@@ -128,7 +127,7 @@ class Model(ModelBase):
         self.metrics()
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self.namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 

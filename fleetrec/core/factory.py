@@ -45,8 +45,8 @@ class TrainerFactory(object):
         trainer_abs = trainers.get(train_mode, None)
 
         if trainer_abs is None:
-            if not os.path.exists(train_mode) or not os.path.isfile(train_mode):
-                raise ValueError("trainer {} can not be recognized".format(train_mode))
+            if not os.path.isfile(train_mode):
+                raise FileNotFoundError("trainer {} can not be recognized".format(train_mode))
             trainer_abs = train_mode
             train_mode = "UserDefineTrainer"
 
@@ -60,7 +60,7 @@ class TrainerFactory(object):
     @staticmethod
     def create(config):
         _config = None
-        if os.path.exists(config) and os.path.isfile(config):
+        if os.path.isfile(config):
             with open(config, 'r') as rb:
                 _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
         else:

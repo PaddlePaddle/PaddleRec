@@ -7,20 +7,47 @@ from fleetrec.core.factory import TrainerFactory
 from fleetrec.core.utils import envs
 from fleetrec.core.utils import util
 
-engines = {"TRAINSPILER": {}, "PSLIB": {}}
+engines = {}
+device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 
 
-def is_transpiler():
+def engine_registry():
+    cpu = {"TRANSPILER": {}, "PSLIB": {}}
+    cpu["TRANSPILER"]["SINGLE"] = single_engine
+    cpu["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
+    cpu["TRANSPILER"]["CLUSTER"] = cluster_engine
+    cpu["PSLIB"]["SINGLE"] = local_mpi_engine
+    cpu["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
+    cpu["PSLIB"]["CLUSTER"] = cluster_mpi_engine
+
+    gpu = {"TRANSPILER": {}, "PSLIB": {}}
+    gpu["TRANSPILER"]["SINGLE"] = single_engine
+
+    engines["CPU"] = cpu
+    engines["GPU"] = gpu
+
+
+def get_engine(engine, device):
+    d_engine = engines[device]
+    transpiler = get_transpiler()
+    run_engine = d_engine[transpiler].get(engine, None)
+
+    if run_engine is None:
+        raise ValueError("engine {} can not be supported on device: {}".format(engine, device))
+    return run_engine
+
+
+def get_transpiler():
     FNULL = open(os.devnull, 'w')
     cmd = ["python", "-c",
            "import paddle.fluid as fluid; fleet_ptr = fluid.core.Fleet(); [fleet_ptr.copy_table_by_feasign(10, 10, [2020, 1010])];"]
     proc = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL, cwd=os.getcwd())
     ret = proc.wait()
     if ret == -11:
-        return False
+        return "PSLIB"
     else:
-        return True
+        return "TRANSPILER"
 
 
 def set_runtime_envs(cluster_envs, engine_yaml):
@@ -50,18 +77,6 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
-def get_engine(engine):
-    engine = engine.upper()
-    if is_transpiler():
-        run_engine = engines["TRAINSPILER"].get(engine, None)
-    else:
-        run_engine = engines["PSLIB"].get(engine, None)
-
-    if run_engine is None:
-        raise ValueError("engine only support SINGLE/LOCAL_CLUSTER/CLUSTER")
-    return run_engine
-
-
 def single_engine(args):
     print("use single engine to run model: {}".format(args.model))
 
@@ -69,6 +84,8 @@ def single_engine(args):
     single_envs["train.trainer.trainer"] = "SingleTrainer"
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
+    single_envs["train.trainer.device"] = args.device
+
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
@@ -80,6 +97,8 @@ def cluster_engine(args):
     cluster_envs = {}
     cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
     cluster_envs["train.trainer.engine"] = "cluster"
+    cluster_envs["train.trainer.device"] = args.device
+
     set_runtime_envs(cluster_envs, args.model)
 
     trainer = TrainerFactory.create(args.model)
@@ -91,6 +110,8 @@ def cluster_mpi_engine(args):
 
     cluster_envs = {}
     cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
+    cluster_envs["train.trainer.device"] = args.device
+
     set_runtime_envs(cluster_envs, args.model)
 
     trainer = TrainerFactory.create(args.model)
@@ -110,6 +131,7 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.strategy"] = "async"
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
+    cluster_envs["train.trainer.device"] = args.device
     cluster_envs["CPU_NUM"] = "2"
 
     set_runtime_envs(cluster_envs, args.model)
@@ -132,36 +154,25 @@ def local_mpi_engine(args):
     cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.engine"] = "local_cluster"
+    cluster_envs["train.trainer.device"] = args.device
 
     set_runtime_envs(cluster_envs, args.model)
     launch = LocalMPIEngine(cluster_envs, args.model)
     return launch
 
 
-def engine_registry():
-    engines["TRAINSPILER"]["SINGLE"] = single_engine
-    engines["TRAINSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
-    engines["TRAINSPILER"]["CLUSTER"] = cluster_engine
-    engines["PSLIB"]["SINGLE"] = local_mpi_engine
-    engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
-    engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
-
-
-engine_registry()
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
-    parser.add_argument("-e", "--engine", type=str)
+    parser.add_argument("-e", "--engine", type=str, choices=clusters)
+    parser.add_argument("-d", "--device", type=str, choices=["CPU", "GPU"], default="CPU")
 
     args = parser.parse_args()
 
-    if not os.path.exists(args.model) or not os.path.isfile(args.model):
-        raise ValueError("argument model: {} error, must specify an existed YAML file".format(args.model))
+    if not os.path.isfile(args.model):
+        raise FileNotFoundError("argument model: {} do not exist".format(args.model))
+    engine_registry()
 
-    if args.engine.upper() not in clusters:
-        raise ValueError("argument engine: {} error, must in {}".format(args.engine, clusters))
-
-    which_engine = get_engine(args.engine)
+    which_engine = get_engine(args.engine, args.device)
     engine = which_engine(args)
     engine.run()

@@ -123,3 +123,14 @@ def lazy_instance(package, class_name):
     model_package = __import__(package, globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
+
+
+def get_platform():
+    import platform
+    plats = platform.platform()
+    if 'Linux' in plats:
+        return "LINUX"
+    if 'Darwin' in plats:
+        return "DARWIN"
+    if 'Windows' in plats:
+        return "WINDOWS"

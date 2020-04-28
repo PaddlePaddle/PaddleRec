@@ -13,6 +13,7 @@ class Model(object):
         self._metrics = {}
         self._data_var = []
         self._fetch_interval = 20
+        self._namespace = "train.model"
 
     def get_inputs(self):
         return self._data_var
