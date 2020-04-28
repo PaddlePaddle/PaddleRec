@@ -28,17 +28,25 @@ cd FleetRec
 
 python -m fleetrec.run \
        -m fleetrec/examples/ctr-dnn_train.yaml \
+       -d cpu \
        -e single 
+
+# 使用GPU资源进行训练
+python -m fleetrec.run \
+       -m fleetrec/examples/ctr-dnn_train.yaml \
+       -d gpu \
+       -e single
 ```
 
 ### 本地模拟分布式训练
 
 ```bash
 cd FleetRec
-
+# 使用CPU资源进行训练
 python -m fleetrec.run \
        -m fleetrec/examples/ctr-dnn_train.yaml \
-       -e local_cluster 
+       -d cpu \
+       -e local_cluster
 ```
 
 ### 集群提交分布式训练<需要用户预先配置好集群环境，本提交命令不包含提交客户端>
@@ -48,6 +56,7 @@ cd FleetRec
 
 python -m fleetrec.run \
        -m fleetrec/examples/ctr-dnn_train.yaml \
+       -d cpu \
        -e cluster
 ```
 

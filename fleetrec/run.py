@@ -164,10 +164,12 @@ def local_mpi_engine(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
-    parser.add_argument("-e", "--engine", type=str, choices=clusters)
-    parser.add_argument("-d", "--device", type=str, choices=["CPU", "GPU"], default="CPU")
+    parser.add_argument("-e", "--engine", type=str, choices=["single", "local_cluster", "cluster"])
+    parser.add_argument("-d", "--device", type=str, choices=["cpu", "gpu"], default="cpu")
 
     args = parser.parse_args()
+    args.engine = args.engine.upper()
+    args.device = args.device.upper()
 
     if not os.path.isfile(args.model):
         raise FileNotFoundError("argument model: {} do not exist".format(args.model))
