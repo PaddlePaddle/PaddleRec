@@ -29,11 +29,11 @@ train:
   reader:
     mode: "dataset"
     batch_size: 2
-    class: "fleetrec.models.ctr.criteo_reader"
-    train_data_path: "fleetrec/models/ctr/dnn/data/train"
+    class: "fleetrec.models.ranK.criteo_reader"
+    train_data_path: "fleetrec/models/ranK/dnn/data/train"
 
   model:
-    models: "fleetrec.models.ctr.dnn.model"
+    models: "fleetrec.models.ranK.dnn.model"
     hyper_parameters:
       sparse_inputs_slots: 27
       sparse_feature_number: 1000001
