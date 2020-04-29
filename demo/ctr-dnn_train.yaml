@@ -14,20 +14,13 @@
 
 train:
   trainer:
-    #trainer: "fleetrec/demo/user_define_trainer.py"
     threads: 4
     # for cluster training
     strategy: "async"
-    communicator:
-      send_queue_size: 4
-      min_send_grad_num_before_recv: 4
-      thread_pool_size: 5
-      max_merge_var_num: 4
 
   epochs: 10
 
   reader:
-    mode: "dataset"
     batch_size: 2
     class: "fleetrec.models.rank.criteo_reader"
     train_data_path: "models/rank/dnn/data/train"
