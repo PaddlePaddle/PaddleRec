@@ -6,7 +6,8 @@ from setuptools import setup, find_packages
 
 requires = [
     "paddlepaddle >= 0.0.0",
-    "netron >= 0.0.0"
+    "netron >= 0.0.0",
+    "yaml"
 ]
 
 about = {}
