@@ -93,9 +93,6 @@ class ClusterTrainer(TranspileTrainer):
         context['is_exit'] = True
 
     def dataloader_train(self, context):
-        pass
-
-    def dataset_train(self, context):
         self._exe.run(fleet.startup_program)
 
         fleet.init_worker()
@@ -139,6 +136,23 @@ class ClusterTrainer(TranspileTrainer):
             except fluid.core.EOFException:
                 reader.reset()
 
+        fleet.stop_worker()
+        context['status'] = 'terminal_pass'
+
+    def dataset_train(self, context):
+        self._exe.run(fleet.startup_program)
+        fleet.init_worker()
+
+        dataset = self._get_dataset()
+        epochs = envs.get_global_env("train.epochs")
+
+        for i in range(epochs):
+            self._exe.train_from_dataset(program=fluid.default_main_program(),
+                                         dataset=dataset,
+                                         fetch_list=self.fetch_vars,
+                                         fetch_info=self.fetch_alias,
+                                         print_period=self.fetch_period)
+            self.save(i, "train", is_fleet=True)
         fleet.stop_worker()
         context['status'] = 'terminal_pass'
 
