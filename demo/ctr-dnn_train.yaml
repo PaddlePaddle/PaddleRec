@@ -22,7 +22,7 @@ train:
   reader:
     batch_size: 2
     class: "fleetrec.models.rank.criteo_reader"
-    train_data_path: "models/rank/dnn/data/train"
+    train_data_path: "fleetrec::models/rank/dnn/data/train"
 
   model:
     models: "fleetrec.models.rank.dnn.model"

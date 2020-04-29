@@ -183,6 +183,9 @@ if __name__ == "__main__":
         raise IOError("argument model: {} do not exist".format(args.model))
     engine_registry()
 
+    abs_dir = os.path.dirname(os.path.abspath(__file__))
+    envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
+
     which_engine = get_engine(args.engine, args.device)
 
     engine = which_engine(args)

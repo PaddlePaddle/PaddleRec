@@ -50,6 +50,8 @@ def build(dirname):
     packages = find_packages(dirname, include=('fleetrec.*'))
     package_dir = {'': dirname}
 
+    package_data = {'fleetrec.models.rank.dnn': ['data/*/*.txt'], }
+
     setup(
         name=about["__title__"],
         version=about["__version__"],
@@ -60,6 +62,7 @@ def build(dirname):
         url=about["__url__"],
         packages=packages,
         package_dir=package_dir,
+        package_data=package_data,
         python_requires=">=2.7",
         install_requires=requires,
         zip_safe=False
