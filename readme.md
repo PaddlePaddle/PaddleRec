@@ -27,13 +27,13 @@ python setup.py install
 cd FleetRec
 
 python -m fleetrec.run \
-       -m fleetrec/demo/ctr-dnn_train.yaml \
+       -m demo/ctr-dnn_train.yaml \
        -d cpu \
        -e single 
 
 # 使用GPU资源进行训练
 python -m fleetrec.run \
-       -m fleetrec/demo/ctr-dnn_train.yaml \
+       -m demo/ctr-dnn_train.yaml \
        -d gpu \
        -e single
 ```
@@ -44,7 +44,7 @@ python -m fleetrec.run \
 cd FleetRec
 # 使用CPU资源进行训练
 python -m fleetrec.run \
-       -m fleetrec/demo/ctr-dnn_train.yaml \
+       -m demo/ctr-dnn_train.yaml \
        -d cpu \
        -e local_cluster
 ```
@@ -55,7 +55,7 @@ python -m fleetrec.run \
 cd FleetRec
 
 python -m fleetrec.run \
-       -m fleetrec/demo/ctr-dnn_train.yaml \
+       -m demo/ctr-dnn_train.yaml \
        -d cpu \
        -e cluster
 ```
