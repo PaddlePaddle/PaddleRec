@@ -1,5 +1,5 @@
 import abc
-from fleet_rec.core.utils import envs
+from fleetrec.core.utils import envs
 
 class Model(object):
     """R

@@ -3,6 +3,6 @@ output
 .idea/
 build/
 dist/
-fleet_rec.egg-info/
+fleetrec.egg-info/
 *~
 *.pyc

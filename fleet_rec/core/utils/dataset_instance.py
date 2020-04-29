@@ -14,7 +14,7 @@
 from __future__ import print_function
 import sys
 
-from fleet_rec.core.utils.envs import lazy_instance
+from fleetrec.core.utils.envs import lazy_instance
 
 if len(sys.argv) != 4:
     raise ValueError("reader only accept 3 argument: 1. reader_class 2.train/evaluate 3.yaml_abs_path")

@@ -18,8 +18,8 @@ import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import MPISymetricRoleMaker
 
-from fleet_rec.core.utils import envs
-from fleet_rec.core.trainer import Trainer
+from fleetrec.core.utils import envs
+from fleetrec.core.trainer import Trainer
 
 
 class CtrPaddleTrainer(Trainer):

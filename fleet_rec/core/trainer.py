@@ -20,7 +20,7 @@ import time
 import yaml
 
 from paddle import fluid
-from fleet_rec.core.utils import envs
+from fleetrec.core.utils import envs
 
 
 class Trainer(object):

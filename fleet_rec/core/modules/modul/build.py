@@ -3,8 +3,8 @@ import copy
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 
-from fleet_rec.core.model import Model
-from fleet_rec.core.utils import table
+from fleetrec.core.model import Model
+from fleetrec.core.utils import table
 
 
 def create(config):

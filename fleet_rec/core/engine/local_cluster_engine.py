@@ -19,7 +19,7 @@ import sys
 import os
 import copy
 
-from fleet_rec.core.engine.engine import Engine
+from fleetrec.core.engine.engine import Engine
 
 
 class LocalClusterEngine(Engine):
