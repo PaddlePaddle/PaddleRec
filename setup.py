@@ -6,8 +6,8 @@ from setuptools import setup, find_packages
 
 if sys.version_info.major == 2:
     requires = [
-        "paddlepaddle >= 0.0.0",
-        "netron >= 0.0.0",
+        "paddlepaddle == 1.7.2",
+        "netron >= 5.1.1",
         "yaml"
     ]
 else:
