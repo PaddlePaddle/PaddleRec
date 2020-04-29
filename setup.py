@@ -37,7 +37,7 @@ def run_cmd(command):
 
 
 def build(dirname):
-    print(dirname)
+
     package_dir = os.path.dirname(os.path.abspath(__file__))
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
     run_cmd("mkdir {}".format(os.path.join(dirname, "fleetrec")))
