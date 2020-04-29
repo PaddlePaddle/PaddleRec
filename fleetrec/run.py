@@ -85,6 +85,7 @@ def single_engine(args):
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
     single_envs["train.trainer.device"] = args.device
+    single_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
@@ -98,6 +99,7 @@ def cluster_engine(args):
     cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
     cluster_envs["train.trainer.engine"] = "cluster"
     cluster_envs["train.trainer.device"] = args.device
+    cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
 
@@ -111,6 +113,7 @@ def cluster_mpi_engine(args):
     cluster_envs = {}
     cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
     cluster_envs["train.trainer.device"] = args.device
+    cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
 
@@ -131,7 +134,10 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.strategy"] = "async"
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
+
     cluster_envs["train.trainer.device"] = args.device
+    cluster_envs["train.trainer.platform"] = envs.get_platform()
+
     cluster_envs["CPU_NUM"] = "2"
 
     set_runtime_envs(cluster_envs, args.model)
@@ -154,7 +160,9 @@ def local_mpi_engine(args):
     cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.engine"] = "local_cluster"
+
     cluster_envs["train.trainer.device"] = args.device
+    cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
     launch = LocalMPIEngine(cluster_envs, args.model)

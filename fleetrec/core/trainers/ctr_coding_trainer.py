@@ -57,7 +57,7 @@ class CtrPaddleTrainer(Trainer):
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        reader = os.path.join(abs_dir, '../utils', 'reader_instance.py')
+        reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
         pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN", self._config_yaml)
         train_data_path = envs.get_global_env("train_data_path", None, namespace)
 

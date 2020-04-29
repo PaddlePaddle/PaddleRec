@@ -22,6 +22,7 @@ import paddle.fluid as fluid
 
 from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
 from fleetrec.core.utils import envs
+import numpy as np
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")
@@ -32,7 +33,12 @@ class SingleTrainer(TranspileTrainer):
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('init_pass', self.init)
-        self.regist_context_processor('train_pass', self.train)
+
+        if envs.get_platform() == "LINUX":
+            self.regist_context_processor('train_pass', self.dataset_train)
+        else:
+            self.regist_context_processor('train_pass', self.dataloader_train)
+
         self.regist_context_processor('infer_pass', self.infer)
         self.regist_context_processor('terminal_pass', self.terminal)
 
@@ -51,12 +57,51 @@ class SingleTrainer(TranspileTrainer):
             self.fetch_alias = metrics.keys()
         context['status'] = 'train_pass'
 
-    def train(self, context):
+    def dataloader_train(self, context):
+        self._exe.run(fluid.default_startup_program())
+        reader = self._get_dataloader()
+        epochs = envs.get_global_env("train.epochs")
+
+        program = fluid.compiler.CompiledProgram(
+            fluid.default_main_program()).with_data_parallel(
+            loss_name=self.model.get_cost_op.name)
+
+        metrics_varnames = []
+        metrics_format = []
+
+        metrics_format.append("{}: {{}}".format("epoch"))
+        metrics_format.append("{}: {{}}".format("batch"))
+
+        for name, var in self.model.get_metrics().items():
+            metrics_format.append("{}: {{}}".format(name))
+
+        metrics_format = ", ".join(metrics_format)
+
+        for epoch in range(epochs):
+            reader.start()
+            batch_id = 0
+            try:
+                while True:
+                    metrics_rets = self._exe.run(
+                        program=program,
+                        fetch_list=metrics_varnames)
+
+                    metrics_rets = np.mean(metrics_rets, axis=0)
+                    metrics = [epoch, batch_id]
+                    metrics.extend(metrics_rets.tolist())
+
+                    if batch_id % 10 == 0 and batch_id != 0:
+                        print(metrics_format.format(metrics))
+                    batch_id += 1
+            except fluid.core.EOFException:
+                reader.reset()
+
+        context['status'] = 'infer_pass'
+
+    def dataset_train(self, context):
         # run startup program at once
         self._exe.run(fluid.default_startup_program())
-
         dataset = self._get_dataset()
-
         epochs = envs.get_global_env("train.epochs")
 
         for i in range(epochs):

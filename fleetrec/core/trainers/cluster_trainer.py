@@ -39,7 +39,11 @@ class ClusterTrainer(TranspileTrainer):
         else:
             self.regist_context_processor('uninit', self.instance)
             self.regist_context_processor('init_pass', self.init)
-            self.regist_context_processor('train_pass', self.train)
+
+            if envs.get_platform() == "LINUX":
+                self.regist_context_processor('train_pass', self.dataset_train)
+            else:
+                self.regist_context_processor('train_pass', self.dataloader_train)
             self.regist_context_processor('terminal_pass', self.terminal)
 
     def build_strategy(self):
@@ -87,7 +91,10 @@ class ClusterTrainer(TranspileTrainer):
         fleet.run_server()
         context['is_exit'] = True
 
-    def train(self, context):
+    def dataloader_train(self, context):
+        pass
+
+    def dataset_train(self, context):
         self._exe.run(fleet.startup_program)
         fleet.init_worker()
 

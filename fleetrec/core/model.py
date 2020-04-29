@@ -12,6 +12,7 @@ class Model(object):
         self._cost = None
         self._metrics = {}
         self._data_var = []
+        self._data_loader = None
         self._fetch_interval = 20
         self._namespace = "train.model"
 

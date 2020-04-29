@@ -57,6 +57,8 @@ class Model(ModelBase):
             self._data_var.append(input)
 
         self._data_var.append(self.label_input)
+        self._data_loader = fluid.io.PyReader(
+            feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
 
     def net(self):
         trainer = envs.get_trainer()

@@ -22,6 +22,7 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import f
 
 from fleetrec.core.trainer import Trainer
 from fleetrec.core.utils import envs
+from fleetrec.core.utils import dataloader_instance
 
 
 class TranspileTrainer(Trainer):
@@ -35,6 +36,16 @@ class TranspileTrainer(Trainer):
     def processor_register(self):
         print("Need implement by trainer, `self.regist_context_processor('uninit', self.instance)` must be the first")
 
+    def _get_dataloader(self):
+        namespace = "train.reader"
+        dataloader = self.model._data_loader
+        batch_size = envs.get_global_env("batch_size", None, namespace)
+        reader_class = envs.get_global_env("class", None, namespace)
+
+        reader = dataloader_instance.dataloader(reader_class, "TRAIN", self._config_yaml)
+        dataloader.set_sample_generator(reader, batch_size)
+        return dataloader
+
     def _get_dataset(self):
         namespace = "train.reader"
 
@@ -43,7 +54,7 @@ class TranspileTrainer(Trainer):
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        reader = os.path.join(abs_dir, '../utils', 'reader_instance.py')
+        reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
         pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN", self._config_yaml)
         train_data_path = envs.get_global_env("train_data_path", None, namespace)
 
@@ -123,7 +134,11 @@ class TranspileTrainer(Trainer):
         print("Need to be implement")
         context['is_exit'] = True
 
-    def train(self, context):
+    def dataloader_train(self, context):
+        print("Need to be implement")
+        context['is_exit'] = True
+
+    def dataset_train(self, context):
         print("Need to be implement")
         context['is_exit'] = True
 
