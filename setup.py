@@ -1,20 +1,23 @@
 """
 setup for fleet-rec.
 """
+import os
 import sys
 from setuptools import setup, find_packages
+import tempfile
+import shutil
 
 if sys.version_info.major == 2:
     requires = [
         "paddlepaddle == 1.7.2",
-        "netron >= 5.1.1",
-        "yaml"
+        "netron >= 0.0.0",
+        "yaml >= 5.1.1"
     ]
 else:
     requires = [
         "paddlepaddle >= 0.0.0",
         "netron >= 0.0.0",
-        "pyyaml"
+        "pyyaml >= 5.1.1"
     ]
 
 about = {}
@@ -27,19 +30,44 @@ about["__url__"] = "https://github.com/seiriosPlus/FleetRec"
 
 readme = "..."
 
-setup(
-    name=about["__title__"],
-    version=about["__version__"],
-    description=about["__description__"],
-    long_description=readme,
-    author=about["__author__"],
-    author_email=about["__author_email__"],
-    url=about["__url__"],
-    packages=find_packages(),
-    python_requires=">=2.7",
-    install_requires=requires,
-    zip_safe=False
-)
+
+def run_cmd(command):
+    assert command is not None and isinstance(command, str)
+    return os.popen(command).read().strip()
+
+
+def build(dirname):
+    print(dirname)
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    run_cmd("cp -r {}/* {}".format(package_dir, dirname))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "dataset"), os.path.join(dirname, "fleetrec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "demo"), os.path.join(dirname, "fleetrec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "fleetrec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "fleetrec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "tools"), os.path.join(dirname, "fleetrec")))
+
+    packages = find_packages(dirname)
+    package_dir = {'': dirname}
+
+    setup(
+        name=about["__title__"],
+        version=about["__version__"],
+        description=about["__description__"],
+        long_description=readme,
+        author=about["__author__"],
+        author_email=about["__author_email__"],
+        url=about["__url__"],
+        packages=packages,
+        package_dir=package_dir,
+        python_requires=">=2.7",
+        install_requires=requires,
+        zip_safe=False
+    )
+
+
+dirname = tempfile.mkdtemp()
+build(dirname)
+shutil.rmtree(dirname)
 
 print('''
 \033[32m
