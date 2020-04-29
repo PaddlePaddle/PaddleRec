@@ -64,7 +64,7 @@ class SingleTrainer(TranspileTrainer):
 
         program = fluid.compiler.CompiledProgram(
             fluid.default_main_program()).with_data_parallel(
-            loss_name=self.model.get_cost_op.name)
+            loss_name=self.model.get_cost_op().name)
 
         metrics_varnames = []
         metrics_format = []

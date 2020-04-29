@@ -57,9 +57,9 @@ class Model(ModelBase):
             self._data_var.append(input)
 
         self._data_var.append(self.label_input)
-        
+
         if self._platform != "LINUX":
-            self._data_loader = fluid.io.PyReader(
+            self._data_loader = fluid.io.DataLoader.from_generator(
                 feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
 
     def net(self):
