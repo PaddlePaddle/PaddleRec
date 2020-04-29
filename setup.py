@@ -1,14 +1,21 @@
 """
 setup for fleet-rec.
 """
-
+import sys
 from setuptools import setup, find_packages
 
-requires = [
-    "paddlepaddle >= 0.0.0",
-    "netron >= 0.0.0",
-    "yaml"
-]
+if sys.version_info.major == 2:
+    requires = [
+        "paddlepaddle >= 0.0.0",
+        "netron >= 0.0.0",
+        "yaml"
+    ]
+else:
+    requires = [
+        "paddlepaddle >= 0.0.0",
+        "netron >= 0.0.0",
+        "pyyaml"
+    ]
 
 about = {}
 about["__title__"] = "fleet-rec"
