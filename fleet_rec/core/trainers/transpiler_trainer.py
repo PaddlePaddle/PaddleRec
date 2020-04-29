@@ -56,7 +56,13 @@ class TranspileTrainer(Trainer):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
         pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN", self._config_yaml)
+
         train_data_path = envs.get_global_env("train_data_path", None, namespace)
+
+        if train_data_path.startswith("fleetrec::"):
+            package_base = envs.get_runtime_environ("PACKAGE_BASE")
+            assert package_base is not None
+            train_data_path = os.path.join(package_base, train_data_path.split("::")[1])
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
