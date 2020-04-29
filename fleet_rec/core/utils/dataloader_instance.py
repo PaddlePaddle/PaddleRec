@@ -18,6 +18,7 @@ import sys
 
 from fleetrec.core.utils.envs import lazy_instance
 from fleetrec.core.utils.envs import get_global_env
+from fleetrec.core.utils.envs import get_runtime_environ
 
 
 def dataloader(readerclass, train, yaml_file):
@@ -29,6 +30,11 @@ def dataloader(readerclass, train, yaml_file):
     else:
         reader_name = "EvaluateReader"
         data_path = get_global_env("test_data_path", None, namespace)
+
+    if data_path.startswith("fleetrec::"):
+        package_base = get_runtime_environ("PACKAGE_BASE")
+        assert package_base is not None
+        data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
 
@@ -50,4 +56,5 @@ def dataloader(readerclass, train, yaml_file):
                             for pased in parsed_line:
                                 values.append(pased[1])
                             yield values
+
     return gen_reader
