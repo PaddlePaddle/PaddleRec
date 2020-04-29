@@ -40,7 +40,7 @@ def dataloader(readerclass, train, yaml_file):
         for file in files:
             with open(file, 'r') as f:
                 for line in f:
-                    line = line.rstrip('\n').split('\t')
+                    line = line.rstrip('\n')
                     iter = reader.generate_sample(line)
                     for parsed_line in iter():
                         if parsed_line is None:

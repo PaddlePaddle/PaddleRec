@@ -73,6 +73,7 @@ class SingleTrainer(TranspileTrainer):
         metrics_format.append("{}: {{}}".format("batch"))
 
         for name, var in self.model.get_metrics().items():
+            metrics_varnames.append(var.name)
             metrics_format.append("{}: {{}}".format(name))
 
         metrics_format = ", ".join(metrics_format)
@@ -86,12 +87,11 @@ class SingleTrainer(TranspileTrainer):
                         program=program,
                         fetch_list=metrics_varnames)
 
-                    metrics_rets = np.mean(metrics_rets, axis=0)
                     metrics = [epoch, batch_id]
-                    metrics.extend(metrics_rets.tolist())
+                    metrics.extend(metrics_rets)
 
                     if batch_id % 10 == 0 and batch_id != 0:
-                        print(metrics_format.format(metrics))
+                        print(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
