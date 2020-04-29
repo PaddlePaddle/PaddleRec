@@ -40,7 +40,6 @@ def build(dirname):
     print(dirname)
     package_dir = os.path.dirname(os.path.abspath(__file__))
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "dataset"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "demo"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "fleetrec")))
