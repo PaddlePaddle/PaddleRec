@@ -1,5 +1,5 @@
 import abc
-
+from fleetrec.core.utils import envs
 
 class Model(object):
     """R
@@ -15,6 +15,7 @@ class Model(object):
         self._data_loader = None
         self._fetch_interval = 20
         self._namespace = "train.model"
+        self._platform = envs.get_platform()
 
     def get_inputs(self):
         return self._data_var
