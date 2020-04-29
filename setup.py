@@ -11,7 +11,7 @@ if sys.version_info.major == 2:
     requires = [
         "paddlepaddle == 1.7.2",
         "netron >= 0.0.0",
-        "yaml >= 5.1.1"
+        "pyyaml >= 5.1.1"
     ]
 else:
     requires = [
