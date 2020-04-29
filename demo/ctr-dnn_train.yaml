@@ -14,7 +14,6 @@
 
 train:
   trainer:
-    threads: 4
     # for cluster training
     strategy: "async"
 
