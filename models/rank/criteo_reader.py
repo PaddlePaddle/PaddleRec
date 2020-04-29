@@ -13,8 +13,8 @@
 # limitations under the License.
 from __future__ import print_function
 
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from fleet_rec.core.reader import Reader
+from fleet_rec.core.utils import envs
 
 
 class TrainReader(Reader):

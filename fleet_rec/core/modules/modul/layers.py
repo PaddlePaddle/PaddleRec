@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import paddle.fluid as fluid
-from fleetrec.core.layer import Layer
+from fleet_rec.core.layer import Layer
 
 
 class EmbeddingInputLayer(Layer):

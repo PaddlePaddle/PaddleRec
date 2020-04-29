@@ -23,8 +23,8 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import f
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distributed_strategy import StrategyFactory
 from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
 
-from fleetrec.core.utils import envs
-from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
+from fleet_rec.core.utils import envs
+from fleet_rec.core.trainers.transpiler_trainer import TranspileTrainer
 
 
 class ClusterTrainer(TranspileTrainer):

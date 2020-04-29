@@ -17,7 +17,7 @@ import sys
 
 import yaml
 
-from fleetrec.core.utils import envs
+from fleet_rec.core.utils import envs
 
 trainer_abs = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trainers")
 trainers = {}

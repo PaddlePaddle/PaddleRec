@@ -20,8 +20,8 @@ from __future__ import print_function
 import logging
 import paddle.fluid as fluid
 
-from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
-from fleetrec.core.utils import envs
+from fleet_rec.core.trainers.transpiler_trainer import TranspileTrainer
+from fleet_rec.core.utils import envs
 import numpy as np
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")

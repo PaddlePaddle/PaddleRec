@@ -16,8 +16,8 @@ from __future__ import print_function
 import os
 import sys
 
-from fleetrec.core.utils.envs import lazy_instance
-from fleetrec.core.utils.envs import get_global_env
+from fleet_rec.core.utils.envs import lazy_instance
+from fleet_rec.core.utils.envs import get_global_env
 
 
 def dataloader(readerclass, train, yaml_file):

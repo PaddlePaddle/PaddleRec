@@ -14,8 +14,8 @@
 
 import paddle.fluid as fluid
 
-from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
-from fleetrec.core.utils import envs
+from fleet_rec.core.trainers.transpiler_trainer import TranspileTrainer
+from fleet_rec.core.utils import envs
 
 
 class UserDefineTrainer(TranspileTrainer):

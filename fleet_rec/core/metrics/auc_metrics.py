@@ -15,7 +15,7 @@
 import math
 import numpy as np
 import paddle.fluid as fluid
-from fleetrec.core.metric import Metric
+from fleet_rec.core.metric import Metric
 
 
 class AUCMetric(Metric):

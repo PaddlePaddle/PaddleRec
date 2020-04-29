@@ -17,7 +17,7 @@ import time
 import datetime
 
 from paddle import fluid
-from fleetrec.core.utils import fs as fs
+from fleet_rec.core.utils import fs as fs
 
 
 def save_program_proto(path, program=None):

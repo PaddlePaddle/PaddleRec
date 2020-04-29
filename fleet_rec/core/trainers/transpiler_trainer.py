@@ -20,9 +20,9 @@ import os
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 
-from fleetrec.core.trainer import Trainer
-from fleetrec.core.utils import envs
-from fleetrec.core.utils import dataloader_instance
+from fleet_rec.core.trainer import Trainer
+from fleet_rec.core.utils import envs
+from fleet_rec.core.utils import dataloader_instance
 
 
 class TranspileTrainer(Trainer):

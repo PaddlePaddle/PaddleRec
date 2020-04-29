@@ -24,12 +24,12 @@ from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
 
 
-from fleetrec.core.utils import fs as fs
-from fleetrec.core.utils import util as util
-from fleetrec.core.metrics.auc_metrics import AUCMetric
-from fleetrec.core.modules.modul import build as model_basic
-from fleetrec.core.utils import dataset
-from fleetrec.core.trainer import Trainer
+from fleet_rec.core.utils import fs as fs
+from fleet_rec.core.utils import util as util
+from fleet_rec.core.metrics.auc_metrics import AUCMetric
+from fleet_rec.core.modules.modul import build as model_basic
+from fleet_rec.core.utils import dataset
+from fleet_rec.core.trainer import Trainer
 
 
 def wroker_numric_opt(value, env, opt):

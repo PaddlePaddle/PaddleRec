@@ -10,13 +10,13 @@ import shutil
 if sys.version_info.major == 2:
     requires = [
         "paddlepaddle == 1.7.2",
-#        "netron >= 0.0.0",
+        #        "netron >= 0.0.0",
         "pyyaml >= 5.1.1"
     ]
 else:
     requires = [
         "paddlepaddle >= 0.0.0",
-#        "netron >= 0.0.0",
+        #        "netron >= 0.0.0",
         "pyyaml >= 5.1.1"
     ]
 
@@ -40,12 +40,14 @@ def build(dirname):
     print(dirname)
     package_dir = os.path.dirname(os.path.abspath(__file__))
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
+    run_cmd("mkdir {}".format(os.path.join(dirname, "fleetrec")))
+    run_cmd("mv {}/* {}".format(os.path.join(dirname, "fleet_rec"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "demo"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "tools"), os.path.join(dirname, "fleetrec")))
 
-    packages = find_packages(dirname)
+    packages = find_packages(dirname, include=('fleetrec.*'))
     package_dir = {'': dirname}
 
     setup(

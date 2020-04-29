@@ -3,9 +3,9 @@ import os
 import subprocess
 import yaml
 
-from fleetrec.core.factory import TrainerFactory
-from fleetrec.core.utils import envs
-from fleetrec.core.utils import util
+from fleet_rec.core.factory import TrainerFactory
+from fleet_rec.core.utils import envs
+from fleet_rec.core.utils import util
 
 engines = {}
 device = ["CPU", "GPU"]
@@ -123,7 +123,7 @@ def cluster_mpi_engine(args):
 
 def local_cluster_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
-    from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
+    from fleet_rec.core.engine.local_cluster_engine import LocalClusterEngine
 
     cluster_envs = {}
     cluster_envs["server_num"] = 1
@@ -148,7 +148,7 @@ def local_cluster_engine(args):
 
 def local_mpi_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
-    from fleetrec.core.engine.local_mpi_engine import LocalMPIEngine
+    from fleet_rec.core.engine.local_mpi_engine import LocalMPIEngine
 
     print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
 

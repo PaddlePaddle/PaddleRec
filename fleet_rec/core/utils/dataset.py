@@ -18,8 +18,8 @@ import datetime
 
 import paddle.fluid as fluid
 
-from fleetrec.core.utils import fs as fs
-from fleetrec.core.utils import util as util
+from fleet_rec.core.utils import fs as fs
+from fleet_rec.core.utils import util as util
 
 
 class Dataset(object):

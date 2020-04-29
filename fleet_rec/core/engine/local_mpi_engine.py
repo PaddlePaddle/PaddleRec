@@ -19,7 +19,7 @@ import sys
 import os
 import copy
 
-from fleetrec.core.engine.engine import Engine
+from fleet_rec.core.engine.engine import Engine
 
 
 class LocalMPIEngine(Engine):
