@@ -35,6 +35,7 @@ class Reader(dg.MultiSlotDataGenerator):
             raise ValueError("reader config only support yaml")
 
         envs.set_global_envs(_config)
+        envs.update_workspace()
 
     @abc.abstractmethod
     def init(self):

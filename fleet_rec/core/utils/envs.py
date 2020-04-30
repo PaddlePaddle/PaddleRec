@@ -14,6 +14,7 @@
 
 import os
 import copy
+import sys
 
 global_envs = {}
 
@@ -89,7 +90,6 @@ def update_workspace():
     workspace = global_envs.get("train.workspace", None)
     if not workspace:
         return
-    workspace = ""
 
     # is fleet inner models
     if workspace.startswith("fleetrec."):
@@ -104,14 +104,14 @@ def update_workspace():
             value = value.replace("{workspace}", path)
             global_envs[name] = value
 
+
 def pretty_print_envs(envs, header=None):
     spacing = 5
     max_k = 45
-    max_v = 20
+    max_v = 50
 
     for k, v in envs.items():
         max_k = max(max_k, len(k))
-        max_v = max(max_v, len(str(v)))
 
     h_format = "{{:^{}s}}{}{{:<{}s}}\n".format(max_k, " " * spacing, max_v)
     l_format = "{{:<{}s}}{{}}{{:<{}s}}\n".format(max_k, max_v)
@@ -131,7 +131,12 @@ def pretty_print_envs(envs, header=None):
     draws += line + "\n"
 
     for k, v in envs.items():
-        draws += l_format.format(k, " " * spacing, str(v))
+        if isinstance(v, str) and len(v) >= max_v:
+            str_v = "... " + v[-46:]
+        else:
+            str_v = v
+
+        draws += l_format.format(k, " " * spacing, str(str_v))
 
     draws += border
 
@@ -139,11 +144,24 @@ def pretty_print_envs(envs, header=None):
     return _str
 
 
-def lazy_instance(package, class_name):
+def lazy_instance_by_fliename(package, class_name):
     models = get_global_env("train.model.models")
     model_package = __import__(package, globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
+
+
+def lazy_instance_by_fliename(package, class_name):
+    models = get_global_env("train.model.models")
+
+    dirname = os.path.dirname(models)
+    basename = os.path.basename(models)
+    sys.path.append(dirname)
+    from basename import Model
+
+#    model_package = __import__(package, globals(), locals(), package.split("."))
+#    instance = getattr(model_package, class_name)
+    return Model
 
 
 def get_platform():

@@ -95,5 +95,5 @@ def user_define_engine(engine_yaml):
     train_dirname = os.path.dirname(train_location)
     base_name = os.path.splitext(os.path.basename(train_location))[0]
     sys.path.append(train_dirname)
-    trainer_class = envs.lazy_instance(base_name, "UserDefineTraining")
+    trainer_class = envs.lazy_instance_by_fliename(base_name, "UserDefineTraining")
     return trainer_class

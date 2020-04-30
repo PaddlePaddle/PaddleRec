@@ -132,7 +132,7 @@ class TranspileTrainer(Trainer):
 
     def instance(self, context):
         models = envs.get_global_env("train.model.models")
-        model_class = envs.lazy_instance(models, "Model")
+        model_class = envs.lazy_instance_by_fliename(models, "Model")
         self.model = model_class(None)
         context['status'] = 'init_pass'
 

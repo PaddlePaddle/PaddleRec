@@ -16,7 +16,7 @@ from __future__ import print_function
 import os
 import sys
 
-from fleetrec.core.utils.envs import lazy_instance
+from fleetrec.core.utils.envs import lazy_instance_by_fliename
 from fleetrec.core.utils.envs import get_global_env
 from fleetrec.core.utils.envs import get_runtime_environ
 
@@ -38,7 +38,7 @@ def dataloader(readerclass, train, yaml_file):
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
 
-    reader_class = lazy_instance(readerclass, reader_name)
+    reader_class = lazy_instance_by_fliename(readerclass, reader_name)
     reader = reader_class(yaml_file)
     reader.init()
 

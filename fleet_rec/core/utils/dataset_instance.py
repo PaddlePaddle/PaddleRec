@@ -14,7 +14,7 @@
 from __future__ import print_function
 import sys
 
-from fleetrec.core.utils.envs import lazy_instance
+from fleetrec.core.utils.envs import lazy_instance_by_fliename
 
 if len(sys.argv) != 4:
     raise ValueError("reader only accept 3 argument: 1. reader_class 2.train/evaluate 3.yaml_abs_path")
@@ -27,7 +27,7 @@ else:
     reader_name = "EvaluateReader"
 
 yaml_abs_path = sys.argv[3]
-reader_class = lazy_instance(reader_package, reader_name)
+reader_class = lazy_instance_by_fliename(reader_package, reader_name)
 reader = reader_class(yaml_abs_path)
 reader.init()
 reader.run_from_stdin()
