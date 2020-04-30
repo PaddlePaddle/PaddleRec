@@ -144,24 +144,21 @@ def pretty_print_envs(envs, header=None):
     return _str
 
 
-def lazy_instance_by_fliename(package, class_name):
+def lazy_instance_by_package(package, class_name):
     models = get_global_env("train.model.models")
     model_package = __import__(package, globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
 
 
-def lazy_instance_by_fliename(package, class_name):
-    models = get_global_env("train.model.models")
-
-    dirname = os.path.dirname(models)
-    basename = os.path.basename(models)
+def lazy_instance_by_fliename(abs, class_name):
+    dirname = os.path.dirname(abs)
     sys.path.append(dirname)
-    from basename import Model
+    package = os.path.splitext(os.path.basename(abs))[0]
 
-#    model_package = __import__(package, globals(), locals(), package.split("."))
-#    instance = getattr(model_package, class_name)
-    return Model
+    model_package = __import__(package, globals(), locals(), package.split("."))
+    instance = getattr(model_package, class_name)
+    return instance
 
 
 def get_platform():
