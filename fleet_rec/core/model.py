@@ -1,5 +1,9 @@
 import abc
+
+import paddle.fluid as fluid
+
 from fleetrec.core.utils import envs
+
 
 class Model(object):
     """R
@@ -33,11 +37,35 @@ class Model(object):
     def get_fetch_period(self):
         return self._fetch_interval
 
+    def _build_optimizer(self, name, lr):
+        name = name.upper()
+        optimizers = ["SGD", "ADAM", "ADAGRAD"]
+        if name not in optimizers:
+            raise ValueError("configured optimizer can only supported SGD/Adam/Adagrad")
+
+        if name == "SGD":
+            optimizer_i = fluid.optimizer.Adam(lr, lazy_mode=True)
+        elif name == "ADAM":
+            optimizer_i = fluid.optimizer.Adam(lr, lazy_mode=True)
+        elif name == "ADAGRAD":
+            optimizer_i = fluid.optimizer.Adam(lr, lazy_mode=True)
+        else:
+            raise ValueError("configured optimizer can only supported SGD/Adam/Adagrad")
+
+        return optimizer_i
+
+    def optimizer(self):
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
+        optimizer = envs.get_global_env("hyper_parameters.optimizer", None, self._namespace)
+
+        return self._build_optimizer(optimizer, learning_rate)
+
     @abc.abstractmethod
     def train_net(self):
         """R
         """
         pass
 
+    @abc.abstractmethod
     def infer_net(self):
         pass

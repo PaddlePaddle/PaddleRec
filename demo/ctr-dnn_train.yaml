@@ -18,14 +18,15 @@ train:
     strategy: "async"
 
   epochs: 10
+  workspace: "fleetrec.models.rank.dnn"
 
   reader:
     batch_size: 2
-    class: "fleetrec.models.rank.criteo_reader"
-    train_data_path: "fleetrec::models/rank/dnn/data/train"
+    class: "{workspace}/../criteo_reader.py"
+    train_data_path: "{workspace}/data/train"
 
   model:
-    models: "fleetrec.models.rank.dnn.model"
+    models: "{workspace}/model.py"
     hyper_parameters:
       sparse_inputs_slots: 27
       sparse_feature_number: 1000001
@@ -33,22 +34,14 @@ train:
       dense_input_dim: 13
       fc_sizes: [512, 256, 128, 32]
       learning_rate: 0.001
+      optimizer: adam
 
   save:
     increment:
-      dirname: "models_for_increment"
+      dirname: "increment"
       epoch_interval: 2
       save_last: True
     inference:
-      dirname: "models_for_inference"
+      dirname: "inference"
       epoch_interval: 4
-      feed_varnames: ["C1", "C2", "C3"]
-      fetch_varnames: "predict"
       save_last: True
-
-evaluate:
-  batch_size: 32
-  train_thread_num: 12
-  reader: "reader.py"
-
-

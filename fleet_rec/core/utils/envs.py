@@ -46,8 +46,10 @@ def set_runtime_environs(environs):
     for k, v in environs.items():
         os.environ[k] = str(v)
 
+
 def get_runtime_environ(key):
     return os.getenv(key, None)
+
 
 def get_trainer():
     train_mode = get_runtime_environ("train.trainer.trainer")
@@ -82,6 +84,25 @@ def get_global_env(env_name, default_value=None, namespace=None):
 def get_global_envs():
     return global_envs
 
+
+def update_workspace():
+    workspace = global_envs.get("train.workspace", None)
+    if not workspace:
+        return
+    workspace = ""
+
+    # is fleet inner models
+    if workspace.startswith("fleetrec."):
+        fleet_package = get_runtime_environ("PACKAGE_BASE")
+        workspace_dir = workspace.split("fleetrec.")[1].replace(".", "/")
+        path = os.path.join(fleet_package, workspace_dir)
+    else:
+        path = workspace
+
+    for name, value in global_envs.items():
+        if isinstance(value, str):
+            value = value.replace("{workspace}", path)
+            global_envs[name] = value
 
 def pretty_print_envs(envs, header=None):
     spacing = 5

@@ -63,12 +63,9 @@ class Model(ModelBase):
                 feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
 
     def net(self):
-        trainer = envs.get_trainer()
-
-        is_distributed = True if trainer == "CtrTrainer" else False
+        is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
         sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self._namespace)
         sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
-        sparse_feature_dim = 9 if trainer == "CtrTrainer" else sparse_feature_dim
 
         def embedding_layer(input):
             emb = fluid.layers.embedding(
@@ -106,8 +103,7 @@ class Model(ModelBase):
             size=2,
             act="softmax",
             param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-                scale=1 / math.sqrt(fcs[-1].shape[1]))),
-        )
+                scale=1 / math.sqrt(fcs[-1].shape[1]))))
 
         self.predict = predict
 
