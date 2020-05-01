@@ -53,13 +53,10 @@ class LocalClusterEngine(Engine):
                 "POD_IP": user_endpoints_ips[i]
             })
 
-            if logs_dir is not None:
-                os.system("mkdir -p {}".format(logs_dir))
-                fn = open("%s/server.%d" % (logs_dir, i), "w")
-                log_fns.append(fn)
-                proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
-            else:
-                proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
+            os.system("mkdir -p {}".format(logs_dir))
+            fn = open("%s/server.%d" % (logs_dir, i), "w")
+            log_fns.append(fn)
+            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
             procs.append(proc)
 
         for i in range(worker_num):
@@ -70,13 +67,10 @@ class LocalClusterEngine(Engine):
                 "PADDLE_TRAINER_ID": str(i)
             })
 
-            if logs_dir is not None:
-                os.system("mkdir -p {}".format(logs_dir))
-                fn = open("%s/worker.%d" % (logs_dir, i), "w")
-                log_fns.append(fn)
-                proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
-            else:
-                proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
+            os.system("mkdir -p {}".format(logs_dir))
+            fn = open("%s/worker.%d" % (logs_dir, i), "w")
+            log_fns.append(fn)
+            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
             procs.append(proc)
 
         # only wait worker to finish here
@@ -91,7 +85,9 @@ class LocalClusterEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].terminate()
-        print("all workers and parameter servers already completed", file=sys.stderr)
+        print("all workers already completed, you can view logs under the {} directory".format(logs_dir),
+              file=sys.stderr)
 
-    def run(self):
-        self.start_procs()
+
+def run(self):
+    self.start_procs()
