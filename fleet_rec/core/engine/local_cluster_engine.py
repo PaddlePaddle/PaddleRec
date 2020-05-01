@@ -85,9 +85,8 @@ class LocalClusterEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].terminate()
-        print("all workers already completed, you can view logs under the {} directory".format(logs_dir),
+        print("all workers already completed, you can view logs under the `{}` directory".format(logs_dir),
               file=sys.stderr)
 
-
-def run(self):
-    self.start_procs()
+    def run(self):
+        self.start_procs()

@@ -174,7 +174,6 @@ def get_abs_model(model):
         fleet_base = envs.get_runtime_environ("PACKAGE_BASE")
         workspace_dir = model.split("fleetrec.")[1].replace(".", "/")
         path = os.path.join(fleet_base, workspace_dir, "config.yaml")
-        print("use built-in config: {} for model: {}".format(model, path))
     else:
         if not os.path.isfile(model):
             raise IOError("model config: {} invalid".format(model))
