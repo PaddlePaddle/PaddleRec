@@ -39,8 +39,7 @@ def build(dirname):
 
     packages = find_packages(dirname, include=('fleetrec.*'))
     package_dir = {'': dirname}
-
-    package_data = {'fleetrec.models.rank.dnn': ['data/*/*.txt'], }
+    package_data = {'fleetrec.models.rank.dnn': ['data/*/*.txt', '*.yaml'], }
 
     setup(
         name=about["__title__"],
