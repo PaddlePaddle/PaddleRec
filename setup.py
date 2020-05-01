@@ -32,14 +32,17 @@ def build(dirname):
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
     run_cmd("mkdir {}".format(os.path.join(dirname, "fleetrec")))
     run_cmd("mv {}/* {}".format(os.path.join(dirname, "fleet_rec"), os.path.join(dirname, "fleetrec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "demo"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "fleetrec")))
     run_cmd("mv {} {}".format(os.path.join(dirname, "tools"), os.path.join(dirname, "fleetrec")))
 
     packages = find_packages(dirname, include=('fleetrec.*'))
     package_dir = {'': dirname}
-    package_data = {'fleetrec.models.rank.dnn': ['data/*/*.txt', '*.yaml'], }
+    package_data = {}
+    need_copy = ['data/*/*.txt', '*.yaml']
+    for package in packages:
+        if package.startswith("fleetrec.models."):
+            package_data[package] = need_copy
 
     setup(
         name=about["__title__"],
