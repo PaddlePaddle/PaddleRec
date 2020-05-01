@@ -2,23 +2,14 @@
 setup for fleet-rec.
 """
 import os
-import sys
 from setuptools import setup, find_packages
 import tempfile
 import shutil
 
-if sys.version_info.major == 2:
-    requires = [
-        "paddlepaddle == 1.7.2",
-        #        "netron >= 0.0.0",
-        "pyyaml >= 5.1.1"
-    ]
-else:
-    requires = [
-        "paddlepaddle >= 0.0.0",
-        #        "netron >= 0.0.0",
-        "pyyaml >= 5.1.1"
-    ]
+requires = [
+    "paddlepaddle == 1.7.2",
+    "pyyaml >= 5.1.1"
+]
 
 about = {}
 about["__title__"] = "fleet-rec"
@@ -37,7 +28,6 @@ def run_cmd(command):
 
 
 def build(dirname):
-
     package_dir = os.path.dirname(os.path.abspath(__file__))
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
     run_cmd("mkdir {}".format(os.path.join(dirname, "fleetrec")))

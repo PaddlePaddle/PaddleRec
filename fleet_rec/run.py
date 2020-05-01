@@ -169,22 +169,33 @@ def local_mpi_engine(args):
     return launch
 
 
+def get_abs_model(model):
+    if model.startswith("fleetrec."):
+        fleet_base = envs.get_runtime_environ("PACKAGE_BASE")
+        workspace_dir = model.split("fleetrec.")[1].replace(".", "/")
+        path = os.path.join(fleet_base, workspace_dir, "config.yaml")
+        print("use built-in config: {} for model: {}".format(model, path))
+    else:
+        if not os.path.isfile(model):
+            raise IOError("model config: {} invalid".format(model))
+        path = model
+    return path
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
     parser.add_argument("-e", "--engine", type=str, choices=["single", "local_cluster", "cluster"])
     parser.add_argument("-d", "--device", type=str, choices=["cpu", "gpu"], default="cpu")
 
+    abs_dir = os.path.dirname(os.path.abspath(__file__))
+    envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
+
     args = parser.parse_args()
     args.engine = args.engine.upper()
     args.device = args.device.upper()
-
-    if not os.path.isfile(args.model):
-        raise IOError("argument model: {} do not exist".format(args.model))
+    args.model = get_abs_model(args.model)
     engine_registry()
-
-    abs_dir = os.path.dirname(os.path.abspath(__file__))
-    envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
 
     which_engine = get_engine(args.engine, args.device)
 
