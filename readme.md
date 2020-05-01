@@ -26,22 +26,20 @@ python setup.py install
 
 
 ## ctr-dnn示例使用
-目前框架内置了ctr-dnn模型，后续会加入更多模型
-
-示例代码位于FleetRec/demo/下， 当前支持单机训练和本地1*1模拟训练
+目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练
 
 ### 单机训练
 ```bash
 cd FleetRec
 
 python -m fleetrec.run \
-       -m demo/ctr-dnn_train.yaml \
+       -m fleetrec.models.rank.dnn \
        -d cpu \
        -e single 
 
 # 使用GPU资源进行训练
 python -m fleetrec.run \
-       -m demo/ctr-dnn_train.yaml \
+       -m fleetrec.models.rank.dnn \
        -d gpu \
        -e single
 ```
@@ -52,7 +50,7 @@ python -m fleetrec.run \
 cd FleetRec
 # 使用CPU资源进行训练
 python -m fleetrec.run \
-       -m demo/ctr-dnn_train.yaml \
+       -m fleetrec.models.rank.dnn \
        -d cpu \
        -e local_cluster
 ```
@@ -63,7 +61,7 @@ python -m fleetrec.run \
 cd FleetRec
 
 python -m fleetrec.run \
-       -m demo/ctr-dnn_train.yaml \
+       -m fleetrec.models.rank.dnn \
        -d cpu \
        -e cluster
 ```
