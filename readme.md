@@ -66,8 +66,73 @@ PadlleRec以预置模型为核心,具备以下特点：
 # 文档教程
 ## 入门教程
 ### 环境要求
+* Python >= 2.7
+* PaddlePaddle >= 1.7.2
+* 操作系统: Windows/Mac/Linux
 ### 安装命令
+- 安装方法一<PIP源直接安装>：
+```bash
+python -m pip install fleet-rec
+```
+
+- 安装方法二
+
+* 安装飞桨  **注：需要用户安装最新版本的飞桨<当前只支持Linux系统>。**
+
+```bash
+python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+```
+
+* 源码安装Fleet-Rec
+
+```
+git clone https://github.com/seiriosPlus/FleetRec/
+cd FleetRec
+python setup.py install
+```
+
 ### 快速开始
+#### ctr-dnn示例使用
+目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练
+
+##### 单机训练
+```bash
+cd FleetRec
+
+python -m fleetrec.run \
+       -m fleetrec.models.rank.dnn \
+       -d cpu \
+       -e single 
+
+# 使用GPU资源进行训练
+python -m fleetrec.run \
+       -m fleetrec.models.rank.dnn \
+       -d gpu \
+       -e single
+```
+
+##### 本地模拟分布式训练
+
+```bash
+cd FleetRec
+# 使用CPU资源进行训练
+python -m fleetrec.run \
+       -m fleetrec.models.rank.dnn \
+       -d cpu \
+       -e local_cluster
+```
+
+##### 集群提交分布式训练<需要用户预先配置好集群环境，本提交命令不包含提交客户端>
+
+```bash
+cd FleetRec
+
+python -m fleetrec.run \
+       -m fleetrec.models.rank.dnn \
+       -d cpu \
+       -e cluster
+```
+
 ### 常见问题FAQ
 
 ## 进阶教程
@@ -82,7 +147,7 @@ PadlleRec以预置模型为核心,具备以下特点：
 ## Benchamrk
 
 # 许可证书
-
+本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
 # 如何贡献代码
 ## 优化PaddleRec框架
 ## 新增模型到PaddleRec
