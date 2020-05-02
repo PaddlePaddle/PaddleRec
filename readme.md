@@ -69,7 +69,9 @@ PadlleRec以预置模型为核心,具备以下特点：
 * Python >= 2.7
 * PaddlePaddle >= 1.7.2
 * 操作系统: Windows/Mac/Linux
+  
 ### 安装命令
+
 - 安装方法一<PIP源直接安装>：
 ```bash
 python -m pip install fleet-rec
