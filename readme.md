@@ -73,25 +73,25 @@ PadlleRec以预置模型为核心,具备以下特点：
 ### 安装命令
 
 - 安装方法一<PIP源直接安装>：
-```bash
-python -m pip install fleet-rec
-```
+  ```bash
+  python -m pip install fleet-rec
+  ```
 
 - 安装方法二
 
-* 安装飞桨  **注：需要用户安装最新版本的飞桨<当前只支持Linux系统>。**
+  * 安装飞桨  **注：需要用户安装最新版本的飞桨<当前只支持Linux系统>。**
 
-```bash
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
-```
+    ```bash
+    python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+    ```
 
-* 源码安装Fleet-Rec
+  * 源码安装Fleet-Rec
 
-```
-git clone https://github.com/seiriosPlus/FleetRec/
-cd FleetRec
-python setup.py install
-```
+    ```
+    git clone https://github.com/seiriosPlus/FleetRec/
+    cd FleetRec
+    python setup.py install
+    ```
 
 ### 快速开始
 #### ctr-dnn示例使用
