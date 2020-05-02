@@ -3,13 +3,16 @@
 <p>
 
 [![License](https://img.shields.io/badge/license-Apache%202-red.svg)](LICENSE)
+
 [![Version](https://img.shields.io/github/v/release/PaddlePaddle/Paddle.svg)](https://github.com/PaddlePaddle/PaddleRec/releases)
+
 ![python version](https://img.shields.io/badge/python-2.7+-orange.svg)
+
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-`PaddleRec`是源于飞桨生态的`搜索推荐模型`一站式开箱即用工具，无论您是初学者，开发者，研究者均可便捷的使用`PaddleRec`完成调研，训练到预测部署的全流程工作。`PaddleRec`提供了搜索推荐任务中语义理解、召回、粗排、精排、多任务学习的全流程解决方案。
+PaddleRec是源于飞桨生态的搜索推荐模型一站式开箱即用工具，无论您是初学者，开发者，研究者均可便捷的使用PaddleRec完成调研，训练到预测部署的全流程工作。PaddleRec提供了搜索推荐任务中语义理解、召回、粗排、精排、多任务学习的全流程解决方案。
 
-`PadlleRec`以预置模型为核心,具备以下特点：
+PadlleRec以预置模型为核心,具备以下特点：
 > 占位链接，分文档描述
 - [易于上手，开箱即用](https://www.paddlepaddle.org.cn)
 - [灵活配置，个性调参](https://www.paddlepaddle.org.cn)
