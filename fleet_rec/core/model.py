@@ -34,6 +34,12 @@ class Model(object):
         """
         return self._metrics
 
+    def custom_preprocess(self):
+        """
+        do something after exe.run(stratup_program) and before run()
+        """
+        pass
+
     def get_fetch_period(self):
         return self._fetch_interval
 
@@ -41,24 +47,30 @@ class Model(object):
         name = name.upper()
         optimizers = ["SGD", "ADAM", "ADAGRAD"]
         if name not in optimizers:
-            raise ValueError("configured optimizer can only supported SGD/Adam/Adagrad")
+            raise ValueError(
+                "configured optimizer can only supported SGD/Adam/Adagrad")
 
         if name == "SGD":
-            reg = envs.get_global_env("hyper_parameters.reg", 0.0001, self._namespace)
-            optimizer_i = fluid.optimizer.SGD(lr, regularization=fluid.regularizer.L2DecayRegularizer(reg))
+            reg = envs.get_global_env(
+                "hyper_parameters.reg", 0.0001, self._namespace)
+            optimizer_i = fluid.optimizer.SGD(
+                lr, regularization=fluid.regularizer.L2DecayRegularizer(reg))
         elif name == "ADAM":
             optimizer_i = fluid.optimizer.Adam(lr, lazy_mode=True)
         elif name == "ADAGRAD":
             optimizer_i = fluid.optimizer.Adagrad(lr)
         else:
-            raise ValueError("configured optimizer can only supported SGD/Adam/Adagrad")
+            raise ValueError(
+                "configured optimizer can only supported SGD/Adam/Adagrad")
 
         return optimizer_i
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
-        optimizer = envs.get_global_env("hyper_parameters.optimizer", None, self._namespace)
-        print(">>>>>>>>>>>.learnig rate: %s" %learning_rate)
+        learning_rate = envs.get_global_env(
+            "hyper_parameters.learning_rate", None, self._namespace)
+        optimizer = envs.get_global_env(
+            "hyper_parameters.optimizer", None, self._namespace)
+        print(">>>>>>>>>>>.learnig rate: %s" % learning_rate)
         return self._build_optimizer(optimizer, learning_rate)
 
     @abc.abstractmethod
