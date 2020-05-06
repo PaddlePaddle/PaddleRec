@@ -25,7 +25,7 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distribu
 from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
 
 from fleetrec.core.utils import envs
-from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
+from fleetrec.core.trainers.cluster_trainer import ClusterTrainer
 
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
@@ -34,7 +34,7 @@ logger.setLevel(logging.INFO)
 special_param = ["TDM_Tree_Travel", "TDM_Tree_Layer", "TDM_Tree_Info"]
 
 
-class TDMClusterTrainer(TranspileTrainer):
+class TDMClusterTrainer(ClusterTrainer):
     def server(self, context):
         namespace = "train.startup"
         init_model_path = envs.get_global_env(
