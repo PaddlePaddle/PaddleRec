@@ -148,7 +148,7 @@ class Model(ModelBase):
         # 最后的概率判别FC，将所有层次的node分类结果放到一起以相同的标准进行判别
         # 考虑到树极大可能不平衡，有些item不在最后一层，所以需要这样的机制保证每个item都有机会被召回
         tdm_fc = fluid.layers.fc(input=layer_classifier_res,
-                                 size=self.label_nums,
+                                 size=2,
                                  act=None,
                                  num_flatten_dims=2,
                                  param_attr=fluid.ParamAttr(
@@ -373,7 +373,7 @@ class Model(ModelBase):
 
             # 过最终的判别分类器
             tdm_fc = fluid.layers.fc(input=layer_classifier_res,
-                                     size=self.label_nums,
+                                     size=2,
                                      act=None,
                                      num_flatten_dims=2,
                                      param_attr=fluid.ParamAttr(
