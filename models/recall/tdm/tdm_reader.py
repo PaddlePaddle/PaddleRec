@@ -33,8 +33,8 @@ class TrainReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = (line.strip('\n')).split('\t')
-            input_emb = features[0].split(' ')
-            item_label = [features[1]]
+            input_emb = map(float, features[0].split(' '))
+            item_label = [int(features[1])]
 
             feature_name = ["input_emb", "item_label"]
             yield zip(feature_name, [input_emb] + [item_label])
