@@ -45,7 +45,7 @@ class Model(ModelBase):
         self.node_emb_size = envs.get_global_env(
             "hyper_parameters.node_emb_size", 64, self._namespace)
         self.input_emb_size = envs.get_global_env(
-            "hyper_parameters.input_emb_size", 64, self._namespace)
+            "hyper_parameters.input_emb_size", 768, self._namespace)
         self.act = envs.get_global_env(
             "hyper_parameters.act", "tanh", self._namespace)
         self.neg_sampling_list = envs.get_global_env(
@@ -61,6 +61,7 @@ class Model(ModelBase):
     def train_net(self):
         self.train_input()
         self.tdm_net()
+        self.create_info()
         self.avg_loss()
         self.metrics()
 
@@ -174,10 +175,25 @@ class Model(ModelBase):
         mask_index.stop_gradient = True
 
         self.mask_cost = fluid.layers.gather_nd(cost, mask_index)
+
+        softmax_prob = fluid.layers.unsqueeze(input=softmax_prob, axes=[1])
         self.mask_prob = fluid.layers.gather_nd(softmax_prob, mask_index)
         self.mask_label = fluid.layers.gather_nd(labels_reshape, mask_index)
 
         self._predict = self.mask_prob
+
+    def create_info(self):
+        fluid.default_startup_program().global_block().create_var(
+            name="TDM_Tree_Info",
+            dtype=fluid.core.VarDesc.VarType.INT32,
+            shape=[self.node_nums, 3 + self.child_nums],
+            persistable=True,
+            initializer=fluid.initializer.ConstantInitializer(0))
+        fluid.default_main_program().global_block().create_var(
+            name="TDM_Tree_Info",
+            dtype=fluid.core.VarDesc.VarType.INT32,
+            shape=[self.node_nums, 3 + self.child_nums],
+            persistable=True)
 
     def avg_loss(self):
         avg_cost = fluid.layers.reduce_mean(self.mask_cost)

@@ -202,7 +202,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
     parser.add_argument("-e", "--engine", type=str,
-                        choices=["single", "local_cluster", "cluster"])
+                        choices=["single", "local_cluster", "cluster", "tdm_single"])
     parser.add_argument("-d", "--device", type=str,
                         choices=["cpu", "gpu"], default="cpu")
 

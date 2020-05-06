@@ -18,16 +18,17 @@
 from __future__ import print_function
 
 from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
 
 
-class TrainReader(reader):
+class TrainReader(Reader):
+    def init(self):
+        pass
 
-    def reader(self, line):
+    def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
-        def iterator():
+        def reader():
             """
             This function needs to be implemented by the user, based on data format
             """
@@ -38,4 +39,4 @@ class TrainReader(reader):
             feature_name = ["input_emb", "item_label"]
             yield zip(feature_name, [input_emb] + [item_label])
 
-        return Reader
+        return reader

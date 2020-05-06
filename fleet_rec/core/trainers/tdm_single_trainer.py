@@ -30,7 +30,7 @@ logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
 
 
-class TdmSingleTrainer(SingleTrainer):
+class TDMSingleTrainer(SingleTrainer):
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('init_pass', self.init)
