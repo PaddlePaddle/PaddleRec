@@ -11,6 +11,7 @@ engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 custom_model = ['tdm']
+model_name = ""
 
 
 def engine_registry():
@@ -34,23 +35,13 @@ def get_engine(args):
     d_engine = engines[device]
     transpiler = get_transpiler()
 
-    engine = get_custom_model_engine(args)
+    engine = args.engine
     run_engine = d_engine[transpiler].get(engine, None)
 
     if run_engine is None:
         raise ValueError(
             "engine {} can not be supported on device: {}".format(engine, device))
     return run_engine
-
-
-def get_custom_model_engine(args):
-    model = args.model
-    model_name = model.split('.')[1]
-    if model_name in custom_model:
-        engine = "_".join((model_name.upper(), args.engine))
-    else:
-        engine = args.engine
-    return engine
 
 
 def get_transpiler():
@@ -93,8 +84,6 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
 
 def get_trainer_prefix(args):
-    model = args.model
-    model_name = model.split('.')[1]
     if model_name in custom_model:
         return model_name.upper()
     return ""
@@ -218,6 +207,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.engine = args.engine.upper()
     args.device = args.device.upper()
+    model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
     engine_registry()
 

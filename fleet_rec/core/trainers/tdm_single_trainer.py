@@ -42,15 +42,15 @@ class TDMSingleTrainer(SingleTrainer):
             "single.persistables_model_path", "", namespace)
 
         load_tree = envs.get_global_env(
-            "single.load_tree", False, namespace)
+            "tree.load_tree", False, namespace)
         self.tree_layer_path = envs.get_global_env(
-            "single.tree_layer_path", "", namespace)
+            "tree.tree_layer_path", "", namespace)
         self.tree_travel_path = envs.get_global_env(
-            "single.tree_travel_path", "", namespace)
+            "tree.tree_travel_path", "", namespace)
         self.tree_info_path = envs.get_global_env(
-            "single.tree_info_path", "", namespace)
+            "tree.tree_info_path", "", namespace)
         self.tree_emb_path = envs.get_global_env(
-            "single.tree_emb_path", "", namespace)
+            "tree.tree_emb_path", "", namespace)
 
         save_init_model = envs.get_global_env(
             "single.save_init_model", False, namespace)
