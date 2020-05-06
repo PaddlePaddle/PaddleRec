@@ -62,9 +62,6 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'train_pass'
 
     def dataloader_train(self, context):
-
-        self.model.custom_preprocess()
-
         reader = self._get_dataloader()
         epochs = envs.get_global_env("train.epochs")
 
@@ -105,10 +102,6 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'infer_pass'
 
     def dataset_train(self, context):
-        # run startup program at once
-        self._exe.run(fluid.default_startup_program())
-        self.model.custom_preprocess()
-
         dataset = self._get_dataset()
         epochs = envs.get_global_env("train.epochs")
 

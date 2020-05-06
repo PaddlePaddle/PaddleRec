@@ -18,9 +18,6 @@ def engine_registry():
     cpu["TRANSPILER"]["SINGLE"] = single_engine
     cpu["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     cpu["TRANSPILER"]["CLUSTER"] = cluster_engine
-    cpu["TRANSPILER"]["TDM_SINGLE"] = tdm_single_engine
-    cpu["TRANSPILER"]["TDM_LOCAL_CLUSTER"] = tdm_local_cluster_engine
-    cpu["TRANSPILER"]["TDM_CLUSTER"] = tdm_cluster_engine
     cpu["PSLIB"]["SINGLE"] = local_mpi_engine
     cpu["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     cpu["PSLIB"]["CLUSTER"] = cluster_mpi_engine
