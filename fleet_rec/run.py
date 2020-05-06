@@ -17,6 +17,7 @@ def engine_registry():
     cpu["TRANSPILER"]["SINGLE"] = single_engine
     cpu["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     cpu["TRANSPILER"]["CLUSTER"] = cluster_engine
+    cpu["TRANSPILER"]["TDM_SINGLE"] = tdm_single_engine
     cpu["PSLIB"]["SINGLE"] = local_mpi_engine
     cpu["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     cpu["PSLIB"]["CLUSTER"] = cluster_mpi_engine
@@ -34,7 +35,8 @@ def get_engine(engine, device):
     run_engine = d_engine[transpiler].get(engine, None)
 
     if run_engine is None:
-        raise ValueError("engine {} can not be supported on device: {}".format(engine, device))
+        raise ValueError(
+            "engine {} can not be supported on device: {}".format(engine, device))
     return run_engine
 
 
@@ -82,6 +84,21 @@ def single_engine(args):
 
     single_envs = {}
     single_envs["train.trainer.trainer"] = "SingleTrainer"
+    single_envs["train.trainer.threads"] = "2"
+    single_envs["train.trainer.engine"] = "single"
+    single_envs["train.trainer.device"] = args.device
+    single_envs["train.trainer.platform"] = envs.get_platform()
+
+    set_runtime_envs(single_envs, args.model)
+    trainer = TrainerFactory.create(args.model)
+    return trainer
+
+
+def tdm_single_engine(args):
+    print("use tdm single engine to run model: {}".format(args.model))
+
+    single_envs = {}
+    single_envs["train.trainer.trainer"] = "TDMSingleTrainer"
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
     single_envs["train.trainer.device"] = args.device
@@ -184,8 +201,10 @@ def get_abs_model(model):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
-    parser.add_argument("-e", "--engine", type=str, choices=["single", "local_cluster", "cluster"])
-    parser.add_argument("-d", "--device", type=str, choices=["cpu", "gpu"], default="cpu")
+    parser.add_argument("-e", "--engine", type=str,
+                        choices=["single", "local_cluster", "cluster"])
+    parser.add_argument("-d", "--device", type=str,
+                        choices=["cpu", "gpu"], default="cpu")
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
