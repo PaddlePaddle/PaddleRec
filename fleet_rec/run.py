@@ -18,6 +18,8 @@ def engine_registry():
     cpu["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     cpu["TRANSPILER"]["CLUSTER"] = cluster_engine
     cpu["TRANSPILER"]["TDM_SINGLE"] = tdm_single_engine
+    cpu["TRANSPILER"]["TDM_LOCAL_CLUSTER"] = tdm_local_cluster_engine
+    cpu["TRANSPILER"]["TDM_CLUSTER"] = tdm_cluster_engine
     cpu["PSLIB"]["SINGLE"] = local_mpi_engine
     cpu["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     cpu["PSLIB"]["CLUSTER"] = cluster_mpi_engine
@@ -124,6 +126,21 @@ def cluster_engine(args):
     return trainer
 
 
+def tdm_cluster_engine(args):
+    print("launch tdm cluster engine with cluster to run model: {}".format(args.model))
+
+    cluster_envs = {}
+    cluster_envs["train.trainer.trainer"] = "TDMClusterTrainer"
+    cluster_envs["train.trainer.engine"] = "cluster"
+    cluster_envs["train.trainer.device"] = args.device
+    cluster_envs["train.trainer.platform"] = envs.get_platform()
+
+    set_runtime_envs(cluster_envs, args.model)
+
+    trainer = TrainerFactory.create(args.model)
+    return trainer
+
+
 def cluster_mpi_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
 
@@ -148,6 +165,31 @@ def local_cluster_engine(args):
     cluster_envs["start_port"] = 36001
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
+    cluster_envs["train.trainer.strategy"] = "async"
+    cluster_envs["train.trainer.threads"] = "2"
+    cluster_envs["train.trainer.engine"] = "local_cluster"
+
+    cluster_envs["train.trainer.device"] = args.device
+    cluster_envs["train.trainer.platform"] = envs.get_platform()
+
+    cluster_envs["CPU_NUM"] = "2"
+
+    set_runtime_envs(cluster_envs, args.model)
+
+    launch = LocalClusterEngine(cluster_envs, args.model)
+    return launch
+
+
+def tdm_local_cluster_engine(args):
+    print("launch tdm cluster engine with cluster to run model: {}".format(args.model))
+    from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
+
+    cluster_envs = {}
+    cluster_envs["server_num"] = 1
+    cluster_envs["worker_num"] = 1
+    cluster_envs["start_port"] = 36001
+    cluster_envs["log_dir"] = "logs"
+    cluster_envs["train.trainer.trainer"] = "TDMClusterTrainer"
     cluster_envs["train.trainer.strategy"] = "async"
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
@@ -202,7 +244,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
     parser.add_argument("-e", "--engine", type=str,
-                        choices=["single", "local_cluster", "cluster", "tdm_single"])
+                        choices=["single", "local_cluster", "cluster",
+                                 "tdm_single", "tdm_local_cluster", "tdm_cluster"])
     parser.add_argument("-d", "--device", type=str,
                         choices=["cpu", "gpu"], default="cpu")
 
