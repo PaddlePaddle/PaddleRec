@@ -75,6 +75,9 @@ class TDMClusterTrainer(TranspileTrainer):
     def init(self, context):
         self.model.train_net()
         optimizer = self.model.optimizer()
+        optimizer_name = envs.get_global_env("hyper_parameters.optimizer")
+        if optimizer_name in ['adam', 'ADAM', 'Adagrad', 'ADAGRAD']:
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = 0
         strategy = self.build_strategy()
         optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self.model.get_cost_op())
@@ -93,6 +96,7 @@ class TDMClusterTrainer(TranspileTrainer):
             context['status'] = 'trainer_startup_pass'
 
     def server(self, context):
+        namespace = "train.startup"
         model_path = envs.get_global_env(
             "cluster.model_path", "", namespace)
         assert not model_path, "Cluster train must has init_model for TDM"
@@ -103,7 +107,7 @@ class TDMClusterTrainer(TranspileTrainer):
     def trainer_startup(self, context):
         namespace = "train.startup"
         load_tree = envs.get_global_env(
-            "cluster.load_tree", False, namespace)
+            "cluster.load_tree", True, namespace)
         self.tree_layer_path = envs.get_global_env(
             "cluster.tree_layer_path", "", namespace)
         self.tree_travel_path = envs.get_global_env(

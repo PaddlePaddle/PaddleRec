@@ -43,7 +43,8 @@ class ClusterTrainer(TranspileTrainer):
             if envs.get_platform() == "LINUX":
                 self.regist_context_processor('train_pass', self.dataset_train)
             else:
-                self.regist_context_processor('train_pass', self.dataloader_train)
+                self.regist_context_processor(
+                    'train_pass', self.dataloader_train)
             self.regist_context_processor('terminal_pass', self.terminal)
 
     def build_strategy(self):
@@ -70,6 +71,9 @@ class ClusterTrainer(TranspileTrainer):
     def init(self, context):
         self.model.train_net()
         optimizer = self.model.optimizer()
+        optimizer_name = envs.get_global_env("hyper_parameters.optimizer")
+        if optimizer_name in ['adam', 'ADAM', 'Adagrad', 'ADAGRAD']:
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = 0
         strategy = self.build_strategy()
         optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self.model.get_cost_op())
@@ -103,8 +107,8 @@ class ClusterTrainer(TranspileTrainer):
         program = fluid.compiler.CompiledProgram(
             fleet.main_program).with_data_parallel(
             loss_name=self.model.get_cost_op().name,
-        build_strategy=self.strategy.get_build_strategy(),
-        exec_strategy=self.strategy.get_execute_strategy())
+            build_strategy=self.strategy.get_build_strategy(),
+            exec_strategy=self.strategy.get_execute_strategy())
 
         metrics_varnames = []
         metrics_format = []
