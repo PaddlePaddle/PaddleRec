@@ -54,7 +54,6 @@ train:
       tree_travel_path: "{workspace}/tree/travel_list.npy"
       tree_info_path: "{workspace}/tree/tree_info.npy"
       tree_emb_path: "{workspace}/tree/tree_emb.npy"
-
     single:
       load_persistables: False
       persistables_model_path: ""

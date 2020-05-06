@@ -50,13 +50,13 @@ class TDMClusterTrainer(TranspileTrainer):
 
         namespace = "train.startup"
         load_tree = envs.get_global_env(
-            "cluster.load_tree", True, namespace)
+            "tree.load_tree", True, namespace)
         self.tree_layer_path = envs.get_global_env(
-            "cluster.tree_layer_path", "", namespace)
+            "tree.tree_layer_path", "", namespace)
         self.tree_travel_path = envs.get_global_env(
-            "cluster.tree_travel_path", "", namespace)
+            "tree.tree_travel_path", "", namespace)
         self.tree_info_path = envs.get_global_env(
-            "cluster.tree_info_path", "", namespace)
+            "tree.tree_info_path", "", namespace)
 
         save_init_model = envs.get_global_env(
             "cluster.save_init_model", False, namespace)
