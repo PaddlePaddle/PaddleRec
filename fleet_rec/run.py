@@ -10,6 +10,7 @@ from fleetrec.core.utils import util
 engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
+custom_model = ['tdm']
 
 
 def engine_registry():
@@ -31,15 +32,28 @@ def engine_registry():
     engines["GPU"] = gpu
 
 
-def get_engine(engine, device):
+def get_engine(args):
+    device = args.device
     d_engine = engines[device]
     transpiler = get_transpiler()
+
+    engine = get_custom_model_engine(args)
     run_engine = d_engine[transpiler].get(engine, None)
 
     if run_engine is None:
         raise ValueError(
             "engine {} can not be supported on device: {}".format(engine, device))
     return run_engine
+
+
+def get_custom_model_engine(args):
+    model = args.model
+    model_name = model.split('.')[1]
+    if model_name in custom_model:
+        engine = "_".join((model_name.upper(), args.engine))
+    else:
+        engine = args.engine
+    return engine
 
 
 def get_transpiler():
@@ -81,30 +95,23 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
+def get_trainer_prefix(args):
+    model = args.model
+    model_name = model.split('.')[1]
+    if model_name in custom_model:
+        return model_name.upper()
+    return ""
+
+
 def single_engine(args):
-    print("use single engine to run model: {}".format(args.model))
-
+    trainer = get_trainer_prefix(args) + "SingleTrainer"
     single_envs = {}
-    single_envs["train.trainer.trainer"] = "SingleTrainer"
+    single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
     single_envs["train.trainer.device"] = args.device
     single_envs["train.trainer.platform"] = envs.get_platform()
-
-    set_runtime_envs(single_envs, args.model)
-    trainer = TrainerFactory.create(args.model)
-    return trainer
-
-
-def tdm_single_engine(args):
-    print("use tdm single engine to run model: {}".format(args.model))
-
-    single_envs = {}
-    single_envs["train.trainer.trainer"] = "TDMSingleTrainer"
-    single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single"
-    single_envs["train.trainer.device"] = args.device
-    single_envs["train.trainer.platform"] = envs.get_platform()
+    print("use {} engine to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
@@ -112,31 +119,15 @@ def tdm_single_engine(args):
 
 
 def cluster_engine(args):
-    print("launch cluster engine with cluster to run model: {}".format(args.model))
-
+    trainer = get_trainer_prefix(args) + "ClusterTrainer"
     cluster_envs = {}
-    cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
+    cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["train.trainer.engine"] = "cluster"
     cluster_envs["train.trainer.device"] = args.device
     cluster_envs["train.trainer.platform"] = envs.get_platform()
+    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(cluster_envs, args.model)
-
-    trainer = TrainerFactory.create(args.model)
-    return trainer
-
-
-def tdm_cluster_engine(args):
-    print("launch tdm cluster engine with cluster to run model: {}".format(args.model))
-
-    cluster_envs = {}
-    cluster_envs["train.trainer.trainer"] = "TDMClusterTrainer"
-    cluster_envs["train.trainer.engine"] = "cluster"
-    cluster_envs["train.trainer.device"] = args.device
-    cluster_envs["train.trainer.platform"] = envs.get_platform()
-
-    set_runtime_envs(cluster_envs, args.model)
-
     trainer = TrainerFactory.create(args.model)
     return trainer
 
@@ -156,15 +147,15 @@ def cluster_mpi_engine(args):
 
 
 def local_cluster_engine(args):
-    print("launch cluster engine with cluster to run model: {}".format(args.model))
     from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
 
+    trainer = get_trainer_prefix(args) + "ClusterTrainer"
     cluster_envs = {}
     cluster_envs["server_num"] = 1
     cluster_envs["worker_num"] = 1
     cluster_envs["start_port"] = 36001
     cluster_envs["log_dir"] = "logs"
-    cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
+    cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["train.trainer.strategy"] = "async"
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
@@ -173,34 +164,9 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     cluster_envs["CPU_NUM"] = "2"
+    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(cluster_envs, args.model)
-
-    launch = LocalClusterEngine(cluster_envs, args.model)
-    return launch
-
-
-def tdm_local_cluster_engine(args):
-    print("launch tdm cluster engine with cluster to run model: {}".format(args.model))
-    from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
-
-    cluster_envs = {}
-    cluster_envs["server_num"] = 1
-    cluster_envs["worker_num"] = 1
-    cluster_envs["start_port"] = 36001
-    cluster_envs["log_dir"] = "logs"
-    cluster_envs["train.trainer.trainer"] = "TDMClusterTrainer"
-    cluster_envs["train.trainer.strategy"] = "async"
-    cluster_envs["train.trainer.threads"] = "2"
-    cluster_envs["train.trainer.engine"] = "local_cluster"
-
-    cluster_envs["train.trainer.device"] = args.device
-    cluster_envs["train.trainer.platform"] = envs.get_platform()
-
-    cluster_envs["CPU_NUM"] = "2"
-
-    set_runtime_envs(cluster_envs, args.model)
-
     launch = LocalClusterEngine(cluster_envs, args.model)
     return launch
 
@@ -258,7 +224,7 @@ if __name__ == "__main__":
     args.model = get_abs_model(args.model)
     engine_registry()
 
-    which_engine = get_engine(args.engine, args.device)
+    which_engine = get_engine(args)
 
     engine = which_engine(args)
     engine.run()

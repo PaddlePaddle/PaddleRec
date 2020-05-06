@@ -46,22 +46,22 @@ train:
       
   
   startup:
-    single:
-      # 建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
-      load_persistables: False
-      persistables_model_path: ""
-
+    tree:
+      # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
+      # 分布式训练trainer需要独立load 
       load_tree: True
       tree_layer_path: "{workspace}/tree/layer_list.txt"
       tree_travel_path: "{workspace}/tree/travel_list.npy"
       tree_info_path: "{workspace}/tree/tree_info.npy"
       tree_emb_path: "{workspace}/tree/tree_emb.npy"
 
-      save_init_model: True
-      init_model_path: ""
-    cluster:
-      load_persistables: True
+    single:
+      load_persistables: False
       persistables_model_path: ""
+      save_init_model: True
+      init_model_path: "{workspace}/init_model"
+    cluster:
+      init_model_path: "{workspace}/init_model"
 
   save:
     increment:

@@ -33,7 +33,7 @@ class SingleTrainer(TranspileTrainer):
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('init_pass', self.init)
-
+        self.regist_context_processor('startup_pass', self.startup)
         if envs.get_platform() == "LINUX":
             self.regist_context_processor('train_pass', self.dataset_train)
         else:
@@ -55,10 +55,14 @@ class SingleTrainer(TranspileTrainer):
         if metrics:
             self.fetch_vars = metrics.values()
             self.fetch_alias = metrics.keys()
+        context['status'] = 'startup_pass'
+
+    def startup(self, context):
+        self._exe.run(fluid.default_startup_program())
         context['status'] = 'train_pass'
 
     def dataloader_train(self, context):
-        self._exe.run(fluid.default_startup_program())
+
         self.model.custom_preprocess()
 
         reader = self._get_dataloader()

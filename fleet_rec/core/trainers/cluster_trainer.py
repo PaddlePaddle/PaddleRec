@@ -18,6 +18,7 @@ Training use fluid with one node only.
 
 from __future__ import print_function
 
+import os
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distributed_strategy import StrategyFactory
@@ -39,7 +40,7 @@ class ClusterTrainer(TranspileTrainer):
         else:
             self.regist_context_processor('uninit', self.instance)
             self.regist_context_processor('init_pass', self.init)
-
+            self.regist_context_processor('startup_pass', self.startup)
             if envs.get_platform() == "LINUX":
                 self.regist_context_processor('train_pass', self.dataset_train)
             else:
@@ -71,9 +72,11 @@ class ClusterTrainer(TranspileTrainer):
     def init(self, context):
         self.model.train_net()
         optimizer = self.model.optimizer()
-        optimizer_name = envs.get_global_env("hyper_parameters.optimizer")
-        if optimizer_name in ['adam', 'ADAM', 'Adagrad', 'ADAGRAD']:
-            os.environ["FLAGS_communicator_is_sgd_optimizer"] = 0
+        optimizer_name = envs.get_global_env(
+            "hyper_parameters.optimizer", None, "train.model")
+        if optimizer_name not in ["", "sgd", "SGD", "Sgd"]:
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
+
         strategy = self.build_strategy()
         optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self.model.get_cost_op())
@@ -89,16 +92,18 @@ class ClusterTrainer(TranspileTrainer):
             if metrics:
                 self.fetch_vars = metrics.values()
                 self.fetch_alias = metrics.keys()
-            context['status'] = 'train_pass'
+            context['status'] = 'startup_pass'
 
     def server(self, context):
         fleet.init_server()
         fleet.run_server()
         context['is_exit'] = True
 
-    def dataloader_train(self, context):
+    def startup(self, context):
         self._exe.run(fleet.startup_program)
+        context['status'] = 'train_pass'
 
+   def dataloader_train(self, context):
         fleet.init_worker()
 
         reader = self._get_dataloader()
@@ -144,7 +149,6 @@ class ClusterTrainer(TranspileTrainer):
         context['status'] = 'terminal_pass'
 
     def dataset_train(self, context):
-        self._exe.run(fleet.startup_program)
         fleet.init_worker()
 
         dataset = self._get_dataset()
