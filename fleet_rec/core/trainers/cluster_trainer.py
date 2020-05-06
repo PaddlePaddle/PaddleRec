@@ -103,7 +103,7 @@ class ClusterTrainer(TranspileTrainer):
         self._exe.run(fleet.startup_program)
         context['status'] = 'train_pass'
 
-   def dataloader_train(self, context):
+    def dataloader_train(self, context):
         fleet.init_worker()
 
         reader = self._get_dataloader()
