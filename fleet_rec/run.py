@@ -139,7 +139,7 @@ def local_cluster_engine(args):
     cluster_envs = {}
     cluster_envs["server_num"] = 1
     cluster_envs["worker_num"] = 1
-    cluster_envs["start_port"] = 36001
+    cluster_envs["start_port"] = envs.find_free_port()
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["train.trainer.strategy"] = "async"
