@@ -23,7 +23,6 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import f
 from fleetrec.core.trainer import Trainer
 from fleetrec.core.utils import envs
 from fleetrec.core.utils import dataloader_instance
-import fleetrec.core.din_reader as din_reader
 
 
 class TranspileTrainer(Trainer):
