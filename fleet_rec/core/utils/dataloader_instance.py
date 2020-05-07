@@ -62,4 +62,4 @@ def dataloader(readerclass, train, yaml_file):
 
     if hasattr(reader, 'generate_batch_from_trainfiles'):
         return gen_batch_reader()
-    return reader.generate_dataloader_batch(files)
+    return gen_reader

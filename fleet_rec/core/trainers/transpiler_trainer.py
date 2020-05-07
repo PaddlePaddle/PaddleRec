@@ -23,7 +23,6 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import f
 from fleetrec.core.trainer import Trainer
 from fleetrec.core.utils import envs
 from fleetrec.core.utils import dataloader_instance
-import fleetrec.core.din_reader as din_reader
 
 
 class TranspileTrainer(Trainer):
@@ -48,7 +47,6 @@ class TranspileTrainer(Trainer):
         reader_class = envs.lazy_instance_by_fliename(reader_class, "TrainReader")
         reader_ins = reader_class(self._config_yaml)
         if hasattr(reader_ins,'generate_batch_from_trainfiles'):
-            print("++++++++hieehi+++++++++")
             dataloader.set_sample_list_generator(reader)
         else:
             dataloader.set_sample_generator(reader, batch_size)
