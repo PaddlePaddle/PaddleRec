@@ -48,7 +48,13 @@ class TranspileTrainer(Trainer):
         reader_class = envs.get_global_env("class", None, namespace)
 
         reader = dataloader_instance.dataloader(reader_class, state, self._config_yaml)
-        dataloader.set_sample_generator(reader, batch_size)
+            
+        reader_class = envs.lazy_instance_by_fliename(reader_class, "TrainReader")
+        reader_ins = reader_class(self._config_yaml)
+        if hasattr(reader_ins,'generate_batch_from_trainfiles'):
+            dataloader.set_sample_list_generator(reader)
+        else:
+            dataloader.set_sample_generator(reader, batch_size)
         return dataloader
 
     def _get_dataset(self, state):

@@ -10,6 +10,8 @@ from fleetrec.core.utils import util
 engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
+custom_model = ['tdm']
+model_name = ""
 
 
 def engine_registry():
@@ -28,13 +30,17 @@ def engine_registry():
     engines["GPU"] = gpu
 
 
-def get_engine(engine, device):
+def get_engine(args):
+    device = args.device
     d_engine = engines[device]
     transpiler = get_transpiler()
+
+    engine = args.engine
     run_engine = d_engine[transpiler].get(engine, None)
 
     if run_engine is None:
-        raise ValueError("engine {} can not be supported on device: {}".format(engine, device))
+        raise ValueError(
+            "engine {} can not be supported on device: {}".format(engine, device))
     return run_engine
 
 
@@ -77,15 +83,21 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
-def single_engine(args):
-    print("use single engine to run model: {}".format(args.model))
+def get_trainer_prefix(args):
+    if model_name in custom_model:
+        return model_name.upper()
+    return ""
 
+
+def single_engine(args):
+    trainer = get_trainer_prefix(args) + "SingleTrainer"
     single_envs = {}
-    single_envs["train.trainer.trainer"] = "SingleTrainer"
+    single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
     single_envs["train.trainer.device"] = args.device
     single_envs["train.trainer.platform"] = envs.get_platform()
+    print("use {} engine to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
@@ -93,16 +105,15 @@ def single_engine(args):
 
 
 def cluster_engine(args):
-    print("launch cluster engine with cluster to run model: {}".format(args.model))
-
+    trainer = get_trainer_prefix(args) + "ClusterTrainer"
     cluster_envs = {}
-    cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
+    cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["train.trainer.engine"] = "cluster"
     cluster_envs["train.trainer.device"] = args.device
     cluster_envs["train.trainer.platform"] = envs.get_platform()
+    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(cluster_envs, args.model)
-
     trainer = TrainerFactory.create(args.model)
     return trainer
 
@@ -122,15 +133,15 @@ def cluster_mpi_engine(args):
 
 
 def local_cluster_engine(args):
-    print("launch cluster engine with cluster to run model: {}".format(args.model))
     from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
 
+    trainer = get_trainer_prefix(args) + "ClusterTrainer"
     cluster_envs = {}
     cluster_envs["server_num"] = 1
     cluster_envs["worker_num"] = 1
-    cluster_envs["start_port"] = 36001
+    cluster_envs["start_port"] = envs.find_free_port()
     cluster_envs["log_dir"] = "logs"
-    cluster_envs["train.trainer.trainer"] = "ClusterTrainer"
+    cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["train.trainer.strategy"] = "async"
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
@@ -139,9 +150,9 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     cluster_envs["CPU_NUM"] = "2"
+    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(cluster_envs, args.model)
-
     launch = LocalClusterEngine(cluster_envs, args.model)
     return launch
 
@@ -184,8 +195,11 @@ def get_abs_model(model):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='fleet-rec run')
     parser.add_argument("-m", "--model", type=str)
-    parser.add_argument("-e", "--engine", type=str, choices=["single", "local_cluster", "cluster"])
-    parser.add_argument("-d", "--device", type=str, choices=["cpu", "gpu"], default="cpu")
+    parser.add_argument("-e", "--engine", type=str,
+                        choices=["single", "local_cluster", "cluster",
+                                 "tdm_single", "tdm_local_cluster", "tdm_cluster"])
+    parser.add_argument("-d", "--device", type=str,
+                        choices=["cpu", "gpu"], default="cpu")
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
@@ -193,10 +207,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.engine = args.engine.upper()
     args.device = args.device.upper()
+    model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
     engine_registry()
 
-    which_engine = get_engine(args.engine, args.device)
+    which_engine = get_engine(args)
 
     engine = which_engine(args)
     engine.run()
