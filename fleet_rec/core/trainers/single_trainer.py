@@ -111,8 +111,7 @@ class SingleTrainer(TranspileTrainer):
                                          dataset=dataset,
                                          fetch_list=self.fetch_vars,
                                          fetch_info=self.fetch_alias,
-                                         print_period=1,
-                                         debug=True)
+                                         print_period=self.fetch_period)
             self.save(i, "train", is_fleet=False)
         context['status'] = 'infer_pass'
 

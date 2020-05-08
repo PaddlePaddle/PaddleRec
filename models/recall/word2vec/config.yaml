@@ -15,7 +15,7 @@ evaluate:
   workspace: "fleetrec.models.recall.word2vec"
   reader:
     batch_size: 50
-    class: "{workspace}/../w2v_evaluate_reader.py"
+    class: "{workspace}/w2v_evaluate_reader.py"
     test_data_path: "{workspace}/data/test"
     word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
 
@@ -29,16 +29,14 @@ train:
 
   reader:
     batch_size: 100
-    class: "{workspace}/../w2v_reader.py"
+    class: "{workspace}/w2v_reader.py"
     train_data_path: "{workspace}/data/train"
-    test_data_path: "{workspace}/data/test"
     word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
-    word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
 
   model:
     models: "{workspace}/model.py"
     hyper_parameters:
-      sparse_feature_number: 354051
+      sparse_feature_number: 85
       sparse_feature_dim: 300
       with_shuffle_batch: False
       neg_num: 5
