@@ -62,7 +62,7 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'train_pass'
 
     def dataloader_train(self, context):
-        reader = self._get_dataloader()
+        reader = self._get_dataloader("TRAIN")
         epochs = envs.get_global_env("train.epochs")
 
         program = fluid.compiler.CompiledProgram(
@@ -98,11 +98,12 @@ class SingleTrainer(TranspileTrainer):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+            self.save(epoch, "train", is_fleet=False)
 
         context['status'] = 'infer_pass'
 
     def dataset_train(self, context):
-        dataset = self._get_dataset()
+        dataset = self._get_dataset("TRAIN")
         epochs = envs.get_global_env("train.epochs")
 
         for i in range(epochs):
@@ -115,6 +116,52 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'infer_pass'
 
     def infer(self, context):
+        infer_program = fluid.Program()
+        startup_program = fluid.Program()
+        with fluid.unique_name.guard():
+            with fluid.program_guard(infer_program, startup_program):
+                self.model.infer_net()
+
+        if self.model._infer_data_loader is None:
+            context['status'] = 'terminal_pass'
+            return
+
+        reader = self._get_dataloader("Evaluate")
+
+        metrics_varnames = []
+        metrics_format = []
+
+        metrics_format.append("{}: {{}}".format("epoch"))
+        metrics_format.append("{}: {{}}".format("batch"))
+
+        for name, var in self.model.get_infer_results().items():
+            metrics_varnames.append(var.name)
+            metrics_format.append("{}: {{}}".format(name))
+
+        metrics_format = ", ".join(metrics_format)
+        self._exe.run(startup_program)
+
+        for (epoch, model_dir) in self.increment_models:
+            print("Begin to infer epoch {}, model_dir: {}".format(epoch, model_dir))
+            program = infer_program.clone()
+            fluid.io.load_persistables(self._exe, model_dir, program)
+            reader.start()
+            batch_id = 0
+            try:
+                while True:
+                    metrics_rets = self._exe.run(
+                        program=program,
+                        fetch_list=metrics_varnames)
+
+                    metrics = [epoch, batch_id]
+                    metrics.extend(metrics_rets)
+
+                    if batch_id % 2 == 0 and batch_id != 0:
+                        print(metrics_format.format(*metrics))
+                    batch_id += 1
+            except fluid.core.EOFException:
+                reader.reset()
+ 
         context['status'] = 'terminal_pass'
 
     def terminal(self, context):

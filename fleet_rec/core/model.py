@@ -16,13 +16,22 @@ class Model(object):
         self._cost = None
         self._metrics = {}
         self._data_var = []
+        self._infer_data_var = []
+        self._infer_results = {}
         self._data_loader = None
+        self._infer_data_loader = None
         self._fetch_interval = 20
         self._namespace = "train.model"
         self._platform = envs.get_platform()
 
     def get_inputs(self):
         return self._data_var
+
+    def get_infer_inputs(self):
+        return self._infer_data_var
+
+    def get_infer_results(self):
+        return self._infer_results
 
     def get_cost_op(self):
         """R
