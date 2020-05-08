@@ -122,6 +122,10 @@ class SingleTrainer(TranspileTrainer):
             with fluid.program_guard(infer_program, startup_program):
                 self.model.infer_net()
 
+        if self.model._infer_data_loader is None:
+            context['status'] = 'terminal_pass'
+            return
+
         reader = self._get_dataloader("Evaluate")
 
         metrics_varnames = []

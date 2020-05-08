@@ -102,8 +102,8 @@ class TranspileTrainer(Trainer):
             if not need_save(epoch_id, save_interval, False):
                 return
             
-        #    print("save inference model is not supported now.")
-        #    return
+            print("save inference model is not supported now.")
+            return
 
             feed_varnames = envs.get_global_env("save.inference.feed_varnames", None, namespace)
             fetch_varnames = envs.get_global_env("save.inference.fetch_varnames", None, namespace)
