@@ -22,13 +22,13 @@ from fleetrec.core.utils.envs import get_runtime_environ
 
 
 def dataloader(readerclass, train, yaml_file):
-    namespace = "train.reader"
-
     if train == "TRAIN":
         reader_name = "TrainReader"
+        namespace = "train.reader"
         data_path = get_global_env("train_data_path", None, namespace)
     else:
         reader_name = "EvaluateReader"
+        namespace = "evaluate.reader"
         data_path = get_global_env("test_data_path", None, namespace)
 
     if data_path.startswith("fleetrec::"):
