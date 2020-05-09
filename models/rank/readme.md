@@ -1,7 +1,7 @@
 # 排序模型库
 
 ## 简介
-我们提供了常见的排序任务中使用的模型算法，包括 [多层神经网络](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/dnn)、[Deep Cross Network](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/dcn)、[DeepFM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/deepfm)、 [xDeepFM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/xdeepfm)、[Deep Interest Network](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/din)、[Wide&Deep](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/wide_deep)。
+我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [多层神经网络](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/dnn)、[Deep Cross Network](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/dcn)、[DeepFM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/deepfm)、 [xDeepFM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/xdeepfm)、[Deep Interest Network](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/din)、[Wide&Deep](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/wide_deep)。
 
 模型算法库在持续添加中，欢迎关注。
 
