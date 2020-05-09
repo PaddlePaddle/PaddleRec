@@ -1,5 +1,5 @@
 <p align="center">
-<img align="center" src="doc/imgs/logo.png">
+<img align="center" src="doc/imgs/structure.png">
 <p>
 
 [![License](https://img.shields.io/badge/license-Apache%202-red.svg)](LICENSE)
@@ -50,19 +50,19 @@ PadlleRec以预置模型为核心,具备以下特点：
 - 快速部署，一键上线
 
 # 支持模型列表
-|         方向         |          模型          | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
-| :------------------: | :--------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
-| ContentUnderstanding | [Text-Classifcation]() |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-| ContentUnderstanding |      [TagSpace]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|        Recall        |      [Word2Vec]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|        Recall        |        [TDM]()         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|         Rank         |      [CTR-Dnn]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|         Rank         |       [DeepFm]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|        Rerank        |      [ListWise]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|      MultiTask       |        [MMOE]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|      MultiTask       |        [ESMM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|        Match         |        [DSSM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|        Match         |  [Multiview-Simnet]()  |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   方向   |          模型          | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
+| :------: | :--------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
+| 内容理解 | [Text-Classifcation]() |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+| 内容理解 |      [TagSpace]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |      [Word2Vec]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |        [TDM]()         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |      [CTR-Dnn]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |       [DeepFm]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |      [ListWise]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|  多任务  |        [MMOE]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|  多任务  |        [ESMM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   匹配   |        [DSSM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   匹配   |  [Multiview-Simnet]()  |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
 
 # 文档教程
 ## 入门教程
