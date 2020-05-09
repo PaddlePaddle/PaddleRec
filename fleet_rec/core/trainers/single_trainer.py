@@ -116,17 +116,19 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'infer_pass'
 
     def infer(self, context):
+        logger.info("Run in infer pass")
         infer_program = fluid.Program()
         startup_program = fluid.Program()
         with fluid.unique_name.guard():
             with fluid.program_guard(infer_program, startup_program):
                 self.model.infer_net()
-
+        logger.info("End build infer net")
         if self.model._infer_data_loader is None:
             context['status'] = 'terminal_pass'
             return
 
         reader = self._get_dataloader("Evaluate")
+        logger.info("End Get data loader")
 
         metrics_varnames = []
         metrics_format = []
@@ -142,7 +144,8 @@ class SingleTrainer(TranspileTrainer):
         self._exe.run(startup_program)
 
         for (epoch, model_dir) in self.increment_models:
-            print("Begin to infer epoch {}, model_dir: {}".format(epoch, model_dir))
+            logger.info(
+                "Begin to infer epoch {}, model_dir: {}".format(epoch, model_dir))
             program = infer_program.clone()
             fluid.io.load_persistables(self._exe, model_dir, program)
             reader.start()
@@ -161,7 +164,7 @@ class SingleTrainer(TranspileTrainer):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
- 
+
         context['status'] = 'terminal_pass'
 
     def terminal(self, context):

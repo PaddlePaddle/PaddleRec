@@ -20,7 +20,7 @@ from __future__ import print_function
 from fleetrec.core.reader import Reader
 
 
-class TrainReader(Reader):
+class EvaluateReader(Reader):
     def init(self):
         pass
 
@@ -34,9 +34,8 @@ class TrainReader(Reader):
             """
             features = (line.strip('\n')).split('\t')
             input_emb = map(float, features[0].split(' '))
-            item_label = [int(features[1])]
 
-            feature_name = ["input_emb", "item_label"]
-            yield zip(feature_name, [input_emb] + [item_label])
+            feature_name = ["input_emb"]
+            yield zip(feature_name, [input_emb])
 
         return reader

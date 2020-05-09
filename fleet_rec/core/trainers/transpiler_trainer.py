@@ -48,12 +48,13 @@ class TranspileTrainer(Trainer):
 
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
+        print("batch_size: {}".format(batch_size))
+        reader = dataloader_instance.dataloader(
+            reader_class, state, self._config_yaml)
 
-        reader = dataloader_instance.dataloader(reader_class, state, self._config_yaml)
-            
         reader_class = envs.lazy_instance_by_fliename(reader_class, class_name)
         reader_ins = reader_class(self._config_yaml)
-        if hasattr(reader_ins,'generate_batch_from_trainfiles'):
+        if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
             dataloader.set_sample_list_generator(reader)
         else:
             dataloader.set_sample_generator(reader, batch_size)
@@ -63,23 +64,27 @@ class TranspileTrainer(Trainer):
         if state == "TRAIN":
             inputs = self.model.get_inputs()
             namespace = "train.reader"
-            train_data_path = envs.get_global_env("train_data_path", None, namespace)
+            train_data_path = envs.get_global_env(
+                "train_data_path", None, namespace)
         else:
             inputs = self.model.get_infer_inputs()
             namespace = "evaluate.reader"
-            train_data_path = envs.get_global_env("test_data_path", None, namespace)
+            train_data_path = envs.get_global_env(
+                "test_data_path", None, namespace)
 
         threads = int(envs.get_runtime_environ("train.trainer.threads"))
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
-        pipe_cmd = "python {} {} {} {}".format(reader, reader_class, state, self._config_yaml)
+        pipe_cmd = "python {} {} {} {}".format(
+            reader, reader_class, state, self._config_yaml)
 
         if train_data_path.startswith("fleetrec::"):
             package_base = envs.get_runtime_environ("PACKAGE_BASE")
             assert package_base is not None
-            train_data_path = os.path.join(package_base, train_data_path.split("::")[1])
+            train_data_path = os.path.join(
+                package_base, train_data_path.split("::")[1])
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
@@ -105,18 +110,23 @@ class TranspileTrainer(Trainer):
             return epoch_id % epoch_interval == 0
 
         def save_inference_model():
-            save_interval = envs.get_global_env("save.inference.epoch_interval", -1, namespace)
+            save_interval = envs.get_global_env(
+                "save.inference.epoch_interval", -1, namespace)
 
             if not need_save(epoch_id, save_interval, False):
                 return
-            
+
             print("save inference model is not supported now.")
             return
 
-            feed_varnames = envs.get_global_env("save.inference.feed_varnames", None, namespace)
-            fetch_varnames = envs.get_global_env("save.inference.fetch_varnames", None, namespace)
-            fetch_vars = [fluid.default_main_program().global_block().vars[varname] for varname in fetch_varnames]
-            dirname = envs.get_global_env("save.inference.dirname", None, namespace)
+            feed_varnames = envs.get_global_env(
+                "save.inference.feed_varnames", None, namespace)
+            fetch_varnames = envs.get_global_env(
+                "save.inference.fetch_varnames", None, namespace)
+            fetch_vars = [fluid.default_main_program().global_block().vars[varname]
+                          for varname in fetch_varnames]
+            dirname = envs.get_global_env(
+                "save.inference.dirname", None, namespace)
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
@@ -124,16 +134,19 @@ class TranspileTrainer(Trainer):
             if is_fleet:
                 fleet.save_inference_model(dirname, feed_varnames, fetch_vars)
             else:
-                fluid.io.save_inference_model(dirname, feed_varnames, fetch_vars, self._exe)
+                fluid.io.save_inference_model(
+                    dirname, feed_varnames, fetch_vars, self._exe)
             self.inference_models.append((epoch_id, dirname))
 
         def save_persistables():
-            save_interval = envs.get_global_env("save.increment.epoch_interval", -1, namespace)
+            save_interval = envs.get_global_env(
+                "save.increment.epoch_interval", -1, namespace)
 
             if not need_save(epoch_id, save_interval, False):
                 return
 
-            dirname = envs.get_global_env("save.increment.dirname", None, namespace)
+            dirname = envs.get_global_env(
+                "save.increment.dirname", None, namespace)
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
@@ -146,7 +159,6 @@ class TranspileTrainer(Trainer):
 
         save_persistables()
         save_inference_model()
-        
 
     def instance(self, context):
         models = envs.get_global_env("train.model.models")
