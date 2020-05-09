@@ -36,7 +36,7 @@ class TranspileTrainer(Trainer):
     def processor_register(self):
         print("Need implement by trainer, `self.regist_context_processor('uninit', self.instance)` must be the first")
 
-    def _get_dataloader(self, state):
+    def _get_dataloader(self, state="TRAIN"):
         if state == "TRAIN":
             dataloader = self.model._data_loader
             namespace = "train.reader"
@@ -59,7 +59,7 @@ class TranspileTrainer(Trainer):
             dataloader.set_sample_generator(reader, batch_size)
         return dataloader
 
-    def _get_dataset(self, state):
+    def _get_dataset(self, state="TRAIN"):
         if state == "TRAIN":
             inputs = self.model.get_inputs()
             namespace = "train.reader"
@@ -110,11 +110,14 @@ class TranspileTrainer(Trainer):
             if not need_save(epoch_id, save_interval, False):
                 return
             
-            print("save inference model is not supported now.")
-            return
+          #  print("save inference model is not supported now.")
+          #  return
 
             feed_varnames = envs.get_global_env("save.inference.feed_varnames", None, namespace)
             fetch_varnames = envs.get_global_env("save.inference.fetch_varnames", None, namespace)
+            if feed_varnames is None or fetch_varnames is None:
+                return
+
             fetch_vars = [fluid.default_main_program().global_block().vars[varname] for varname in fetch_varnames]
             dirname = envs.get_global_env("save.inference.dirname", None, namespace)
 
@@ -122,7 +125,7 @@ class TranspileTrainer(Trainer):
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                fleet.save_inference_model(dirname, feed_varnames, fetch_vars)
+                fleet.save_inference_model(self._exe, dirname, feed_varnames, fetch_vars)
             else:
                 fluid.io.save_inference_model(dirname, feed_varnames, fetch_vars, self._exe)
             self.inference_models.append((epoch_id, dirname))
@@ -167,7 +170,53 @@ class TranspileTrainer(Trainer):
         context['is_exit'] = True
 
     def infer(self, context):
-        context['is_exit'] = True
+        infer_program = fluid.Program()
+        startup_program = fluid.Program()
+        with fluid.unique_name.guard():
+            with fluid.program_guard(infer_program, startup_program):
+                self.model.infer_net()
+
+        if self.model._infer_data_loader is None:
+            context['status'] = 'terminal_pass'
+            return
+
+        reader = self._get_dataloader("Evaluate")
+
+        metrics_varnames = []
+        metrics_format = []
+
+        metrics_format.append("{}: {{}}".format("epoch"))
+        metrics_format.append("{}: {{}}".format("batch"))
+
+        for name, var in self.model.get_infer_results().items():
+            metrics_varnames.append(var.name)
+            metrics_format.append("{}: {{}}".format(name))
+
+        metrics_format = ", ".join(metrics_format)
+        self._exe.run(startup_program)
+
+        for (epoch, model_dir) in self.increment_models:
+            print("Begin to infer epoch {}, model_dir: {}".format(epoch, model_dir))
+            program = infer_program.clone()
+            fluid.io.load_persistables(self._exe, model_dir, program)
+            reader.start()
+            batch_id = 0
+            try:
+                while True:
+                    metrics_rets = self._exe.run(
+                        program=program,
+                        fetch_list=metrics_varnames)
+
+                    metrics = [epoch, batch_id]
+                    metrics.extend(metrics_rets)
+
+                    if batch_id % 2 == 0 and batch_id != 0:
+                        print(metrics_format.format(*metrics))
+                    batch_id += 1
+            except fluid.core.EOFException:
+                reader.reset()
+
+        context['status'] = 'terminal_pass'
 
     def terminal(self, context):
         print("clean up and exit")

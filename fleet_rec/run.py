@@ -72,8 +72,11 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     if cluster_envs is None:
         cluster_envs = {}
 
+    engine_extras = get_engine_extras()
+    if "train.trainer.threads" in engine_extras and "CPU_NUM" in cluster_envs:
+        cluster_envs["CPU_NUM"] = engine_extras["train.trainer.threads"]
     envs.set_runtime_environs(cluster_envs)
-    envs.set_runtime_environs(get_engine_extras())
+    envs.set_runtime_environs(engine_extras)
 
     need_print = {}
     for k, v in os.environ.items():

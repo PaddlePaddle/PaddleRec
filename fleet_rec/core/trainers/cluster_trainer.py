@@ -46,6 +46,7 @@ class ClusterTrainer(TranspileTrainer):
             else:
                 self.regist_context_processor(
                     'train_pass', self.dataloader_train)
+            self.regist_context_processor('infer_pass', self.infer)
             self.regist_context_processor('terminal_pass', self.terminal)
 
     def build_strategy(self):
@@ -139,14 +140,15 @@ class ClusterTrainer(TranspileTrainer):
                     metrics = [epoch, batch_id]
                     metrics.extend(metrics_rets)
 
-                    if batch_id % 10 == 0 and batch_id != 0:
+                    if batch_id % self.fetch_period == 0 and batch_id != 0:
                         print(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+            self.save(epoch, "train", is_fleet=True)
 
         fleet.stop_worker()
-        context['status'] = 'terminal_pass'
+        context['status'] = 'infer_pass'
 
     def dataset_train(self, context):
         fleet.init_worker()
@@ -162,10 +164,7 @@ class ClusterTrainer(TranspileTrainer):
                                          print_period=self.fetch_period)
             self.save(i, "train", is_fleet=True)
         fleet.stop_worker()
-        context['status'] = 'terminal_pass'
-
-    def infer(self, context):
-        context['status'] = 'terminal_pass'
+        context['status'] = 'infer_pass'
 
     def terminal(self, context):
         for model in self.increment_models:
