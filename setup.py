@@ -39,7 +39,7 @@ def build(dirname):
     packages = find_packages(dirname, include=('fleetrec.*'))
     package_dir = {'': dirname}
     package_data = {}
-    need_copy = ['data/*/*.txt', '*.yaml', 'tree/*.npy','tree/*.txt']
+    need_copy = ['data/*.txt', 'data/*/*.txt', '*.yaml', 'tree/*.npy','tree/*.txt']
     for package in packages:
         if package.startswith("fleetrec.models."):
             package_data[package] = need_copy
