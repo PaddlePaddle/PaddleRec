@@ -24,10 +24,10 @@
 | :------------------: | :--------------------: | :---------: |
 | DNN | 多层神经网络 | -- |
 | wide&deep | Deep + wide(LR) | [Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/abs/10.1145/2988450.2988454)(2016) |
-| DeepFM | Deep + FM 并行 | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)(2017) |
-| xDeepFM | DeepFM升级版 | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/abs/10.1145/3219819.3220023)(2018) |
-| DCN | wide升级为Cross Layer Network | [Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/abs/10.1145/3124749.3124754)(2017) |
-| DIN | Embeddding层引入attention机制 | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/abs/10.1145/3219819.3219823)(2018) |
+| DeepFM | DeepFM | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)(2017) |
+| xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/abs/10.1145/3219819.3220023)(2018) |
+| DCN | Deep Cross Network | [Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/abs/10.1145/3124749.3124754)(2017) |
+| DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/abs/10.1145/3219819.3219823)(2018) |
 
 ## 使用教程
 ### 数据处理
@@ -42,7 +42,7 @@
 |       Criteo        |       DNN       |       --        |       0.79395          |       --          |       --          |
 |       Criteo        |       DeepFM       |       0.44797        |       0.8046          |       --          |       --          |
 |       Criteo        |       DCN       |       0.44703564        |       0.80654419          |       --          |       --          |
-|       Criteo        |       xDeepFM       |       --        |       0.7308          |       0.48657          |       --          |
+|       Criteo        |       xDeepFM       |       --        |       --          |       0.48657          |       --          |
 |       Census-income Data        |       Wide&Deep       |       0.76195(mean)         |       0.90577(mean)          |       --          |       --          |
 |       Amazon Product        |       DIN       |       0.47005194        |       0.863794952818         |       --          |       --          |
 
