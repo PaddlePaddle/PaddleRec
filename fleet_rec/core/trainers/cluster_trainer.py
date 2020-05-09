@@ -40,8 +40,8 @@ class ClusterTrainer(TranspileTrainer):
         else:
             self.regist_context_processor('uninit', self.instance)
             self.regist_context_processor('init_pass', self.init)
-            self.regist_context_processor('startup_pass', self.startup)
-            if envs.get_platform() == "LINUX":
+
+            if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None, "train.reader") != "DataLoader":
                 self.regist_context_processor('train_pass', self.dataset_train)
             else:
                 self.regist_context_processor(
