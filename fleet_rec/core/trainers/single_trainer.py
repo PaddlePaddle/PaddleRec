@@ -93,7 +93,7 @@ class SingleTrainer(TranspileTrainer):
                     metrics = [epoch, batch_id]
                     metrics.extend(metrics_rets)
 
-                    if batch_id % 10 == 0 and batch_id != 0:
+                    if batch_id % self.fetch_period == 0 and batch_id != 0:
                         print(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
