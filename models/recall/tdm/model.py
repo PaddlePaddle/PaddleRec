@@ -37,9 +37,9 @@ class Model(ModelBase):
             "tree_parameters.layer_node_num_list", [
                 2, 4, 7, 12], self._namespace)
         self.child_nums = envs.get_global_env(
-            "tree_parameters.node_nums", 2, self._namespace)
-        self.tree_layer_init_path = envs.get_global_env(
-            "tree_parameters.tree_layer_init_path", None, self._namespace)
+            "tree_parameters.child_nums", 2, self._namespace)
+        self.tree_layer_path = envs.get_global_env(
+            "tree.tree_layer_path", None, "train.startup")
 
         # model training hyper parameter
         self.node_emb_size = envs.get_global_env(
@@ -56,7 +56,7 @@ class Model(ModelBase):
         self.topK = envs.get_global_env(
             "hyper_parameters.node_nums", 1, self._namespace)
         self.batch_size = envs.get_global_env(
-            "batch_size", 32, "train.reader")
+            "batch_size", 1, "evaluate.reader")
 
     def train_net(self):
         self.train_input()
@@ -287,16 +287,15 @@ class Model(ModelBase):
             shape=[self.input_emb_size],
             dtype="float32",
         )
-        self._data_var.append(input_emb)
+        self._infer_data_var.append(input_emb)
 
-        if self._platform != "LINUX":
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
+        self._infer_data_loader = fluid.io.DataLoader.from_generator(
+            feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
 
     def get_layer_list(self):
         """get layer list from layer_list.txt"""
         layer_list = []
-        with open(self.tree_layer_init_path, 'r') as fin:
+        with open(self.tree_layer_path, 'r') as fin:
             for line in fin.readlines():
                 l = []
                 layer = (line.split('\n'))[0].split(',')
@@ -304,7 +303,7 @@ class Model(ModelBase):
                     if node:
                         l.append(node)
                 layer_list.append(l)
-        return layer_list
+        self.layer_list = layer_list
 
     def create_first_layer(self):
         """decide which layer to start infer"""
@@ -318,16 +317,15 @@ class Model(ModelBase):
         self.first_layer_idx = first_layer_id
         node_list = []
         mask_list = []
-        for id in node_list:
+        for id in first_layer_node:
             node_list.append(fluid.layers.fill_constant(
-                [self.batch_size, 1], value=id, dtype='int64'))
+                [self.batch_size, 1], value=int(id), dtype='int64'))
             mask_list.append(fluid.layers.fill_constant(
                 [self.batch_size, 1], value=0, dtype='int64'))
-
         self.first_layer_node = fluid.layers.concat(node_list, axis=1)
         self.first_layer_node_mask = fluid.layers.concat(mask_list, axis=1)
 
-    def tdm_infer_net(self, inputs):
+    def tdm_infer_net(self):
         """
         infer的主要流程
         infer的基本逻辑是：从上层开始（具体层idx由树结构及TopK值决定）
@@ -336,14 +334,13 @@ class Model(ModelBase):
         3、循环1、2步骤，遍历完所有层，得到每一层筛选结果的集合
         4、将筛选结果集合中的叶子节点，拿出来再做一次topK，得到最终的召回输出
         """
-        input_emb = self._data_var[0]
-
+        input_emb = self._infer_data_var[0]
         node_score = []
         node_list = []
 
         current_layer_node = self.first_layer_node
         current_layer_node_mask = self.first_layer_node_mask
-        input_trans_emb = self.input_trans_net.input_fc_infer(input_emb)
+        input_trans_emb = self.input_fc_infer(input_emb)
 
         for layer_idx in range(self.first_layer_idx, self.max_layers):
             # 确定当前层的需要计算的节点数
@@ -357,10 +354,9 @@ class Model(ModelBase):
                 current_layer_node, [-1, current_layer_node_num])
             current_layer_node_mask = fluid.layers.reshape(
                 current_layer_node_mask, [-1, current_layer_node_num])
-
             node_emb = fluid.embedding(
                 input=current_layer_node,
-                size=[self.node_nums, self.node_embed_size],
+                size=[self.node_nums, self.node_emb_size],
                 param_attr=fluid.ParamAttr(name="TDM_Tree_Emb"))
 
             input_fc_out = self.layer_fc_infer(
@@ -434,6 +430,7 @@ class Model(ModelBase):
         res_item = fluid.layers.slice(
             res_node_emb, axes=[2], starts=[0], ends=[1])
         self.res_item_re = fluid.layers.reshape(res_item, [-1, self.topK])
+        self._infer_results["item"] = self.res_item_re
 
     def input_fc_infer(self, input_emb):
         """
