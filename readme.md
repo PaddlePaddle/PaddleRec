@@ -44,24 +44,25 @@ PadlleRec以预置模型为核心,具备以下特点：
 
 # 特性
 - 易于上手，开箱即用
+  
 - 灵活配置，个性调参
 - 分布式训练，大规模稀疏
 - 快速部署，一键上线
 
 # 支持模型列表
-|         方向         |          模型          | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 分布式GPU训练 | 自定义数据集 | 服务器部署 |
-| :------------------: | :--------------------: | :---------: | :---------: | :-----------: | :-----------: | :----------: | :--------: |
-| ContentUnderstanding | [Text-Classifcation]() |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-| ContentUnderstanding |      [TagSpace]()      |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|        Recall        |      [Word2Vec]()      |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|        Recall        |        [TDM]()         |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|         Rank         |      [CTR-Dnn]()       |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|         Rank         |       [DeepFm]()       |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|        Rerank        |      [ListWise]()      |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|      MultiTask       |        [MMOE]()        |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|      MultiTask       |        [ESSM]()        |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|        Match         |        [DSSM]()        |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
-|        Match         |  [Multiview-Simnet]()  |      ✓      |      x      |       ✓       |       x       |      ✓       |     ✓      |
+|         方向         |          模型          | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
+| :------------------: | :--------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
+| ContentUnderstanding | [Text-Classifcation]() |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+| ContentUnderstanding |      [TagSpace]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|        Recall        |      [Word2Vec]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|        Recall        |        [TDM]()         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|         Rank         |      [CTR-Dnn]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|         Rank         |       [DeepFm]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|        Rerank        |      [ListWise]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|      MultiTask       |        [MMOE]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|      MultiTask       |        [ESMM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|        Match         |        [DSSM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|        Match         |  [Multiview-Simnet]()  |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
 
 # 文档教程
 ## 入门教程
@@ -137,19 +138,10 @@ python -m fleetrec.run \
 
 ### 常见问题FAQ
 
-## 进阶教程
-### 自定义数据集及Reader
-### 模型调参
-### 单机训练
-### 分布式训练
-### 预测部署
-
 # 版本历史
 ## 版本更新
-## Benchamrk
 
 # 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
-# 如何贡献代码
-## 优化PaddleRec框架
-## 新增模型到PaddleRec
+
+
