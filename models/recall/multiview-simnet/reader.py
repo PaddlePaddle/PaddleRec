@@ -26,13 +26,13 @@ class TrainReader(Reader):
 
         self.all_slots = []
         for i in range(self.query_slots):
-            self.all_slots.append('q' + str(i))
+            self.all_slots.append(str(i))
 
         for i in range(self.title_slots):
-            self.all_slots.append('pt' + str(i))
+            self.all_slots.append(str(i + self.query_slots))
 
         for i in range(self.title_slots):
-            self.all_slots.append('nt' + str(i))
+            self.all_slots.append(str(i + self.query_slots + self.title_slots))
 
         self._all_slots_dict = dict()
         for index, slot in enumerate(self.all_slots):

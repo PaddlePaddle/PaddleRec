@@ -129,12 +129,12 @@ class Model(ModelBase):
     def input(self, is_train=True):
 	self.q_slots = [
             fluid.data(
-                name="q%d" % i, shape=[None, 1], lod_level=1, dtype='int64')
+                name="%d" % i, shape=[None, 1], lod_level=1, dtype='int64')
             for i in range(len(self.query_encoders))
         ]
         self.pt_slots = [
             fluid.data(
-                name="pt%d" % i, shape=[None, 1], lod_level=1, dtype='int64')
+                name="%d" % (i + len(self.query_encoders)), shape=[None, 1], lod_level=1, dtype='int64')
             for i in range(len(self.title_encoders))
         ]
 
@@ -143,7 +143,7 @@ class Model(ModelBase):
 
         self.nt_slots = [
             fluid.data(
-                name="nt%d" % i, shape=[None, 1], lod_level=1, dtype='int64')
+                name="%d" % (i + len(self.query_encoders) + len(self.title_encoders)), shape=[None, 1], lod_level=1, dtype='int64')
             for i in range(len(self.title_encoders))
         ]
 
