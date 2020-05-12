@@ -39,10 +39,14 @@ def build(dirname):
     packages = find_packages(dirname, include=('fleetrec.*'))
     package_dir = {'': dirname}
     package_data = {}
-    need_copy = ['data/*.txt', 'data/*/*.txt', '*.yaml', 'tree/*.npy','tree/*.txt']
+
+    models_copy = ['data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy', 'tree/*.txt']
+    engine_copy = ['*/*.sh']
     for package in packages:
         if package.startswith("fleetrec.models."):
-            package_data[package] = need_copy
+            package_data[package] = models_copy
+        if package.startswith("fleetrec.core.engine"):
+            package_data[package] = engine_copy
 
     setup(
         name=about["__title__"],
@@ -67,10 +71,10 @@ shutil.rmtree(dirname)
 
 print('''
 \033[32m
-  _   _   _   _   _   _   _   _   _  
- / \ / \ / \ / \ / \ / \ / \ / \ / \ 
+  _   _   _   _   _   _   _   _   _
+ / \ / \ / \ / \ / \ / \ / \ / \ / \
 ( F | L | E | E | T | - | R | E | C )
- \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
 \033[0m
 \033[34m
 Installation Complete. Congratulations!
