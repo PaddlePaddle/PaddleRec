@@ -136,7 +136,7 @@ def cluster_mpi_engine(args):
 
 
 def local_cluster_engine(args):
-    from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
+    from fleetrec.core.engine.local_cluster import LocalClusterEngine
 
     trainer = get_trainer_prefix(args) + "ClusterTrainer"
     cluster_envs = {}
@@ -162,7 +162,7 @@ def local_cluster_engine(args):
 
 def local_mpi_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
-    from fleetrec.core.engine.local_mpi_engine import LocalMPIEngine
+    from fleetrec.core.engine.local_mpi import LocalMPIEngine
 
     print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
 
