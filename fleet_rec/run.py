@@ -1,6 +1,8 @@
 import argparse
 import os
 import subprocess
+import tempfile
+
 import yaml
 
 from fleetrec.core.factory import TrainerFactory
@@ -109,17 +111,55 @@ def single_engine(args):
 
 def cluster_engine(args):
     from fleetrec.core.engine.cluster.cluster import ClusterEngine
-    trainer = get_trainer_prefix(args) + "ClusterTrainer"
-    cluster_envs = {}
-    cluster_envs["train.trainer.trainer"] = trainer
-    cluster_envs["train.trainer.engine"] = "cluster"
-    cluster_envs["train.trainer.device"] = args.device
-    cluster_envs["train.trainer.platform"] = envs.get_platform()
-    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
 
-    set_runtime_envs(cluster_envs, args.model)
-    launch = LocalClusterEngine(cluster_envs, args.model)
-    return launch
+    def update_workspace(cluster_envs):
+        workspace = cluster_envs.get("engine_workspace", None)
+        if not workspace:
+            return
+
+        # is fleet inner models
+        if workspace.startswith("fleetrec."):
+            fleet_package = envs.get_runtime_environ("PACKAGE_BASE")
+            workspace_dir = workspace.split("fleetrec.")[1].replace(".", "/")
+            path = os.path.join(fleet_package, workspace_dir)
+        else:
+            path = workspace
+
+        for name, value in cluster_envs.items():
+            if isinstance(value, str):
+                value = value.replace("{workspace}", path)
+                cluster_envs[name] = value
+
+    def master():
+        with open(args.backend, 'r') as rb:
+            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+
+        flattens = envs.flatten_environs(_envs, "_")
+        flattens["engine_role"] = args.role
+        flattens["engine_temp_path"] = tempfile.mkdtemp()
+        update_workspace(flattens)
+
+        envs.set_runtime_environs(flattens)
+        print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value")))
+
+        launch = ClusterEngine(None, args.model)
+        return launch
+
+    def worker():
+        trainer = get_trainer_prefix(args) + "ClusterTrainer"
+        cluster_envs = {}
+        cluster_envs["train.trainer.trainer"] = trainer
+        cluster_envs["train.trainer.engine"] = "cluster"
+        cluster_envs["train.trainer.device"] = args.device
+        cluster_envs["train.trainer.platform"] = envs.get_platform()
+        print("launch {} engine with cluster to with model: {}".format(trainer, args.model))
+        set_runtime_envs(cluster_envs, args.model)
+        launch = ClusterEngine(cluster_envs, args.model)
+        return launch
+    if args.role == "worker":
+        return worker()
+    else:
+        return master()
 
 
 def cluster_mpi_engine(args):

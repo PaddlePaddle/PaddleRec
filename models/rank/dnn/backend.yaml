@@ -13,18 +13,15 @@
 # limitations under the License.
 
 engine:
+  workspace: "fleetrec.models.rank.dnn"
   backend: "MPI"
 
   package:
-    build_script: "/xxxx/xx/x/x/"
+    build_script: "{workspace}/package.sh"
     python: "/home/tangwei/fleet_rec_env/cpython-2.7.11-ucs4"
     paddlerec: "/home/tangwei/fleet_rec_env/FleetRec"
-    paddlepaddle: "/home/tangwei/fleet_rec_env/FleetRec"
 
   submit:
-    submit_script: "xx"
-    job: "xxx"
-    conf: "qsub_f.conf"
     hpc: "/home/tangwei/submit-tieba/smart_client/"
     hdfs: "xx"
     hout: "xxx"
@@ -33,7 +30,4 @@ engine:
     before_hook: ""
     end_hook: ""
 
-  define:
-    user1: "user_define1"
-    user2: "user_define2"
-    define: "user_define3"
+  scrpit: "{workspace}/submit.sh"

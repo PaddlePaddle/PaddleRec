@@ -21,15 +21,28 @@ import os
 import copy
 
 from fleetrec.core.engine.engine import Engine
+from fleetrec.core.utils import envs
 
 
 class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        self.submit_script = os.path.join(abs_dir, "submit.sh")
-        self.job_script = os.path.join(abs_dir, "job.sh")
+        self.submit_script = os.path.join(abs_dir, "master.sh")
+        self.job_script = os.path.join(abs_dir, "worker.sh")
 
-    def start_procs(self):
+    def start_worker_procs(self):
+        default_env = os.environ.copy()
+        current_env = copy.copy(default_env)
+        current_env.pop("http_proxy", None)
+        current_env.pop("https_proxy", None)
+
+        cmd = ("bash {}".format(self.submit_script)).split(" ")
+        proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
+        proc.wait()
+
+        print("all workers and parameter servers already completed", file=sys.stderr)
+
+    def start_master_procs(self):
         default_env = os.environ.copy()
         current_env = copy.copy(default_env)
         current_env.pop("http_proxy", None)
@@ -42,4 +55,13 @@ class ClusterEngine(Engine):
         print("all workers and parameter servers already completed", file=sys.stderr)
 
     def run(self):
-        self.start_procs()
+        role = envs.get_runtime_environ("engine_role")
+
+        if role == "MASTER":
+            self.start_master_procs()
+
+        elif role == "WORKER":
+            self.start_worker_procs()
+
+        else:
+            raise ValueError("role {} error, must in MASTER/WORKER".format(role))
