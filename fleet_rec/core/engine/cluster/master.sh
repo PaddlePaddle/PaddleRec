@@ -53,3 +53,7 @@ function check_error()
         exit 1
     fi
 }
+
+source ${engine_scrpit}
+
+main
