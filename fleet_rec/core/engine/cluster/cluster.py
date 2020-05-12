@@ -23,7 +23,7 @@ import copy
 from fleetrec.core.engine.engine import Engine
 
 
-class QSubClusterEngine(Engine):
+class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         self.submit_script = os.path.join(abs_dir, "submit.sh")
