@@ -1,7 +1,7 @@
 # 召回模型库
 
 ## 简介
-我们提供了常见的召回任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [SR-GNN](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/gnn)、[GRU4REC](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/gru4rec)、[Sequence Semantic Retrieval Model](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/ssr)、 [Tree-based Deep Model](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/tdm)、[Word2Vector](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/word2vec)。
+我们提供了常见的召回任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的召回模型包括 [SR-GNN](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/gnn)、[GRU4REC](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/gru4rec)、[Sequence Semantic Retrieval Model](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/ssr)、 [Tree-based Deep Model](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/tdm)、[Word2Vector](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/recall/word2vec)。
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -42,7 +42,7 @@ python -m fleetrec.run -m config.yaml -d cpu -e single
 ## 效果对比
 ### 模型效果列表
 
-|       数据集        |       模型       |       loss        |       测试Recall@20       | 
+|       数据集        |       模型       |       loss        |       Recall@20       | 
 | :------------------: | :--------------------: | :---------: |:---------: |
 |       DIGINETICA     |       GNN       |       --        |       0.507       |
 |       RSC15        |       GRU4REC       |       --        |       0.67          |
