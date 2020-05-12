@@ -41,24 +41,24 @@ function check_error() {
 #-----------------------------------------------------------------------------------------------------------------
 function env_prepare() {
   g_run_stage="env_prepare"
+  WORKDIR=$(pwd)
+  mpirun -npernode 1 mv package/* ./
+  echo "current:"$WORKDIR
+  export LIBRARY_PATH=$WORKDIR/python/lib:$LIBRARY_PATH
+
+  mpirun -npernode 1 python/bin/python -m pip install whl/fleet_rec-0.0.2-py2-none-any.whl --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com >/dev/null
+  check_error
 }
 
-function user_define_variables() {
-  echo "user_define_variables"
-  g_run_stage="user_define_variables"
-}
-
-function job() {
-  echo "job"
-  g_run_stage="job"
-
-  #  mpirun -npernode 2 -timestamp-output -tag-output -machinefile ${PBS_NODEFILE} python -u ${g_job_entry}
+function run() {
+  echo "run"
+  g_run_stage="run"
+  mpirun -npernode 2 -timestamp-output -tag-output -machinefile ${PBS_NODEFILE} python/bin/python -u -m fleetrec.run -m fleetrec.models.rank.dnn --engine cluster --role worker
 }
 
 function main() {
-  user_define_variables
   env_prepare
-  job
+  run
 }
 
 main

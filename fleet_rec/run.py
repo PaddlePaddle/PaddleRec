@@ -154,8 +154,10 @@ def cluster_engine(args):
         cluster_envs["train.trainer.platform"] = envs.get_platform()
         print("launch {} engine with cluster to with model: {}".format(trainer, args.model))
         set_runtime_envs(cluster_envs, args.model)
-        launch = ClusterEngine(cluster_envs, args.model)
+
+        launch = LocalClusterEngine(cluster_envs, args.model)
         return launch
+
     if args.role == "worker":
         return worker()
     else:

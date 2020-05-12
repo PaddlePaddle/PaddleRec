@@ -21,6 +21,7 @@ import os
 import copy
 
 from fleetrec.core.engine.engine import Engine
+from fleetrec.core.factory import TrainerFactory
 from fleetrec.core.utils import envs
 
 
@@ -30,16 +31,8 @@ class ClusterEngine(Engine):
         self.submit_script = os.path.join(abs_dir, "master.sh")
 
     def start_worker_procs(self):
-        default_env = os.environ.copy()
-        current_env = copy.copy(default_env)
-        current_env.pop("http_proxy", None)
-        current_env.pop("https_proxy", None)
-
-        cmd = ("bash {}".format(self.submit_script)).split(" ")
-        proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
-        proc.wait()
-
-        print("all workers and parameter servers already completed", file=sys.stderr)
+        trainer = TrainerFactory.create(self.trainer)
+        trainer.run()
 
     def start_master_procs(self):
         default_env = os.environ.copy()
@@ -50,8 +43,6 @@ class ClusterEngine(Engine):
         cmd = ("bash {}".format(self.submit_script)).split(" ")
         proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
         proc.wait()
-
-        print("all workers and parameter servers already completed", file=sys.stderr)
 
     def run(self):
         role = envs.get_runtime_environ("engine_role")

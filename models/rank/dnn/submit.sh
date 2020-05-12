@@ -34,7 +34,7 @@ function package() {
   echo "copy python from " ${engine_package_python} " to " ${temp}
 
   mkdir ${temp}/package/whl
-  cp ${engine_package_paddlerec}  ${temp}/package/whl/
+  cp ${engine_package_paddlerec} ${temp}/package/whl/
   echo "copy " ${engine_package_paddlerec} " to " ${temp}"/whl/"
 }
 
@@ -63,13 +63,11 @@ function after_submit() {
 #-----------------------------------------------------------------------------------------------------------------
 function submit() {
   g_run_stage="submit"
-
   g_job_name="paddle_rec_mpi"
   g_hdfs_path=$g_hdfs_path
-
   g_job_entry="worker.sh"
 
-  engine_hdfs_output=${engine_hdfs_output}/`date +%Y%m%d%H%M%S`
+  engine_hdfs_output=${engine_hdfs_output}/$(date +%Y%m%d%H%M%S)
 
   cd ${engine_temp_path}
 
@@ -79,9 +77,8 @@ function submit() {
     --hdfs ${engine_hdfs_name} \
     --ugi ${engine_hdfs_ugi} \
     --hout ${engine_hdfs_output} \
-    --files ${engine_temp_path} \
+    --files ./package \
     -l nodes=${engine_submit_nodes},walltime=1000:00:00,resource=full ${g_job_entry}
-
 }
 
 function main() {

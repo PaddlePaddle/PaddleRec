@@ -19,7 +19,6 @@ declare g_run_stage=""
 declare -r CALL="x"
 ################################################################################
 
-
 #-----------------------------------------------------------------------------------------------------------------
 # Function: get_cur_path
 # Description: get churrent path
@@ -31,13 +30,12 @@ declare -r CALL="x"
 # Return: 0 -- success; not 0 -- failure
 # Others: N/A
 #-----------------------------------------------------------------------------------------------------------------
-get_cur_path()
-{
+get_cur_path() {
   g_run_stage="get_cur_path"
-    cd "$(dirname "${BASH_SOURCE-$0}")"
-    g_curPath="${PWD}"
-    g_scriptName="$(basename "${BASH_SOURCE-$0}")"
-    cd - >/dev/null
+  cd "$(dirname "${BASH_SOURCE-$0}")"
+  g_curPath="${PWD}"
+  g_scriptName="$(basename "${BASH_SOURCE-$0}")"
+  cd - >/dev/null
 }
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -45,15 +43,13 @@ get_cur_path()
 #param : N/A
 #return : 0 -- success; not 0 -- failure
 #-----------------------------------------------------------------------------------------------------------------
-function check_error()
-{
-    if [ ${?} -ne 0 ]
-    then
-        echo "execute " + $g_run_stage +  " raise exception! please check ..."
-        exit 1
-    fi
+function check_error() {
+  if [ ${?} -ne 0 ]; then
+    echo "execute " + $g_run_stage + " raise exception! please check ..."
+    exit 1
+  fi
 }
 
-source ${engine_scrpit}
+source ${engine_submit_scrpit}
 
 main
