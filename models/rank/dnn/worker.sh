@@ -49,7 +49,10 @@ function user_define_variables() {
 }
 
 function job() {
-  mpirun -npernode 2 -timestamp-output -tag-output -machinefile ${PBS_NODEFILE} python -u ${g_job_entry}
+  echo "job"
+  g_run_stage="job"
+
+  #  mpirun -npernode 2 -timestamp-output -tag-output -machinefile ${PBS_NODEFILE} python -u ${g_job_entry}
 }
 
 function main() {

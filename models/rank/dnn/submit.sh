@@ -25,15 +25,16 @@ function package() {
   temp=${engine_temp_path}
   echo "package temp dir: " ${temp}
 
-  cp ${engine_worker} ${temp}
+  cp ${engine_job_scrpit} ${temp}
+  cp ${engine_submit_qconf} ${temp}
   echo "copy job.sh from " ${engine_worker} " to " ${temp}
 
-  mkdir ${temp}/python
-  cp -r ${engine_package_python}/* ${temp}/python/
+  mkdir -p ${temp}/package/python
+  cp -r ${engine_package_python}/* ${temp}/package/python/
   echo "copy python from " ${engine_package_python} " to " ${temp}
 
-  mkdir ${temp}/whl
-  cp ${engine_package_paddlerec}  ${temp}/whl/
+  mkdir ${temp}/package/whl
+  cp ${engine_package_paddlerec}  ${temp}/package/whl/
   echo "copy " ${engine_package_paddlerec} " to " ${temp}"/whl/"
 }
 
@@ -68,7 +69,11 @@ function submit() {
 
   g_job_entry="worker.sh"
 
-  ${$engine_submit_hpc}/bin/qsub_f \
+  engine_hdfs_output=${engine_hdfs_output}/`date +%Y%m%d%H%M%S`
+
+  cd ${engine_temp_path}
+
+  ${engine_submit_hpc}/bin/qsub_f \
     -N ${g_job_name} \
     --conf ${engine_submit_qconf} \
     --hdfs ${engine_hdfs_name} \

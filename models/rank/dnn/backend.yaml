@@ -27,8 +27,9 @@ engine:
     paddlerec: "/home/tangwei/fleet_rec_env/FleetRec"
 
   submit:
-    hpc: "/home/tangwei/submit-tieba/smart_client/"
-    qconf: "/home/tangwei/Plines/imageq/package/my_conf/para.conf"
+    hpc: "/home/tangwei/Plines/client/smart_client_khan/"
+    qconf: "/home/tangwei/Plines/imageq/qsub_f.conf"
     nodes: 10
 
-  scrpit: "{workspace}/submit.sh"
+  submit_scrpit: "{workspace}/submit.sh"
+  job_scrpit: "{workspace}/worker.sh"

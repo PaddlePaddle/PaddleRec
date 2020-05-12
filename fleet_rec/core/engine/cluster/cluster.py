@@ -28,7 +28,6 @@ class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         self.submit_script = os.path.join(abs_dir, "master.sh")
-        self.job_script = os.path.join(abs_dir, "worker.sh")
 
     def start_worker_procs(self):
         default_env = os.environ.copy()
@@ -58,10 +57,6 @@ class ClusterEngine(Engine):
         role = envs.get_runtime_environ("engine_role")
 
         if role == "MASTER":
-            worker_script = {}
-            worker_script["engine_worker"] = self.job_script
-            envs.set_runtime_environs(worker_script)
-
             self.start_master_procs()
 
         elif role == "WORKER":
