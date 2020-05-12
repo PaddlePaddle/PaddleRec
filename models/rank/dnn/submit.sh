@@ -22,6 +22,19 @@ function vars_get_from_env() {
 function package() {
   g_run_stage="package"
 
+  temp=${engine_temp_path}
+  echo "package temp dir: " ${temp}
+
+  cp ${engine_worker} ${temp}
+  echo "copy job.sh from " ${engine_worker} " to " ${temp}
+
+  mkdir ${temp}/python
+  cp -r ${engine_package_python}/* ${temp}/python/
+  echo "copy python from " ${engine_package_python} " to " ${temp}
+
+  mkdir ${temp}/whl
+  cp ${engine_package_paddlerec}  ${temp}/whl/
+  echo "copy " ${engine_package_paddlerec} " to " ${temp}"/whl/"
 }
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -50,20 +63,26 @@ function after_submit() {
 function submit() {
   g_run_stage="submit"
 
-  before_submit
+  g_job_name="paddle_rec_mpi"
+  g_hdfs_path=$g_hdfs_path
 
-  ${g_hpc_path}/bin/qsub_f \
+  g_job_entry="worker.sh"
+
+  ${$engine_submit_hpc}/bin/qsub_f \
     -N ${g_job_name} \
-    --conf ${g_qsub_conf} \
-    --hdfs ${g_hdfs_path} \
-    --ugi ${g_hdfs_ugi} \
-    --hout ${g_hdfs_output} \
-    --files ${g_submit_package} \
-    -l nodes=${g_job_nodes},walltime=1000:00:00,resource=full ${g_job_entry}
+    --conf ${engine_submit_qconf} \
+    --hdfs ${engine_hdfs_name} \
+    --ugi ${engine_hdfs_ugi} \
+    --hout ${engine_hdfs_output} \
+    --files ${engine_temp_path} \
+    -l nodes=${engine_submit_nodes},walltime=1000:00:00,resource=full ${g_job_entry}
 
-  after_submit
 }
 
 function main() {
-  echo "run submit done"
+  package
+
+  before_submit
+  submit
+  after_submit
 }

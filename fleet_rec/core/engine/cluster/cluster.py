@@ -58,6 +58,10 @@ class ClusterEngine(Engine):
         role = envs.get_runtime_environ("engine_role")
 
         if role == "MASTER":
+            worker_script = {}
+            worker_script["engine_worker"] = self.job_script
+            envs.set_runtime_environs(worker_script)
+
             self.start_master_procs()
 
         elif role == "WORKER":

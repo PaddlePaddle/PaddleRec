@@ -16,6 +16,11 @@ engine:
   workspace: "fleetrec.models.rank.dnn"
   backend: "MPI"
 
+  hdfs:
+    name: "hdfs://nmg01-taihang-hdfs.dmop.baidu.com:54310"
+    ugi: "fcr,SaK2VqfEDeXzKPor"
+    output: "/app/ecom/fcr/fanyabo/wadstyleimageq/tangwei12/output_1/"
+
   package:
     build_script: "{workspace}/package.sh"
     python: "/home/tangwei/fleet_rec_env/cpython-2.7.11-ucs4"
@@ -23,11 +28,7 @@ engine:
 
   submit:
     hpc: "/home/tangwei/submit-tieba/smart_client/"
-    hdfs: "xx"
-    hout: "xxx"
-    ugi:  "xxxx"
+    qconf: "/home/tangwei/Plines/imageq/package/my_conf/para.conf"
     nodes: 10
-    before_hook: ""
-    end_hook: ""
 
   scrpit: "{workspace}/submit.sh"
