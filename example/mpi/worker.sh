@@ -54,8 +54,6 @@ function env_prepare() {
   export PATH=$PYTHONPATH/bin:$PATH
   export LIBRARY_PATH=$PYTHONROOT/lib:$LIBRARY_PATH
 
-  python -c "print('heheda')"
-
   mpirun -npernode 1 python/bin/python -m pip uninstall -y paddle-rec
   mpirun -npernode 1 python/bin/python -m pip install whl/fleet_rec-0.0.2-py2-none-any.whl --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
   check_error
