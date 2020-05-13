@@ -57,7 +57,7 @@
     python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
     ```
 
-  2. 源码安装Fleet-Rec
+  2. 源码安装PaddleRec
 
     ```
     git clone https://github.com/PaddlePaddle/PaddleRec/
@@ -68,7 +68,7 @@
 
 <h2 align="center">快速启动</h2>
 
-### 直接启动内置模型的默认配置
+### 启动内置模型的默认配置
 
 目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
 
@@ -96,11 +96,11 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn -e local_cluster
 python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster
 ```
 
-### 启动内置模型自定配置
+### 启动内置模型的自定配置
 
 若您复用内置模型，对**yaml**配置文件进行了修改，如更改超参，重新配置数据后，可以直接使用paddlerec运行该yaml文件。
 
-例如在paddlerec代码目录下，修改了dnn模型yaml的配置后，运行`ctr-dnn`模型：
+例如在paddlerec代码目录下，修改了dnn模型`config.yaml`的配置后，运行`ctr-dnn`模型：
 ```bash
 python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 ```
@@ -133,10 +133,8 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 <h2 align="center">文档</h2>
 
 ### 新手教程
-* [环境要求](#环境要求)
-* [安装命令](#安装命令)
-* [快速开始](#一行命令启动训练)
-* [推荐系统背景知识](doc/rec_background.md)
+* [推荐系统背景介绍](doc/rec_background.md)
+* [分布式-参数服务器背景介绍](doc/ps_background.md)
 
 ### 进阶教程
 * [自定义数据集及Reader](doc/custom_dataset_reader.md)
