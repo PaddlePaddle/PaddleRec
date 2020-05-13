@@ -15,8 +15,8 @@ import numpy as np
 import io
 import copy
 import random
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
 
 
 class EvaluateReader(Reader):

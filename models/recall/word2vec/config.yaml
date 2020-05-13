@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 evaluate:
-  workspace: "fleetrec.models.recall.word2vec"
+  workspace: "paddlerec.models.recall.word2vec"
   reader:
     batch_size: 50
     class: "{workspace}/w2v_evaluate_reader.py"
@@ -25,7 +25,7 @@ train:
     strategy: "async"
 
   epochs: 2
-  workspace: "fleetrec.models.recall.word2vec"
+  workspace: "paddlerec.models.recall.word2vec"
 
   reader:
     batch_size: 100

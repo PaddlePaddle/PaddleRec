@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 10
-  workspace: "fleetrec.models.rank.text_classification"
+  workspace: "paddlerec.models.rank.text_classification"
 
   reader:
     batch_size: 5

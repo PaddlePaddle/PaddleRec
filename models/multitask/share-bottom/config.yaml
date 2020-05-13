@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 3
-  workspace: "fleetrec.models.multitask.share-bottom"
+  workspace: "paddlerec.models.multitask.share-bottom"
 
   reader:
     batch_size: 2

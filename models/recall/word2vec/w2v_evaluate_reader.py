@@ -14,8 +14,8 @@
 import numpy as np
 import io
 import six
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
 
 
 class EvaluateReader(Reader):

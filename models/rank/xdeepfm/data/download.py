@@ -6,7 +6,7 @@ LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 TOOLS_PATH = os.path.join(LOCAL_PATH, "..", "..", "tools")
 sys.path.append(TOOLS_PATH)
 
-from fleetrec.tools.tools import download_file_and_uncompress, download_file
+from paddlerec.tools.tools import download_file_and_uncompress, download_file
 
 if __name__ == '__main__':
     url_train = "https://paddlerec.bj.bcebos.com/xdeepfm%2Ftr"

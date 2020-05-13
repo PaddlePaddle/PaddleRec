@@ -13,7 +13,7 @@
 # limitations under the License.
 
 engine:
-  workspace: "fleetrec.models.rank.dnn"
+  workspace: "paddlerec.models.rank.dnn"
   backend: "MPI"
 
   hdfs:
@@ -24,7 +24,7 @@ engine:
   package:
     build_script: "{workspace}/package.sh"
     python: "/home/tangwei/fleet_rec_env/cpython-2.7.11-ucs4"
-    paddlerec: "/home/tangwei/fleet_rec_env/FleetRec"
+    paddlerec: "/home/tangwei/fleet_rec_env/PaddleRec"
 
   submit:
     hpc: "/home/tangwei/Plines/client/smart_client_khan/"

@@ -10,8 +10,8 @@ import paddle
 import csv
 import io
 
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
 
 class TrainReader(Reader):
     def init(self):

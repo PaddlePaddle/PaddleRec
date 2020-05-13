@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 3
-  workspace: "fleetrec.models.recall.gru4rec"
+  workspace: "paddlerec.models.recall.gru4rec"
 
   reader:
     batch_size: 5

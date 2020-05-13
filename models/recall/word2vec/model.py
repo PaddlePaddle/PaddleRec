@@ -16,8 +16,8 @@ import math
 import numpy as np
 import paddle.fluid as fluid
 
-from fleetrec.core.utils import envs
-from fleetrec.core.model import Model as ModelBase
+from paddlerec.core.utils import envs
+from paddlerec.core.model import Model as ModelBase
 
 
 class Model(ModelBase):

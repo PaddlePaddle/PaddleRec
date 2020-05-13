@@ -1,8 +1,8 @@
 import paddle.fluid as fluid
 import math
 
-from fleetrec.core.utils import envs
-from fleetrec.core.model import Model as ModelBase
+from paddlerec.core.utils import envs
+from paddlerec.core.model import Model as ModelBase
 
 import paddle.fluid as fluid
 import paddle.fluid.layers.nn as nn

@@ -74,7 +74,7 @@ PadlleRec以预置模型为核心,具备以下特点：
 
 - 安装方法一<PIP源直接安装>：
   ```bash
-  python -m pip install fleet-rec
+  python -m pip install paddle-rec
   ```
 
 - 安装方法二
@@ -88,8 +88,8 @@ PadlleRec以预置模型为核心,具备以下特点：
   * 源码安装Fleet-Rec
 
     ```
-    git clone https://github.com/seiriosPlus/FleetRec/
-    cd FleetRec
+    git clone https://github.com/PaddlePaddle/PaddleRec/
+    cd PaddleRec
     python setup.py install
     ```
 
@@ -99,16 +99,16 @@ PadlleRec以预置模型为核心,具备以下特点：
 
 ##### 单机训练
 ```bash
-cd FleetRec
+cd PaddleRec
 
-python -m fleetrec.run \
-       -m fleetrec.models.rank.dnn \
+python -m paddlerec.run \
+       -m paddlerec.models.rank.dnn \
        -d cpu \
        -e single 
 
 # 使用GPU资源进行训练
-python -m fleetrec.run \
-       -m fleetrec.models.rank.dnn \
+python -m paddlerec.run \
+       -m paddlerec.models.rank.dnn \
        -d gpu \
        -e single
 ```
@@ -116,10 +116,10 @@ python -m fleetrec.run \
 ##### 本地模拟分布式训练
 
 ```bash
-cd FleetRec
+cd PaddleRec
 # 使用CPU资源进行训练
-python -m fleetrec.run \
-       -m fleetrec.models.rank.dnn \
+python -m paddlerec.run \
+       -m paddlerec.models.rank.dnn \
        -d cpu \
        -e local_cluster
 ```
@@ -127,10 +127,10 @@ python -m fleetrec.run \
 ##### 集群提交分布式训练<需要用户预先配置好集群环境，本提交命令不包含提交客户端>
 
 ```bash
-cd FleetRec
+cd PaddleRec
 
-python -m fleetrec.run \
-       -m fleetrec.models.rank.dnn \
+python -m paddlerec.run \
+       -m paddlerec.models.rank.dnn \
        -d cpu \
        -e cluster
 ```

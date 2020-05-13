@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 3
-  workspace: "fleetrec.models.multitask.esmm"
+  workspace: "paddlerec.models.multitask.esmm"
 
   reader:
     batch_size: 2

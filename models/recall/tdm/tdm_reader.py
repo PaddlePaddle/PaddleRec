@@ -17,7 +17,7 @@
 
 from __future__ import print_function
 
-from fleetrec.core.reader import Reader
+from paddlerec.core.reader import Reader
 
 
 class TrainReader(Reader):

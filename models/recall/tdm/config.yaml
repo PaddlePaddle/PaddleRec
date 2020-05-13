@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 2
-  workspace: "fleetrec.models.recall.tdm"
+  workspace: "paddlerec.models.recall.tdm"
 
   reader:
     batch_size: 32
@@ -73,7 +73,7 @@ train:
       save_last: True
 
 evaluate:
-  workspace: "fleetrec.models.recall.tdm"
+  workspace: "paddlerec.models.recall.tdm"
   reader:
     batch_size: 1
     class: "{workspace}/tdm_evaluate_reader.py"

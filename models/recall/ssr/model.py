@@ -15,8 +15,8 @@
 import math
 import paddle.fluid as fluid
 
-from fleetrec.core.utils import envs
-from fleetrec.core.model import Model as ModelBase
+from paddlerec.core.utils import envs
+from paddlerec.core.model import Model as ModelBase
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.io as io
 import paddle.fluid.layers.control_flow as cf

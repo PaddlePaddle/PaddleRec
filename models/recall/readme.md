@@ -35,7 +35,7 @@ sh data_process.sh
 ```
 ### 训练
 ```shell
-python -m fleetrec.run -m config.yaml -d cpu -e single 
+python -m paddlerec.run -m config.yaml -d cpu -e single 
 ```
 ### 预测
 
