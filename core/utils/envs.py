@@ -17,6 +17,7 @@ import copy
 import sys
 import socket
 from contextlib import closing
+
 global_envs = {}
 
 
@@ -176,17 +177,12 @@ def get_platform():
         return "WINDOWS"
 
 
-<< << << < HEAD: fleet_rec/core/utils/envs.py
-
-== == == =
->>>>>> > upstream/develop: core/utils/envs.py
-
-
 def find_free_port():
     def __free_port():
         with closing(socket.socket(socket.AF_INET,
                                    socket.SOCK_STREAM)) as s:
             s.bind(('', 0))
             return s.getsockname()[1]
+
     new_port = __free_port()
     return new_port
