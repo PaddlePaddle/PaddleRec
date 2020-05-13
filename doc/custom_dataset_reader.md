@@ -22,11 +22,11 @@ reader:
 
 PaddleRec支持模型自定义数据集，在model.config.yaml文件中的reader部分，通过`train_data_path`指定数据读取路径。
 
-> 关于数据的tips
-> 
-> - PaddleRec 面向的是推荐与搜索领域，数据以文本格式为主
-> - Dataset模式支持读取文本数据压缩后的`.gz`格式
-> - Dataset模式下，训练线程与数据读取线程的关系强相关，为了多线程充分利用，`强烈建议将文件拆成多个小文件`，尤其是在分布式训练场景下，可以均衡各个节点的数据量。
+关于数据的tips
+
+- PaddleRec 面向的是推荐与搜索领域，数据以文本格式为主
+- Dataset模式支持读取文本数据压缩后的`.gz`格式
+- Dataset模式下，训练线程与数据读取线程的关系强相关，为了多线程充分利用，`强烈建议将文件拆成多个小文件`，尤其是在分布式训练场景下，可以均衡各个节点的数据量。
 
 ## 自定义Reader
 
@@ -171,13 +171,14 @@ class TrainReader(Reader):
 
 具体流程如下：
 1. 首先我们需要引入Reader基类
+
     ```python
     from paddlerec.core.reader import Reader
     ```
 2. 创建一个子类，继承Reader的基类，训练所需Reader命名为`TrainerReader`
 3. 在`init(self)`函数中声明一些在数据读取中会用到的变量，如示例代码中的`cont_min_`、`categorical_range_`等，必要时可以在`config.yaml`文件中配置变量，通过`env.get_global_env()`拿到。
 4. 继承并实现基类中的`generate_sample(self, line)`函数，逐行读取数据。该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
-5. 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。例如对以行为单位的数据进行截取，转换及预处理。
+5. 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。以行为单位的数据进行截取，转换及预处理。
 6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的，并转换为类似字典的形式。在示例代码中，我们使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出。如果展开来看，我们输出的数据形如`[('dense_feature',[value]),('C1',[value]),('C2',[value]),...,('C26',[value]),('label',[value])]`
 
 
