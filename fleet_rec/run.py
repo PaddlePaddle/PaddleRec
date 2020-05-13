@@ -1,6 +1,8 @@
 import argparse
 import os
 import subprocess
+import tempfile
+
 import yaml
 
 from fleetrec.core.factory import TrainerFactory
@@ -108,17 +110,58 @@ def single_engine(args):
 
 
 def cluster_engine(args):
-    trainer = get_trainer_prefix(args) + "ClusterTrainer"
-    cluster_envs = {}
-    cluster_envs["train.trainer.trainer"] = trainer
-    cluster_envs["train.trainer.engine"] = "cluster"
-    cluster_envs["train.trainer.device"] = args.device
-    cluster_envs["train.trainer.platform"] = envs.get_platform()
-    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
 
-    set_runtime_envs(cluster_envs, args.model)
-    trainer = TrainerFactory.create(args.model)
-    return trainer
+    def update_workspace(cluster_envs):
+        workspace = cluster_envs.get("engine_workspace", None)
+        if not workspace:
+            return
+
+        # is fleet inner models
+        if workspace.startswith("fleetrec."):
+            fleet_package = envs.get_runtime_environ("PACKAGE_BASE")
+            workspace_dir = workspace.split("fleetrec.")[1].replace(".", "/")
+            path = os.path.join(fleet_package, workspace_dir)
+        else:
+            path = workspace
+
+        for name, value in cluster_envs.items():
+            if isinstance(value, str):
+                value = value.replace("{workspace}", path)
+                cluster_envs[name] = value
+
+    def master():
+        from fleetrec.core.engine.cluster.cluster import ClusterEngine
+        with open(args.backend, 'r') as rb:
+            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+
+        flattens = envs.flatten_environs(_envs, "_")
+        flattens["engine_role"] = args.role
+        flattens["engine_temp_path"] = tempfile.mkdtemp()
+        update_workspace(flattens)
+
+        envs.set_runtime_environs(flattens)
+        print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value")))
+
+        launch = ClusterEngine(None, args.model)
+        return launch
+
+    def worker():
+        trainer = get_trainer_prefix(args) + "ClusterTrainer"
+        cluster_envs = {}
+        cluster_envs["train.trainer.trainer"] = trainer
+        cluster_envs["train.trainer.engine"] = "cluster"
+        cluster_envs["train.trainer.device"] = args.device
+        cluster_envs["train.trainer.platform"] = envs.get_platform()
+        print("launch {} engine with cluster to with model: {}".format(trainer, args.model))
+        set_runtime_envs(cluster_envs, args.model)
+
+        trainer = TrainerFactory.create(args.model)
+        return trainer
+
+    if args.role == "WORKER":
+        return worker()
+    else:
+        return master()
 
 
 def cluster_mpi_engine(args):
@@ -136,7 +179,7 @@ def cluster_mpi_engine(args):
 
 
 def local_cluster_engine(args):
-    from fleetrec.core.engine.local_cluster_engine import LocalClusterEngine
+    from fleetrec.core.engine.local_cluster import LocalClusterEngine
 
     trainer = get_trainer_prefix(args) + "ClusterTrainer"
     cluster_envs = {}
@@ -162,7 +205,7 @@ def local_cluster_engine(args):
 
 def local_mpi_engine(args):
     print("launch cluster engine with cluster to run model: {}".format(args.model))
-    from fleetrec.core.engine.local_mpi_engine import LocalMPIEngine
+    from fleetrec.core.engine.local_mpi import LocalMPIEngine
 
     print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
 
@@ -201,8 +244,10 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--engine", type=str,
                         choices=["single", "local_cluster", "cluster",
                                  "tdm_single", "tdm_local_cluster", "tdm_cluster"])
-    parser.add_argument("-d", "--device", type=str,
-                        choices=["cpu", "gpu"], default="cpu")
+
+    parser.add_argument("-d", "--device", type=str, choices=["cpu", "gpu"], default="cpu")
+    parser.add_argument("-b", "--backend", type=str, default=None)
+    parser.add_argument("-r", "--role", type=str, choices=["master", "worker"], default="master")
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
@@ -210,6 +255,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.engine = args.engine.upper()
     args.device = args.device.upper()
+    args.role = args.role.upper()
+
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
     engine_registry()

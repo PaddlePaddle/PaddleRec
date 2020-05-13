@@ -23,6 +23,7 @@ import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distributed_strategy import StrategyFactory
 from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
+from paddle.fluid.incubate.fleet.base.role_maker import MPISymetricRoleMaker
 
 from fleetrec.core.utils import envs
 from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
@@ -30,7 +31,8 @@ from fleetrec.core.trainers.transpiler_trainer import TranspileTrainer
 
 class ClusterTrainer(TranspileTrainer):
     def processor_register(self):
-        role = PaddleCloudRoleMaker()
+        #role = PaddleCloudRoleMaker()
+        role = MPISymetricRoleMaker()
         fleet.init(role)
 
         if fleet.is_server():

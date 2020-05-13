@@ -20,13 +20,13 @@ from contextlib import closing
 global_envs = {}
 
 
-def flatten_environs(envs):
+def flatten_environs(envs, separator="."):
     flatten_dict = {}
     assert isinstance(envs, dict)
 
     def fatten_env_namespace(namespace_nests, local_envs):
         if not isinstance(local_envs, dict):
-            global_k = ".".join(namespace_nests)
+            global_k = separator.join(namespace_nests)
             flatten_dict[global_k] = str(local_envs)
         else:
             for k, v in local_envs.items():
@@ -35,7 +35,7 @@ def flatten_environs(envs):
                     nests.append(k)
                     fatten_env_namespace(nests, v)
                 else:
-                    global_k = ".".join(namespace_nests + [k])
+                    global_k = separator.join(namespace_nests + [k])
                     flatten_dict[global_k] = str(v)
 
     for k, v in envs.items():

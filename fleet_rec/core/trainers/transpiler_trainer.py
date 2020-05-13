@@ -72,7 +72,8 @@ class TranspileTrainer(Trainer):
             train_data_path = envs.get_global_env(
                 "test_data_path", None, namespace)
 
-        threads = int(envs.get_runtime_environ("train.trainer.threads"))
+        #threads = int(envs.get_runtime_environ("train.trainer.threads"))
+        threads = 2
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
