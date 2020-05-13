@@ -16,10 +16,10 @@ declare g_run_stage=""
 # ---------------------------------------------------------------------------- #
 #                             const define                                     #
 # ---------------------------------------------------------------------------- #
-declare -r FLAGS_communicator_thread_pool_size=5
-declare -r FLAGS_communicator_send_queue_size=18
-declare -r FLAGS_communicator_thread_pool_size=20
-declare -r FLAGS_communicator_max_merge_var_num=18
+export FLAGS_communicator_thread_pool_size=5
+export FLAGS_communicator_send_queue_size=18
+export FLAGS_communicator_thread_pool_size=20
+export FLAGS_communicator_max_merge_var_num=18
 ################################################################################
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -44,9 +44,20 @@ function env_prepare() {
   WORKDIR=$(pwd)
   mpirun -npernode 1 mv package/* ./
   echo "current:"$WORKDIR
-  export LIBRARY_PATH=$WORKDIR/python/lib:$LIBRARY_PATH
 
-  mpirun -npernode 1 python/bin/python -m pip install whl/fleet_rec-0.0.2-py2-none-any.whl --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com >/dev/null
+  mpirun -npernode 1 tar -zxvf python.tar.gz > /dev/null
+
+  export PYTHONPATH=$WORKDIR/python/
+  export PYTHONROOT=$WORKDIR/python/
+  export LIBRARY_PATH=$PYTHONPATH/lib:$LIBRARY_PATH
+  export LD_LIBRARY_PATH=$PYTHONPATH/lib:$LD_LIBRARY_PATH
+  export PATH=$PYTHONPATH/bin:$PATH
+  export LIBRARY_PATH=$PYTHONROOT/lib:$LIBRARY_PATH
+
+  python -c "print('heheda')"
+
+  mpirun -npernode 1 python/bin/python -m pip uninstall -y fleet-rec
+  mpirun -npernode 1 python/bin/python -m pip install whl/fleet_rec-0.0.2-py2-none-any.whl --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
   check_error
 }
 

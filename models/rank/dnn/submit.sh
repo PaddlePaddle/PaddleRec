@@ -29,8 +29,8 @@ function package() {
   cp ${engine_submit_qconf} ${temp}
   echo "copy job.sh from " ${engine_worker} " to " ${temp}
 
-  mkdir -p ${temp}/package/python
-  cp -r ${engine_package_python}/* ${temp}/package/python/
+  mkdir -p ${temp}/package
+  cp -r ${engine_package_python} ${temp}/package/
   echo "copy python from " ${engine_package_python} " to " ${temp}
 
   mkdir ${temp}/package/whl

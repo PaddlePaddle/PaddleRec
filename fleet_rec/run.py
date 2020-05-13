@@ -110,7 +110,6 @@ def single_engine(args):
 
 
 def cluster_engine(args):
-    from fleetrec.core.engine.cluster.cluster import ClusterEngine
 
     def update_workspace(cluster_envs):
         workspace = cluster_envs.get("engine_workspace", None)
@@ -131,6 +130,7 @@ def cluster_engine(args):
                 cluster_envs[name] = value
 
     def master():
+        from fleetrec.core.engine.cluster.cluster import ClusterEngine
         with open(args.backend, 'r') as rb:
             _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
 
@@ -155,10 +155,10 @@ def cluster_engine(args):
         print("launch {} engine with cluster to with model: {}".format(trainer, args.model))
         set_runtime_envs(cluster_envs, args.model)
 
-        launch = LocalClusterEngine(cluster_envs, args.model)
-        return launch
+        trainer = TrainerFactory.create(args.model)
+        return trainer
 
-    if args.role == "worker":
+    if args.role == "WORKER":
         return worker()
     else:
         return master()
