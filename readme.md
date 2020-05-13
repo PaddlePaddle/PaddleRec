@@ -79,24 +79,24 @@
 
 ```bash
 # 使用CPU进行单机训练
-python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e single 
+python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e single 
 
 # 使用GPU进行单机训练
-python -m fleetrec.run -m fleetrec.models.rank.dnn -d gpu -e single
+python -m paddlerec.run -m paddlerec.models.rank.dnn -d gpu -e single
 ```
 
 <h3 align="center">本地模拟分布式训练</h3>
 
 ```bash
 # 使用CPU资源进行本地模拟分布式训练
-python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e local_cluster
+python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e local_cluster
 ```
 
 <h3 align="center">集群分布式训练</h3>
 
 ```bash
 # 配置好 mpi/k8s/paddlecloud集群环境后
-python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
+python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e cluster
 ```
 
 ### 启动自定义模型
@@ -133,7 +133,7 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 * [环境要求](#环境要求)
 * [安装命令](#安装命令)
 * [快速开始](#一行命令启动训练)
-* [推荐系统背景知识](doc/)
+* [推荐系统背景知识](doc/rec_background.md)
 
 ### 进阶教程
 * [自定义数据集及Reader](doc/custom_dataset_reader.md)
