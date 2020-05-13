@@ -20,13 +20,14 @@ import os
 import copy
 
 from fleetrec.core.engine.engine import Engine
+from fleetrec.core.utils import envs
 
 
 class LocalClusterEngine(Engine):
     def start_procs(self):
         worker_num = self.envs["worker_num"]
         server_num = self.envs["server_num"]
-        start_port = self.envs["start_port"]
+        ports = [self.envs["start_port"]]
         logs_dir = self.envs["log_dir"]
 
         default_env = os.environ.copy()
@@ -36,10 +37,19 @@ class LocalClusterEngine(Engine):
         current_env.pop("https_proxy", None)
         procs = []
         log_fns = []
-        ports = range(start_port, start_port + server_num, 1)
+
+        for i in range(server_num - 1):
+            while True:
+                new_port = envs.find_free_port()
+                if new_port not in ports:
+                    ports.append(new_port)
+                    break
+
         user_endpoints = ",".join(["127.0.0.1:" + str(x) for x in ports])
-        user_endpoints_ips = [x.split(":")[0] for x in user_endpoints.split(",")]
-        user_endpoints_port = [x.split(":")[1] for x in user_endpoints.split(",")]
+        user_endpoints_ips = [x.split(":")[0]
+                              for x in user_endpoints.split(",")]
+        user_endpoints_port = [x.split(":")[1]
+                               for x in user_endpoints.split(",")]
 
         factory = "fleetrec.core.factory"
         cmd = [sys.executable, "-u", "-m", factory, self.trainer]
@@ -56,7 +66,8 @@ class LocalClusterEngine(Engine):
             os.system("mkdir -p {}".format(logs_dir))
             fn = open("%s/server.%d" % (logs_dir, i), "w")
             log_fns.append(fn)
-            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
+            proc = subprocess.Popen(
+                cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
             procs.append(proc)
 
         for i in range(worker_num):
@@ -70,7 +81,8 @@ class LocalClusterEngine(Engine):
             os.system("mkdir -p {}".format(logs_dir))
             fn = open("%s/worker.%d" % (logs_dir, i), "w")
             log_fns.append(fn)
-            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
+            proc = subprocess.Popen(
+                cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
             procs.append(proc)
 
         # only wait worker to finish here

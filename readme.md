@@ -97,6 +97,28 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e local_cluster
 python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 ```
 
+<h2 align="center">支持模型列表</h2>
+
+
+|   方向   |          模型          | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
+| :------: | :--------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
+| 内容理解 | [Text-Classifcation]() |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+| 内容理解 |      [TagSpace]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |      [Word2Vec]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |        [TDM]()         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |        [SSR]()         |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |      [Gru4Rec]()       |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |      [CTR-Dnn]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |       [DeepFm]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |      [ListWise]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |        [DSSM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |  [Multiview-Simnet]()  |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   融合   |        [MMOE]()        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   融合   |        [ESMM]()        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   融合   |        [ESMM]()        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+
+
+
 
 <h2 align="center">文档</h2>
 
