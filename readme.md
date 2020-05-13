@@ -24,7 +24,7 @@
 - 源于飞桨生态的搜索推荐模型**一站式开箱即用工具** 
 - 适合初学者，开发者，研究者从调研，训练到预测部署的全流程解决方案
 - 包含语义理解、召回、粗排、精排、多任务学习、融合等多个任务的推荐搜索算法库
-- 配置`yaml`自定义选项，即可快速上手使用单机训练、大规模分布式训练、离线预测、在线部署
+- 配置**yaml**自定义选项，即可快速上手使用单机训练、大规模分布式训练、离线预测、在线部署
 
 
 <h2 align="center">PadlleRec概览</h2>
@@ -68,10 +68,7 @@
 
 <h2 align="center">快速启动</h2>
 
-
-
-
-### 启动内置模型
+### 直接启动内置模型的默认配置
 
 目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
 
@@ -89,19 +86,25 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn -d gpu -e single
 
 ```bash
 # 使用CPU资源进行本地模拟分布式训练
-python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e local_cluster
+python -m paddlerec.run -m paddlerec.models.rank.dnn -e local_cluster
 ```
 
 <h3 align="center">集群分布式训练</h3>
 
 ```bash
 # 配置好 mpi/k8s/paddlecloud集群环境后
-python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e cluster
+python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster
 ```
 
-### 启动自定义模型
+### 启动内置模型自定配置
 
-若您复用内置模型，更改了超参，重新配置了数据后
+若您复用内置模型，对**yaml**配置文件进行了修改，如更改超参，重新配置数据后，可以直接使用paddlerec运行该yaml文件。
+
+例如在paddlerec代码目录下，修改了dnn模型yaml的配置后，运行`ctr-dnn`模型：
+```bash
+python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
+```
+
 
 <h2 align="center">支持模型列表</h2>
 
