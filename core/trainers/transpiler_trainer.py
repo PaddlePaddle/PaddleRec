@@ -60,7 +60,7 @@ class TranspileTrainer(Trainer):
                 if idx >= 9:
                     break
             print("--- DataLoader Debug Mode End , show pre 10 data ---")
-            exit 0
+            exit(0)
 
         reader_class = envs.lazy_instance_by_fliename(reader_class, class_name)
         reader_ins = reader_class(self._config_yaml)
@@ -116,7 +116,7 @@ class TranspileTrainer(Trainer):
             os.system("cat {} | {} | head -10".format(file_list[0], pipe_cmd))
             print(
                 "--- Dataset Debug Mode End , show pre 10 data of {}---".format(file_list[0]))
-            exit 0
+            exit(0)
 
         return dataset
 

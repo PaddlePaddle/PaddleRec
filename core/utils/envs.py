@@ -176,12 +176,6 @@ def get_platform():
         return "WINDOWS"
 
 
-<< << << < HEAD: fleet_rec/core/utils/envs.py
-
-== == == =
->>>>>> > upstream/develop: core/utils/envs.py
-
-
 def find_free_port():
     def __free_port():
         with closing(socket.socket(socket.AF_INET,
