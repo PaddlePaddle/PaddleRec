@@ -42,7 +42,7 @@ class TranspileTrainer(Trainer):
             namespace = "train.reader"
             class_name = "TrainReader"
         else:
-            dataloader = self.model._infer_data_loader
+            readerdataloader = self.model._infer_data_loader
             namespace = "evaluate.reader"
             class_name = "EvaluateReader"
 
@@ -52,22 +52,22 @@ class TranspileTrainer(Trainer):
         reader = dataloader_instance.dataloader(
             reader_class, state, self._config_yaml)
 
-        debug_mode = envs.get_global_env("debug_mode", False, namespace)
-        if debug_mode:
-            print("--- DataLoader Debug Mode Begin , show pre 10 data ---")
-            for idx, line in enumerate(reader):
-                print(line)
-                if idx >= 9:
-                    break
-            print("--- DataLoader Debug Mode End , show pre 10 data ---")
-            exit(0)
-
         reader_class = envs.lazy_instance_by_fliename(reader_class, class_name)
         reader_ins = reader_class(self._config_yaml)
         if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
             dataloader.set_sample_list_generator(reader)
         else:
             dataloader.set_sample_generator(reader, batch_size)
+
+        debug_mode = envs.get_global_env("reader_debug_mode", False, namespace)
+        if debug_mode:
+            print("--- DataLoader Debug Mode Begin , show pre 10 data ---")
+            for idx, line in enumerate(reader()):
+                print(line)
+                if idx >= 9:
+                    break
+            print("--- DataLoader Debug Mode End , show pre 10 data ---")
+            exit(0)
         return dataloader
 
     def _get_dataset(self, state="TRAIN"):
@@ -109,7 +109,7 @@ class TranspileTrainer(Trainer):
 
         dataset.set_filelist(file_list)
 
-        debug_mode = envs.get_global_env("debug_mode", False, namespace)
+        debug_mode = envs.get_global_env("reader_debug_mode", False, namespace)
         if debug_mode:
             print(
                 "--- Dataset Debug Mode Begin , show pre 10 data of {}---".format(file_list[0]))

@@ -33,7 +33,8 @@ class EvaluateReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = (line.strip('\n')).split('\t')
-            input_emb = map(float, features[0].split(' '))
+            input_emb = features[0].split(' ')
+            input_emb = [float(i) for i in input_emb]
 
             feature_name = ["input_emb"]
             yield zip(feature_name, [input_emb])

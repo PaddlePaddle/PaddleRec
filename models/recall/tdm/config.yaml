@@ -25,6 +25,7 @@ train:
     class: "{workspace}/tdm_reader.py"
     train_data_path: "{workspace}/data/train"
     test_data_path: "{workspace}/data/test"
+    reader_debug_mode: False
 
   model:
     models: "{workspace}/model.py"

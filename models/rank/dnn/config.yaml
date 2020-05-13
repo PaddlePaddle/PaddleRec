@@ -24,7 +24,7 @@ train:
     batch_size: 2
     class: "{workspace}/../criteo_reader.py"
     train_data_path: "{workspace}/data/train"
-    debug_mode: False
+    reader_debug_mode: False
 
   model:
     models: "{workspace}/model.py"
