@@ -69,9 +69,11 @@
 <h2 align="center">快速启动</h2>
 
 
-目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
 
-### 一行命令启动训练
+
+### 启动内置模型
+
+目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
 
 <h3 align="center">单机训练</h3>
 
@@ -96,6 +98,10 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e local_cluster
 # 配置好 mpi/k8s/paddlecloud集群环境后
 python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 ```
+
+### 启动自定义模型
+
+若您复用内置模型，更改了超参，重新配置了数据后
 
 <h2 align="center">支持模型列表</h2>
 
@@ -122,43 +128,32 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 
 
 
-
-
 <h2 align="center">文档</h2>
 
 ### 新手教程
 * [环境要求](#环境要求)
 * [安装命令](#安装命令)
 * [快速开始](#一行命令启动训练)
-  
+* [推荐系统背景知识](doc/)
+
 ### 进阶教程
 * [自定义数据集及Reader](doc/custom_dataset_reader.md)
-* [模型调参](doc/optimization_model.md)
-* [单机训练](doc/local_train.md)
 * [分布式训练](doc/distributed_train.md)
-* [离线预测](doc/predict.md)
 
 ### 关于PaddleRec性能
-* [Benchamrk](doc/benchmark.md)
+* [Benchmark](doc/benchmark.md)
 
 ### FAQ
 * [常见问题FAQ](doc/faq.md)
 
-### 设计文档
-* [PaddleRec设计文档](doc/design.md)
-
 
 <h2 align="center">社区</h2>
-
-### 贡献代码
-* [优化PaddleRec框架](doc/contribute.md)
-* [新增模型到PaddleRec](doc/contribute.md)
 
 ### 反馈
 如有意见、建议及使用中的BUG，欢迎在`GitHub Issue`提交
 
 ### 版本历史
-* [版本更新](#版本更新)
+- 2020.5.14 - PaddleRec v0.1
   
 ### 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
