@@ -52,6 +52,16 @@ class TranspileTrainer(Trainer):
         reader = dataloader_instance.dataloader(
             reader_class, state, self._config_yaml)
 
+        debug_mode = envs.get_global_env("debug_mode", False, namespace)
+        if debug_mode:
+            print("--- DataLoader Debug Mode Begin , show pre 10 data ---")
+            for idx, line in enumerate(reader):
+                print(line)
+                if idx >= 9:
+                    break
+            print("--- DataLoader Debug Mode End , show pre 10 data ---")
+            exit 0
+
         reader_class = envs.lazy_instance_by_fliename(reader_class, class_name)
         reader_ins = reader_class(self._config_yaml)
         if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
@@ -98,6 +108,16 @@ class TranspileTrainer(Trainer):
         ]
 
         dataset.set_filelist(file_list)
+
+        debug_mode = envs.get_global_env("debug_mode", False, namespace)
+        if debug_mode:
+            print(
+                "--- Dataset Debug Mode Begin , show pre 10 data of {}---".format(file_list[0]))
+            os.system("cat {} | {} | head -10".format(file_list[0], pipe_cmd))
+            print(
+                "--- Dataset Debug Mode End , show pre 10 data of {}---".format(file_list[0]))
+            exit 0
+
         return dataset
 
     def save(self, epoch_id, namespace, is_fleet=False):
@@ -116,23 +136,28 @@ class TranspileTrainer(Trainer):
 
             if not need_save(epoch_id, save_interval, False):
                 return
-            
+
           #  print("save inference model is not supported now.")
           #  return
 
-            feed_varnames = envs.get_global_env("save.inference.feed_varnames", None, namespace)
-            fetch_varnames = envs.get_global_env("save.inference.fetch_varnames", None, namespace)
+            feed_varnames = envs.get_global_env(
+                "save.inference.feed_varnames", None, namespace)
+            fetch_varnames = envs.get_global_env(
+                "save.inference.fetch_varnames", None, namespace)
             if feed_varnames is None or fetch_varnames is None:
                 return
 
-            fetch_vars = [fluid.default_main_program().global_block().vars[varname] for varname in fetch_varnames]
-            dirname = envs.get_global_env("save.inference.dirname", None, namespace)
+            fetch_vars = [fluid.default_main_program().global_block().vars[varname]
+                          for varname in fetch_varnames]
+            dirname = envs.get_global_env(
+                "save.inference.dirname", None, namespace)
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                fleet.save_inference_model(self._exe, dirname, feed_varnames, fetch_vars)
+                fleet.save_inference_model(
+                    self._exe, dirname, feed_varnames, fetch_vars)
             else:
                 fluid.io.save_inference_model(
                     dirname, feed_varnames, fetch_vars, self._exe)

@@ -21,10 +21,10 @@
 <img align="center" src="doc/imgs/structure.png">
 <p>
 
-- PaddleRec是源于飞桨生态的搜索推荐模型一站式开箱即用工具，无论您是初学者，开发者，研究者均可便捷的使用PaddleRec完成调研，训练到预测部署的全流程工作。
-- PaddleRec提供了搜索推荐任务中语义理解、召回、粗排、精排、多任务学习的全流程解决方案，包含的算法模型均在百度各个业务的实际场景中得到了验证。
-- PaddleRec将各个模型及其训练预测流程规范化整理，进行易用性封装，用户只需自定义yaml文件即可快速上手使用。
-- PaddleRec以飞桨深度学习框架为核心，融合了大规模分布式训练框架Fleet，以及一键式推理部署框架PaddleServing，支持推荐搜索算法的工业化应用。
+- 源于飞桨生态的`搜索推荐模型`**一站式开箱即用工具** 
+- 适合初学者，开发者，研究者的调研，训练到预测部署的全流程解决方案
+- 包含语义理解、召回、粗排、精排、多任务学习、融合等多个任务的推荐搜索算法库
+- 自定义`yaml`即可快速上手使用单机训练、大规模分布式训练、离线预测、在线部署
 
 
 <h2 align="center">PadlleRec概览</h2>
@@ -37,8 +37,8 @@
 <h2 align="center">便捷安装</h2>
 
 ### 环境要求
-* Python >= 2.7
-* PaddlePaddle >= 1.7.2
+* Python 2.7/ 3.5 / 3.6 / 3.7
+* PaddlePaddle  >= 1.7.2
 * 操作系统: Windows/Mac/Linux
   
 ### 安装命令
@@ -101,24 +101,24 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 
 > 部分表格占位待改（大规模稀疏）
 
-|   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
-| :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
-| 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-| 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |                      [CTR-Dnn](models/rank/dnn/model.py)                       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |                     [DeepFm](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |                    [xDeepFm](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|  多任务  |                     [ESMM](models/multitask/essm/model.py)                     |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   匹配   |                [Simnet](models/match/multiview-simnet/model.py)                |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 分布式GPU训练 |
+| :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: | :-----------: |
+| 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |       x       |
+| 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |       x       |
+|   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |       x       |
+|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |       x       |
+|   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |       x       |
+|   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |       x       |
+|   排序   |                      [CTR-Dnn](models/rank/dnn/model.py)                       |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                     [DeepFm](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                    [xDeepFm](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |       x       |
+|  多任务  |                     [ESMM](models/multitask/essm/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
+|  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
+|   排序   |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |       x       |
+|   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |       x       |
+|   匹配   |                [Simnet](models/match/multiview-simnet/model.py)                |      ✓      |      x      |       ✓       |       x       |
 
 
 
