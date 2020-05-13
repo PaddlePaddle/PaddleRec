@@ -15,7 +15,6 @@
 <p>
 
 
-- - -
 <h2 align="center">什么是PaddleRec</h2>
 
 <p align="center">
@@ -27,14 +26,14 @@
 - PaddleRec将各个模型及其训练预测流程规范化整理，进行易用性封装，用户只需自定义yaml文件即可快速上手使用。
 - PaddleRec以飞桨深度学习框架为核心，融合了大规模分布式训练框架Fleet，以及一键式推理部署框架PaddleServing，支持推荐搜索算法的工业化应用。
 
-- - -
+
 <h2 align="center">PadlleRec概览</h2>
 
 <p align="center">
 <img align="center" src="doc/imgs/overview.png">
 <p>
 
-- - -
+
 <h2 align="center">安装</h2>
 
 ### 环境要求
@@ -54,13 +53,13 @@
 - 安装方法二
 
   源码编译安装
-  * 安装飞桨  **注：需要用户安装版本 >1.7.2 的飞桨**
+  1. 安装飞桨  **注：需要用户安装版本 >1.7.2 的飞桨**
 
     ```shell
     python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
     ```
 
-  * 源码安装Fleet-Rec
+  2. 源码安装Fleet-Rec
 
     ```shell
     git clone https://github.com/seiriosPlus/FleetRec/
@@ -68,7 +67,7 @@
     python setup.py install
     ```
 
-- - -
+
 <h2 align="center">快速启动</h2>
 
 
@@ -98,7 +97,7 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e local_cluster
 python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 ```
 
-- - -
+
 <h2 align="center">文档</h2>
 
 ### 新手教程
@@ -123,7 +122,7 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 ### 设计文档
 * [PaddleRec设计文档](#PaddleRec设计文档)
 
-- - -
+
 <h2 align="center">社区</h2>
 
 ### 贡献代码
