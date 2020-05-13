@@ -79,7 +79,8 @@ def get_global_env(env_name, default_value=None, namespace=None):
     """
     get os environment value
     """
-    _env_name = env_name if namespace is None else ".".join([namespace, env_name])
+    _env_name = env_name if namespace is None else ".".join(
+        [namespace, env_name])
     return global_envs.get(_env_name, default_value)
 
 
@@ -147,7 +148,8 @@ def pretty_print_envs(envs, header=None):
 
 def lazy_instance_by_package(package, class_name):
     models = get_global_env("train.model.models")
-    model_package = __import__(package, globals(), locals(), package.split("."))
+    model_package = __import__(
+        package, globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
 
@@ -157,7 +159,8 @@ def lazy_instance_by_fliename(abs, class_name):
     sys.path.append(dirname)
     package = os.path.splitext(os.path.basename(abs))[0]
 
-    model_package = __import__(package, globals(), locals(), package.split("."))
+    model_package = __import__(
+        package, globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
 
@@ -171,6 +174,13 @@ def get_platform():
         return "DARWIN"
     if 'Windows' in plats:
         return "WINDOWS"
+
+
+<< << << < HEAD: fleet_rec/core/utils/envs.py
+
+== == == =
+>>>>>> > upstream/develop: core/utils/envs.py
+
 
 def find_free_port():
     def __free_port():
