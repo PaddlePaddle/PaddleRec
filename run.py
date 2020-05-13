@@ -152,7 +152,8 @@ def cluster_engine(args):
         cluster_envs["train.trainer.engine"] = "cluster"
         cluster_envs["train.trainer.device"] = args.device
         cluster_envs["train.trainer.platform"] = envs.get_platform()
-        print("launch {} engine with cluster to with model: {}".format(trainer, args.model))
+        print("launch {} engine with cluster to with model: {}".format(
+            trainer, args.model))
         set_runtime_envs(cluster_envs, args.model)
 
         trainer = TrainerFactory.create(args.model)
@@ -245,9 +246,11 @@ if __name__ == "__main__":
                         choices=["single", "local_cluster", "cluster",
                                  "tdm_single", "tdm_local_cluster", "tdm_cluster"])
 
-    parser.add_argument("-d", "--device", type=str, choices=["cpu", "gpu"], default="cpu")
+    parser.add_argument("-d", "--device", type=str,
+                        choices=["cpu", "gpu"], default="cpu")
     parser.add_argument("-b", "--backend", type=str, default=None)
-    parser.add_argument("-r", "--role", type=str, choices=["master", "worker"], default="master")
+    parser.add_argument("-r", "--role", type=str,
+                        choices=["master", "worker"], default="master")
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
