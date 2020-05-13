@@ -1,1 +1,1 @@
-# PaddleRec 预测部署
+# PaddleRec 离线预测
