@@ -15,8 +15,8 @@ from __future__ import print_function
 import math
 import sys
 
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
 try:
     import cPickle as pickle
 except ImportError:

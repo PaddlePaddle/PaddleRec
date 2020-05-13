@@ -1,5 +1,5 @@
 """
-setup for fleet-rec.
+setup for paddle-rec.
 """
 import os
 from setuptools import setup, find_packages
@@ -12,12 +12,12 @@ requires = [
 ]
 
 about = {}
-about["__title__"] = "fleet-rec"
+about["__title__"] = "paddle-rec"
 about["__version__"] = "0.0.2"
-about["__description__"] = "fleet-rec"
-about["__author__"] = "seiriosPlus"
-about["__author_email__"] = "tangwei12@baidu.com"
-about["__url__"] = "https://github.com/seiriosPlus/FleetRec"
+about["__description__"] = "paddle-rec"
+about["__author__"] = "paddle-dev"
+about["__author_email__"] = "paddle-dev@baidu.com"
+about["__url__"] = "https://github.com/PaddlePaddle/PaddleRec"
 
 readme = "..."
 
@@ -30,19 +30,25 @@ def run_cmd(command):
 def build(dirname):
     package_dir = os.path.dirname(os.path.abspath(__file__))
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
-    run_cmd("mkdir {}".format(os.path.join(dirname, "fleetrec")))
-    run_cmd("mv {}/* {}".format(os.path.join(dirname, "fleet_rec"), os.path.join(dirname, "fleetrec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "fleetrec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "fleetrec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "tools"), os.path.join(dirname, "fleetrec")))
+    run_cmd("mkdir {}".format(os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "core"), os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "tests"), os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "tools"), os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "*.py"), os.path.join(dirname, "paddlerec")))
 
-    packages = find_packages(dirname, include=('fleetrec.*'))
+    packages = find_packages(dirname, include=('paddlerec.*'))
     package_dir = {'': dirname}
     package_data = {}
-    need_copy = ['data/*/*.txt', '*.yaml', 'tree/*.npy','tree/*.txt']
+
+    models_copy = ['data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy', 'tree/*.txt']
+    engine_copy = ['*/*.sh']
     for package in packages:
-        if package.startswith("fleetrec.models."):
-            package_data[package] = need_copy
+        if package.startswith("paddlerec.models."):
+            package_data[package] = models_copy
+        if package.startswith("paddlerec.core.engine"):
+            package_data[package] = engine_copy
 
     setup(
         name=about["__title__"],
@@ -67,13 +73,13 @@ shutil.rmtree(dirname)
 
 print('''
 \033[32m
-  _   _   _   _   _   _   _   _   _  
- / \ / \ / \ / \ / \ / \ / \ / \ / \ 
-( F | L | E | E | T | - | R | E | C )
- \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
+  _   _   _   _   _   _   _   _   _
+ / \ / \ / \ / \ / \ / \ / \ / \ / \
+( P | A | D | D | L | E | - | R | E | C )
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
 \033[0m
 \033[34m
 Installation Complete. Congratulations!
-How to use it ? Please visit our webside: https://github.com/seiriosPlus/FleetRec
+How to use it ? Please visit our webside: https://github.com/PaddlePaddle/PaddleRec
 \033[0m
 ''')

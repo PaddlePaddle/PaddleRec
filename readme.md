@@ -43,11 +43,9 @@
   
 ### 安装命令
 
-- 安装方法一
-  
-  使用pip源直接安装
-  ```shell
-  python -m pip install fleet-rec
+- 安装方法一<PIP源直接安装>：
+  ```bash
+  python -m pip install paddle-rec
   ```
 
 - 安装方法二
@@ -61,9 +59,9 @@
 
   2. 源码安装Fleet-Rec
 
-    ```shell
-    git clone https://github.com/seiriosPlus/FleetRec/
-    cd FleetRec
+    ```
+    git clone https://github.com/PaddlePaddle/PaddleRec/
+    cd PaddleRec
     python setup.py install
     ```
 

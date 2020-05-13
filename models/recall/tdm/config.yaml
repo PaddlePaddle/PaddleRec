@@ -17,8 +17,8 @@ train:
     # for cluster training
     strategy: "async"
 
-  epochs: 4
-  workspace: "fleetrec.models.recall.tdm"
+  epochs: 2
+  workspace: "paddlerec.models.recall.tdm"
 
   reader:
     batch_size: 32
@@ -65,9 +65,16 @@ train:
   save:
     increment:
       dirname: "increment"
-      epoch_interval: 2
+      epoch_interval: 1
       save_last: True
     inference:
       dirname: "inference"
-      epoch_interval: 4
+      epoch_interval: 10
       save_last: True
+
+evaluate:
+  workspace: "paddlerec.models.recall.tdm"
+  reader:
+    batch_size: 1
+    class: "{workspace}/tdm_evaluate_reader.py"
+    test_data_path: "{workspace}/data/test"

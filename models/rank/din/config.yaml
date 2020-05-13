@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 10
-  workspace: "fleetrec.models.rank.din"
+  workspace: "paddlerec.models.rank.din"
 
   reader:
     batch_size: 2
