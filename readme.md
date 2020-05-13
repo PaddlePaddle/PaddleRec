@@ -34,7 +34,7 @@
 <p>
 
 
-<h2 align="center">安装</h2>
+<h2 align="center">便捷安装</h2>
 
 ### 环境要求
 * Python >= 2.7
@@ -71,6 +71,8 @@
 
 目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
 
+### 一行命令启动训练
+
 <h3 align="center">单机训练</h3>
 
 ```bash
@@ -97,23 +99,27 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 
 <h2 align="center">支持模型列表</h2>
 
+> 部分表格占位待改（大规模稀疏）
 
-|   方向   |          模型          | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
-| :------: | :--------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
-| 内容理解 | [Text-Classifcation]() |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-| 内容理解 |      [TagSpace]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |      [Word2Vec]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |        [TDM]()         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |        [SSR]()         |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   召回   |      [Gru4Rec]()       |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |      [CTR-Dnn]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |       [DeepFm]()       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |      [ListWise]()      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |        [DSSM]()        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   排序   |  [Multiview-Simnet]()  |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
-|   融合   |        [MMOE]()        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   融合   |        [ESMM]()        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
-|   融合   |        [ESMM]()        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 大规模稀疏 | 分布式GPU训练 | 自定义数据集 |
+| :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: | :--------: | :-----------: | :----------: |
+| 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+| 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |                      [CTR-Dnn](models/rank/dnn/model.py)                       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |                     [DeepFm](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |                    [xDeepFm](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|  多任务  |                     [ESMM](models/multitask/essm/model.py)                     |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   排序   |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |     x      |       ✓       |      ✓       |
+|   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+|   匹配   |                [Simnet](models/match/multiview-simnet/model.py)                |      ✓      |      x      |       ✓       |     x      |       ✓       |      ✓       |
+
 
 
 
@@ -121,33 +127,32 @@ python -m fleetrec.run -m fleetrec.models.rank.dnn -d cpu -e cluster
 <h2 align="center">文档</h2>
 
 ### 新手教程
-* [支持模型列表](#支持模型列表)
 * [环境要求](#环境要求)
 * [安装命令](#安装命令)
-* [快速开始](#快速开始)
+* [快速开始](#一行命令启动训练)
   
 ### 进阶教程
-* [自定义数据集及Reader](#自定义数据集及reader)
-* [模型调参](#模型调参)
-* [单机训练](#单机训练)
-* [分布式训练](#分布式训练)
-* [离线预测](#预测部署)
+* [自定义数据集及Reader](doc/custom_dataset_reader.md)
+* [模型调参](doc/optimization_model.md)
+* [单机训练](doc/local_train.md)
+* [分布式训练](doc/distributed_train.md)
+* [离线预测](doc/predict.md)
 
 ### 关于PaddleRec性能
-* [Benchamrk](#benchamrk)
+* [Benchamrk](doc/benchmark.md)
 
 ### FAQ
-* [常见问题FAQ](#常见问题faq)
+* [常见问题FAQ](doc/faq.md)
 
 ### 设计文档
-* [PaddleRec设计文档](#PaddleRec设计文档)
+* [PaddleRec设计文档](doc/design.md)
 
 
 <h2 align="center">社区</h2>
 
 ### 贡献代码
-* [优化PaddleRec框架](#优化paddlerec框架)
-* [新增模型到PaddleRec](#新增模型到paddlerec)
+* [优化PaddleRec框架](doc/contribute.md)
+* [新增模型到PaddleRec](doc/contribute.md)
 
 ### 反馈
 如有意见、建议及使用中的BUG，欢迎在`GitHub Issue`提交
