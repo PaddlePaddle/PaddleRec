@@ -1,3 +1,9 @@
+<style>
+table {
+margin: auto;
+}
+</style>
+
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
@@ -108,11 +114,6 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 
 <h2 align="center">支持模型列表</h2>
 
-<style>
-table {
-margin: auto;
-}
-</style>
 
 |   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
 | :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
