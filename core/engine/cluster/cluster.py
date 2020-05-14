@@ -28,7 +28,11 @@ from paddlerec.core.utils import envs
 class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        self.submit_script = os.path.join(abs_dir, "master.sh")
+        backend = envs.get_runtime_environ("engine_backend")
+        if backend == "PaddleCloud":
+            self.submit_script = os.path.join(abs_dir, "cloud/cluster.sh")
+        else:
+            raise ValueError("{} can not supported now".format(backend))
 
     def start_worker_procs(self):
         trainer = TrainerFactory.create(self.trainer)
