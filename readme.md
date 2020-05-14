@@ -114,31 +114,39 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 | 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |       x       |
 | 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |       x       |
 |   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |       x       |
-|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |       x       |
+|   召回   |                 [TreeBased-Model](models/recall/tdm/model.py)                  |      ✓      |      x      |       ✓       |       x       |
 |   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |       x       |
 |   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |       x       |
-|   排序   |                      [CTR-Dnn](models/rank/dnn/model.py)                       |      ✓      |      x      |       ✓       |       x       |
-|   排序   |                     [DeepFm](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |       x       |
-|   排序   |                    [xDeepFm](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                        [Dnn](models/rank/dnn/model.py)                         |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                     [DeepFM](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |       x       |
+|   排序   |                    [xDeepFM](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |       x       |
 |   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |       x       |
 |   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |       x       |
-|  多任务  |                     [ESMM](models/multitask/essm/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
+|  多任务  |                     [ESMM](models/multitask/esmm/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
 |  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
-|   排序   |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |       x       |
+|  多任务  |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |       x       |
 |   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |       x       |
-|   匹配   |                [Simnet](models/match/multiview-simnet/model.py)                |      ✓      |      x      |       ✓       |       x       |
+|   匹配   |           [MultiView-Simnet](models/match/multiview-simnet/model.py)           |      ✓      |      x      |       ✓       |       x       |
 
 
 
 <h2 align="center">文档</h2>
 
+### 背景介绍
+* [推荐系统](doc/rec_background.md)
+* [分布式-参数服务器](doc/ps_background.md)
+
 ### 新手教程
-* [推荐系统背景介绍](doc/rec_background.md)
-* [分布式-参数服务器背景介绍](doc/ps_background.md)
+* [环境要求](#环境要求)
+* [安装命令](#安装命令)
+* [快速开始](#启动内置模型的默认配置)
 
 ### 进阶教程
 * [自定义数据集及Reader](doc/custom_dataset_reader.md)
 * [分布式训练](doc/distributed_train.md)
+
+### 开发者教程
+* [PaddleRec设计文档](doc/design.md)
 
 ### 关于PaddleRec性能
 * [Benchmark](doc/benchmark.md)

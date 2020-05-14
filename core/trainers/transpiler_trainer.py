@@ -42,7 +42,7 @@ class TranspileTrainer(Trainer):
             namespace = "train.reader"
             class_name = "TrainReader"
         else:
-            readerdataloader = self.model._infer_data_loader
+            dataloader = self.model._infer_data_loader
             namespace = "evaluate.reader"
             class_name = "EvaluateReader"
 
