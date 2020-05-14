@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+evaluate:
+  reader:
+    batch_size: 1
+    class: "{workspace}/rsc15_infer_reader.py"
+    test_data_path: "{workspace}/data/train"
+  is_return_numpy: False
+
+
 train:
   trainer:
     # for cluster training
@@ -19,8 +27,8 @@ train:
 
   epochs: 3
   workspace: "paddlerec.models.recall.gru4rec"
-
   device: cpu
+
   reader:
     batch_size: 5
     class: "{workspace}/rsc15_reader.py"
