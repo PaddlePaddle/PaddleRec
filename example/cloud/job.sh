@@ -6,3 +6,5 @@
 ###################################################
 
 echo "heheda"
+
+python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster -r worker
