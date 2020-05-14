@@ -151,6 +151,7 @@ def cluster_engine(args):
         cluster_envs = {}
         cluster_envs["train.trainer.trainer"] = trainer
         cluster_envs["train.trainer.engine"] = "cluster"
+        cluster_envs["train.trainer.threads"] = envs.get_runtime_environ("CPU_NUM")
         cluster_envs["train.trainer.device"] = args.device
         cluster_envs["train.trainer.platform"] = envs.get_platform()
         print("launch {} engine with cluster to with model: {}".format(
