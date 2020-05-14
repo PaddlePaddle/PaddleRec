@@ -1,9 +1,3 @@
-<style>
-table {
-margin: auto;
-}
-</style>
-
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
@@ -114,6 +108,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 
 <h2 align="center">支持模型列表</h2>
 
+<div class="center">
 
 |   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
 | :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
@@ -134,7 +129,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 |   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |
 |   匹配   |           [MultiView-Simnet](models/match/multiview-simnet/model.py)           |      ✓      |      x      |       ✓       |
 
-
+</div>
 
 <h2 align="center">文档</h2>
 
