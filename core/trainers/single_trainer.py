@@ -55,7 +55,12 @@ class SingleTrainer(TranspileTrainer):
         if metrics:
             self.fetch_vars = metrics.values()
             self.fetch_alias = metrics.keys()
-        context['status'] = 'startup_pass'
+        evaluate_only = envs.get_global_env(
+            'evaluate_only', False, namespace='evaluate')
+        if evaluate_only:
+            context['status'] = 'infer_pass'
+        else:
+            context['status'] = 'startup_pass'
 
     def startup(self, context):
         self._exe.run(fluid.default_startup_program())
