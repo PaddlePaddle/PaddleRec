@@ -28,6 +28,10 @@ from paddlerec.core.utils import dataloader_instance
 class TranspileTrainer(Trainer):
     def __init__(self, config=None):
         Trainer.__init__(self, config)
+        device = envs.get_global_env("train.device")
+        if device == 'gpu':
+            self._place = fluid.CUDAPlace(0)
+            self._exe = fluid.Executor(self._place)
         self.processor_register()
         self.model = None
         self.inference_models = []
