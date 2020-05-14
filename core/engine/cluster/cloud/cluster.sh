@@ -8,18 +8,6 @@
 # ---------------------------------------------------------------------------- #
 #                            variable define                                   #
 # ---------------------------------------------------------------------------- #
-declare g_jobname=""
-declare g_version=""
-declare g_priority=""
-declare g_nodes=""
-declare g_run_cmd=""
-declare g_groupname=""
-declare g_config=""
-declare g_submitfiles=""
-declare g_ak=""
-declare g_sk=""
-declare g_user_define_script=""
-# ---------------------------------------------------------------------------- #
 
 #-----------------------------------------------------------------------------------------------------------------
 #fun : package
@@ -59,18 +47,22 @@ function _after_submit() {
 function _submit() {
   g_run_stage="submit"
 
-  paddlecloud job --ak ${g_ak} --sk ${g_sk} train --cluster-name ${g_jobname} \
-    --job-version ${g_version} \
-    --mpi-priority ${g_priority} \
+  cd ${engine_temp_path}
+
+  paddlecloud job --ak ${engine_submit_ak} --sk ${engine_submit_sk} train --cluster-name ${engine_submit_cluster} \
+    --job-version ${engine_submit_version} \
+    --mpi-priority ${engine_submit_priority} \
     --mpi-wall-time 300:59:00 \
-    --mpi-nodes ${g_nodes} --is-standalone 0 \
+    --mpi-nodes ${engine_submit_nodes} --is-standalone 0 \
     --mpi-memory 110Gi \
-    --job-name ${g_jobname} \
-    --start-cmd ${g_run_cmd} \
-    --group-name ${g_groupname} \
-    --job-conf ${g_config} \
+    --job-name ${engine_submit_jobname} \
+    --start-cmd "${g_run_cmd}" \
+    --group-name ${engine_submit_group} \
+    --job-conf ${engine_submit_config} \
     --files ${g_submitfiles} \
     --json
+
+  cd -
 }
 
 function submit_hook() {
@@ -80,7 +72,8 @@ function submit_hook() {
 }
 
 function main() {
-  source ${g_user_define_script}
+  source ${engine_submit_scrpit}
+
   package_hook
   submit_hook
 }

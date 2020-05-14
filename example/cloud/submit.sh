@@ -36,8 +36,8 @@ function package() {
 
   cp ${engine_workspace}/job.sh ${temp}
   cp ${engine_workspace}/before_hook.sh ${temp}
-  cp ${engine_run_config} ${temp}/config.yaml
+  cp ${engine_run_config} ${temp}/paddle_rec_config.yaml
 
-  g_submitfiles="job.sh before_hook.sh config.yaml"
-  g_run_cmd="sh job.sh"
+  g_submitfiles="job.sh before_hook.sh paddle_rec_config.yaml"
+  g_run_cmd='"sh job.sh"'
 }
