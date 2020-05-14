@@ -14,7 +14,7 @@
 evaluate:
   workspace: "paddlerec.models.recall.word2vec" 
 
-  evaluate_only: False
+  evaluate_only: True
   evaluate_model_path: ""
   
   reader:

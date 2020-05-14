@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 2
-  workspace: "paddlerec.models.recall.tdm"
+  workspace: "paddlerec.models.treebased.tdm"
 
   reader:
     batch_size: 32

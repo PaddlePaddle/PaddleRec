@@ -114,7 +114,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 | 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |       x       |
 | 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |       x       |
 |   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |       x       |
-|   召回   |                 [TreeBased-Model](models/recall/tdm/model.py)                  |      ✓      |      x      |       ✓       |       x       |
+|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |       x       |
 |   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |       x       |
 |   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |       x       |
 |   排序   |                        [Dnn](models/rank/dnn/model.py)                         |      ✓      |      x      |       ✓       |       x       |
