@@ -70,7 +70,7 @@
 
 ### 启动内置模型的默认配置
 
-目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
+目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`dnn`为例介绍PaddleRec的简单使用。
 
 <h3 align="center">单机训练</h3>
 
@@ -100,7 +100,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster
 
 若您复用内置模型，对**yaml**配置文件进行了修改，如更改超参，重新配置数据后，可以直接使用paddlerec运行该yaml文件。
 
-例如在paddlerec代码目录下，修改了dnn模型`config.yaml`的配置后，运行`ctr-dnn`模型：
+我们以dnn模型为例，在paddlerec代码目录下，修改了dnn模型`config.yaml`的配置后，运行`dnn`模型：
 ```bash
 python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 ```
@@ -113,8 +113,8 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 | :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: | :-----------: |
 | 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |       x       |
 | 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |       x       |
+|   召回   |                     [TDM](models/treebased/tdm/README.md)                      |      ✓      |      x      |       ✓       |       x       |
 |   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |       x       |
-|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |       x       |
 |   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |       x       |
 |   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |       x       |
 |   排序   |                        [Dnn](models/rank/dnn/model.py)                         |      ✓      |      x      |       ✓       |       x       |
