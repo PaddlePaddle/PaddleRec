@@ -25,6 +25,6 @@ engine:
     group: "paddle_benchmark"
     cluster: "SZWG-SUNWAY"
     config: "{workspace}/config.ini"
-    nodes: 10
+    nodes: 8
 
   submit_scrpit: "{workspace}/submit.sh"
