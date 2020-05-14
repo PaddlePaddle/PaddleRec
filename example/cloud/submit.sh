@@ -35,9 +35,9 @@ function package() {
   temp=${engine_temp_path}
 
   cp ${engine_workspace}/submit.sh ${temp}
+  cp ${engine_workspace}/job.sh ${temp}
   cp ${engine_workspace}/before_hook.sh ${temp}
 
   g_submitfiles="submit.sh before_hook.sh"
-  
+  g_run_cmd="sh job.sh"
 }
-
