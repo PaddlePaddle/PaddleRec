@@ -19,6 +19,7 @@ train:
 
   epochs: 3
   workspace: "paddlerec.models.multitask.esmm"
+  device: cpu
 
   reader:
     batch_size: 2
