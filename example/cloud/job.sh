@@ -9,9 +9,9 @@
 # ---------------------------------------------------------------------------- #
 #                            variable define                                   #
 # ---------------------------------------------------------------------------- #
-CPU_NUM=16
-GLOG_v=0
-FLAGS_rpc_deadline=300000
+export CPU_NUM=16
+export GLOG_v=0
+export FLAGS_rpc_deadline=300000
 # ---------------------------------------------------------------------------- #
 
 python -m paddlerec.run -m paddle_rec_config.yaml -e cluster -r worker

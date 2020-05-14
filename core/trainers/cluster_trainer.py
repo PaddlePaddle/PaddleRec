@@ -19,6 +19,8 @@ Training use fluid with one node only.
 from __future__ import print_function
 
 import os
+import time
+
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distributed_strategy import StrategyFactory
@@ -155,14 +157,21 @@ class ClusterTrainer(TranspileTrainer):
         fleet.init_worker()
 
         dataset = self._get_dataset()
+        ins = self._get_dataset_ins()
+
         epochs = envs.get_global_env("train.epochs")
 
         for i in range(epochs):
+            begin_time = time.time()
             self._exe.train_from_dataset(program=fluid.default_main_program(),
                                          dataset=dataset,
                                          fetch_list=self.fetch_vars,
                                          fetch_info=self.fetch_alias,
                                          print_period=self.fetch_period)
+            end_time = time.time()
+            times = end_time-begin_time
+            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins/times))
+
             self.save(i, "train", is_fleet=True)
         fleet.stop_worker()
         context['status'] = 'infer_pass'
