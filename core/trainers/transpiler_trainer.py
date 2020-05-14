@@ -247,6 +247,9 @@ class TranspileTrainer(Trainer):
             model_list = [(0, envs.get_global_env(
                 'evaluate_model_path', "", namespace='evaluate'))]
 
+        is_return_numpy = envs.get_global_env(
+            'is_return_numpy', True, namespace='evaluate') 
+
         for (epoch, model_dir) in model_list:
             print("Begin to infer No.{} model, model_dir: {}".format(
                 epoch, model_dir))
@@ -258,7 +261,8 @@ class TranspileTrainer(Trainer):
                 while True:
                     metrics_rets = self._exe.run(
                         program=program,
-                        fetch_list=metrics_varnames)
+                        fetch_list=metrics_varnames,
+                        return_numpy=is_return_numpy)
 
                     metrics = [epoch, batch_id]
                     metrics.extend(metrics_rets)

@@ -23,7 +23,7 @@ class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
 
-    def all_vocab_network(self):
+    def all_vocab_network(self, is_infer=False):
         """ network definition """
         recall_k = envs.get_global_env("hyper_parameters.recall_k", None, self._namespace)
         vocab_size = envs.get_global_env("hyper_parameters.vocab_size", None, self._namespace)
@@ -39,10 +39,16 @@ class Model(ModelBase):
         dst_wordseq = fluid.data(
             name="dst_wordseq", shape=[None, 1], dtype="int64", lod_level=1)
 
+        if is_infer:
+            self._infer_data_var = [src_wordseq, dst_wordseq]
+            self._infer_data_loader = fluid.io.DataLoader.from_generator(
+                feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
+
         emb = fluid.embedding(
             input=src_wordseq,
             size=[vocab_size, hid_size],
             param_attr=fluid.ParamAttr(
+                name="emb",
                 initializer=fluid.initializer.Uniform(
                     low=init_low_bound, high=init_high_bound),
                 learning_rate=emb_lr_x),
@@ -70,6 +76,9 @@ class Model(ModelBase):
                                  learning_rate=fc_lr_x))
         cost = fluid.layers.cross_entropy(input=fc, label=dst_wordseq)
         acc = fluid.layers.accuracy(input=fc, label=dst_wordseq, k=recall_k)
+        if is_infer:
+            self._infer_results['recall20'] = acc
+            return
         avg_cost = fluid.layers.mean(x=cost)
 
         self._data_var.append(src_wordseq)
@@ -84,4 +93,4 @@ class Model(ModelBase):
 
 
     def infer_net(self):
-        pass
+        self.all_vocab_network(is_infer=True)
