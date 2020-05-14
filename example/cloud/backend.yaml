@@ -13,7 +13,7 @@
 # limitations under the License.
 
 engine:
-  workspace: "paddlerec.models.rank.dnn"
+  workspace: "/home/tangwei/fleet_rec_env/paddlerec/example/cloud"
   backend: "PaddleCloud"
 
   submit:

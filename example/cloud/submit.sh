@@ -5,6 +5,7 @@
 # Description: run mpi submit clinet implement
 ###################################################
 
+g_package_files=""
 
 #-----------------------------------------------------------------------------------------------------------------
 #fun : before hook submit to cluster
@@ -30,6 +31,13 @@ function after_submit_hook() {
 #return : 0 -- success; not 0 -- failure
 #-----------------------------------------------------------------------------------------------------------------
 function package() {
-    echo "package"
+  echo "package"
+  temp=${engine_temp_path}
+
+  cp ${engine_workspace}/submit.sh ${temp}
+  cp ${engine_workspace}/before_hook.sh ${temp}
+
+  g_submitfiles="submit.sh before_hook.sh"
+  
 }
 
