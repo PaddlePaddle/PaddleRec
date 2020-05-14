@@ -7,4 +7,4 @@
 
 echo "heheda"
 
-python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster -r worker
+python -m paddlerec.run -m config.yaml -e cluster -r worker

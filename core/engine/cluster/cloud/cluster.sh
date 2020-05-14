@@ -75,9 +75,7 @@ function _submit() {
 
 function submit_hook() {
   _before_submit
-
   _submit
-
   _after_submit
 }
 

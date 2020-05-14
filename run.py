@@ -136,6 +136,7 @@ def cluster_engine(args):
 
         flattens = envs.flatten_environs(_envs, "_")
         flattens["engine_role"] = args.role
+        flattens["engine_run_config"] = args.model
         flattens["engine_temp_path"] = tempfile.mkdtemp()
         update_workspace(flattens)
 

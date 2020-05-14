@@ -34,10 +34,10 @@ function package() {
   echo "package"
   temp=${engine_temp_path}
 
-  cp ${engine_workspace}/submit.sh ${temp}
   cp ${engine_workspace}/job.sh ${temp}
   cp ${engine_workspace}/before_hook.sh ${temp}
+  cp ${engine_run_config} ${temp}/config.yaml
 
-  g_submitfiles="submit.sh before_hook.sh"
+  g_submitfiles="job.sh before_hook.sh config.yaml"
   g_run_cmd="sh job.sh"
 }
