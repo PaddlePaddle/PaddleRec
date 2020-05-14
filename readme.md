@@ -73,7 +73,7 @@
 
 目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`dnn`为例介绍PaddleRec的简单使用。
 
-<h3 align="center">单机训练</h3>
+#### 单机训练
 
 ```bash
 # 使用CPU进行单机训练
@@ -83,14 +83,14 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e single
 python -m paddlerec.run -m paddlerec.models.rank.dnn -d gpu -e single
 ```
 
-<h3 align="center">本地模拟分布式训练</h3>
+#### 本地模拟分布式训练
 
 ```bash
 # 使用CPU资源进行本地模拟分布式训练
 python -m paddlerec.run -m paddlerec.models.rank.dnn -e local_cluster
 ```
 
-<h3 align="center">集群分布式训练</h3>
+#### 集群分布式训练
 
 ```bash
 # 配置好 mpi/k8s/paddlecloud集群环境后
