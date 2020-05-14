@@ -1,3 +1,4 @@
+
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
@@ -70,7 +71,7 @@
 
 ### 启动内置模型的默认配置
 
-目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`ctr-dnn`为例介绍PaddleRec的简单使用。
+目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`dnn`为例介绍PaddleRec的简单使用。
 
 <h3 align="center">单机训练</h3>
 
@@ -100,7 +101,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster
 
 若您复用内置模型，对**yaml**配置文件进行了修改，如更改超参，重新配置数据后，可以直接使用paddlerec运行该yaml文件。
 
-例如在paddlerec代码目录下，修改了dnn模型`config.yaml`的配置后，运行`ctr-dnn`模型：
+我们以dnn模型为例，在paddlerec代码目录下，修改了dnn模型`config.yaml`的配置后，运行`dnn`模型：
 ```bash
 python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 ```
@@ -109,36 +110,44 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 <h2 align="center">支持模型列表</h2>
 
 
-|   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 | 分布式GPU训练 |
-| :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: | :-----------: |
-| 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |       x       |
-| 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |       x       |
-|   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |       x       |
-|   召回   |                       [TDM](models/recall/tdm/model.py)                        |      ✓      |      x      |       ✓       |       x       |
-|   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |       x       |
-|   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |       x       |
-|   排序   |                      [CTR-Dnn](models/rank/dnn/model.py)                       |      ✓      |      x      |       ✓       |       x       |
-|   排序   |                     [DeepFm](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |       x       |
-|   排序   |                    [xDeepFm](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |       x       |
-|   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |       x       |
-|   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |       x       |
-|  多任务  |                     [ESMM](models/multitask/essm/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
-|  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |       x       |
-|   排序   |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |       x       |
-|   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |       x       |
-|   匹配   |                [Simnet](models/match/multiview-simnet/model.py)                |      ✓      |      x      |       ✓       |       x       |
+|   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
+| :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
+| 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |
+| 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |
+|   召回   |                      [TDM](models/treebased/tdm/model.py)                      |      ✓      |      x      |       ✓       |
+|   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |
+|   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |
+|   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |
+|   排序   |                        [Dnn](models/rank/dnn/model.py)                         |      ✓      |      x      |       ✓       |
+|   排序   |                     [DeepFM](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |
+|   排序   |                    [xDeepFM](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |
+|   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |
+|   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |
+|  多任务  |                     [ESMM](models/multitask/esmm/model.py)                     |      ✓      |      ✓      |       ✓       |
+|  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |
+|  多任务  |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |
+|   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |
+|   匹配   |           [MultiView-Simnet](models/match/multiview-simnet/model.py)           |      ✓      |      x      |       ✓       |
 
 
 
 <h2 align="center">文档</h2>
 
+### 背景介绍
+* [推荐系统](doc/rec_background.md)
+* [分布式-参数服务器](doc/ps_background.md)
+
 ### 新手教程
-* [推荐系统背景介绍](doc/rec_background.md)
-* [分布式-参数服务器背景介绍](doc/ps_background.md)
+* [环境要求](#环境要求)
+* [安装命令](#安装命令)
+* [快速开始](#启动内置模型的默认配置)
 
 ### 进阶教程
 * [自定义数据集及Reader](doc/custom_dataset_reader.md)
 * [分布式训练](doc/distributed_train.md)
+
+### 开发者教程
+* [PaddleRec设计文档](doc/design.md)
 
 ### 关于PaddleRec性能
 * [Benchmark](doc/benchmark.md)

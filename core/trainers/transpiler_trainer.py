@@ -46,7 +46,7 @@ class TranspileTrainer(Trainer):
             namespace = "train.reader"
             class_name = "TrainReader"
         else:
-            readerdataloader = self.model._infer_data_loader
+            dataloader = self.model._infer_data_loader
             namespace = "evaluate.reader"
             class_name = "EvaluateReader"
 
@@ -239,8 +239,17 @@ class TranspileTrainer(Trainer):
         metrics_format = ", ".join(metrics_format)
         self._exe.run(startup_program)
 
-        for (epoch, model_dir) in self.increment_models:
-            print("Begin to infer epoch {}, model_dir: {}".format(epoch, model_dir))
+        model_list = self.increment_models
+
+        evaluate_only = envs.get_global_env(
+            'evaluate_only', False, namespace='evaluate')
+        if evaluate_only:
+            model_list = [(0, envs.get_global_env(
+                'evaluate_model_path', "", namespace='evaluate'))]
+
+        for (epoch, model_dir) in model_list:
+            print("Begin to infer No.{} model, model_dir: {}".format(
+                epoch, model_dir))
             program = infer_program.clone()
             fluid.io.load_persistables(self._exe, model_dir, program)
             reader.start()

@@ -259,12 +259,3 @@ auc_var, batch_auc_var, auc_states = fluid.layers.auc(
 ```
 
 完成上述组网后，我们最终可以通过训练拿到`avg_cost`与`auc`两个重要指标。
-
-
-# 训练
-## 单机训练
-## 分布式训练
-### 本地模拟分布式
-### 百度云分布式训练
-
-# 预测
