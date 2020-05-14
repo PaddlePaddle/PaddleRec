@@ -19,6 +19,7 @@ train:
 
   epochs: 3
   workspace: "paddlerec.models.recall.ssr"
+  device: cpu
 
   reader:
     batch_size: 5

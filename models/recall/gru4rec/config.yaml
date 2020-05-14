@@ -20,6 +20,7 @@ train:
   epochs: 3
   workspace: "paddlerec.models.recall.gru4rec"
 
+  device: cpu
   reader:
     batch_size: 5
     class: "{workspace}/rsc15_reader.py"
