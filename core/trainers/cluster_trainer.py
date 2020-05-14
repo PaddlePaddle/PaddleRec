@@ -31,8 +31,7 @@ from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
 
 class ClusterTrainer(TranspileTrainer):
     def processor_register(self):
-        #role = PaddleCloudRoleMaker()
-        role = MPISymetricRoleMaker()
+        role = PaddleCloudRoleMaker()
         fleet.init(role)
 
         if fleet.is_server():

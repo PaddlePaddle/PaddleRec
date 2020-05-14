@@ -65,7 +65,7 @@ function submit() {
   g_run_stage="submit"
   g_job_name="paddle_rec_mpi"
   g_hdfs_path=$g_hdfs_path
-  g_job_entry="worker.sh"
+  g_job_entry="job.sh"
 
   engine_hdfs_output=${engine_hdfs_output}/$(date +%Y%m%d%H%M%S)
 
