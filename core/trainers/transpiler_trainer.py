@@ -70,6 +70,13 @@ class TranspileTrainer(Trainer):
             exit(0)
         return dataloader
 
+    def _get_dataset_ins(self):
+        count = 0
+        for f in self.files:
+            for _, _ in enumerate(open(f, 'r')):
+                count += 1
+        return count
+
     def _get_dataset(self, state="TRAIN"):
         if state == "TRAIN":
             inputs = self.model.get_inputs()
@@ -82,8 +89,7 @@ class TranspileTrainer(Trainer):
             train_data_path = envs.get_global_env(
                 "test_data_path", None, namespace)
 
-        #threads = int(envs.get_runtime_environ("train.trainer.threads"))
-        threads = 2
+        threads = int(envs.get_runtime_environ("train.trainer.threads"))
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
@@ -106,8 +112,8 @@ class TranspileTrainer(Trainer):
             os.path.join(train_data_path, x)
             for x in os.listdir(train_data_path)
         ]
-
-        dataset.set_filelist(file_list)
+        self.files = file_list
+        dataset.set_filelist(self.files)
 
         debug_mode = envs.get_global_env("reader_debug_mode", False, namespace)
         if debug_mode:

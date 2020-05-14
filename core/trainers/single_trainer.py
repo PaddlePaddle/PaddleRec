@@ -18,6 +18,8 @@ Training use fluid with one node only.
 
 from __future__ import print_function
 import logging
+import time
+
 import paddle.fluid as fluid
 
 from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
@@ -104,14 +106,19 @@ class SingleTrainer(TranspileTrainer):
 
     def dataset_train(self, context):
         dataset = self._get_dataset("TRAIN")
-        epochs = envs.get_global_env("train.epochs")
+        ins = self._get_dataset_ins()
 
+        epochs = envs.get_global_env("train.epochs")
         for i in range(epochs):
+            begin_time = time.time()
             self._exe.train_from_dataset(program=fluid.default_main_program(),
                                          dataset=dataset,
                                          fetch_list=self.fetch_vars,
                                          fetch_info=self.fetch_alias,
                                          print_period=self.fetch_period)
+            end_time = time.time()
+            times = end_time-begin_time
+            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins/times))
 
             self.save(i, "train", is_fleet=False)
         context['status'] = 'infer_pass'
