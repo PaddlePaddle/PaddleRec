@@ -39,5 +39,5 @@ function package() {
   cp ${engine_run_config} ${temp}/paddle_rec_config.yaml
 
   g_submitfiles="job.sh before_hook.sh paddle_rec_config.yaml"
-  g_run_cmd='"sh job.sh"'
+  g_run_cmd="sh job.sh"
 }

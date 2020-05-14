@@ -1,10 +1,17 @@
 #!/bin/bash
 
 ###################################################
-# Usage: submit.sh
-# Description: run mpi submit clinet implement
+# Usage: job.sh
+# Description: run mpi job clinet implement
 ###################################################
 
-echo "heheda"
+
+# ---------------------------------------------------------------------------- #
+#                            variable define                                   #
+# ---------------------------------------------------------------------------- #
+CPU_NUM=16
+GLOG_v=0
+FLAGS_rpc_deadline=300000
+# ---------------------------------------------------------------------------- #
 
 python -m paddlerec.run -m paddle_rec_config.yaml -e cluster -r worker
