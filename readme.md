@@ -3,14 +3,6 @@
 <img align="center" src="doc/imgs/logo.png">
 <p>
 
-<p align="center">
-    <br>
-    <img alt="Release" src="https://img.shields.io/badge/Release-0.1.0-yellowgreen">
-    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/Serving">
-    <img alt="Slack" src="https://img.shields.io/badge/Join-Slack-green">
-    <br>
-<p>
-
 
 <h2 align="center">什么是PaddleRec</h2>
 
