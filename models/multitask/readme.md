@@ -37,5 +37,5 @@ python -m paddlerec.run -m config.yaml -d cpu -e single
 | :------------------: | :--------------------: | :---------: |:---------: |
 |       Census-income Data     |       Share-Bottom       |       --        |     0.93120/0.99256         |
 |       Census-income Data        |       MMoE       |       --        |       0.94465/0.99324         |
-|          Ali-CCP     |    ESMM       |       --        |      0.971812/0.499668          |
+|          Ali-CCP     |    ESMM       |       --        |      0.97181/0.49967          |
 
