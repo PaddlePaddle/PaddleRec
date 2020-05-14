@@ -46,7 +46,7 @@ python -m paddlerec.run -m config.yaml -d cpu -e single
 | :------------------: | :--------------------: | :---------: |:---------: |
 |       DIGINETICA     |       GNN       |       --        |       0.507       |
 |       RSC15        |       GRU4REC       |       --        |       0.67          |
-|       RSC15        |       SSR       |       --        |       --          |
+|       RSC15        |       SSR       |       --        |       无          |
 |       -        |       TDM       |       --        |       --          |
 |       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --         |       0.54          |
 
