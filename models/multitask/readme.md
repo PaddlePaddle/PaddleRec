@@ -19,26 +19,24 @@
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
-| Share-bottom | share-bottom | [Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)(1998) |
+| Share-Bottom | share-bottom | [Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)(1998) |
 | ESMM | Entire Space Multi-Task Model | [Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)(2018) |
 | MMoE | Multi-gate Mixture-of-Experts | [Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)(2018) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
 
-[share-bottom](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf):
-<p align="center">
-<img align="center" src="../../doc/imgs/share-bottom.png">
-<p>
-
-
-[esmm](https://arxiv.org/abs/1804.07931):
+[ESMM](https://arxiv.org/abs/1804.07931):
 <p align="center">
 <img align="center" src="../../doc/imgs/esmm.png">
 <p>
 
+[Share-Bottom](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/share-bottom.png">
+<p>
 
-[mmoe](https://dl.acm.org/doi/abs/10.1145/3219819.3220007):
+[MMoE](https://dl.acm.org/doi/abs/10.1145/3219819.3220007):
 <p align="center">
 <img align="center" src="../../doc/imgs/mmoe.png">
 <p>
