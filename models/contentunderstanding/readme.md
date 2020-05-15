@@ -28,6 +28,35 @@
 
 ## 使用教程
 ### 数据处理
+
+**（1）TagSpace**
+
+[数据地址](https://github.com/mhjabreel/CharCNN/tree/master/data/) , [备份数据地址](https://paddle-tagspace.bj.bcebos.com/data.tar)
+ 
+数据格式如下
+```
+"3","Wall St. Bears Claw Back Into the Black (Reuters)","Reuters - Short-sellers, Wall Street's dwindling\band of ultra-cynics, are seeing green again."
+```
+
+数据解压后，将文本数据转为paddle数据，先将数据放到训练数据目录和测试数据目录
+
+```
+mkdir raw_big_train_data
+mkdir raw_big_test_data
+mv train.csv raw_big_train_data
+mv test.csv raw_big_test_data
+```
+
+运行脚本text2paddle.py 生成paddle输入格式
+
+```
+python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test_big_data big_vocab_text.txt big_vocab_tag.txt
+```
+
+**（2）TextClassification**
+
+无
+
 ### 训练
 ### 预测
 
