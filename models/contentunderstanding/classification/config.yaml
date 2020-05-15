@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 10
-  workspace: "paddlerec.models.rank.text_classification"
+  workspace: "paddlerec.models.contentunderstandin.classification"
 
   reader:
     batch_size: 5
