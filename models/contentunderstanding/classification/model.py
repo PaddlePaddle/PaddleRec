@@ -1,3 +1,17 @@
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle.fluid as fluid
 import math
 
@@ -34,8 +48,7 @@ class Model(ModelBase):
         fc_1 = fluid.layers.fc(input=[conv], size=hid_dim)
         # softmax layer
         prediction = fluid.layers.fc(input=[fc_1], size=class_dim, act="softmax")
-        #if is_prediction:
-        #    return prediction
+
         cost = fluid.layers.cross_entropy(input=prediction, label=label)
         avg_cost = fluid.layers.mean(x=cost)
         acc = fluid.layers.accuracy(input=prediction, label=label) 
@@ -50,9 +63,9 @@ class Model(ModelBase):
         return self.metrics
 
     def optimizer(self):
-        learning_rate = 0.01#envs.get_global_env("hyper_parameters.base_lr", None, self._namespace)
+        learning_rate = 0.01
         sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
-        #sgd_optimizer.minimize(avg_cost)
+
         return sgd_optimizer
 
 

@@ -1,5 +1,6 @@
 # 参数服务器训练简介
 
+飞桨参数服务器原理介绍请参见： [飞桨参数服务器](https://github.com/PaddlePaddle/Fleet/blob/develop/markdown_doc/transpiler/transpiler_cpu.md)
 
 如图1所示，参数服务器是分布式训练领域普遍采用的编程架构，主要包含Server和Worker两个部分，其中Server负责参数的存储和更新，而Worker负责训练。飞桨的参数服务器功能也是基于这种经典的架构进行设计和开发的，同时在这基础上进行了SGD（Stochastic Gradient Descent）算法的创新（Geometric Stochastic Gradient Descent）。当前经过大量的实验验证，最佳的方案是每台机器上启动Server和Worker两个进程，而一个Worker进程中可以包含多个用于训练的线程。
 <p align="center">
