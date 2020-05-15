@@ -29,29 +29,30 @@
 | xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
 | DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
 
+下面是每个模型的简介（注：图片引用自链接中的论文）
 [wide&deep](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454):
 <p align="center">
-<img align="center" src="../../doc/imgs/wide&deep.jpg">
+<img align="center" src="../../doc/imgs/wide&deep.png">
 <p>
 
 [DeepFM](https://arxiv.org/pdf/1703.04247.pdf):
 <p align="center">
-<img align="center" src="../../doc/imgs/deepfm.jpg">
+<img align="center" src="../../doc/imgs/deepfm.png">
 <p>
 
 [XDeepFM](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023):
 <p align="center">
-<img align="center" src="../../doc/imgs/xdeepfm.jpg">
+<img align="center" src="../../doc/imgs/xdeepfm.png">
 <p>
 
 [DCN](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754):
 <p align="center">
-<img align="center" src="../../doc/imgs/dcn.jpg">
+<img align="center" src="../../doc/imgs/dcn.png">
 <p>
 
 [DIN](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823):
 <p align="center">
-<img align="center" src="../../doc/imgs/din.jpg">
+<img align="center" src="../../doc/imgs/din.png">
 <p>
 
 ## 使用教程
