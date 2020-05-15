@@ -87,10 +87,10 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
 
 3. 在`init(self)`函数中声明一些在数据读取中会用到的变量，必要时可以在`config.yaml`文件中配置变量，利用`env.get_global_env()`拿到。
    
-比如，我们希望从yaml文件中读取一个数据预处理变量`avg=10`，目的是将数据A的数据缩小10倍，可以这样实现：
+    比如，我们希望从yaml文件中读取一个数据预处理变量`avg=10`，目的是将数据A的数据缩小10倍，可以这样实现：
 
-- 首先更改yaml文件，在某个space下加入该变量
-  
+    首先更改yaml文件，在某个space下加入该变量
+
     ```yaml
     ...
     train:
@@ -100,8 +100,8 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
     ```
 
 
-- 再更改Reader的init函数
-  
+    再更改Reader的init函数
+
     ```python
     from paddlerec.core.utils import envs
     class TrainerReader(Reader):
