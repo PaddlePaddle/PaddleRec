@@ -108,7 +108,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 
 |   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
 | :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
-| 内容理解 | [Text-Classifcation](models/contentunderstanding/text_classification/model.py) |      ✓      |      x      |       ✓       |
+| 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |      ✓      |      x      |       ✓       |
 | 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |
 |   召回   |                      [TDM](models/treebased/tdm/model.py)                      |      ✓      |      x      |       ✓       |
 |   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |

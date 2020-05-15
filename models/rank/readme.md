@@ -1,13 +1,13 @@
 # 排序模型库
 
 ## 简介
-我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [多层神经网络](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/dnn)、[Deep Cross Network](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/dcn)、[DeepFM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/deepfm)、 [xDeepFM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/xdeepfm)、[Deep Interest Network](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/din)、[Wide&Deep](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/rank/wide_deep)。
+我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [多层神经网络](dnn)、[Deep Cross Network](dcn)、[DeepFM](deepfm)、 [xDeepFM](xdeepfm)、[Deep Interest Network](din)、[Wide&Deep](wide_deep)。
 
 模型算法库在持续添加中，欢迎关注。
 
 ## 目录
 * [整体介绍](#整体介绍)
-    * [排序模型列表](#排序模型列表)
+    * [模型列表](#模型列表)
 * [使用教程](#使用教程)
     * [数据处理](#数据处理)
     * [训练](#训练)
@@ -18,16 +18,43 @@
     * [模型性能列表](#模型性能列表)
 
 ## 整体介绍
-### 排序模型列表
+### 模型列表
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
 | DNN | 多层神经网络 | -- |
-| wide&deep | Deep + wide(LR) | [Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/abs/10.1145/2988450.2988454)(2016) |
-| DeepFM | DeepFM | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)(2017) |
-| xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/abs/10.1145/3219819.3220023)(2018) |
-| DCN | Deep Cross Network | [Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/abs/10.1145/3124749.3124754)(2017) |
-| DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/abs/10.1145/3219819.3219823)(2018) |
+| wide&deep | Deep + wide(LR) | [Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)(2016) |
+| DeepFM | DeepFM | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)(2017) |
+| DCN | Deep Cross Network | [Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754)(2017) |
+| xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
+| DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
+
+下面是每个模型的简介（注：图片引用自链接中的论文）
+
+[wide&deep](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454):
+<p align="center">
+<img align="center" src="../../doc/imgs/wide&deep.png">
+<p>
+
+[DeepFM](https://arxiv.org/pdf/1703.04247.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/deepfm.png">
+<p>
+
+[XDeepFM](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023):
+<p align="center">
+<img align="center" src="../../doc/imgs/xdeepfm.png">
+<p>
+
+[DCN](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754):
+<p align="center">
+<img align="center" src="../../doc/imgs/dcn.png">
+<p>
+
+[DIN](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823):
+<p align="center">
+<img align="center" src="../../doc/imgs/din.png">
+<p>
 
 ## 使用教程
 ### 数据处理
