@@ -91,26 +91,26 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
 
     首先更改yaml文件，在某个space下加入该变量
 
-        ```yaml
-        ...
-        train:
-            reader:
-                avg: 10
-        ...
-        ```
+    ```yaml
+    ...
+    train:
+        reader:
+            avg: 10
+    ...
+    ```
 
 
     再更改Reader的init函数
 
-        ```python
-        from paddlerec.core.utils import envs
-        class TrainerReader(Reader):
-            def init(self):
-                self.avg = envs.get_global_env("avg", None, "train.reader")
+    ```python
+    from paddlerec.core.utils import envs
+    class TrainerReader(Reader):
+        def init(self):
+            self.avg = envs.get_global_env("avg", None, "train.reader")
 
-            def generator_sample(self, line):
-                pass
-        ```
+        def generator_sample(self, line):
+            pass
+    ```
 
 4. 继承并实现基类中的`generate_sample(self, line)`函数，逐行读取数据。
    - 该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
