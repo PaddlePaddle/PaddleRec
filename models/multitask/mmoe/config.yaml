@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+evaluate:
+  reader:
+    batch_size: 1
+    class: "{workspace}/census_infer_reader.py"
+    test_data_path: "{workspace}/data/train"
+
 train:
   trainer:
     # for cluster training
@@ -22,7 +28,7 @@ train:
   device: cpu
 
   reader:
-    batch_size: 2
+    batch_size: 1
     class: "{workspace}/census_reader.py"
     train_data_path: "{workspace}/data/train"
 
