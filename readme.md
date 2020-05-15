@@ -131,7 +131,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 
 ### 背景介绍
 * [推荐系统](doc/rec_background.md)
-* [分布式-参数服务器](doc/ps_background.md)
+* [分布式训练](doc/ps_background.md)
 
 ### 新手教程
 * [环境要求](#环境要求)

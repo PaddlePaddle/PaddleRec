@@ -3,26 +3,26 @@
 用户自定义数据集及配置异步Reader，需要关注以下几个步骤：
 
 * [数据集整理](#数据集整理)
-* [在模型组网中加入输入占位符]()
-* [Reader实现及调试]()
+* [在模型组网中加入输入占位符](#在模型组网中加入输入占位符)
+* [Reader实现](#Reader的实现)
 * [在yaml文件中配置Reader](#在yaml文件中配置reader)
 
 我们以CTR-DNN模型为例，给出了从数据整理，变量定义，Reader写法，调试的完整历程。
 
-* [PaddleRec-数据及Reader快速上手]()
+* [数据及Reader示例-DNN](#数据及Reader示例-DNN)
 
-
+#
 ## 数据集整理
 
 PaddleRec支持模型自定义数据集。
 
 关于数据的tips：
 1. 数据量：
-    
-   PaddleRec面向大规模数据设计，可以轻松支持亿级的数据读取，工业级的数据读写api：`dataset`在搜索、推荐、信息流等业务得到了充分打磨。
+
+    PaddleRec面向大规模数据设计，可以轻松支持亿级的数据读取，工业级的数据读写api：`dataset`在搜索、推荐、信息流等业务得到了充分打磨。
 2. 文件类型:
-   
-   支持任意直接可读的文本数据，`dataset`同时支持`.gz`格式的文本压缩数据，无需额外代码，可直接读取。数据样本应以`\n`为标志，按行组织。
+
+    支持任意直接可读的文本数据，`dataset`同时支持`.gz`格式的文本压缩数据，无需额外代码，可直接读取。数据样本应以`\n`为标志，按行组织。
 
 3. 文件存放位置：
 
@@ -65,58 +65,121 @@ self._data_var.append(var_c)
 ```
 至此，我们完成了在组网中定义输入数据的工作。
 
-## Reader的实现及调试
+## Reader的实现
 
 ### Reader的实现范式
 
-Reader需要一个单独的python文件进行描述
-具体流程如下：
+Reader的逻辑需要一个单独的python文件进行描述。我们试写一个`test_reader.py`，实现的具体流程如下：
 1. 首先我们需要引入Reader基类
 
     ```python
     from paddlerec.core.reader import Reader
     ```
 2. 创建一个子类，继承Reader的基类，训练所需Reader命名为`TrainerReader`
-3. 在`init(self)`函数中声明一些在数据读取中会用到的变量，如示例代码中的`cont_min_`、`categorical_range_`等，必要时可以在`config.yaml`文件中配置变量，通过`env.get_global_env()`拿到。
-4. 继承并实现基类中的`generate_sample(self, line)`函数，逐行读取数据。该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
-5. 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。以行为单位的数据进行截取，转换及预处理。
-6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的，并转换为类似字典的形式。在示例代码中，我们使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出。
+    ```python
+    class TrainerReader(Reader):
+        def init(self):
+            pass
+
+        def generator_sample(self, line):
+            pass
+    ```
+
+3. 在`init(self)`函数中声明一些在数据读取中会用到的变量，必要时可以在`config.yaml`文件中配置变量，利用`env.get_global_env()`拿到。
+   
+    比如，我们希望从yaml文件中读取一个数据预处理变量`avg=10`，目的是将数据A的数据缩小10倍，可以这样实现：
+
+    - 首先更改yaml文件，在某个space下加入该变量
+    ```yaml
+    ...
+    train:
+        reader:
+            avg: 10
+    ...
+    ```
+
+    - 再更改Reader的init函数
+    ```python
+    from paddlerec.core.utils import envs
+    class TrainerReader(Reader):
+        def init(self):
+            self.avg = envs.get_global_env("avg", None, "train.reader")
+
+        def generator_sample(self, line):
+            pass
+    ```
+
+4. 继承并实现基类中的`generate_sample(self, line)`函数，逐行读取数据。
+   - 该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
+   - 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。以行为单位的数据进行截取，转换及预处理。
+   - 最后，我们需要将数据整理为特定的格式，才能够被PaddleRec的Reader正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的，并转换为类似字典的形式。
+    
+    示例： 假设数据ABC在文本数据中，每行以这样的形式存储：
+    ```shell
+    0.1,0.2,0.3...3.0,3.1,3.2 \t 99999,99998,99997 \t 1 \n
+    ```
+
+    则示例代码如下：
+    ```python
+    from paddlerec.core.utils import envs
+    class TrainerReader(Reader):
+        def init(self):
+            self.avg = envs.get_global_env("avg", None, "train.reader")
+
+        def generator_sample(self, line):
+            
+            def reader(self, line):
+                # 先分割 '\n'， 再以 '\t'为标志分割为list
+                variables = (line.strip('\n')).split('\t')
+
+                # A是第一个元素，并且每个数据之间使用','分割
+                var_a = variables[0].split(',') # list
+                var_a = [float(i) / self.avg for i in var_a] # 将str数据转换为float
+                
+
+                # B是第二个元素，同样以 ',' 分割
+                var_b = variables[1].split(',') # list
+                var_b = [int(i) for i in var_b] # 将str数据转换为int
+
+                # C是第三个元素, 只有一个元素，没有分割符
+                var_c = variables[2]
+                var_c = int(var_c) # 将str数据转换为int
+                var_c = [var_c] # 将单独的数据元素置入list中
+
+                # 将数据与数据名结合，组织为dict的形式
+                # 如下，output形式为{ A: var_a, B: var_b, C: var_c}
+                variable_name = ['A', 'B', 'C']
+                output = zip(variable_name, [var_a] + [var_b] + [var_c])
+
+                # 将数据输出，使用yield方法，将该函数变为了一个可迭代的对象
+                yield output
+
+    ```
+    
+    至此，我们完成了Reader的实现。
 
 
+### 在yaml文件中配置Reader
 
-## 在yaml文件中配置reader
-
-以`ctr-dnn`模型举例：
+在模型的yaml配置文件中，主要的修改是三个，如下
 
 ```yaml
 reader:
     batch_size: 2
-    class: "{workspace}/../criteo_reader.py"
-    train_data_path: "{workspace}/data/train"
+    class: "{workspace}/reader.py"
+    train_data_path: "{workspace}/data/train_data"
     reader_debug_mode: False
 ```
-有以上4个需要重点关注的配置选项：
 
-- batch_size: 网络进行小批量训练的一组数据的大小
-- class: 指定数据处理及读取的`reader` python文件
-- train_data_path: 训练数据所在地址
-- reader_debug_mode: 测试reader语法，及输出是否符合预期的debug模式的开关
+batch_size: 顾名思义，是小批量训练时的样本大小
+class: 运行改模型所需reader的路径
+train_data_path: 训练数据所在文件夹
+reader_debug_mode: 测试reader语法，及输出是否符合预期的debug模式的开关
 
-## 自定义数据集
+#
+## 数据及Reader示例-DNN
 
-PaddleRec支持模型自定义数据集，在model.config.yaml文件中的reader部分，通过`train_data_path`指定数据读取路径。
-
-关于数据的tips
-
-- PaddleRec 面向的是推荐与搜索领域，数据以文本格式为主
-- Dataset模式支持读取文本数据压缩后的`.gz`格式
-- Dataset模式下，训练线程与数据读取线程的关系强相关，为了多线程充分利用，`强烈建议将文件拆成多个小文件`，尤其是在分布式训练场景下，可以均衡各个节点的数据量。
-
-## 自定义Reader
-
-数据集准备就绪后，需要适当修改或重写一个新的reader以适配数据集或新组网。
-
-我们以`ctr-dnn`网络举例`reader`的正确打开方式，网络文件位于`models/rank/dnn`。
+Reader代码来源于[criteo_reader.py](../models/rank/criteo_reader.py), 组网代码来源于[model.py](../models/rank/dnn/model.py)
 
 ### Criteo数据集格式
 
@@ -184,13 +247,8 @@ for input in self.sparse_inputs:
 
 self._data_var.append(self.label_input)
 
-if self._platform != "LINUX":
-    self._data_loader = fluid.io.DataLoader.from_generator(
-        feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
 ```
-若运行于**Linux**环境下，默认使用**dataset**模式读取数据集；若运行于**windows**或**mac**下，默认使用**dataloader**模式读取数据集。以上两种方法是paddle.io中提供的不同模式，`dataset`运行速度更快，但依赖于linux的环境，因此会有该逻辑判断。
 
-> Paddle的组网中不支持数据输入为`str`类型，`强烈不建议使用明文保存和读取数据`
 
 ### Criteo Reader写法
 
@@ -248,24 +306,6 @@ class TrainReader(Reader):
 
         return reader
 ```
-
-### 如何自定义数据读取规则
-
-在上文我们看到了由`criteo_reader.py`实现具体的数据读取规则，那么，怎样为自己的数据集写规则呢？
-
-具体流程如下：
-1. 首先我们需要引入Reader基类
-
-    ```python
-    from paddlerec.core.reader import Reader
-    ```
-2. 创建一个子类，继承Reader的基类，训练所需Reader命名为`TrainerReader`
-3. 在`init(self)`函数中声明一些在数据读取中会用到的变量，如示例代码中的`cont_min_`、`categorical_range_`等，必要时可以在`config.yaml`文件中配置变量，通过`env.get_global_env()`拿到。
-4. 继承并实现基类中的`generate_sample(self, line)`函数，逐行读取数据。该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
-5. 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。以行为单位的数据进行截取，转换及预处理。
-6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的，并转换为类似字典的形式。在示例代码中，我们使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出。如果展开来看，我们输出的数据形如
-
-    `[('dense_feature',[value]),('C1',[value]),('C2',[value]),...,('C26',[value]),('label',[value])]`
 
 
 ### 调试Reader
