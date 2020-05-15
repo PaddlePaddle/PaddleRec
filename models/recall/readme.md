@@ -22,21 +22,38 @@
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
-| GNN | SR-GNN | [Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855)(2018) |
+| Word2Vec | word2vector | [Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf)(2013) |
 | GRU4REC | SR-GRU | [Session-based Recommendations with Recurrent Neural Networks](https://arxiv.org/abs/1511.06939)(2015) |
 | SSR | Sequence Semantic Retrieval Model | [Multi-Rate Deep Learning for Temporal Recommendation](http://sonyis.me/paperpdf/spr209-song_sigir16.pdf)(2016) |
-| TDM | Tree-based Deep Model | [Learning Tree-based Deep Model for Recommender Systems](https://arxiv.org/pdf/1801.02294.pdf)(2018) |
-| Word2Vec | word2vector | [Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf)(2013) |
+| GNN | SR-GNN | [Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855)(2018) |
+
+下面是每个模型的简介（注：图片引用自链接中的论文）
+
+[Word2Vec](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/word2vec.png">
+<p>
+
+[GRU4REC](https://arxiv.org/abs/1511.06939):
+<p align="center">
+<img align="center" src="../../doc/imgs/gru4rec.png">
+<p>
+
+[SSR](http://sonyis.me/paperpdf/spr209-song_sigir16.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/ssr.png">
+<p>
+
+[GNN](https://arxiv.org/abs/1811.00855):
+<p align="center">
+<img align="center" src="../../doc/imgs/gnn.png">
+<p>
 
 ## 使用教程
 ### 数据处理
-```shell
-sh data_process.sh
-```
+
 ### 训练
-```shell
-python -m paddlerec.run -m config.yaml -d cpu -e single 
-```
+
 ### 预测
 
 ## 效果对比
@@ -47,7 +64,6 @@ python -m paddlerec.run -m config.yaml -d cpu -e single
 |       DIGINETICA     |       GNN       |       --        |       0.507       |
 |       RSC15        |       GRU4REC       |       --        |       0.67          |
 |       RSC15        |       SSR       |       --        |       无          |
-|       -        |       TDM       |       --        |       --          |
 |       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --         |       0.54          |
 
 ## 分布式
@@ -57,5 +73,4 @@ python -m paddlerec.run -m config.yaml -d cpu -e single
 |       DIGINETICA        |       GNN       |       --        |       --          |       --          |       --          |
 |       RSC15        |       GRU4REC       |       --        |       --          |       --          |       --          |
 |       RSC15        |       SSR       |       --        |       --          |       --          |       --          |
-|       -        |       TDM       |       --        |       --          |       --          |       --          |
 |       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --        |       --          |       --          |       --          |
