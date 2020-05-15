@@ -134,5 +134,45 @@ class Model(ModelBase):
         self.train()
 
 
+    def infer(self):
+        vocab_size = envs.get_global_env("hyper_parameters.vocab_size", None, self._namespace)
+        emb_dim = envs.get_global_env("hyper_parameters.emb_dim", None, self._namespace)
+        hidden_size = envs.get_global_env("hyper_parameters.hidden_size", None, self._namespace)
+
+        user_data = fluid.data(
+            name="user", shape=[None, 1], dtype="int64", lod_level=1)
+        all_item_data = fluid.data(
+            name="all_item", shape=[None, vocab_size], dtype="int64")
+        pos_label = fluid.data(name="pos_label", shape=[None, 1], dtype="int64")
+        self._infer_data_var = [user_data, all_item_data, pos_label]
+        self._infer_data_loader = fluid.io.DataLoader.from_generator(
+                feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
+
+        user_emb = fluid.embedding(
+            input=user_data, size=[vocab_size, emb_dim], param_attr="emb.item")
+        all_item_emb = fluid.embedding(
+            input=all_item_data, size=[vocab_size, emb_dim], param_attr="emb.item")
+        all_item_emb_re = fluid.layers.reshape(x=all_item_emb, shape=[-1, emb_dim])
+
+        user_encoder = GrnnEncoder()
+        user_enc = user_encoder.forward(user_emb)
+        user_hid = fluid.layers.fc(input=user_enc,
+                                   size=hidden_size,
+                                   param_attr='user.w',
+                                   bias_attr="user.b")
+        user_exp = fluid.layers.expand(x=user_hid, expand_times=[1, vocab_size])
+        user_re = fluid.layers.reshape(x=user_exp, shape=[-1, hidden_size])
+
+        all_item_hid = fluid.layers.fc(input=all_item_emb_re,
+                                       size=hidden_size,
+                                       param_attr='item.w',
+                                       bias_attr="item.b")
+        cos_item = fluid.layers.cos_sim(X=all_item_hid, Y=user_re)
+        all_pre_ = fluid.layers.reshape(x=cos_item, shape=[-1, vocab_size])
+        acc = fluid.layers.accuracy(input=all_pre_, label=pos_label, k=20)
+
+        self._infer_results['recall20'] = acc
+
+
     def infer_net(self):
-        pass
+        self.infer()
