@@ -27,12 +27,12 @@
 
 TagSpace模型
 <p align="center">
-<img align="center" src="../../doc/imgs/tagspace.JPG">
+<img align="center" src="../../doc/imgs/tagspace.png">
 <p>
 
 文本分类CNN模型
 <p align="center">
-<img align="center" src="../../doc/imgs/cnn-ckim2014.JPG">
+<img align="center" src="../../doc/imgs/cnn-ckim2014.png">
 <p>
 
 ## 使用教程
