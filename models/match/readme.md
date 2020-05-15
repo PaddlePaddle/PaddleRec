@@ -25,6 +25,18 @@
 | DSSM | Deep Structured Semantic Models | [Learning Deep Structured Semantic Models for Web Search using Clickthrough Data](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf)(2013) |
 | MultiView-Simnet | Multi-view Simnet for Personalized recommendation | [A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf)(2015) |
 
+下面是每个模型的简介（注：图片引用自链接中的论文）
+
+[DSSM](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/dssm.png">
+<p>
+
+[MultiView-Simnet](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/multiview-simnet.png">
+<p>
+
 ## 使用教程
 ### 数据处理
 ### 训练
