@@ -69,14 +69,23 @@ python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test
 无
 
 ### 训练
+
+```
+python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e single
+```
+
 ### 预测
+
+```
+python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e single
+```
 
 ## 效果对比
 ### 模型效果 (测试)
 
 |       数据集        |       模型       |       loss        |       auc          |       acc         |       mae          |
 | :------------------: | :--------------------: | :---------: |:---------: | :---------: |:---------: |
-|       --        |       TagSpace       |       --        |       --          |       --          |       --          |
+|       ag news dataset        |       TagSpace       |       --        |       --          |       --          |       --          |
 |       --        |       Classification       |       --        |       --          |       --          |       --          |
 
 
