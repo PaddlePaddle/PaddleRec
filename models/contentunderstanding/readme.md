@@ -1,7 +1,7 @@
 # 内容理解模型库
 
 ## 简介
-我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](http://gitlab.baidu.com/xujiaqi01/paddlerec/tree/develop/models/contentunderstanding/tagspace)、[文本分类](http://gitlab.baidu.com/xujiaqi01/paddlerec/tree/develop/models/contentunderstanding/classification)。
+我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](tagspace)、[文本分类](classification)等。
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -18,7 +18,7 @@
     * [模型性能列表](#模型性能列表)
 
 ## 整体介绍
-### 排序模型列表
+### 内容理解模型列表
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
