@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+evaluate:
+  reader:
+    batch_size: 1
+    class: "{workspace}/esmm_infer_reader.py"
+    test_data_path: "{workspace}/data/train"
+
 train:
   trainer:
     # for cluster training
