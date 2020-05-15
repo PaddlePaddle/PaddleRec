@@ -1,7 +1,7 @@
 # 内容理解模型库
 
 ## 简介
-我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](http://gitlab.baidu.com/xujiaqi01/paddlerec/tree/develop/models/contentunderstanding/tagspace)、[文本分类](http://gitlab.baidu.com/xujiaqi01/paddlerec/tree/develop/models/contentunderstanding/text_classification)。
+我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](http://gitlab.baidu.com/xujiaqi01/paddlerec/tree/develop/models/contentunderstanding/tagspace)、[文本分类](http://gitlab.baidu.com/xujiaqi01/paddlerec/tree/develop/models/contentunderstanding/classification)。
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -22,9 +22,18 @@
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
-| TagSpace | 标签推荐 | [TagSpace: Semantic Embeddings from Hashtags](https://research.fb.com/publications/tagspace-semantic-embeddings-from-hashtags/) |
-| TextClassification | 文本分类 | -- |
+| TagSpace | 标签推荐 | [TagSpace: Semantic Embeddings from Hashtags (2014)](https://research.fb.com/publications/tagspace-semantic-embeddings-from-hashtags/) |
+| Classification | 文本分类 | [Convolutional neural networks for sentence classication (2014)](https://www.aclweb.org/anthology/D14-1181.pdf) |
 
+TagSpace模型
+<p align="center">
+<img align="center" src="../../doc/imgs/tagspace.JPG">
+<p>
+
+文本分类CNN模型
+<p align="center">
+<img align="center" src="../../doc/imgs/cnn-ckim2014.JPG">
+<p>
 
 ## 使用教程
 ### 数据处理
@@ -53,7 +62,7 @@ mv test.csv raw_big_test_data
 python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test_big_data big_vocab_text.txt big_vocab_tag.txt
 ```
 
-**（2）TextClassification**
+**（2）Classification**
 
 无
 
@@ -66,7 +75,7 @@ python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test
 |       数据集        |       模型       |       loss        |       auc          |       acc         |       mae          |
 | :------------------: | :--------------------: | :---------: |:---------: | :---------: |:---------: |
 |       --        |       TagSpace       |       --        |       --          |       --          |       --          |
-|       --        |       TextClassification       |       --        |       --          |       --          |       --          |
+|       --        |       Classification       |       --        |       --          |       --          |       --          |
 
 
 ## 分布式
@@ -74,7 +83,7 @@ python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test
 |       数据集        |       模型       |       单机        |       同步 (4节点)          |       同步 (8节点)          |  同步 (16节点)          |  同步 (32节点)          |
 | :------------------: | :--------------------: | :---------: |:---------: |:---------: |:---------: |:---------: |
 |       --        |       TagSpace       |       --        |       --          |       --          |  --          |  --          |
-|       --        |       TextClassification       |       --        |       --          |       --          |   --          |   --          |
+|       --        |       Classification       |       --        |       --          |       --          |   --          |   --          |
 
 
 ----
@@ -82,4 +91,4 @@ python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test
 |       数据集        |       模型       |       单机        |       异步 (4节点)          |       异步 (8节点)          |  异步 (16节点)          |  异步 (32节点)          |
 | :------------------: | :--------------------: | :---------: |:---------: |:---------: |:---------: |:---------: |
 |       --        |       TagSpace       |       --        |       --          |       --          |  --          |  --          |
-|       --        |       TextClassification       |       --        |       --          |       --          |   --          |   --          |
+|       --        |       Classification       |       --        |       --          |       --          |   --          |   --          |
