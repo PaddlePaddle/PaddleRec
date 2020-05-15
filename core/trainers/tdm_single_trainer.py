@@ -1,4 +1,3 @@
-# -*- coding=utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,8 +67,7 @@ class TDMSingleTrainer(SingleTrainer):
                 persistables_model_path))
 
         if load_tree:
-            # 将明文树结构及数据，set到组网中的Variale中
-            # 不使用NumpyInitialize方法是考虑到树结构相关数据size过大，有性能风险
+            # covert tree to tensor, set it into Fluid's variable.
             for param_name in special_param:
                 param_t = fluid.global_scope().find_var(param_name).get_tensor()
                 param_array = self.tdm_prepare(param_name)

@@ -2,7 +2,7 @@
 
 ###################################################
 # Usage: submit.sh
-# Description: run mpi submit clinet implement
+# Description: run mpi submit client implement
 ###################################################
 
 # ---------------------------------------------------------------------------- #

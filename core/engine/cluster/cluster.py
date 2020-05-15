@@ -1,4 +1,4 @@
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class ClusterEngine(Engine):
         if backend == "PaddleCloud":
             self.submit_script = os.path.join(abs_dir, "cloud/cluster.sh")
         else:
-            raise ValueError("{} can not supported now".format(backend))
+            raise ValueError("{} can not be supported now".format(backend))
 
     def start_worker_procs(self):
         trainer = TrainerFactory.create(self.trainer)
