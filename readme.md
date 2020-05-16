@@ -23,6 +23,12 @@
 <p>
 
 
+<h2 align="center">推荐系统-流程概览</h2>
+
+<p align="center">
+<img align="center" src="doc/imgs/rec-overview.png">
+<p>
+
 <h2 align="center">便捷安装</h2>
 
 ### 环境要求
