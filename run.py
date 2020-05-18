@@ -129,17 +129,10 @@ def single_engine(args):
 def cluster_engine(args):
     def update_workspace(cluster_envs):
         workspace = cluster_envs.get("engine_workspace", None)
+
         if not workspace:
             return
-
-        # is fleet inner models
-        if workspace.startswith("paddlerec."):
-            fleet_package = envs.get_runtime_environ("PACKAGE_BASE")
-            workspace_dir = workspace.split("paddlerec.")[1].replace(".", "/")
-            path = os.path.join(fleet_package, workspace_dir)
-        else:
-            path = workspace
-
+        path = envs.windows_path_adapter(workspace)
         for name, value in cluster_envs.items():
             if isinstance(value, str):
                 value = value.replace("{workspace}", path)
@@ -246,9 +239,8 @@ def local_mpi_engine(args):
 
 def get_abs_model(model):
     if model.startswith("paddlerec."):
-        fleet_base = envs.get_runtime_environ("PACKAGE_BASE")
-        workspace_dir = model.split("paddlerec.")[1].replace(".", "/")
-        path = os.path.join(fleet_base, workspace_dir, "config.yaml")
+        dir = envs.windows_path_adapter(model)
+        path = os.path.join(dir, "config.yaml")
     else:
         if not os.path.isfile(model):
             raise IOError("model config: {} invalid".format(model))

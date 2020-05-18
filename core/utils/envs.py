@@ -89,18 +89,26 @@ def get_global_envs():
     return global_envs
 
 
+def windows_path_adapter(path):
+    def adapt(l_p):
+        if get_platform() == "WINDOWS":
+            adapted_p = l_p.split("paddlerec.")[1].replace(".", "\\")
+        else:
+            adapted_p = l_p.split("paddlerec.")[1].replace(".", "/")
+        return adapted_p
+
+    if path.startswith("paddlerec."):
+        package = get_runtime_environ("PACKAGE_BASE")
+        return os.path.join(package, adapt(path))
+    else:
+        return adapt(path)
+
+
 def update_workspace():
     workspace = global_envs.get("train.workspace", None)
     if not workspace:
         return
-
-    # is fleet inner models
-    if workspace.startswith("paddlerec."):
-        fleet_package = get_runtime_environ("PACKAGE_BASE")
-        workspace_dir = workspace.split("paddlerec.")[1].replace(".", "/")
-        path = os.path.join(fleet_package, workspace_dir)
-    else:
-        path = workspace
+    path = windows_path_adapter(workspace)
 
     for name, value in global_envs.items():
         if isinstance(value, str):
