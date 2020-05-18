@@ -43,7 +43,9 @@
 ## 使用教程
 ### 训练&预测
 ```shell
-python -m paddlerec.run -m paddlerec.models.multitask.mmoe/esmm/share-bottom 
+python -m paddlerec.run -m paddlerec.models.multitask.mmoe # mmoe
+python -m paddlerec.run -m paddlerec.models.multitask.share-bottom # share-bottom
+python -m paddlerec.run -m paddlerec.models.multitask.esmm # esmm
 ```
 
 ## 效果对比
