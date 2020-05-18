@@ -108,11 +108,12 @@ def update_workspace():
     workspace = global_envs.get("train.workspace", None)
     if not workspace:
         return
-    path = windows_path_adapter(workspace)
+    workspace = windows_path_adapter(workspace)
 
     for name, value in global_envs.items():
         if isinstance(value, str):
-            value = value.replace("{workspace}", path)
+            value = value.replace("{workspace}", workspace)
+            value = windows_path_adapter(value)
             global_envs[name] = value
 
 
