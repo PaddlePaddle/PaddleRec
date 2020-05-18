@@ -89,7 +89,7 @@ def get_global_envs():
     return global_envs
 
 
-def windows_path_adapter(path):
+def path_adapter(path):
     def adapt(l_p):
         if get_platform() == "WINDOWS":
             adapted_p = l_p.split("paddlerec.")[1].replace(".", "\\")
@@ -104,16 +104,23 @@ def windows_path_adapter(path):
         return adapt(path)
 
 
+def windows_path_converter(path):
+    if get_platform() == "WINDOWS":
+        return path.replace("/", "\\")
+    else:
+        return path.replace("\\", "/")
+
+
 def update_workspace():
     workspace = global_envs.get("train.workspace", None)
     if not workspace:
         return
-    workspace = windows_path_adapter(workspace)
+    workspace = path_adapter(workspace)
 
     for name, value in global_envs.items():
         if isinstance(value, str):
             value = value.replace("{workspace}", workspace)
-            value = windows_path_adapter(value)
+            value = windows_path_converter(value)
             global_envs[name] = value
 
 
