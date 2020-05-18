@@ -44,5 +44,9 @@ class TrainReader(Reader):
             if data is None:
                 yield None
                 return
+            data = [int(i) for i in data]
+            label = [int(i) for i in label]
+            seq_len = [int(i) for i in seq_len]
+            print >>sys.stderr, str([('data', data), ('label', label), ('seq_len', seq_len)])
             yield [('data', data), ('label', label), ('seq_len', seq_len)]
         return data_iter
