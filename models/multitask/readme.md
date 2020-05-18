@@ -9,8 +9,7 @@
 * [整体介绍](#整体介绍)
     * [多任务模型列表](#多任务模型列表)
 * [使用教程](#使用教程)
-    * [训练](#训练)
-    * [预测](#预测)
+    * [训练&预测](#训练&预测)
 * [效果对比](#效果对比)
     * [模型效果列表](#模型效果列表)
 
@@ -42,11 +41,10 @@
 <p>
 
 ## 使用教程
-### 训练
+### 训练&预测
 ```shell
-python -m paddlerec.run -m config.yaml -d cpu -e single 
+python -m paddlerec.run -m paddlerec.models.multitask.mmoe/esmm/share-bottom 
 ```
-### 预测
 
 ## 效果对比
 ### 模型效果列表
