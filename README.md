@@ -78,57 +78,82 @@
 
 ```bash
 # 使用CPU进行单机训练
-python -m paddlerec.run -m paddlerec.models.rank.dnn -d cpu -e single 
-
-# 使用GPU进行单机训练
-python -m paddlerec.run -m paddlerec.models.rank.dnn -d gpu -e single
-```
-
-#### 本地模拟分布式训练
-
-```bash
-# 使用CPU资源进行本地模拟分布式训练
-python -m paddlerec.run -m paddlerec.models.rank.dnn -e local_cluster
-```
-
-#### 集群分布式训练
-
-```bash
-# 配置好 mpi/k8s/paddlecloud集群环境后
-python -m paddlerec.run -m paddlerec.models.rank.dnn -e cluster
+python -m paddlerec.run -m paddlerec.models.rank.dnn  
 ```
 
 ### 启动内置模型的自定配置
 
 若您复用内置模型，对**yaml**配置文件进行了修改，如更改超参，重新配置数据后，可以直接使用paddlerec运行该yaml文件。
 
-我们以dnn模型为例，在paddlerec代码目录下，修改了dnn模型`config.yaml`的配置后，运行`dnn`模型：
+我们以dnn模型为例，在paddlerec代码目录下
 ```bash
-python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
+cd paddlerec
+```
+
+修改了dnn模型`models/rank/dnn/config.yaml`的配置后，运行`dnn`模型：
+```bash
+# 使用自定配置进行训练
+python -m paddlerec.run -m ./models/rank/dnn/config.yaml 
+```
+
+### 分布式训练
+
+分布式训练需要配置`config.yaml`，加入或修改`engine`选项为`cluster`或`local_cluster`，以进行分布式训练，或本地模拟分布式训练。
+
+#### 本地模拟分布式训练
+
+我们以dnn模型为例，在paddlerec代码目录下，修改dnn模型的`config.yaml`文件:
+
+```yaml
+train:
+  #engine: single
+  engine: local_cluster
+```
+然后启动paddlerec训练：
+
+```bash
+# 进行本地模拟分布式训练
+python -m paddlerec.run -m ./models/rank/dnn/config.yaml  
+```
+
+#### 集群分布式训练
+
+我们以dnn模型为例，在paddlerec代码目录下，首先修改dnn模型`config.yaml`文件:
+
+```yaml
+train:
+  #engine: single
+  engine: cluster
+```
+再添加分布式启动配置文件`backend.yaml`，具体配置规则在[分布式训练](doc/distributed_train.md)教程中介绍。最后启动paddlerec训练：
+
+```bash
+# 配置好 mpi/k8s/paddlecloud集群环境后
+python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 ```
 
 
 <h2 align="center">支持模型列表</h2>
 
 
-|   方向   |                                      模型                                      | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
-| :------: | :----------------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
+|   方向   |                                   模型                                    | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
+| :------: | :-----------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
 | 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |      ✓      |      x      |       ✓       |
-| 内容理解 |           [TagSpace](models/contentunderstanding/tagspace/model.py)            |      ✓      |      x      |       ✓       |
-|   召回   |                      [TDM](models/treebased/tdm/model.py)                      |      ✓      |      x      |       ✓       |
-|   召回   |                  [Word2Vec](models/recall/word2vec/model.py)                   |      ✓      |      x      |       ✓       |
-|   召回   |                       [SSR](models/recall/ssr/model.py)                        |      ✓      |      ✓      |       ✓       |
-|   召回   |                   [Gru4Rec](models/recall/gru4rec/model.py)                    |      ✓      |      ✓      |       ✓       |
-|   排序   |                        [Dnn](models/rank/dnn/model.py)                         |      ✓      |      x      |       ✓       |
-|   排序   |                     [DeepFM](models/rank/deepfm/model.py)                      |      ✓      |      x      |       ✓       |
-|   排序   |                    [xDeepFM](models/rank/xdeepfm/model.py)                     |      ✓      |      x      |       ✓       |
-|   排序   |                        [DIN](models/rank/din/model.py)                         |      ✓      |      x      |       ✓       |
-|   排序   |                  [Wide&Deep](models/rank/wide_deep/model.py)                   |      ✓      |      x      |       ✓       |
-|  多任务  |                     [ESMM](models/multitask/esmm/model.py)                     |      ✓      |      ✓      |       ✓       |
-|  多任务  |                     [MMOE](models/multitask/mmoe/model.py)                     |      ✓      |      ✓      |       ✓       |
-|  多任务  |             [ShareBottom](models/multitask/share-bottom/model.py)              |      ✓      |      ✓      |       ✓       |
-|   匹配   |                       [DSSM](models/match/dssm/model.py)                       |      ✓      |      x      |       ✓       |
-|   匹配   |           [MultiView-Simnet](models/match/multiview-simnet/model.py)           |      ✓      |      x      |       ✓       |
+| 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |      ✓      |      x      |       ✓       |
+|   召回   |                   [TDM](models/treebased/tdm/model.py)                    |      ✓      |      x      |       ✓       |
+|   召回   |                [Word2Vec](models/recall/word2vec/model.py)                |      ✓      |      x      |       ✓       |
+|   召回   |                     [SSR](models/recall/ssr/model.py)                     |      ✓      |      ✓      |       ✓       |
+|   召回   |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |      ✓      |      ✓      |       ✓       |
+|   排序   |                      [Dnn](models/rank/dnn/model.py)                      |      ✓      |      x      |       ✓       |
+|   排序   |                   [DeepFM](models/rank/deepfm/model.py)                   |      ✓      |      x      |       ✓       |
+|   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |      ✓      |      x      |       ✓       |
+|   排序   |                      [DIN](models/rank/din/model.py)                      |      ✓      |      x      |       ✓       |
+|   排序   |                [Wide&Deep](models/rank/wide_deep/model.py)                |      ✓      |      x      |       ✓       |
+|  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
+|  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
+|  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
+|   匹配   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
+|   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
 
 
 
@@ -168,4 +193,3 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -e single
 ### 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
   
->>>>>>> d7171ec5daa477584de89ea7e57a382045e12311
