@@ -62,8 +62,8 @@
 |       数据集        |       模型       |       loss        |       Recall@20       | 
 | :------------------: | :--------------------: | :---------: |:---------: |
 |       DIGINETICA     |       GNN       |       --        |       0.507       |
-|       RSC15        |       GRU4REC       |       --        |       0.67          |
-|       RSC15        |       SSR       |       --        |       无          |
+|       RSC15        |       GRU4REC       |       --        |       0.670          |
+|       RSC15        |       SSR       |       --        |       0.590          |
 |       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --         |       0.54          |
 
 ## 分布式
