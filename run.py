@@ -132,11 +132,11 @@ def cluster_engine(args):
 
         if not workspace:
             return
-        path = envs.windows_path_adapter(workspace)
+        path = envs.path_adapter(workspace)
         for name, value in cluster_envs.items():
             if isinstance(value, str):
                 value = value.replace("{workspace}", path)
-                value = envs.windows_path_adapter(value)
+                value = envs.windows_path_converter(value)
                 cluster_envs[name] = value
 
     def master():
@@ -240,7 +240,7 @@ def local_mpi_engine(args):
 
 def get_abs_model(model):
     if model.startswith("paddlerec."):
-        dir = envs.windows_path_adapter(model)
+        dir = envs.path_adapter(model)
         path = os.path.join(dir, "config.yaml")
     else:
         if not os.path.isfile(model):
