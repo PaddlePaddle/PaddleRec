@@ -9,13 +9,9 @@
 * [整体介绍](#整体介绍)
     * [召回模型列表](#召回模型列表)
 * [使用教程](#使用教程)
-    * [数据处理](#数据处理)
-    * [训练](#训练)
-    * [预测](#预测)
+    * [训练&预测](#训练&预测)
 * [效果对比](#效果对比)
     * [模型效果列表](#模型效果列表)
-* [分布式](#分布式)
-    * [模型性能列表](#模型性能列表)
 
 ## 整体介绍
 ### 召回模型列表
@@ -50,12 +46,13 @@
 <p>
 
 ## 使用教程
-### 数据处理
-
-### 训练
-
-### 预测
-
+### 训练&预测
+```shell
+python -m paddlerec.run -m paddlerec.models.recall.word2vec # word2vec
+python -m paddlerec.run -m paddlerec.models.recall.ssr # ssr
+python -m paddlerec.run -m paddlerec.models.recall.gru4rec # gru4rec
+python -m paddlerec.run -m paddlerec.models.recall.gnn # gnn
+```
 ## 效果对比
 ### 模型效果列表
 
@@ -66,11 +63,3 @@
 |       RSC15        |       SSR       |       --        |       0.590          |
 |       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --         |       0.54          |
 
-## 分布式
-### 模型性能列表
-|       数据集        |       模型       |       单机        |       多机（同步）          |       多机（异步）          |       GPU          |
-| :------------------: | :--------------------: | :---------: |:---------: |:---------: |:---------: |
-|       DIGINETICA        |       GNN       |       --        |       --          |       --          |       --          |
-|       RSC15        |       GRU4REC       |       --        |       --          |       --          |       --          |
-|       RSC15        |       SSR       |       --        |       --          |       --          |       --          |
-|       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --        |       --          |       --          |       --          |
