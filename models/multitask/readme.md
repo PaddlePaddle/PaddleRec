@@ -9,8 +9,7 @@
 * [整体介绍](#整体介绍)
     * [多任务模型列表](#多任务模型列表)
 * [使用教程](#使用教程)
-    * [训练](#训练)
-    * [预测](#预测)
+    * [训练&预测](#训练&预测)
 * [效果对比](#效果对比)
     * [模型效果列表](#模型效果列表)
 
@@ -42,16 +41,17 @@
 <p>
 
 ## 使用教程
-### 训练
+### 训练&预测
 ```shell
-python -m paddlerec.run -m config.yaml -d cpu -e single 
+python -m paddlerec.run -m paddlerec.models.multitask.mmoe # mmoe
+python -m paddlerec.run -m paddlerec.models.multitask.share-bottom # share-bottom
+python -m paddlerec.run -m paddlerec.models.multitask.esmm # esmm
 ```
-### 预测
 
 ## 效果对比
 ### 模型效果列表
 
-|       数据集        |       模型       |       loss        |       评价指标       | 
+|       数据集        |       模型       |       loss        |       auc       | 
 | :------------------: | :--------------------: | :---------: |:---------: |
 |       Census-income Data     |       Share-Bottom       |       --        |     0.93120/0.99256         |
 |       Census-income Data        |       MMoE       |       --        |       0.94465/0.99324         |
