@@ -58,8 +58,15 @@
 
 ## 使用教程
 ### 数据处理
+参考每个模型目录数据下载&预处理脚本
 ### 训练
+```
+python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
+```
 ### 预测
+```
+python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
+```
 
 ## 效果对比
 ### 模型效果 (测试)
