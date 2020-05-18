@@ -51,7 +51,7 @@ python -m paddlerec.run -m paddlerec.models.multitask.esmm # esmm
 ## 效果对比
 ### 模型效果列表
 
-|       数据集        |       模型       |       loss        |       评价指标       | 
+|       数据集        |       模型       |       loss        |       auc       | 
 | :------------------: | :--------------------: | :---------: |:---------: |
 |       Census-income Data     |       Share-Bottom       |       --        |     0.93120/0.99256         |
 |       Census-income Data        |       MMoE       |       --        |       0.94465/0.99324         |
