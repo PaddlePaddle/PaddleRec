@@ -76,7 +76,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
 |       Criteo        |       DNN       |       --        |       0.79395          |       --          |       --          |
 |       Criteo        |       DeepFM       |       0.44797        |       0.80460          |       --          |       --          |
 |       Criteo        |       DCN       |       0.44704        |       0.80654          |       --          |       --          |
-|       Criteo        |       xDeepFM       |       --        |       --          |       0.48657          |       --          |
+|       Criteo        |       xDeepFM       |       0.48657        |       --          |       --          |       --          |
 |       Census-income Data        |       Wide&Deep       |       0.76195         |       0.90577          |       --          |       --          |
 |       Amazon Product        |       DIN       |       0.47005        |       0.86379         |       --          |       --          |
 
