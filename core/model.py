@@ -57,12 +57,6 @@ class Model(object):
         """
         return self._metrics
 
-    def custom_preprocess(self):
-        """
-        do something after exe.run(stratup_program) and before run()
-        """
-        pass
-
     def get_fetch_period(self):
         return self._fetch_interval
 
