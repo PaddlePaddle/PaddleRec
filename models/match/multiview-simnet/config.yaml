@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 evaluate:
-  workspace: "paddlerec.models.recall.multiview-simnet"
+  workspace: "paddlerec.models.match.multiview-simnet"
   reader:
     batch_size: 2
     class: "{workspace}/evaluate_reader.py"
@@ -24,7 +24,7 @@ train:
     strategy: "async"
 
   epochs: 2
-  workspace: "paddlerec.models.recall.multiview-simnet"
+  workspace: "paddlerec.models.match.multiview-simnet"
 
   reader:
     batch_size: 2
