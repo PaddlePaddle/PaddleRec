@@ -26,9 +26,12 @@ class Model(ModelBase):
         data = fluid.data(name="input", shape=[None, self.max_len], dtype='int64')
         label = fluid.data(name="label", shape=[None, 1], dtype='int64')
         seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
+
+        self._data_var = [data, label, seq_len]
+
         # embedding layer
         emb = fluid.embedding(input=data, size=[self.dict_dim, self.emb_dim])
-        emb = fluid.layers.sequence_unpad(emb, length=self.seq_len)
+        emb = fluid.layers.sequence_unpad(emb, length=seq_len)
         # convolution layer
         conv = fluid.nets.sequence_conv_pool(
             input=emb,
@@ -38,7 +41,7 @@ class Model(ModelBase):
             pool_type="max")
 
         # full connect layer
-        fc_1 = fluid.layers.fc(input=[conv], size=hid_dim)
+        fc_1 = fluid.layers.fc(input=[conv], size=self.hid_dim)
         # softmax layer
         prediction = fluid.layers.fc(input=[fc_1], size=self.class_dim, act="softmax")
         cost = fluid.layers.cross_entropy(input=prediction, label=label)
@@ -46,18 +49,18 @@ class Model(ModelBase):
         acc = fluid.layers.accuracy(input=prediction, label=label) 
 
         self.cost = avg_cost
-        self.metrics["acc"] = cos_pos
+        self._metrics["acc"] = acc
 
     def get_cost_op(self):
         return self.cost
 
     def get_metrics(self):
-        return self.metrics
+        return self._metrics
 
     def optimizer(self):
         learning_rate = 0.01
         sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
         return sgd_optimizer
 
-    def infer_net(self, parameter_list):
+    def infer_net(self):
         self.train_net()

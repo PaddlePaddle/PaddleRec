@@ -18,7 +18,7 @@ train:
     strategy: "async"
 
   epochs: 10
-  workspace: "paddlerec.models.rank.tagspace"
+  workspace: "paddlerec.models.contentunderstanding.tagspace"
 
   reader:
     batch_size: 5
