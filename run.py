@@ -136,6 +136,7 @@ def cluster_engine(args):
         for name, value in cluster_envs.items():
             if isinstance(value, str):
                 value = value.replace("{workspace}", path)
+                value = envs.windows_path_adapter(value)
                 cluster_envs[name] = value
 
     def master():
