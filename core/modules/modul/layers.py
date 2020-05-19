@@ -17,7 +17,7 @@ import paddle.fluid as fluid
 from paddlerec.core.layer import Layer
 
 
-class EmbeddingInputLayer(Layer):
+class EmbeddingFuseLayer(Layer):
     """R
     """
 
@@ -32,7 +32,7 @@ class EmbeddingInputLayer(Layer):
         self._emb_dim = self._mf_dim + 3  # append show ctr lr
         self._emb_layers = []
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         show_clk = fluid.layers.concat(
@@ -64,7 +64,7 @@ class LabelInputLayer(Layer):
         self._data_type = config.get('data_type', "int64")
         self._label_idx = config['label_idx']
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         label = fluid.layers.data(name=self._name, shape=[-1, self._dim], \
@@ -86,7 +86,7 @@ class TagInputLayer(Layer):
         self._dim = config.get('dim', 1)
         self._data_type = config['data_type']
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         output = fluid.layers.data(name=self._name, shape=[-1, self._dim], \
@@ -108,7 +108,7 @@ class ParamLayer(Layer):
         self._data_type = config.get('data_type', 'float32')
         self._config = config
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         return self._config, {'inference_param': {'name': 'param', 'params': [], 'table_id': self._table_id}}
@@ -126,7 +126,7 @@ class SummaryLayer(Layer):
         self._data_type = config.get('data_type', 'float32')
         self._config = config
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         return self._config, {'inference_param': {'name': 'summary', 'params': [], 'table_id': self._table_id}}
@@ -144,7 +144,7 @@ class NormalizetionLayer(Layer):
         self._summary = config['summary']
         self._table_id = config.get('table_id', -1)
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         input_layer = param['layer'][self._input[0]]
@@ -159,7 +159,7 @@ class NormalizetionLayer(Layer):
                                         'params': inference_param, 'table_id': summary_layer.get('table_id', -1)}}
 
 
-class NeuralLayer(Layer):
+class FCLayer(Layer):
     """R
     """
 
@@ -172,7 +172,7 @@ class NeuralLayer(Layer):
         self._bias = config.get('bias', True)
         self._act_func = config.get('act_func', None)
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         param_layer = param['layer'][self._param]
@@ -200,7 +200,7 @@ class NeuralLayer(Layer):
                                         'table_id': param_layer.get('table_id', -1)}}
 
 
-class SigmoidLossLayer(Layer):
+class LogLossLayer(Layer):
     """R
     """
 
@@ -231,7 +231,7 @@ class SigmoidLossLayer(Layer):
             }
         }
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         input_layer = param['layer'][self._input[0]]
