@@ -20,6 +20,7 @@ train:
   trainer:
     # for cluster training
     strategy: "async"
+    threads: 2
 
   reader:
     batch_size: 2
