@@ -33,24 +33,14 @@ class Model(ModelBase):
         # ------------------------- network input --------------------------
 
         num_field = envs.get_global_env("hyper_parameters.num_field", None, self._namespace)
-        raw_feat_idx = fluid.data(name='feat_idx', shape=[None, num_field],
-                                  dtype='int64')  # None * num_field(defalut:39)
-        raw_feat_value = fluid.data(name='feat_value', shape=[None, num_field], dtype='float32')  # None * num_field
-        self.label = fluid.data(name='label', shape=[None, 1], dtype='float32')  # None * 1
-        feat_idx = fluid.layers.reshape(raw_feat_idx, [-1, 1])  # (None * num_field) * 1
+        
+        raw_feat_idx = self._sparse_data_var[1]
+        raw_feat_value = self._dense_data_var[0]
+        self.label = self._sparse_data_var[0]
+        
+        feat_idx = raw_feat_idx
         feat_value = fluid.layers.reshape(raw_feat_value, [-1, num_field, 1])  # None * num_field * 1
-
-        # ------------------------- set _data_var --------------------------
-
-        self._data_var.append(raw_feat_idx)
-        self._data_var.append(raw_feat_value)
-        self._data_var.append(self.label)
-        if self._platform != "LINUX":
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
-
-        # ------------------------- first order term --------------------------
-
+       
         reg = envs.get_global_env("hyper_parameters.reg", 1e-4, self._namespace)
         first_weights_re = fluid.embedding(
             input=feat_idx,
@@ -134,11 +124,12 @@ class Model(ModelBase):
         self.predict = fluid.layers.sigmoid(y_first_order + y_second_order + y_dnn)
 
     def train_net(self):
+        self.model._init_slots()
         self.deepfm_net()
 
         # ------------------------- Cost(logloss) --------------------------
 
-        cost = fluid.layers.log_loss(input=self.predict, label=self.label)
+        cost = fluid.layers.log_loss(input=self.predict, label=fluid.layers.cast(self.label, "float32"))
         avg_cost = fluid.layers.reduce_sum(cost)
 
         self._cost = avg_cost
@@ -159,4 +150,5 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self, parameter_list):
+        self.model._init_slots()
         self.deepfm_net()

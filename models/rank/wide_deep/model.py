@@ -57,12 +57,10 @@ class Model(ModelBase):
         return l3
 
     def train_net(self):
-        wide_input = fluid.data(name='wide_input', shape=[None, 8], dtype='float32')
-        deep_input = fluid.data(name='deep_input', shape=[None, 58], dtype='float32')
-        label = fluid.data(name='label', shape=[None, 1], dtype='float32')
-        self._data_var.append(wide_input)
-        self._data_var.append(deep_input)
-        self._data_var.append(label)
+        self.model._init_slots()
+        wide_input = self._dense_data_var[0]
+        deep_input = self._dense_data_var[1]
+        label = self._sparse_data_var[0]
 
         hidden1_units = envs.get_global_env("hyper_parameters.hidden1_units", 75, self._namespace)
         hidden2_units = envs.get_global_env("hyper_parameters.hidden2_units", 50, self._namespace)
@@ -95,7 +93,7 @@ class Model(ModelBase):
         self._metrics["BATCH_AUC"] = batch_auc
         self._metrics["ACC"] = acc
 
-        cost = fluid.layers.sigmoid_cross_entropy_with_logits(x=prediction, label=label)
+        cost = fluid.layers.sigmoid_cross_entropy_with_logits(x=prediction, label=fluid.layers.cast(label, dtype='float32')) 
         avg_cost = fluid.layers.mean(cost)
         self._cost = avg_cost
 
@@ -105,4 +103,5 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self, parameter_list):
+        self.model._init_slots()
         self.deepfm_net()

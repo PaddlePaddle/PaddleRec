@@ -23,6 +23,7 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import f
 from paddlerec.core.trainer import Trainer
 from paddlerec.core.utils import envs
 from paddlerec.core.utils import dataloader_instance
+from paddlerec.core.reader import SlotReader
 
 
 class TranspileTrainer(Trainer):
@@ -50,14 +51,22 @@ class TranspileTrainer(Trainer):
             namespace = "evaluate.reader"
             class_name = "EvaluateReader"
 
-        batch_size = envs.get_global_env("batch_size", None, namespace)
-        reader_class = envs.get_global_env("class", None, namespace)
-        print("batch_size: {}".format(batch_size))
-        reader = dataloader_instance.dataloader(
-            reader_class, state, self._config_yaml)
+        sparse_slots = envs.get_global_env("sparse_slots", None, namespace)
+        dense_slots = envs.get_global_env("dense_slots", None, namespace)
 
-        reader_class = envs.lazy_instance_by_fliename(reader_class, class_name)
-        reader_ins = reader_class(self._config_yaml)
+        batch_size = envs.get_global_env("batch_size", None, namespace)
+        print("batch_size: {}".format(batch_size))
+
+        if sparse_slots is None and dense_slots is None:
+            reader_class = envs.get_global_env("class", None, namespace)
+            reader = dataloader_instance.dataloader(
+                reader_class, state, self._config_yaml)
+            reader_class = envs.lazy_instance_by_fliename(reader_class, class_name)
+            reader_ins = reader_class(self._config_yaml)
+        else:
+            reader = dataloader_instance.slotdataloader("", state, self._config_yaml)
+            reader_ins = SlotReader(self._config_yaml)
+
         if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
             dataloader.set_sample_list_generator(reader)
         else:
@@ -93,13 +102,23 @@ class TranspileTrainer(Trainer):
             train_data_path = envs.get_global_env(
                 "test_data_path", None, namespace)
 
+        sparse_slots = envs.get_global_env("sparse_slots", None, namespace)
+        dense_slots = envs.get_global_env("dense_slots", None, namespace)
+
         threads = int(envs.get_runtime_environ("train.trainer.threads"))
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
-        pipe_cmd = "python {} {} {} {}".format(
-            reader, reader_class, state, self._config_yaml)
+
+        if sparse_slots is None and dense_slots is None:
+            pipe_cmd = "python {} {} {} {}".format(
+                reader, reader_class, state, self._config_yaml)
+        else:
+            padding = envs.get_global_env("padding", 0, namespace)
+            pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
+                reader, "slot", "slot", self._config_yaml, namespace, \
+                sparse_slots.replace(" ", "#"), dense_slots.replace(" ", "#"), str(padding))
 
         if train_data_path.startswith("paddlerec::"):
             package_base = envs.get_runtime_environ("PACKAGE_BASE")
@@ -146,9 +165,6 @@ class TranspileTrainer(Trainer):
 
             if not need_save(epoch_id, save_interval, False):
                 return
-
-            #  print("save inference model is not supported now.")
-            #  return
 
             feed_varnames = envs.get_global_env(
                 "save.inference.feed_varnames", None, namespace)

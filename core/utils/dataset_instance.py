@@ -16,19 +16,33 @@ from __future__ import print_function
 import sys
 
 from paddlerec.core.utils.envs import lazy_instance_by_fliename
+from paddlerec.core.reader import SlotReader
+from paddlerec.core.utils import envs
 
-if len(sys.argv) != 4:
-    raise ValueError("reader only accept 3 argument: 1. reader_class 2.train/evaluate 3.yaml_abs_path")
+if len(sys.argv) < 4:
+    raise ValueError("reader only accept 3 argument: 1. reader_class 2.train/evaluate/slotreader 3.yaml_abs_path")
 
 reader_package = sys.argv[1]
 
-if sys.argv[2] == "TRAIN":
+if sys.argv[2].upper() == "TRAIN":
     reader_name = "TrainReader"
-else:
+elif sys.argv[2].upper() == "EVALUATE":
     reader_name = "EvaluateReader"
+else:
+    reader_name = "SlotReader"
+    namespace = sys.argv[4]
+    sparse_slots = sys.argv[5].replace("#", " ")
+    dense_slots = sys.argv[6].replace("#", " ")
+    padding = int(sys.argv[7])
 
 yaml_abs_path = sys.argv[3]
-reader_class = lazy_instance_by_fliename(reader_package, reader_name)
-reader = reader_class(yaml_abs_path)
-reader.init()
-reader.run_from_stdin()
+
+if reader_name != "SlotReader":
+    reader_class = lazy_instance_by_fliename(reader_package, reader_name)
+    reader = reader_class(yaml_abs_path)
+    reader.init()
+    reader.run_from_stdin()
+else:
+    reader = SlotReader(yaml_abs_path)
+    reader.init(sparse_slots, dense_slots, padding)
+    reader.run_from_stdin()
