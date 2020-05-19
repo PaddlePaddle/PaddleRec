@@ -22,7 +22,7 @@ train:
 
   reader:
     batch_size: 2
-    train_data_path: "{workspace}/slot_data/train"
+    train_data_path: "{workspace}/data/slot_train"
     feat_dict_name: "{workspace}/data/vocab"
     sparse_slots: "label C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26"
     dense_slots: "I1:1 I2:1 I3:1 I4:1 I5:1 I6:1 I7:1 I8:1 I9:1 I10:1 I11:1 I12:1 I13:1"
@@ -35,7 +35,7 @@ train:
       l2_reg_cross: 0.00005
       dnn_use_bn: False
       clip_by_norm: 100.0
-      cat_feat_num: "{workspace}/slot_data/cat_feature_num.txt"
+      cat_feat_num: "{workspace}/data/cat_feature_num.txt"
       is_sparse: False
       is_test: False
       num_field: 39

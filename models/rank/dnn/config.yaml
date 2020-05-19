@@ -22,7 +22,7 @@ train:
 
   reader:
     batch_size: 2
-    train_data_path: "{workspace}/slot_data/train"
+    train_data_path: "{workspace}/data/slot_train_data"
     reader_debug_mode: False
     sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
     dense_slots: "dense_var:13"

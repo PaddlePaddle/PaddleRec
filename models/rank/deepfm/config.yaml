@@ -22,8 +22,8 @@ train:
 
   reader:
     batch_size: 2
-    train_data_path: "{workspace}/slot_data/train_data"
-    feat_dict_name: "{workspace}/slot_data/feat_dict_10.pkl2"
+    train_data_path: "{workspace}/data/slot_train_data"
+    feat_dict_name: "{workspace}/data/feat_dict_10.pkl2"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
 
