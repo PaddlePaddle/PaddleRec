@@ -1,0 +1,50 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+train:
+  trainer:
+    # for cluster training
+    strategy: "async"
+
+  epochs: 10
+  workspace: "paddlerec.models.rank.deepfm"
+
+  reader:
+    batch_size: 2
+    train_data_path: "{workspace}/data/slot_train_data"
+    feat_dict_name: "{workspace}/data/feat_dict_10.pkl2"
+    sparse_slots: "label feat_idx"
+    dense_slots: "feat_value:39"
+
+  model:
+    models: "{workspace}/model.py"
+    hyper_parameters:
+      sparse_feature_number: 1086460
+      sparse_feature_dim: 9
+      num_field: 39
+      fc_sizes: [400, 400, 400]
+      learning_rate: 0.0001
+      reg: 0.001
+      act: "relu"
+      optimizer: SGD
+
+  save:
+    increment:
+      dirname: "increment"
+      epoch_interval: 2
+      save_last: True
+    inference:
+      dirname: "inference"
+      epoch_interval: 4
+      save_last: True
