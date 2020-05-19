@@ -1,4 +1,4 @@
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import numpy as np
-import io
+
 import copy
 import random
+
+import numpy as np
+
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
 
@@ -22,17 +24,17 @@ from paddlerec.core.utils import envs
 class TrainReader(Reader):
     def init(self):
         self.batch_size = envs.get_global_env("batch_size", None, "train.reader")
-        
+
         self.input = []
         self.length = None
 
     def base_read(self, files):
         res = []
         for f in files:
-	    with open(f, "r") as fin:
+            with open(f, "r") as fin:
                 for line in fin:
-		    line = line.strip().split('\t')
-		    res.append(tuple([map(int, line[0].split(',')), int(line[1])]))
+                    line = line.strip().split('\t')
+                    res.append(tuple([map(int, line[0].split(',')), int(line[1])]))
         return res
 
     def make_data(self, cur_batch, batch_size):
@@ -120,10 +122,11 @@ class TrainReader(Reader):
                 else:
                     # Due to fixed batch_size, discard the remaining ins
                     return
-                    #cur_batch = remain_data[i:]
-                    #yield self.make_data(cur_batch, group_remain % batch_size)
+                    # cur_batch = remain_data[i:]
+                    # yield self.make_data(cur_batch, group_remain % batch_size)
+
         return _reader
- 
+
     def generate_batch_from_trainfiles(self, files):
         self.input = self.base_read(files)
         self.length = len(self.input)
@@ -132,4 +135,5 @@ class TrainReader(Reader):
     def generate_sample(self, line):
         def data_iter():
             yield []
+
         return data_iter

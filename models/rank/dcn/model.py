@@ -1,14 +1,29 @@
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from collections import OrderedDict
+
 import paddle.fluid as fluid
-import math
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase
-from collections import OrderedDict
+
 
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
-    
+
     def init_network(self):
         self.cross_num = envs.get_global_env("hyper_parameters.cross_num", None, self._namespace)
         self.dnn_hidden_units = envs.get_global_env("hyper_parameters.dnn_hidden_units", None, self._namespace)
@@ -64,7 +79,7 @@ class Model(ModelBase):
         net_input = fluid.layers.concat([dense_input, sparse_input], axis=-1)
 
         return net_input
-    
+
     def _deep_net(self, input, hidden_units, use_bn=False, is_test=False):
         for units in hidden_units:
             input = fluid.layers.fc(input=input, size=units)
@@ -81,7 +96,7 @@ class Model(ModelBase):
             [input_dim], dtype='float32', name=prefix + "_b")
         xw = fluid.layers.reduce_sum(x * w, dim=1, keep_dim=True)  # (N, 1)
         return x0 * xw + b + x, w
-    
+
     def _cross_net(self, input, num_corss_layers):
         x = x0 = input
         l2_reg_cross_list = []
@@ -92,10 +107,10 @@ class Model(ModelBase):
             fluid.layers.concat(
                 l2_reg_cross_list, axis=-1))
         return x, l2_reg_cross_loss
-    
+
     def _l2_loss(self, w):
         return fluid.layers.reduce_sum(fluid.layers.square(w))
-    
+
     def train_net(self):
         self.init_network()
         
@@ -104,8 +119,8 @@ class Model(ModelBase):
         deep_out = self._deep_net(self.net_input, self.dnn_hidden_units, self.dnn_use_bn, False)
 
         cross_out, l2_reg_cross_loss = self._cross_net(self.net_input,
-                                                       self.cross_num)  
-        
+                                                       self.cross_num)
+
         last_out = fluid.layers.concat([deep_out, cross_out], axis=-1)
         logit = fluid.layers.fc(last_out, 1)
 

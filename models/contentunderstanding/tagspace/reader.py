@@ -1,23 +1,30 @@
-import re
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import sys
-import collections
-import os
-import six
-import time
+
 import numpy as np
-import paddle.fluid as fluid
-import paddle
-import csv
-import io
 
 from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
+
 
 class TrainReader(Reader):
     def init(self):
         pass
 
-    def _process_line(self, l): 
+    def _process_line(self, l):
         tag_size = 4
         neg_size = 3
         l = l.strip().split(",")
@@ -40,10 +47,7 @@ class TrainReader(Reader):
                 neg_index = rand_i
                 neg_tag.append(neg_index)
                 sum_n += 1
-       # if n > 0 and len(text) > n:
-       #    #yield None
-       #    return None, None, None
-        return  text, pos_tag, neg_tag
+        return text, pos_tag, neg_tag
 
     def generate_sample(self, line):
         def data_iter():
@@ -52,4 +56,5 @@ class TrainReader(Reader):
                 yield None
                 return
             yield [('text', text), ('pos_tag', pos_tag), ('neg_tag', neg_tag)]
+
         return data_iter

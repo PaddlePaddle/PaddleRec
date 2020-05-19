@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import copy
-import sys
-import socket
 from contextlib import closing
+import copy
+import os
+import socket
+import sys
 
 global_envs = {}
 
@@ -89,22 +89,38 @@ def get_global_envs():
     return global_envs
 
 
+def path_adapter(path):
+    def adapt(l_p):
+        if get_platform() == "WINDOWS":
+            adapted_p = l_p.split("paddlerec.")[1].replace(".", "\\")
+        else:
+            adapted_p = l_p.split("paddlerec.")[1].replace(".", "/")
+        return adapted_p
+
+    if path.startswith("paddlerec."):
+        package = get_runtime_environ("PACKAGE_BASE")
+        return os.path.join(package, adapt(path))
+    else:
+        return adapt(path)
+
+
+def windows_path_converter(path):
+    if get_platform() == "WINDOWS":
+        return path.replace("/", "\\")
+    else:
+        return path.replace("\\", "/")
+
+
 def update_workspace():
     workspace = global_envs.get("train.workspace", None)
     if not workspace:
         return
-
-    # is fleet inner models
-    if workspace.startswith("paddlerec."):
-        fleet_package = get_runtime_environ("PACKAGE_BASE")
-        workspace_dir = workspace.split("paddlerec.")[1].replace(".", "/")
-        path = os.path.join(fleet_package, workspace_dir)
-    else:
-        path = workspace
+    workspace = path_adapter(workspace)
 
     for name, value in global_envs.items():
         if isinstance(value, str):
-            value = value.replace("{workspace}", path)
+            value = value.replace("{workspace}", workspace)
+            value = windows_path_converter(value)
             global_envs[name] = value
 
 
