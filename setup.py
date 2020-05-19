@@ -15,10 +15,13 @@
 """
 setup for paddle-rec.
 """
+
 import os
+
 from setuptools import setup, find_packages
-import tempfile
 import shutil
+import tempfile
+
 
 requires = [
     "paddlepaddle == 1.7.2",

@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import os
 import time
-import datetime
 
 from paddle import fluid
+
 from paddlerec.core.utils import fs as fs
 
 

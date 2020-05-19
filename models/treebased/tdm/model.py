@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
+
 import paddle.fluid as fluid
-import math
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase

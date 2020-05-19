@@ -18,11 +18,12 @@ Training use fluid with one node only.
 
 from __future__ import print_function
 import logging
-import paddle.fluid as fluid
 
+import numpy as np
+import paddle.fluid as fluid
 from paddlerec.core.trainers.single_trainer import SingleTrainer
 from paddlerec.core.utils import envs
-import numpy as np
+
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")

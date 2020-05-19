@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
+
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase
-from collections import OrderedDict
+
 
 class Model(ModelBase):
     def __init__(self, config):

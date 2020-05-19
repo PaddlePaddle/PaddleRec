@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import paddle.fluid as fluid
-
-from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
 
+from paddlerec.core.utils import envs
+from paddlerec.core.model import Model as ModelBase
 
 
 class BowEncoder(object):

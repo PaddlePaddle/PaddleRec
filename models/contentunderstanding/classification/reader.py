@@ -15,8 +15,8 @@
 
 import sys
 
-
 from paddlerec.core.reader import Reader
+
 
 class TrainReader(Reader):
     def init(self):

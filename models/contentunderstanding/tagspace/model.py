@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddlerec.core.model import Model as ModelBase
-
 import paddle.fluid as fluid
 import paddle.fluid.layers.nn as nn
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
+
+from paddlerec.core.model import Model as ModelBase
+
 
 class Model(ModelBase):
     def __init__(self, config):

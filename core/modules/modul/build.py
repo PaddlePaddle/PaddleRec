@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
 import copy
+
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
+import yaml
 
 from paddlerec.core.model import Model
 from paddlerec.core.utils import table

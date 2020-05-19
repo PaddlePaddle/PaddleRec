@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-import numpy as np
 
+import os
+
+import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import MPISymetricRoleMaker
