@@ -66,7 +66,8 @@ def get_engine(args):
     engine = engine.upper()
 
     if engine not in engine_choices:
-        raise ValueError("train.engin can not be chosen in {}".format(engine_choices))
+        raise ValueError(
+            "train.engin can not be chosen in {}".format(engine_choices))
 
     print("engines: \n{}".format(engines))
 
@@ -163,7 +164,8 @@ def cluster_engine(args):
         cluster_envs = {}
         cluster_envs["train.trainer.trainer"] = trainer
         cluster_envs["train.trainer.engine"] = "cluster"
-        cluster_envs["train.trainer.threads"] = envs.get_runtime_environ("CPU_NUM")
+        cluster_envs["train.trainer.threads"] = envs.get_runtime_environ(
+            "CPU_NUM")
         cluster_envs["train.trainer.platform"] = envs.get_platform()
         print("launch {} engine with cluster to with model: {}".format(
             trainer, args.model))
@@ -246,6 +248,9 @@ def get_abs_model(model):
         if not os.path.isfile(model):
             raise IOError("model config: {} invalid".format(model))
         path = model
+    config_env = {}
+    config_env['paddlerec_model_config'] = path
+    envs.set_runtime_environs(config_env)
     return path
 
 
