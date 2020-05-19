@@ -42,6 +42,8 @@
 * Python 2.7/ 3.5 / 3.6 / 3.7
 * PaddlePaddle  >= 1.7.2
 * 操作系统: Windows/Mac/Linux
+
+  > Windows下目前仅提供单机训练，建议使用Linux
   
 ### 安装命令
 
@@ -72,9 +74,11 @@
 
 ### 启动内置模型的默认配置
 
-目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地1*1模拟训练，我们以`dnn`为例介绍PaddleRec的简单使用。
+目前框架内置了多个模型，一行命令即可使用内置模型开始单机训练和本地模拟分布式训练。
+  > 本地模拟分布式(`local_cluster`)为`1个server + 1个trainer`的参数服务器模式
 
-#### 单机训练
+
+我们以排序模型中的`dnn`模型为例介绍PaddleRec的简单使用。训练数据来源为[Criteo数据集](https://www.kaggle.com/c/criteo-display-ad-challenge/)，我们从中截取了100条方便您快速上手体验完整的PaddleRec流程。
 
 ```bash
 # 使用CPU进行单机训练
@@ -85,12 +89,29 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 若您复用内置模型，对**yaml**配置文件进行了修改，如更改超参，重新配置数据后，可以直接使用paddlerec运行该yaml文件。
 
-我们以dnn模型为例，在paddlerec代码目录下
+我们以dnn模型为例，在paddlerec代码目录下:
 ```bash
 cd paddlerec
 ```
 
-修改了dnn模型`models/rank/dnn/config.yaml`的配置后，运行`dnn`模型：
+修改dnn模型的[超参配置](./models/rank/dnn/config.yaml)，例如将迭代训练轮数从10轮修改为5轮:
+```yaml
+train:
+  # epochs: 10
+  epochs: 5
+```
+
+在Linux环境下，可以使用`vim`等文本编辑工具修改yaml文件：
+
+```bash
+vim ./models/rank/dnn/config.yaml
+# 键入 i, 进入编辑模式
+# 修改yaml文件配置
+# 完成修改后，点击esc，退出编辑模式
+# 键入 :wq 保存文件并退出 
+```
+
+完成dnn模型`models/rank/dnn/config.yaml`的配置修改后，运行`dnn`模型：
 ```bash
 # 使用自定配置进行训练
 python -m paddlerec.run -m ./models/rank/dnn/config.yaml 
@@ -140,6 +161,8 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 | :------: | :-----------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
 | 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |      ✓      |      x      |       ✓       |
 | 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |      ✓      |      x      |       ✓       |
+|   召回   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
+|   召回   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
 |   召回   |                   [TDM](models/treebased/tdm/model.py)                    |      ✓      |      x      |       ✓       |
 |   召回   |                [Word2Vec](models/recall/word2vec/model.py)                |      ✓      |      x      |       ✓       |
 |   召回   |                     [SSR](models/recall/ssr/model.py)                     |      ✓      |      ✓      |       ✓       |
@@ -152,8 +175,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
-|   匹配   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
-|   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
+
 
 
 

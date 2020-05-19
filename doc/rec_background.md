@@ -1,4 +1,5 @@
 # 推荐系统背景知识
+本文来源于[个性化推荐](https://github.com/PaddlePaddle/book/blob/develop/05.recommender_system/README.cn.md)，进行了节选。
 
 本文代码目录在[book/recommender_system](https://github.com/PaddlePaddle/book/tree/develop/05.recommender_system),初次使用请您参考[Book文档使用说明](https://github.com/PaddlePaddle/book/blob/develop/README.cn.md#运行这本书)。
 
