@@ -19,14 +19,12 @@ import random
 from paddlerec.core.reader import Reader
 
 
-
 class TrainReader(Reader):
     def init(self):
         pass
 
     def sample_neg_from_seq(self, seq):
         return seq[random.randint(0, len(seq) - 1)]
-
 
     def generate_sample(self, line):
         """

@@ -18,8 +18,8 @@ from paddlerec.core.utils import envs
 
 class TrainReader(Reader):
     def init(self):
-        self.query_slots = envs.get_global_env("hyper_parameters.query_slots", None, "train.model") 
-        self.title_slots = envs.get_global_env("hyper_parameters.title_slots", None, "train.model") 
+        self.query_slots = envs.get_global_env("hyper_parameters.query_slots", None, "train.model")
+        self.title_slots = envs.get_global_env("hyper_parameters.title_slots", None, "train.model")
 
         self.all_slots = []
         for i in range(self.query_slots):
@@ -52,6 +52,7 @@ class TrainReader(Reader):
                 if visit:
                     self._all_slots_dict[slot][0] = False
                 else:
-                    output[index][1].append(padding) 
+                    output[index][1].append(padding)
             yield output
+
         return data_iter

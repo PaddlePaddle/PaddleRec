@@ -22,10 +22,10 @@ except ImportError:
 from paddlerec.core.reader import Reader
 
 
-class TrainReader(Reader): 
+class TrainReader(Reader):
     def init(self):
         pass
-    
+
     def _process_line(self, line):
         features = line.strip('\n').split('\t')
         feat_idx = []
@@ -35,7 +35,7 @@ class TrainReader(Reader):
             feat_value.append(1.0)
         label = [int(features[0])]
         return feat_idx, feat_value, label
-    
+
     def generate_sample(self, line):
         def data_iter():
             feat_idx, feat_value, label = self._process_line(line)

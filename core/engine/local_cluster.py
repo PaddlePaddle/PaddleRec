@@ -20,7 +20,6 @@ import os
 import sys
 import subprocess
 
-
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.utils import envs
 

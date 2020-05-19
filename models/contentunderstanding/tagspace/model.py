@@ -18,6 +18,7 @@ import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
 
 from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.utils import envs
 
 
 class Model(ModelBase):
@@ -25,14 +26,13 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
         self.cost = None
         self.metrics = {}
-        self.vocab_text_size = 11447#envs.get_global_env("vocab_text_size", None, self._namespace)
-        self.vocab_tag_size = 4#envs.get_global_env("vocab_tag_size", None, self._namespace)
-        self.emb_dim = 10#envs.get_global_env("emb_dim", None, self._namespace)
-        self.hid_dim = 1000#envs.get_global_env("hid_dim", None, self._namespace)
-        self.win_size = 5#envs.get_global_env("win_size", None, self._namespace)
-        self.margin = 0.1#envs.get_global_env("margin", None, self._namespace)
-        self.neg_size = 3#envs.get_global_env("neg_size", None, self._namespace)
-        print self.emb_dim
+        self.vocab_text_size = envs.get_global_env("vocab_text_size", None, self._namespace)
+        self.vocab_tag_size = envs.get_global_env("vocab_tag_size", None, self._namespace)
+        self.emb_dim = envs.get_global_env("emb_dim", None, self._namespace)
+        self.hid_dim = envs.get_global_env("hid_dim", None, self._namespace)
+        self.win_size = envs.get_global_env("win_size", None, self._namespace)
+        self.margin = envs.get_global_env("margin", None, self._namespace)
+        self.neg_size = envs.get_global_env("neg_size", None, self._namespace)
 
     def train_net(self):
         """ network definition """
@@ -96,11 +96,9 @@ class Model(ModelBase):
         return self.metrics
 
     def optimizer(self):
-        learning_rate = 0.01#envs.get_global_env("hyper_parameters.base_lr", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.base_lr", None, self._namespace)
         sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
-        #sgd_optimizer.minimize(avg_cost)
         return sgd_optimizer
-
 
     def infer_net(self, parameter_list):
         self.train_net()

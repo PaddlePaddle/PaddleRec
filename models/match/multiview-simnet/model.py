@@ -19,6 +19,7 @@ import paddle.fluid.layers.control_flow as cf
 from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase
 
+
 class BowEncoder(object):
     """ bow-encoder """
 
@@ -94,13 +95,14 @@ class SimpleEncoderFactory(object):
             rnn_encode = GrnnEncoder(hidden_size=enc_hid_size)
             return rnn_encode
 
+
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
         self.init_config()
-        
+
     def init_config(self):
-        self._fetch_interval = 1 
+        self._fetch_interval = 1
         query_encoder = envs.get_global_env("hyper_parameters.query_encoder", None, self._namespace)
         title_encoder = envs.get_global_env("hyper_parameters.title_encoder", None, self._namespace)
         query_encode_dim = envs.get_global_env("hyper_parameters.query_encode_dim", None, self._namespace)
@@ -112,19 +114,19 @@ class Model(ModelBase):
             factory.create(query_encoder, query_encode_dim)
             for i in range(query_slots)
         ]
-	self.title_encoders = [
+        self.title_encoders = [
             factory.create(title_encoder, title_encode_dim)
             for i in range(title_slots)
         ]
 
-	self.emb_size = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
-	self.emb_dim = envs.get_global_env("hyper_parameters.embedding_dim", None, self._namespace)
-	self.emb_shape = [self.emb_size, self.emb_dim]
-	self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size", None, self._namespace)
-	self.margin = 0.1
+        self.emb_size = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
+        self.emb_dim = envs.get_global_env("hyper_parameters.embedding_dim", None, self._namespace)
+        self.emb_shape = [self.emb_size, self.emb_dim]
+        self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size", None, self._namespace)
+        self.margin = 0.1
 
     def input(self, is_train=True):
-	self.q_slots = [
+        self.q_slots = [
             fluid.data(
                 name="%d" % i, shape=[None, 1], lod_level=1, dtype='int64')
             for i in range(len(self.query_encoders))
@@ -135,22 +137,23 @@ class Model(ModelBase):
             for i in range(len(self.title_encoders))
         ]
 
-	if is_train == False:
-	    return self.q_slots + self.pt_slots
+        if is_train == False:
+            return self.q_slots + self.pt_slots
 
         self.nt_slots = [
             fluid.data(
-                name="%d" % (i + len(self.query_encoders) + len(self.title_encoders)), shape=[None, 1], lod_level=1, dtype='int64')
+                name="%d" % (i + len(self.query_encoders) + len(self.title_encoders)), shape=[None, 1], lod_level=1,
+                dtype='int64')
             for i in range(len(self.title_encoders))
         ]
 
         return self.q_slots + self.pt_slots + self.nt_slots
-    
+
     def train_input(self):
         res = self.input()
         self._data_var = res
 
-        use_dataloader = envs.get_global_env("hyper_parameters.use_DataLoader", False, self._namespace) 
+        use_dataloader = envs.get_global_env("hyper_parameters.use_DataLoader", False, self._namespace)
 
         if self._platform != "LINUX" or use_dataloader:
             self._data_loader = fluid.io.DataLoader.from_generator(
@@ -158,15 +161,15 @@ class Model(ModelBase):
 
     def get_acc(self, x, y):
         less = tensor.cast(cf.less_than(x, y), dtype='float32')
-	label_ones = fluid.layers.fill_constant_batch_size_like(
+        label_ones = fluid.layers.fill_constant_batch_size_like(
             input=x, dtype='float32', shape=[-1, 1], value=1.0)
         correct = fluid.layers.reduce_sum(less)
-	total = fluid.layers.reduce_sum(label_ones)
+        total = fluid.layers.reduce_sum(label_ones)
         acc = fluid.layers.elementwise_div(correct, total)
-	return acc
+        return acc
 
     def net(self):
-	q_embs = [
+        q_embs = [
             fluid.embedding(
                 input=query, size=self.emb_shape, param_attr="emb")
             for query in self.q_slots
@@ -181,8 +184,8 @@ class Model(ModelBase):
                 input=title, size=self.emb_shape, param_attr="emb")
             for title in self.nt_slots
         ]
-        
-	# encode each embedding field with encoder
+
+        # encode each embedding field with encoder
         q_encodes = [
             self.query_encoders[i].forward(emb) for i, emb in enumerate(q_embs)
         ]
@@ -198,7 +201,7 @@ class Model(ModelBase):
         pt_concat = fluid.layers.concat(pt_encodes)
         nt_concat = fluid.layers.concat(nt_encodes)
 
-	# projection of hidden layer
+        # projection of hidden layer
         q_hid = fluid.layers.fc(q_concat,
                                 size=self.hidden_size,
                                 param_attr='q_fc.w',
@@ -216,7 +219,7 @@ class Model(ModelBase):
         cos_pos = fluid.layers.cos_sim(q_hid, pt_hid)
         cos_neg = fluid.layers.cos_sim(q_hid, nt_hid)
 
-	# pairwise hinge_loss
+        # pairwise hinge_loss
         loss_part1 = fluid.layers.elementwise_sub(
             tensor.fill_constant_batch_size_like(
                 input=cos_pos,
@@ -233,7 +236,7 @@ class Model(ModelBase):
             loss_part2)
 
         self.avg_cost = fluid.layers.mean(loss_part3)
-       	self.acc = self.get_acc(cos_neg, cos_pos)	
+        self.acc = self.get_acc(cos_neg, cos_pos)
 
     def avg_loss(self):
         self._cost = self.avg_cost
@@ -250,19 +253,19 @@ class Model(ModelBase):
 
     def optimizer(self):
         learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
-	optimizer = fluid.optimizer.Adam(learning_rate=learning_rate)
-	return optimizer
+        optimizer = fluid.optimizer.Adam(learning_rate=learning_rate)
+        return optimizer
 
     def infer_input(self):
         res = self.input(is_train=False)
-	self._infer_data_var = res
+        self._infer_data_var = res
 
         self._infer_data_loader = fluid.io.DataLoader.from_generator(
             feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
- 
+
     def infer_net(self):
-	self.infer_input()
-	# lookup embedding for each slot
+        self.infer_input()
+        # lookup embedding for each slot
         q_embs = [
             fluid.embedding(
                 input=query, size=self.emb_shape, param_attr="emb")
@@ -273,14 +276,14 @@ class Model(ModelBase):
                 input=title, size=self.emb_shape, param_attr="emb")
             for title in self.pt_slots
         ]
-	# encode each embedding field with encoder
+        # encode each embedding field with encoder
         q_encodes = [
             self.query_encoders[i].forward(emb) for i, emb in enumerate(q_embs)
         ]
         pt_encodes = [
             self.title_encoders[i].forward(emb) for i, emb in enumerate(pt_embs)
         ]
-	# concat multi view for query, pos_title, neg_title
+        # concat multi view for query, pos_title, neg_title
         q_concat = fluid.layers.concat(q_encodes)
         pt_concat = fluid.layers.concat(pt_encodes)
         # projection of hidden layer

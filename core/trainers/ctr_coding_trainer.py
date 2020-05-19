@@ -23,7 +23,7 @@ from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer
 
 
-class CtrPaddleTrainer(Trainer):
+class CtrTrainer(Trainer):
     """R
     """
 
