@@ -28,8 +28,6 @@ device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 engine_choices = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER",
                   "TDM_SINGLE", "TDM_LOCAL_CLUSTER", "TDM_CLUSTER"]
-custom_model = ['TDM']
-model_name = ""
 
 
 def engine_registry():
@@ -66,7 +64,8 @@ def get_engine(args):
     engine = engine.upper()
 
     if engine not in engine_choices:
-        raise ValueError("train.engin can not be chosen in {}".format(engine_choices))
+        raise ValueError(
+            "train.engin can not be chosen in {}".format(engine_choices))
 
     print("engines: \n{}".format(engines))
 
@@ -107,9 +106,11 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
 
 def get_trainer_prefix(args):
-    if model_name in custom_model:
-        return model_name.upper()
-    return ""
+    trainer_prefix = ""
+    train_env = get_inters_from_yaml(args.model, "train.trainer_prefix")
+    if "train.trainer_prefix" in train_env:
+        trainer_prefix = train_env["train.trainer_prefix"]
+    return trainer_prefix
 
 
 def single_engine(args):
@@ -163,7 +164,8 @@ def cluster_engine(args):
         cluster_envs = {}
         cluster_envs["train.trainer.trainer"] = trainer
         cluster_envs["train.trainer.engine"] = "cluster"
-        cluster_envs["train.trainer.threads"] = envs.get_runtime_environ("CPU_NUM")
+        cluster_envs["train.trainer.threads"] = envs.get_runtime_environ(
+            "CPU_NUM")
         cluster_envs["train.trainer.platform"] = envs.get_platform()
         print("launch {} engine with cluster to with model: {}".format(
             trainer, args.model))
@@ -259,7 +261,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
     engine_registry()
 

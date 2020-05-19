@@ -16,7 +16,9 @@ train:
   trainer:
     # for cluster training
     strategy: "async"
-
+  
+  engine: single
+  trainer_prefix: "TDM"
   epochs: 2
   workspace: "paddlerec.models.treebased.tdm"
 
