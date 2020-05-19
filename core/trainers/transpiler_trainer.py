@@ -234,7 +234,6 @@ class TranspileTrainer(Trainer):
         startup_program = fluid.Program()
         with fluid.unique_name.guard():
             with fluid.program_guard(infer_program, startup_program):
-                self.model._init_slots()
                 self.model.infer_net()
 
         if self.model._infer_data_loader is None:

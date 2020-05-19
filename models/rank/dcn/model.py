@@ -112,6 +112,7 @@ class Model(ModelBase):
         return fluid.layers.reduce_sum(fluid.layers.square(w))
 
     def train_net(self):
+        self.model._init_slots()
         self.init_network()
         
         self.net_input = self._create_embedding_input()
@@ -149,4 +150,5 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self, parameter_list):
+        self.model._init_slots()
         self.deepfm_net()

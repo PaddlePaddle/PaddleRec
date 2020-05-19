@@ -57,6 +57,7 @@ class Model(ModelBase):
         return l3
 
     def train_net(self):
+        self.model._init_slots()
         wide_input = self._dense_data_var[0]
         deep_input = self._dense_data_var[1]
         label = self._sparse_data_var[0]
@@ -102,4 +103,5 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self, parameter_list):
+        self.model._init_slots()
         self.deepfm_net()

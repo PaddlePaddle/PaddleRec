@@ -145,6 +145,7 @@ class Model(ModelBase):
         self.predict = fluid.layers.sigmoid(y_linear + y_cin + y_dnn)
 
     def train_net(self):
+        self.model._init_slots()
         self.xdeepfm_net()
 
         cost = fluid.layers.log_loss(input=self.predict, label=fluid.layers.cast(self.label, "float32"), epsilon=0.0000001)
@@ -166,4 +167,5 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self, parameter_list):
+        self.model._init_slots()
         self.xdeepfm_net()
