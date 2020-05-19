@@ -43,7 +43,7 @@
 * PaddlePaddle  >= 1.7.2
 * 操作系统: Windows/Mac/Linux
 
-  > Windows下目前只能提供单机训练，建议使用Linux
+  > Windows下目前仅提供单机训练，建议使用Linux
   
 ### 安装命令
 
@@ -74,12 +74,11 @@
 
 ### 启动内置模型的默认配置
 
-目前框架内置了多个模型，简单的命令即可使用内置模型开始单机训练和本地模拟分布式训练。
-  > 本地模拟分布式(local_cluster)使用`1个server + 1个trainer`的参数服务器模式
+目前框架内置了多个模型，一行命令即可使用内置模型开始单机训练和本地模拟分布式训练。
+  > 本地模拟分布式(`local_cluster`)为`1个server + 1个trainer`的参数服务器模式
 
-我们以`dnn`为例介绍PaddleRec的简单使用。训练数据来源为Criteo数据集，我们从中截取了100条方便您快速上手体验完整流程。
 
-#### 单机训练
+我们以排序模型中的`dnn`模型为例介绍PaddleRec的简单使用。训练数据来源为Criteo数据集，我们从中截取了100条方便您快速上手体验完整的PaddleRec流程。
 
 ```bash
 # 使用CPU进行单机训练
@@ -102,7 +101,7 @@ train:
   epochs: 5
 ```
 
-可以使用`vim`等文本编辑工具修改yaml文件：
+在Linux环境下，可以使用`vim`等文本编辑工具修改yaml文件：
 
 ```bash
 vim ./models/rank/dnn/config.yaml
