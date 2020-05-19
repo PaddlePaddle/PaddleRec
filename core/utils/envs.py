@@ -90,18 +90,12 @@ def get_global_envs():
 
 
 def path_adapter(path):
-    def adapt(l_p):
-        if get_platform() == "WINDOWS":
-            adapted_p = l_p.split("paddlerec.")[1].replace(".", "\\")
-        else:
-            adapted_p = l_p.split("paddlerec.")[1].replace(".", "/")
-        return adapted_p
-
     if path.startswith("paddlerec."):
         package = get_runtime_environ("PACKAGE_BASE")
-        return os.path.join(package, adapt(path))
+        l_p = path.split("paddlerec.")[1].replace(".", "/")
+        return os.path.join(package, l_p)
     else:
-        return adapt(path)
+        return path 
 
 
 def windows_path_converter(path):
