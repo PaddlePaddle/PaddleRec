@@ -13,13 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
+import math
 import os
 import random
 import re
 import six
+
+
 import argparse
-import io
-import math
+
+
+
 prog = re.compile("[^a-z ]", flags=0)
 
 

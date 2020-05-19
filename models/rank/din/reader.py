@@ -13,15 +13,19 @@
 # limitations under the License.
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
-import numpy as np
 import os
 import random
+
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+import numpy as np
+
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
+
 
 class TrainReader(Reader):
     def init(self):

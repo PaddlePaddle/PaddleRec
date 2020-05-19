@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import abc
-import time
 import datetime
+import time
 
 import paddle.fluid as fluid
 

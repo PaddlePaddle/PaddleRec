@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import paddle.fluid as fluid
+
 from paddlerec.core.layer import Layer
 
 

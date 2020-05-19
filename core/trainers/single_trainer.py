@@ -17,14 +17,14 @@ Training use fluid with one node only.
 """
 
 from __future__ import print_function
-import logging
+
 import time
+import logging
 
 import paddle.fluid as fluid
 
 from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
 from paddlerec.core.utils import envs
-import numpy as np
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")

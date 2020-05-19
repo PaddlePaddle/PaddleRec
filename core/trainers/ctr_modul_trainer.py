@@ -13,12 +13,12 @@
 # limitations under the License.
 
 
+import datetime
+import json
 import sys
 import time
-import json
-import datetime
-import numpy as np
 
+import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker

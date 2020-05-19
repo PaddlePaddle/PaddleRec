@@ -14,10 +14,10 @@
 
 
 import sys
+
 import numpy as np
 
 from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
 
 class TrainReader(Reader):
     def init(self):

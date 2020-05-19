@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import math
+
 import numpy as np
 import paddle.fluid as fluid
+
 from paddlerec.core.metric import Metric
 
 

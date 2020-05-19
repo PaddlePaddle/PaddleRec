@@ -14,10 +14,12 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
-import subprocess
-import sys
-import os
+
 import copy
+import os
+import sys
+import subprocess
+
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.utils import envs

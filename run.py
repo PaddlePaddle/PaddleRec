@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
 import subprocess
-import tempfile
 
+import argparse
+import tempfile
 import yaml
 
 from paddlerec.core.factory import TrainerFactory
