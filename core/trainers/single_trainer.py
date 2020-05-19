@@ -47,7 +47,7 @@ class SingleTrainer(TranspileTrainer):
     def init(self, context):
         self.model.train_net()
         optimizer = self.model.optimizer()
-        optimizer.minimize((self.model.get_cost_op()))
+        optimizer.minimize((self.model.get_avg_cost()))
 
         self.fetch_vars = []
         self.fetch_alias = []
@@ -74,7 +74,7 @@ class SingleTrainer(TranspileTrainer):
 
         program = fluid.compiler.CompiledProgram(
             fluid.default_main_program()).with_data_parallel(
-            loss_name=self.model.get_cost_op().name)
+            loss_name=self.model.get_avg_cost().name)
 
         metrics_varnames = []
         metrics_format = []

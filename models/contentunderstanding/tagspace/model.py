@@ -89,7 +89,7 @@ class Model(ModelBase):
         self.metrics["correct"] = correct
         self.metrics["cos_pos"] = cos_pos
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
         return self.cost
 
     def get_metrics(self):

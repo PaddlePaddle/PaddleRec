@@ -82,7 +82,7 @@ class ClusterTrainer(TranspileTrainer):
 
         strategy = self.build_strategy()
         optimizer = fleet.distributed_optimizer(optimizer, strategy)
-        optimizer.minimize(self.model.get_cost_op())
+        optimizer.minimize(self.model.get_avg_cost())
 
         if fleet.is_server():
             context['status'] = 'server_pass'
@@ -114,7 +114,7 @@ class ClusterTrainer(TranspileTrainer):
 
         program = fluid.compiler.CompiledProgram(
             fleet.main_program).with_data_parallel(
-            loss_name=self.model.get_cost_op().name,
+            loss_name=self.model.get_avg_cost().name,
             build_strategy=self.strategy.get_build_strategy(),
             exec_strategy=self.strategy.get_execute_strategy())
 

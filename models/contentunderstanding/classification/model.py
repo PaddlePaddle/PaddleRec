@@ -59,7 +59,7 @@ class Model(ModelBase):
         self.cost = avg_cost
         self._metrics["acc"] = acc
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
         return self.cost
 
     def get_metrics(self):
