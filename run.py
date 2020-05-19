@@ -93,8 +93,10 @@ def set_runtime_envs(cluster_envs, engine_yaml):
         cluster_envs = {}
 
     engine_extras = get_inters_from_yaml(engine_yaml, "train.trainer.")
-    if "train.trainer.threads" in engine_extras and "CPU_NUM" in cluster_envs:
+    if "train.trainer.threads" in engine_extras:
         cluster_envs["CPU_NUM"] = engine_extras["train.trainer.threads"]
+    elif "CPU_NUM" not in cluster_envs:
+        cluster_envs["CPU_NUM"] = 2
 
     envs.set_runtime_environs(cluster_envs)
     envs.set_runtime_environs(engine_extras)
@@ -152,6 +154,12 @@ def cluster_engine(args):
         flattens["engine_temp_path"] = tempfile.mkdtemp()
         update_workspace(flattens)
 
+        engine_extras = get_inters_from_yaml(args.model, "train.trainer.")
+        if "train.trainer.threads" in engine_extras:
+            flattens["CPU_NUM"] = engine_extras["train.trainer.threads"]
+        elif "CPU_NUM" not in flattens:
+            flattens["CPU_NUM"] = 2
+
         envs.set_runtime_environs(flattens)
         print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value")))
 
@@ -167,6 +175,7 @@ def cluster_engine(args):
         cluster_envs["train.trainer.threads"] = envs.get_runtime_environ(
             "CPU_NUM")
         cluster_envs["train.trainer.platform"] = envs.get_platform()
+        cluster_envs["engine_role"] = role
         print("launch {} engine with cluster to with model: {}".format(
             trainer, args.model))
         set_runtime_envs(cluster_envs, args.model)
@@ -174,7 +183,7 @@ def cluster_engine(args):
         trainer = TrainerFactory.create(args.model)
         return trainer
 
-    role = os.getenv("PADDLE_PADDLEREC_ROLE", "MASTER")
+    role = args.role
 
     if role == "WORKER":
         return worker()
@@ -258,6 +267,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='paddle-rec run')
     parser.add_argument("-m", "--model", type=str)
     parser.add_argument("-b", "--backend", type=str, default=None)
+    parser.add_argument("-r", "--role", type=str,
+                        choices=['MASTER', 'WORKER'], default="MASTER")
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})

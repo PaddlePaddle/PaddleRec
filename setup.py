@@ -31,19 +31,26 @@ def build(dirname):
     package_dir = os.path.dirname(os.path.abspath(__file__))
     run_cmd("cp -r {}/* {}".format(package_dir, dirname))
     run_cmd("mkdir {}".format(os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "core"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "doc"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "models"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "tests"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "tools"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(os.path.join(dirname, "*.py"), os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "core"),
+                              os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "doc"),
+                              os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "models"),
+                              os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "tests"),
+                              os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "tools"),
+                              os.path.join(dirname, "paddlerec")))
+    run_cmd("mv {} {}".format(os.path.join(dirname, "*.py"),
+                              os.path.join(dirname, "paddlerec")))
 
     packages = find_packages(dirname, include=('paddlerec.*'))
     package_dir = {'': dirname}
     package_data = {}
 
-    models_copy = ['data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy', 'tree/*.txt']
-    engine_copy = ['*/*.sh']
+    models_copy = ['data/*.txt', 'data/*/*.txt',
+                   '*.yaml', '*.sh', 'tree/*.npy', 'tree/*.txt']
+    engine_copy = ['*/*.sh', '*/*.template']
     for package in packages:
         if package.startswith("paddlerec.models."):
             package_data[package] = models_copy

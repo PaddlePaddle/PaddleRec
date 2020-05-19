@@ -28,6 +28,7 @@ from paddlerec.core.utils import envs
 class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
+        envs.set_runtime_environs({'abs_dir': abs_dir})
         backend = envs.get_runtime_environ("engine_backend")
         if backend == "PaddleCloud":
             self.submit_script = os.path.join(abs_dir, "cloud/cluster.sh")

@@ -3,7 +3,7 @@ set -x
 
 check_failed_cnt() {
   max_failed=$1
-  failed_count=$(python -m paddlerec.tools.k8s_tools.py count_pods_by_phase paddle-job=${PADDLE_JOB_NAME} Failed) 
+  failed_count=$(python -m paddlerec.tools.k8s_tools count_pods_by_phase paddle-job=${PADDLE_JOB_NAME} Failed) 
   if [ $failed_count -gt $max_failed ]; then
     stdbuf -oL echo "Failed trainer count beyond the threadhold: "$max_failed
     echo "Failed trainer count beyond the threshold: " $max_failed > /dev/termination-log 
@@ -36,17 +36,17 @@ start_fluid_process() {
   task_index=""
 
   if [ "${PADDLE_TRAINING_ROLE}" == "TRAINER" ] || [ "${PADDLE_TRAINING_ROLE}" == "PSERVER" ]; then
-    stdbuf -oL python /root/k8s_tools.py wait_pods_running ${pserver_label} ${PADDLE_PSERVERS_NUM}
+    stdbuf -oL python -m paddlerec.tools.k8s_tools wait_pods_running ${pserver_label} ${PADDLE_PSERVERS_NUM}
   fi
 
-  export PADDLE_PSERVERS_IP_PORT_LIST=$(python -m paddlerec.tools.k8s_tools.py fetch_endpoints ${pserver_label} ${PADDLE_PORT})
-  export PADDLE_TRAINER_IPS=$(python -m paddlerec.tools.k8s_tools.py fetch_ips ${trainer_label})
+  export PADDLE_PSERVERS_IP_PORT_LIST=$(python -m paddlerec.tools.k8s_tools fetch_endpoints ${pserver_label} ${PADDLE_PORT})
+  export PADDLE_TRAINER_IPS=$(python -m paddlerec.tools.k8s_tools fetch_ips ${trainer_label})
 
   if [ "${PADDLE_TRAINING_ROLE}" == "TRAINER" ]; then
     check_failed_cnt 1
-    task_index=$(python -m paddlerec.tools.k8s_tools.py fetch_id ${trainer_label})
+    task_index=$(python -m paddlerec.tools.k8s_tools fetch_id ${trainer_label})
   else
-    task_index=$(python -m paddlerec.tools.k8s_tools.py fetch_id ${pserver_label})
+    task_index=$(python -m paddlerec.tools.k8s_tools fetch_id ${pserver_label})
   fi
   
   export PADDLE_TRAINER_ID=${task_index}
