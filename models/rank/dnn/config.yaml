@@ -13,12 +13,13 @@
 # limitations under the License.
 
 train:
+  epochs: 10
+  engine: single
+  workspace: "paddlerec.models.rank.dnn"
+
   trainer:
     # for cluster training
     strategy: "async"
-
-  epochs: 10
-  workspace: "paddlerec.models.rank.dnn"
 
   reader:
     batch_size: 2
