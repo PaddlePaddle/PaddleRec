@@ -24,43 +24,9 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def input(self):
-        def sparse_inputs():
-            ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None, self._namespace)
-
-            sparse_input_ids = [
-                fluid.layers.data(name="S" + str(i),
-                                  shape=[1],
-                                  lod_level=1,
-                                  dtype="int64") for i in range(1, ids)
-            ]
-            return sparse_input_ids
-
-        def dense_input():
-            dim = envs.get_global_env("hyper_parameters.dense_input_dim", None, self._namespace)
-
-            dense_input_var = fluid.layers.data(name="D",
-                                                shape=[dim],
-                                                dtype="float32")
-            return dense_input_var
-
-        def label_input():
-            label = fluid.layers.data(name="click", shape=[1], dtype="int64")
-            return label
-
-        self.sparse_inputs = sparse_inputs()
-        self.dense_input = dense_input()
-        self.label_input = label_input()
-
-        self._data_var.append(self.dense_input)
-
-        for input in self.sparse_inputs:
-            self._data_var.append(input)
-
-        self._data_var.append(self.label_input)
-
-        if self._platform != "LINUX":
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
+        self.sparse_inputs = self._sparse_data_var[1:]
+        self.dense_input = self._dense_data_var[0]
+        self.label_input = self._sparse_data_var[0]
 
     def net(self):
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False

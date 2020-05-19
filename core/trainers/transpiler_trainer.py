@@ -54,7 +54,6 @@ class TranspileTrainer(Trainer):
         sparse_slots = envs.get_global_env("sparse_slots", None, namespace)
         dense_slots = envs.get_global_env("dense_slots", None, namespace)
 
-
         batch_size = envs.get_global_env("batch_size", None, namespace)
         print("batch_size: {}".format(batch_size))
 

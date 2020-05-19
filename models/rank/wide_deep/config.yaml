@@ -22,8 +22,9 @@ train:
 
   reader:
     batch_size: 2
-    class: "{workspace}/reader.py"
-    train_data_path: "{workspace}/data/train_data"
+    train_data_path: "{workspace}/slot_data/train_data"
+    sparse_slots: "label"
+    dense_slots: "wide_input:8 deep_input:58"
 
   model:
     models: "{workspace}/model.py"

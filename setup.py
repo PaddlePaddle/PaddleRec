@@ -43,6 +43,7 @@ def build(dirname):
     package_data = {}
 
     models_copy = ['data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy', 'tree/*.txt']
+    models_copy += ['slot_data/*.txt', 'slot_data/*/*.txt', 'slot_data/*.pkl2', 'slot_data/*/*.csv', 'slot_data/*.csv']
     engine_copy = ['*/*.sh']
     for package in packages:
         if package.startswith("paddlerec.models."):
