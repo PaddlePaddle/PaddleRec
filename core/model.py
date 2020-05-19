@@ -15,7 +15,6 @@
 import abc
 
 import paddle.fluid as fluid
-
 from paddlerec.core.utils import envs
 
 

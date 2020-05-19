@@ -20,7 +20,6 @@ from __future__ import print_function
 import logging
 import paddle.fluid as fluid
 
-from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
 from paddlerec.core.trainers.single_trainer import SingleTrainer
 from paddlerec.core.utils import envs
 import numpy as np

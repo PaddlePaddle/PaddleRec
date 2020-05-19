@@ -14,7 +14,6 @@
 from __future__ import print_function
 
 from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
 import random
 
 

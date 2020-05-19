@@ -21,8 +21,6 @@ import logging
 import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
-from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler.distributed_strategy import StrategyFactory
-from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
 
 from paddlerec.core.utils import envs
 from paddlerec.core.trainers.cluster_trainer import ClusterTrainer
