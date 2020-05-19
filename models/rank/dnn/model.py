@@ -88,6 +88,7 @@ class Model(ModelBase):
         self._metrics["BATCH_AUC"] = batch_auc
 
     def train_net(self):
+        self.model._init_slots()
         self.input()
         self.net()
         self.avg_loss()
@@ -99,5 +100,6 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self):
+        self.model._init_slots()
         self.input()
         self.net()

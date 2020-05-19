@@ -37,7 +37,6 @@ class Model(object):
         self._fetch_interval = 20
         self._namespace = "train.model"
         self._platform = envs.get_platform()
-        self._init_slots()
 
     def _init_slots(self):
         sparse_slots = envs.get_global_env("sparse_slots", None, "train.reader")
