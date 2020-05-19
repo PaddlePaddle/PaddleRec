@@ -64,6 +64,8 @@
 sh run.sh
 ```
 
+数据读取默认使用core/reader.py
+
 ### 训练
 ```
 python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
