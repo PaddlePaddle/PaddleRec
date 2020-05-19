@@ -1,0 +1,6 @@
+*.o
+output
+.idea/
+paddlerec.egg-info/
+*~
+*.pyc
