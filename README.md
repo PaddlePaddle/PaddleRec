@@ -94,7 +94,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 cd paddlerec
 ```
 
-修改dnn模型的超参配置，例如将迭代训练轮数从10轮修改为5轮:
+修改dnn模型的[超参配置](./models/rank/dnn/config.yaml)，例如将迭代训练轮数从10轮修改为5轮:
 ```yaml
 train:
   # epochs: 10
