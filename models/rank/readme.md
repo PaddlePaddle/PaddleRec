@@ -59,6 +59,11 @@
 ## 使用教程
 ### 数据处理
 参考每个模型目录数据下载&预处理脚本
+
+```
+sh run.sh
+```
+
 ### 训练
 ```
 python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
