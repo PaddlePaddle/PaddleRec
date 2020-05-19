@@ -14,12 +14,13 @@
 
 train:
   epochs: 10
-  engine: single
+  engine: cluster
   workspace: "paddlerec.models.rank.dnn"
 
   trainer:
     # for cluster training
     strategy: "async"
+    threads: 2
 
   reader:
     batch_size: 2
