@@ -112,7 +112,7 @@ class Model(ModelBase):
         return fluid.layers.reduce_sum(fluid.layers.square(w))
 
     def train_net(self):
-        self.model._init_slots()
+        self._init_slots()
         self.init_network()
         
         self.net_input = self._create_embedding_input()
@@ -149,6 +149,6 @@ class Model(ModelBase):
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 
-    def infer_net(self, parameter_list):
-        self.model._init_slots()
-        self.deepfm_net()
+    def infer_net(self):
+        #self._init_slots()
+        self.train_net()

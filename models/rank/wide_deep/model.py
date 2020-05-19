@@ -57,7 +57,7 @@ class Model(ModelBase):
         return l3
 
     def train_net(self):
-        self.model._init_slots()
+        self._init_slots()
         wide_input = self._dense_data_var[0]
         deep_input = self._dense_data_var[1]
         label = self._sparse_data_var[0]
@@ -102,6 +102,6 @@ class Model(ModelBase):
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 
-    def infer_net(self, parameter_list):
-        self.model._init_slots()
-        self.deepfm_net()
+    def infer_net(self):
+        #self._init_slots()
+        self.train_net()
