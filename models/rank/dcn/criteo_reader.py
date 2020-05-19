@@ -11,18 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import print_function
 import math
-import sys
+import os
 
-from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-from collections import Counter
-import os
+
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
+
 
 class TrainReader(Reader):
     def init(self):
@@ -45,7 +46,7 @@ class TrainReader(Reader):
         self.label_feat_names = target + dense_feat_names + sparse_feat_names
 
         self.cat_feat_idx_dict_list = [{} for _ in range(26)]
-        
+
         # TODO: set vocabulary dictionary
         vocab_dir = envs.get_global_env("feat_dict_name", None, "train.reader")
         for i in range(26):
@@ -53,7 +54,7 @@ class TrainReader(Reader):
             for line in open(
                     os.path.join(vocab_dir, 'C' + str(i + 1) + '.txt')):
                 self.cat_feat_idx_dict_list[i][line.strip()] = lookup_idx
-                lookup_idx += 1 
+                lookup_idx += 1
 
     def _process_line(self, line):
         features = line.rstrip('\n').split('\t')
@@ -71,18 +72,19 @@ class TrainReader(Reader):
                     if idx == 2 else math.log(1 + float(features[idx])))
         for idx in self.cat_idx_:
             if features[idx] == '' or features[
-                    idx] not in self.cat_feat_idx_dict_list[idx - 14]:
+                idx] not in self.cat_feat_idx_dict_list[idx - 14]:
                 label_feat_list[idx].append(0)
             else:
                 label_feat_list[idx].append(self.cat_feat_idx_dict_list[
-                    idx - 14][features[idx]])
+                                                idx - 14][features[idx]])
         label_feat_list[0].append(int(features[0]))
         return label_feat_list
-    
+
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
             label_feat_list = self._process_line(line)
             yield list(zip(self.label_feat_names, label_feat_list))

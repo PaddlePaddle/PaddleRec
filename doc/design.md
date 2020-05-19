@@ -153,7 +153,7 @@ class Model(object):
     def infer_net(self):
         pass
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
     return self._cost
 
 ```

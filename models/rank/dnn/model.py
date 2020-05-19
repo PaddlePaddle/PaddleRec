@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import math
+
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs

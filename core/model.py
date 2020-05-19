@@ -47,7 +47,7 @@ class Model(object):
     def get_infer_results(self):
         return self._infer_results
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
         """R
         """
         return self._cost

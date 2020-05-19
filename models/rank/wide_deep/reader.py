@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+from paddlerec.core.reader import Reader
+
 
 class TrainReader(Reader):
     def init(self):
@@ -28,14 +30,15 @@ class TrainReader(Reader):
         line = line.strip().split(',')
         features = list(map(float, line))
         wide_feat = features[0:8]
-        deep_feat = features[8:58+8]
+        deep_feat = features[8:58 + 8]
         label = features[-1]
         return wide_feat, deep_feat, [label]
-    
+
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
             wide_feat, deep_deat, label = self._process_line(line)
             yield [('wide_input', wide_feat), ('deep_input', deep_deat), ('label', label)]

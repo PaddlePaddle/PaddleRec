@@ -11,14 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
+
 
 class TrainReader(Reader):
     def init(self):
@@ -35,7 +38,7 @@ class TrainReader(Reader):
         self.categorical_range_ = range(14, 40)
         # load preprocessed feature dict 
         self.feat_dict_name = envs.get_global_env("feat_dict_name", None, "train.reader")
-        self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb')) 
+        self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
     def _process_line(self, line):
         features = line.rstrip('\n').split('\t')
@@ -59,11 +62,12 @@ class TrainReader(Reader):
                 feat_value.append(1.0)
         label = [int(features[0])]
         return feat_idx, feat_value, label
-    
+
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
             feat_idx, feat_value, label = self._process_line(line)
             yield [('feat_idx', feat_idx), ('feat_value', feat_value), ('label', label)]
