@@ -12,17 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
+
 import sys
-import collections
-import os
-import six
-import time
 import numpy as np
-import paddle.fluid as fluid
-import paddle
-import csv
-import io
 
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs

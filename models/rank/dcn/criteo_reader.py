@@ -13,7 +13,6 @@
 # limitations under the License.
 from __future__ import print_function
 import math
-import sys
 
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
@@ -21,7 +20,6 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-from collections import Counter
 import os
 
 class TrainReader(Reader):

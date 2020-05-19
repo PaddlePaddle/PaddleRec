@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import math
 import paddle.fluid as fluid
-import paddle.fluid.layers as layers
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
 
