@@ -13,12 +13,12 @@
 # limitations under the License.
 
 
+import datetime
+import json
 import sys
 import time
-import json
-import datetime
-import numpy as np
 
+import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
@@ -72,7 +72,7 @@ def worker_numric_max(value, env="mpi"):
     return wroker_numric_opt(value, env, "max")
 
 
-class CtrPaddleTrainer(Trainer):
+class CtrTrainer(Trainer):
     """R
     """
 
@@ -129,7 +129,7 @@ class CtrPaddleTrainer(Trainer):
             model = self._exector_context[executor['name']]['model']
             self._metrics.update(model.get_metrics())
             runnnable_scope.append(scope)
-            runnnable_cost_op.append(model.get_cost_op())
+            runnnable_cost_op.append(model.get_avg_cost())
             for var in model._data_var:
                 if var.name in data_var_name_dict:
                     continue
@@ -146,7 +146,7 @@ class CtrPaddleTrainer(Trainer):
             model = self._exector_context[executor['name']]['model']
             program = model._build_param['model']['train_program']
             if not executor['is_update_sparse']:
-                program._fleet_opt["program_configs"][str(id(model.get_cost_op().block.program))]["push_sparse"] = []
+                program._fleet_opt["program_configs"][str(id(model.get_avg_cost().block.program))]["push_sparse"] = []
             if 'train_thread_num' not in executor:
                 executor['train_thread_num'] = self.global_config['train_thread_num']
             with fluid.scope_guard(scope):

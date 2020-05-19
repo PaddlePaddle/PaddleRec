@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import paddle.fluid as fluid
+import paddle.fluid.layers.tensor as tensor
+import paddle.fluid.layers.control_flow as cf
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase
-import paddle.fluid.layers.tensor as tensor
-import paddle.fluid.layers.io as io
-import paddle.fluid.layers.control_flow as cf
-
 
 
 class BowEncoder(object):
@@ -54,6 +51,7 @@ class GrnnEncoder(object):
             bias_attr=self.param_name + ".bias")
         return fluid.layers.sequence_pool(input=gru_h, pool_type='max')
 
+
 class PairwiseHingeLoss(object):
     def __init__(self, margin=0.8):
         self.margin = margin
@@ -70,6 +68,7 @@ class PairwiseHingeLoss(object):
             loss_part2)
         return loss_part3
 
+
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
@@ -80,7 +79,6 @@ class Model(ModelBase):
         return correct
 
     def train(self):
-        
         vocab_size = envs.get_global_env("hyper_parameters.vocab_size", None, self._namespace)
         emb_dim = envs.get_global_env("hyper_parameters.emb_dim", None, self._namespace)
         hidden_size = envs.get_global_env("hyper_parameters.hidden_size", None, self._namespace)
@@ -124,15 +122,13 @@ class Model(ModelBase):
         hinge_loss = self.pairwise_hinge_loss.forward(cos_pos, cos_neg)
         avg_cost = fluid.layers.mean(hinge_loss)
         correct = self.get_correct(cos_neg, cos_pos)
-        
+
         self._cost = avg_cost
         self._metrics["correct"] = correct
         self._metrics["hinge_loss"] = hinge_loss
 
-
     def train_net(self):
         self.train()
-
 
     def infer(self):
         vocab_size = envs.get_global_env("hyper_parameters.vocab_size", None, self._namespace)
@@ -146,7 +142,7 @@ class Model(ModelBase):
         pos_label = fluid.data(name="pos_label", shape=[None, 1], dtype="int64")
         self._infer_data_var = [user_data, all_item_data, pos_label]
         self._infer_data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
+            feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
 
         user_emb = fluid.embedding(
             input=user_data, size=[vocab_size, emb_dim], param_attr="emb.item")
@@ -172,7 +168,6 @@ class Model(ModelBase):
         acc = fluid.layers.accuracy(input=all_pre_, label=pos_label, k=20)
 
         self._infer_results['recall20'] = acc
-
 
     def infer_net(self):
         self.infer()

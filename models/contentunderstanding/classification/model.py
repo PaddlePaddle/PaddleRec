@@ -13,15 +13,9 @@
 # limitations under the License.
 
 import paddle.fluid as fluid
-import math
 
-from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase
 
-import paddle.fluid as fluid
-import paddle.fluid.layers.nn as nn
-import paddle.fluid.layers.tensor as tensor
-import paddle.fluid.layers.control_flow as cf
 
 class Model(ModelBase):
     def __init__(self, config):
@@ -36,7 +30,7 @@ class Model(ModelBase):
 
     def train_net(self):
         """ network definition """
-       
+
         data = fluid.data(name="input", shape=[None, self.max_len], dtype='int64')
         label = fluid.data(name="label", shape=[None, 1], dtype='int64')
         seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
@@ -60,12 +54,12 @@ class Model(ModelBase):
         prediction = fluid.layers.fc(input=[fc_1], size=self.class_dim, act="softmax")
         cost = fluid.layers.cross_entropy(input=prediction, label=label)
         avg_cost = fluid.layers.mean(x=cost)
-        acc = fluid.layers.accuracy(input=prediction, label=label) 
+        acc = fluid.layers.accuracy(input=prediction, label=label)
 
         self.cost = avg_cost
         self._metrics["acc"] = acc
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
         return self.cost
 
     def get_metrics(self):

@@ -147,8 +147,8 @@ class TranspileTrainer(Trainer):
             if not need_save(epoch_id, save_interval, False):
                 return
 
-          #  print("save inference model is not supported now.")
-          #  return
+            #  print("save inference model is not supported now.")
+            #  return
 
             feed_varnames = envs.get_global_env(
                 "save.inference.feed_varnames", None, namespace)
@@ -248,7 +248,7 @@ class TranspileTrainer(Trainer):
                 'evaluate_model_path', "", namespace='evaluate'))]
 
         is_return_numpy = envs.get_global_env(
-            'is_return_numpy', True, namespace='evaluate') 
+            'is_return_numpy', True, namespace='evaluate')
 
         for (epoch, model_dir) in model_list:
             print("Begin to infer No.{} model, model_dir: {}".format(

@@ -25,17 +25,8 @@ class Layer(object):
         """
         pass
 
-    def generate(self, mode, param):
-        """R
-        """
-        if mode == 'fluid':
-            return self.generate_fluid(param)
-
-        print('unsupport this mode: ' + mode)
-        return None, None
-
     @abc.abstractmethod
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         pass

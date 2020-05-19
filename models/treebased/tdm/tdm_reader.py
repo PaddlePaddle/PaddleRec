@@ -28,6 +28,7 @@ class TrainReader(Reader):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def reader():
             """
             This function needs to be implemented by the user, based on data format
