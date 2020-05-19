@@ -88,7 +88,7 @@ class CtrPaddleTrainer(Trainer):
         optimizer = self.model.optimizer()
 
         optimizer = fleet.distributed_optimizer(optimizer, strategy={"use_cvm": False})
-        optimizer.minimize(self.model.get_cost_op())
+        optimizer.minimize(self.model.get_avg_cost())
 
         if fleet.is_server():
             context['status'] = 'server_pass'
