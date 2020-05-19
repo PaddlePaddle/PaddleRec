@@ -132,7 +132,7 @@ class SummaryLayer(Layer):
         return self._config, {'inference_param': {'name': 'summary', 'params': [], 'table_id': self._table_id}}
 
 
-class NormalizetionLayer(Layer):
+class NormalizationLayer(Layer):
     """R
     """
 
