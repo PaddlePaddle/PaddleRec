@@ -25,23 +25,8 @@ class Layer(object):
         """
         pass
 
-    def generate(self, mode, param):
-        """R
-        """
-        if mode == 'fluid':
-            return self.generate_fluid(param)
-        elif mode == 'tensorflow':
-            return self.generate_tensorflow(param)
-        print('unsupport this mode: ' + mode)
-        return None, None
-
     @abc.abstractmethod
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
-        """
-        pass
-
-    def generate_tensorflow(self, param):
-        """ Not implement currently
         """
         pass

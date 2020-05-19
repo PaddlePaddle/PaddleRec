@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 from paddle.fluid.incubate.fleet.utils.hdfs import HDFSClient
 
 
@@ -28,12 +29,12 @@ class LocalFSClient(object):
     """
     Util for local disk file_system io 
     """
-    
+
     def __init__(self):
         """R
         """
         pass
-    
+
     def write(self, content, path, mode):
         """
         write to file
@@ -43,7 +44,7 @@ class LocalFSClient(object):
             mode(string): w/a  w:clear_write a:append_write
         """
         temp_dir = os.path.dirname(path)
-        if not os.path.exists(temp_dir): 
+        if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
         f = open(path, mode)
         f.write(content)
@@ -75,7 +76,7 @@ class LocalFSClient(object):
         """R
         """
         os.system("rm -rf " + path)
-    
+
     def is_exist(self, path):
         """R
         """
@@ -94,13 +95,14 @@ class FileHandler(object):
     """
     A Smart file handler. auto judge local/afs by path 
     """
+
     def __init__(self, config):
         """R
         """
         if 'fs_name' in config:
-            hadoop_home="$HADOOP_HOME"
+            hadoop_home = "$HADOOP_HOME"
             hdfs_configs = {
-                "hadoop.job.ugi": config['fs_ugi'], 
+                "hadoop.job.ugi": config['fs_ugi'],
                 "fs.default.name": config['fs_name']
             }
             self._hdfs_client = HDFSClient(hadoop_home, hdfs_configs)
@@ -131,7 +133,8 @@ class FileHandler(object):
             if mode.find('a') >= 0:
                 org_content = self._hdfs_client.cat(dest_path)
             content = content + org_content
-            self._local_fs_client.write(content, temp_local_file, mode) #fleet hdfs_client only support upload, so write tmp file
+            self._local_fs_client.write(content, temp_local_file,
+                                        mode)  # fleet hdfs_client only support upload, so write tmp file
             self._hdfs_client.delete(dest_path + ".tmp")
             self._hdfs_client.upload(dest_path + ".tmp", temp_local_file)
             self._hdfs_client.delete(dest_path + ".bak")
@@ -139,7 +142,7 @@ class FileHandler(object):
             self._hdfs_client.rename(dest_path + ".tmp", dest_path)
         else:
             self._local_fs_client.write(content, dest_path, mode)
-    
+
     def cat(self, path):
         """R
         """
@@ -148,7 +151,7 @@ class FileHandler(object):
             return hdfs_cat
         else:
             return self._local_fs_client.cat(path)
-    
+
     def ls(self, path):
         """R
         """
@@ -160,7 +163,7 @@ class FileHandler(object):
             files = self._local_fs_client.ls(path)
             files = [path + '/' + fi for fi in files]  # absulte path
         return files
-    
+
     def cp(self, org_path, dest_path):
         """R
         """
@@ -170,6 +173,6 @@ class FileHandler(object):
             return self._local_fs_client.cp(org_path, dest_path)
         if not org_is_afs and dest_is_afs:
             return self._hdfs_client.upload(dest_path, org_path)
-        if org_is_afs and not dest_is_afs: 
+        if org_is_afs and not dest_is_afs:
             return self._hdfs_client.download(org_path, dest_path)
         print("Not Suppor hdfs cp currently")

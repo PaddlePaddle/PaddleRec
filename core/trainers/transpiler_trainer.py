@@ -29,7 +29,7 @@ from paddlerec.core.reader import SlotReader
 class TranspileTrainer(Trainer):
     def __init__(self, config=None):
         Trainer.__init__(self, config)
-        device = envs.get_global_env("train.device")
+        device = envs.get_global_env("train.device", "cpu")
         if device == 'gpu':
             self._place = fluid.CUDAPlace(0)
             self._exe = fluid.Executor(self._place)
@@ -265,7 +265,7 @@ class TranspileTrainer(Trainer):
                 'evaluate_model_path', "", namespace='evaluate'))]
 
         is_return_numpy = envs.get_global_env(
-            'is_return_numpy', True, namespace='evaluate') 
+            'is_return_numpy', True, namespace='evaluate')
 
         for (epoch, model_dir) in model_list:
             print("Begin to infer No.{} model, model_dir: {}".format(

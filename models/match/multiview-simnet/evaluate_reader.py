@@ -1,4 +1,4 @@
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import numpy as np
-import io
-import copy
-import random
+
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
 
 
 class EvaluateReader(Reader):
     def init(self):
-        self.query_slots = envs.get_global_env("hyper_parameters.query_slots", None, "train.model") 
-        self.title_slots = envs.get_global_env("hyper_parameters.title_slots", None, "train.model") 
+        self.query_slots = envs.get_global_env("hyper_parameters.query_slots", None, "train.model")
+        self.title_slots = envs.get_global_env("hyper_parameters.title_slots", None, "train.model")
 
         self.all_slots = []
         for i in range(self.query_slots):
@@ -52,6 +49,7 @@ class EvaluateReader(Reader):
                 if visit:
                     self._all_slots_dict[slot][0] = False
                 else:
-                    output[index][1].append(padding) 
+                    output[index][1].append(padding)
             yield output
+
         return data_iter

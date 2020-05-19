@@ -17,14 +17,14 @@ Training use fluid with one node only.
 """
 
 from __future__ import print_function
-import logging
+
 import time
+import logging
 
 import paddle.fluid as fluid
 
 from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
 from paddlerec.core.utils import envs
-import numpy as np
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")
@@ -36,7 +36,8 @@ class SingleTrainer(TranspileTrainer):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('init_pass', self.init)
         self.regist_context_processor('startup_pass', self.startup)
-        if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None, "train.reader") != "DataLoader":
+        if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None,
+                                                                  "train.reader") != "DataLoader":
             self.regist_context_processor('train_pass', self.dataset_train)
         else:
             self.regist_context_processor('train_pass', self.dataloader_train)
@@ -47,7 +48,7 @@ class SingleTrainer(TranspileTrainer):
     def init(self, context):
         self.model.train_net()
         optimizer = self.model.optimizer()
-        optimizer.minimize((self.model.get_cost_op()))
+        optimizer.minimize((self.model.get_avg_cost()))
 
         self.fetch_vars = []
         self.fetch_alias = []
@@ -74,7 +75,7 @@ class SingleTrainer(TranspileTrainer):
 
         program = fluid.compiler.CompiledProgram(
             fluid.default_main_program()).with_data_parallel(
-            loss_name=self.model.get_cost_op().name)
+            loss_name=self.model.get_avg_cost().name)
 
         metrics_varnames = []
         metrics_format = []
@@ -122,8 +123,8 @@ class SingleTrainer(TranspileTrainer):
                                          fetch_info=self.fetch_alias,
                                          print_period=self.fetch_period)
             end_time = time.time()
-            times = end_time-begin_time
-            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins/times))
+            times = end_time - begin_time
+            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins / times))
 
             self.save(i, "train", is_fleet=False)
         context['status'] = 'infer_pass'

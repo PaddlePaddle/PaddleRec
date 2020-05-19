@@ -37,14 +37,15 @@ class TrainReader(dg.MultiSlotDataGenerator):
         line = line.strip().split(',')
         features = list(map(float, line))
         wide_feat = features[0:8]
-        deep_feat = features[8:58+8]
-        label = int(features[-1])
+        deep_feat = features[8:58 + 8]
+        label = features[-1]
         return wide_feat, deep_feat, [label]
-    
+
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
             wide_feat, deep_deat, label = self._process_line(line)
 

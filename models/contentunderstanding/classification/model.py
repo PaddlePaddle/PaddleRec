@@ -1,13 +1,21 @@
-import paddle.fluid as fluid
-import math
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from paddlerec.core.utils import envs
+import paddle.fluid as fluid
+
 from paddlerec.core.model import Model as ModelBase
 
-import paddle.fluid as fluid
-import paddle.fluid.layers.nn as nn
-import paddle.fluid.layers.tensor as tensor
-import paddle.fluid.layers.control_flow as cf
 
 class Model(ModelBase):
     def __init__(self, config):
@@ -22,7 +30,7 @@ class Model(ModelBase):
 
     def train_net(self):
         """ network definition """
-       
+
         data = fluid.data(name="input", shape=[None, self.max_len], dtype='int64')
         label = fluid.data(name="label", shape=[None, 1], dtype='int64')
         seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
@@ -46,12 +54,12 @@ class Model(ModelBase):
         prediction = fluid.layers.fc(input=[fc_1], size=self.class_dim, act="softmax")
         cost = fluid.layers.cross_entropy(input=prediction, label=label)
         avg_cost = fluid.layers.mean(x=cost)
-        acc = fluid.layers.accuracy(input=prediction, label=label) 
+        acc = fluid.layers.accuracy(input=prediction, label=label)
 
         self.cost = avg_cost
         self._metrics["acc"] = acc
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
         return self.cost
 
     def get_metrics(self):

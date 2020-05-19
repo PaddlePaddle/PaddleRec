@@ -1,27 +1,38 @@
-import paddle.fluid as fluid
-import math
-
-from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import paddle.fluid as fluid
 import paddle.fluid.layers.nn as nn
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
 
+from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.utils import envs
+
+
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
         self.cost = None
         self.metrics = {}
-        self.vocab_text_size = 11447#envs.get_global_env("vocab_text_size", None, self._namespace)
-        self.vocab_tag_size = 4#envs.get_global_env("vocab_tag_size", None, self._namespace)
-        self.emb_dim = 10#envs.get_global_env("emb_dim", None, self._namespace)
-        self.hid_dim = 1000#envs.get_global_env("hid_dim", None, self._namespace)
-        self.win_size = 5#envs.get_global_env("win_size", None, self._namespace)
-        self.margin = 0.1#envs.get_global_env("margin", None, self._namespace)
-        self.neg_size = 3#envs.get_global_env("neg_size", None, self._namespace)
-        print self.emb_dim
+        self.vocab_text_size = envs.get_global_env("vocab_text_size", None, self._namespace)
+        self.vocab_tag_size = envs.get_global_env("vocab_tag_size", None, self._namespace)
+        self.emb_dim = envs.get_global_env("emb_dim", None, self._namespace)
+        self.hid_dim = envs.get_global_env("hid_dim", None, self._namespace)
+        self.win_size = envs.get_global_env("win_size", None, self._namespace)
+        self.margin = envs.get_global_env("margin", None, self._namespace)
+        self.neg_size = envs.get_global_env("neg_size", None, self._namespace)
 
     def train_net(self):
         """ network definition """
@@ -78,18 +89,16 @@ class Model(ModelBase):
         self.metrics["correct"] = correct
         self.metrics["cos_pos"] = cos_pos
 
-    def get_cost_op(self):
+    def get_avg_cost(self):
         return self.cost
 
     def get_metrics(self):
         return self.metrics
 
     def optimizer(self):
-        learning_rate = 0.01#envs.get_global_env("hyper_parameters.base_lr", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.base_lr", None, self._namespace)
         sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
-        #sgd_optimizer.minimize(avg_cost)
         return sgd_optimizer
-
 
     def infer_net(self, parameter_list):
         self.train_net()

@@ -14,7 +14,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from paddlerec.core.utils.envs import lazy_instance_by_fliename
 from paddlerec.core.utils.envs import get_global_env

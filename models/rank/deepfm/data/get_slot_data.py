@@ -19,7 +19,6 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
 class TrainReader(dg.MultiSlotDataGenerator):
 
     def __init__(self, config):
@@ -69,11 +68,12 @@ class TrainReader(dg.MultiSlotDataGenerator):
                 feat_value.append(1.0)
         label = [int(features[0])]
         return feat_idx, feat_value, label
-    
+
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
             feat_idx, feat_value, label = self._process_line(line)
             s = ""
