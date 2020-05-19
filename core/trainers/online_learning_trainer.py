@@ -31,7 +31,7 @@ from paddlerec.core.utils import envs
 from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
 
 
-class ClusterTrainer(TranspileTrainer):
+class OnlineLearningTrainer(TranspileTrainer):
     def processor_register(self):
         role = PaddleCloudRoleMaker()
         fleet.init(role)

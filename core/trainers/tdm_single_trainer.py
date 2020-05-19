@@ -24,7 +24,6 @@ import paddle.fluid as fluid
 from paddlerec.core.trainers.single_trainer import SingleTrainer
 from paddlerec.core.utils import envs
 
-
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)

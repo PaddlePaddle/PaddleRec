@@ -18,7 +18,7 @@ class TableMeta(object):
     Simple ParamTable Meta, Contain table_id
     """
     TableId = 1
-    
+
     @staticmethod
     def alloc_new_table(table_id):
         """

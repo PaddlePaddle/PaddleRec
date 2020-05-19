@@ -36,7 +36,8 @@ class SingleTrainer(TranspileTrainer):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('init_pass', self.init)
         self.regist_context_processor('startup_pass', self.startup)
-        if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None, "train.reader") != "DataLoader":
+        if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None,
+                                                                  "train.reader") != "DataLoader":
             self.regist_context_processor('train_pass', self.dataset_train)
         else:
             self.regist_context_processor('train_pass', self.dataloader_train)
@@ -122,8 +123,8 @@ class SingleTrainer(TranspileTrainer):
                                          fetch_info=self.fetch_alias,
                                          print_period=self.fetch_period)
             end_time = time.time()
-            times = end_time-begin_time
-            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins/times))
+            times = end_time - begin_time
+            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins / times))
 
             self.save(i, "train", is_fleet=False)
         context['status'] = 'infer_pass'

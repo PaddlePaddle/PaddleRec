@@ -40,7 +40,7 @@ class NumpyRandomInt(object):
 
 class TrainReader(Reader):
     def init(self):
-        dict_path = envs.get_global_env("word_count_dict_path", None, "train.reader") 
+        dict_path = envs.get_global_env("word_count_dict_path", None, "train.reader")
         self.window_size = envs.get_global_env("hyper_parameters.window_size", None, "train.model")
         self.neg_num = envs.get_global_env("hyper_parameters.neg_num", None, "train.model")
         self.with_shuffle_batch = envs.get_global_env("hyper_parameters.with_shuffle_batch", None, "train.model")
@@ -75,7 +75,7 @@ class TrainReader(Reader):
             start_point = 0
         end_point = idx + target_window
         targets = words[start_point:idx] + words[idx + 1:end_point + 1]
-        return targets 
+        return targets
 
     def generate_sample(self, line):
         def reader():
@@ -87,7 +87,7 @@ class TrainReader(Reader):
                     output = [('input_word', [int(target_id)]), ('true_label', [int(context_id)])]
                     if not self.with_shuffle_batch:
                         neg_array = self.cs.searchsorted(np.random.sample(self.neg_num))
-                        output += [('neg_label', [int(str(i)) for i in neg_array ])]
+                        output += [('neg_label', [int(str(i)) for i in neg_array])]
                     yield output
-        return reader
 
+        return reader

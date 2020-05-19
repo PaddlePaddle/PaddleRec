@@ -22,12 +22,12 @@ class TrainReader(Reader):
     def init(self):
         pass
 
-    def _process_line(self, l): 
+    def _process_line(self, l):
         l = l.strip().split(" ")
         data = l[0:10]
         seq_len = l[10:11]
         label = l[11:]
-        return  data, label, seq_len
+        return data, label, seq_len
 
     def generate_sample(self, line):
         def data_iter():
@@ -38,6 +38,7 @@ class TrainReader(Reader):
             data = [int(i) for i in data]
             label = [int(i) for i in label]
             seq_len = [int(i) for i in seq_len]
-            print >>sys.stderr, str([('data', data), ('label', label), ('seq_len', seq_len)])
+            print >> sys.stderr, str([('data', data), ('label', label), ('seq_len', seq_len)])
             yield [('data', data), ('label', label), ('seq_len', seq_len)]
+
         return data_iter

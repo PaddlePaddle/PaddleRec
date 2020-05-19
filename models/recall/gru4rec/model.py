@@ -86,10 +86,8 @@ class Model(ModelBase):
         self._metrics["cost"] = avg_cost
         self._metrics["acc"] = acc
 
-
     def train_net(self):
         self.all_vocab_network()
-
 
     def infer_net(self):
         self.all_vocab_network(is_infer=True)

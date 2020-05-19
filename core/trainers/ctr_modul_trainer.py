@@ -72,7 +72,7 @@ def worker_numric_max(value, env="mpi"):
     return wroker_numric_opt(value, env, "max")
 
 
-class CtrPaddleTrainer(Trainer):
+class CtrTrainer(Trainer):
     """R
     """
 

@@ -43,8 +43,8 @@ class TrainReader(Reader):
                 label_marital = [1, 0]
             elif int(l[0]) == 1:
                 label_marital = [0, 1]
-            #label_income = np.array(label_income)
-            #label_marital = np.array(label_marital)
+            # label_income = np.array(label_income)
+            # label_marital = np.array(label_marital)
             feature_name = ["input", "label_income", "label_marital"]
             yield zip(feature_name, [data] + [label_income] + [label_marital])
 

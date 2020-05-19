@@ -30,7 +30,7 @@ class Model(ModelBase):
 
     def train_net(self):
         """ network definition """
-       
+
         data = fluid.data(name="input", shape=[None, self.max_len], dtype='int64')
         label = fluid.data(name="label", shape=[None, 1], dtype='int64')
         seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
@@ -54,7 +54,7 @@ class Model(ModelBase):
         prediction = fluid.layers.fc(input=[fc_1], size=self.class_dim, act="softmax")
         cost = fluid.layers.cross_entropy(input=prediction, label=label)
         avg_cost = fluid.layers.mean(x=cost)
-        acc = fluid.layers.accuracy(input=prediction, label=label) 
+        acc = fluid.layers.accuracy(input=prediction, label=label)
 
         self.cost = avg_cost
         self._metrics["acc"] = acc

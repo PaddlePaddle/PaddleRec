@@ -27,7 +27,6 @@ from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import f
 from paddlerec.core.utils import envs
 from paddlerec.core.trainers.cluster_trainer import ClusterTrainer
 
-
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)

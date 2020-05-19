@@ -26,13 +26,13 @@ class Model(ModelBase):
         init_value_ = 0.1
         initer = fluid.initializer.TruncatedNormalInitializer(
             loc=0.0, scale=init_value_)
-        
+
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
         sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self._namespace)
         sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
-        
+
         # ------------------------- network input --------------------------
-        
+
         num_field = envs.get_global_env("hyper_parameters.num_field", None, self._namespace)
         raw_feat_idx = fluid.data(name='feat_idx', shape=[None, num_field], dtype='int64')
         raw_feat_value = fluid.data(name='feat_value', shape=[None, num_field], dtype='float32')
@@ -51,16 +51,16 @@ class Model(ModelBase):
             feat_embeddings,
             [-1, num_field, sparse_feature_dim])  # None * num_field * embedding_size
         feat_embeddings = feat_embeddings * feat_value  # None * num_field * embedding_size
-        
+
         # ------------------------- set _data_var --------------------------
-        
+
         self._data_var.append(raw_feat_idx)
         self._data_var.append(raw_feat_value)
         self._data_var.append(self.label)
         if self._platform != "LINUX":
             self._data_loader = fluid.io.DataLoader.from_generator(
                 feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
-        
+
         # -------------------- linear  --------------------
 
         weights_linear = fluid.embedding(
@@ -78,7 +78,7 @@ class Model(ModelBase):
             default_initializer=fluid.initializer.ConstantInitializer(value=0))
         y_linear = fluid.layers.reduce_sum(
             (weights_linear * feat_value), 1) + b_linear
-        
+
         # -------------------- CIN  --------------------
 
         layer_sizes_cin = envs.get_global_env("hyper_parameters.layer_sizes_cin", None, self._namespace)
@@ -89,7 +89,7 @@ class Model(ModelBase):
             X_0 = fluid.layers.reshape(
                 fluid.layers.transpose(Xs[0], [0, 2, 1]),
                 [-1, sparse_feature_dim, num_field,
-                1])  # None, embedding_size, num_field, 1
+                 1])  # None, embedding_size, num_field, 1
             X_k = fluid.layers.reshape(
                 fluid.layers.transpose(Xs[-1], [0, 2, 1]),
                 [-1, sparse_feature_dim, 1, last_s])  # None, embedding_size, 1, last_s
@@ -135,7 +135,7 @@ class Model(ModelBase):
         layer_sizes_dnn = envs.get_global_env("hyper_parameters.layer_sizes_dnn", None, self._namespace)
         act = envs.get_global_env("hyper_parameters.act", None, self._namespace)
         y_dnn = fluid.layers.reshape(feat_embeddings,
-                                    [-1, num_field * sparse_feature_dim])
+                                     [-1, num_field * sparse_feature_dim])
         for s in layer_sizes_dnn:
             y_dnn = fluid.layers.fc(input=y_dnn,
                                     size=s,
@@ -151,7 +151,7 @@ class Model(ModelBase):
         # ------------------- xDeepFM ------------------
 
         self.predict = fluid.layers.sigmoid(y_linear + y_cin + y_dnn)
-        
+
     def train_net(self):
         self.xdeepfm_net()
 
@@ -163,11 +163,11 @@ class Model(ModelBase):
         predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
         label_int = fluid.layers.cast(self.label, 'int64')
         auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                            label=label_int,
-                                                            slide_steps=0)
+                                                     label=label_int,
+                                                     slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
-    
+
     def optimizer(self):
         learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)

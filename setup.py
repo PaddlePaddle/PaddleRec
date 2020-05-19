@@ -36,7 +36,7 @@ about["__author__"] = "paddle-dev"
 about["__author_email__"] = "paddle-dev@baidu.com"
 about["__url__"] = "https://github.com/PaddlePaddle/PaddleRec"
 
-readme = "..."
+readme = ""
 
 
 def run_cmd(command):

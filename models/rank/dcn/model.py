@@ -23,7 +23,7 @@ from paddlerec.core.model import Model as ModelBase
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
-    
+
     def init_network(self):
         self.cross_num = envs.get_global_env("hyper_parameters.cross_num", None, self._namespace)
         self.dnn_hidden_units = envs.get_global_env("hyper_parameters.dnn_hidden_units", None, self._namespace)
@@ -50,7 +50,7 @@ class Model(ModelBase):
 
         self.net_input = None
         self.loss = None
-    
+
     def _create_embedding_input(self, data_dict):
         # sparse embedding
         sparse_emb_dict = OrderedDict((name, fluid.embedding(
@@ -78,7 +78,7 @@ class Model(ModelBase):
         net_input = fluid.layers.concat([dense_input, sparse_input], axis=-1)
 
         return net_input
-    
+
     def _deep_net(self, input, hidden_units, use_bn=False, is_test=False):
         for units in hidden_units:
             input = fluid.layers.fc(input=input, size=units)
@@ -95,7 +95,7 @@ class Model(ModelBase):
             [input_dim], dtype='float32', name=prefix + "_b")
         xw = fluid.layers.reduce_sum(x * w, dim=1, keep_dim=True)  # (N, 1)
         return x0 * xw + b + x, w
-    
+
     def _cross_net(self, input, num_corss_layers):
         x = x0 = input
         l2_reg_cross_list = []
@@ -106,10 +106,10 @@ class Model(ModelBase):
             fluid.layers.concat(
                 l2_reg_cross_list, axis=-1))
         return x, l2_reg_cross_loss
-    
+
     def _l2_loss(self, w):
         return fluid.layers.reduce_sum(fluid.layers.square(w))
-    
+
     def train_net(self):
         self.init_network()
         self.target_input = fluid.data(
@@ -118,14 +118,14 @@ class Model(ModelBase):
         for feat_name in self.feat_dims_dict:
             data_dict[feat_name] = fluid.data(
                 name=feat_name, shape=[None, 1], dtype='float32')
-        
+
         self.net_input = self._create_embedding_input(data_dict)
-        
+
         deep_out = self._deep_net(self.net_input, self.dnn_hidden_units, self.dnn_use_bn, False)
 
         cross_out, l2_reg_cross_loss = self._cross_net(self.net_input,
-                                                       self.cross_num)  
-        
+                                                       self.cross_num)
+
         last_out = fluid.layers.concat([deep_out, cross_out], axis=-1)
         logit = fluid.layers.fc(last_out, 1)
 
@@ -141,7 +141,6 @@ class Model(ModelBase):
             input=prob_2d, label=label_int, slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
-        
 
         # logloss
         logloss = fluid.layers.log_loss(self.prob, self.target_input)

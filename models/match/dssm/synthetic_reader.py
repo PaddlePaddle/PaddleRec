@@ -37,7 +37,7 @@ class TrainReader(Reader):
             neg_docs = []
             for i in range(len(features) - 2):
                 feature_names.append('doc_neg_' + str(i))
-                neg_docs.append(map(float, features[i+2].split(',')))
+                neg_docs.append(map(float, features[i + 2].split(',')))
 
             yield zip(feature_names, [query] + [pos_doc] + neg_docs)
 

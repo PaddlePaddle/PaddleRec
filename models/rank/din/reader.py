@@ -32,9 +32,9 @@ class TrainReader(Reader):
         self.train_data_path = envs.get_global_env("train_data_path", None, "train.reader")
         self.res = []
         self.max_len = 0
-        
+
         data_file_list = os.listdir(self.train_data_path)
-        for i in  range(0, len(data_file_list)):
+        for i in range(0, len(data_file_list)):
             train_data_file = os.path.join(self.train_data_path, data_file_list[i])
             with open(train_data_file, "r") as fin:
                 for line in fin:
@@ -47,9 +47,6 @@ class TrainReader(Reader):
         self.batch_size = envs.get_global_env("batch_size", 32, "train.reader")
         self.group_size = self.batch_size * 20
 
-
-        
-
     def _process_line(self, line):
         line = line.strip().split(';')
         hist = line[0].split()
@@ -58,22 +55,22 @@ class TrainReader(Reader):
         cate = [int(i) for i in cate]
         return [hist, cate, [int(line[2])], [int(line[3])], [float(line[4])]]
 
-    
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
-            #feat_idx, feat_value, label = self._process_line(line)
+            # feat_idx, feat_value, label = self._process_line(line)
             yield self._process_line(line)
 
         return data_iter
-    
+
     def pad_batch_data(self, input, max_len):
         res = np.array([x + [0] * (max_len - len(x)) for x in input])
         res = res.astype("int64").reshape([-1, max_len])
         return res
-    
+
     def make_data(self, b):
         max_len = max(len(x[0]) for x in b)
         item = self.pad_batch_data([x[0] for x in b], max_len)
@@ -81,7 +78,7 @@ class TrainReader(Reader):
         len_array = [len(x[0]) for x in b]
         mask = np.array(
             [[0] * x + [-1e9] * (max_len - x) for x in len_array]).reshape(
-                [-1, max_len, 1])
+            [-1, max_len, 1])
         target_item_seq = np.array(
             [[x[2]] * max_len for x in b]).astype("int64").reshape([-1, max_len])
         target_cat_seq = np.array(
@@ -93,7 +90,7 @@ class TrainReader(Reader):
                 target_item_seq[i], target_cat_seq[i]
             ])
         return res
-    
+
     def batch_reader(self, reader, batch_size, group_size):
         def batch_reader():
             bg = []
@@ -115,7 +112,7 @@ class TrainReader(Reader):
                     yield self.make_data(b)
 
         return batch_reader
-    
+
     def base_read(self, file_dir):
         res = []
         for train_file in file_dir:
@@ -126,10 +123,8 @@ class TrainReader(Reader):
                     cate = line[1].split()
                     res.append([hist, cate, line[2], line[3], float(line[4])])
         return res
-    
+
     def generate_batch_from_trainfiles(self, files):
         data_set = self.base_read(files)
         random.shuffle(data_set)
         return self.batch_reader(data_set, self.batch_size, self.batch_size * 20)
-        
-        

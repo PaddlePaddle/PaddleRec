@@ -200,7 +200,7 @@ class AUCMetric(Metric):
         """ """
         return self._result
 
-    def get_result_to_string(self):
+    def __str__(self):
         """ """
         result = self.get_result()
         result_str = "%s AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f RMSE=%.6f " \
