@@ -78,7 +78,7 @@
   > 本地模拟分布式(`local_cluster`)为`1个server + 1个trainer`的参数服务器模式
 
 
-我们以排序模型中的`dnn`模型为例介绍PaddleRec的简单使用。训练数据来源为Criteo数据集，我们从中截取了100条方便您快速上手体验完整的PaddleRec流程。
+我们以排序模型中的`dnn`模型为例介绍PaddleRec的简单使用。训练数据来源为[Criteo数据集](https://www.kaggle.com/c/criteo-display-ad-challenge/)，我们从中截取了100条方便您快速上手体验完整的PaddleRec流程。
 
 ```bash
 # 使用CPU进行单机训练
