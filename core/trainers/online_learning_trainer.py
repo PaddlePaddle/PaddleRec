@@ -18,9 +18,9 @@ Training use fluid with one node only.
 
 from __future__ import print_function
 
+import datetime
 import os
 import time
-import datetime
 
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
@@ -31,7 +31,7 @@ from paddlerec.core.utils import envs
 from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
 
 
-class ClusterTrainer(TranspileTrainer):
+class OnlineLearningTrainer(TranspileTrainer):
     def processor_register(self):
         role = PaddleCloudRoleMaker()
         fleet.init(role)
@@ -78,7 +78,7 @@ class ClusterTrainer(TranspileTrainer):
         optimizer = self.model.optimizer()
         strategy = self.build_strategy()
         optimizer = fleet.distributed_optimizer(optimizer, strategy)
-        optimizer.minimize(self.model.get_cost_op())
+        optimizer.minimize(self.model.get_avg_cost())
 
         if fleet.is_server():
             context['status'] = 'server_pass'

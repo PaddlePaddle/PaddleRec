@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import os
-import time
-import shutil
-import requests
+import platform
 import sys
+import shutil
+import time
+
+import requests
 import tarfile
 import zipfile
-import platform
-import functools
 
 lasttime = time.time()
 FLUSH_INTERVAL = 0.1

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import copy
-import sys
-import socket
 from contextlib import closing
+import copy
+import os
+import socket
+import sys
 
 global_envs = {}
 

@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
+
 import paddle.fluid as fluid
-import math
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import Model as ModelBase
@@ -134,7 +134,7 @@ class Model(ModelBase):
         sample_nodes_emb = [
             fluid.layers.reshape(sample_nodes_emb[i],
                                  [-1, self.neg_sampling_list[i] +
-                                     self.output_positive, self.node_emb_size]
+                                  self.output_positive, self.node_emb_size]
                                  ) for i in range(self.max_layers)
         ]
 
@@ -229,7 +229,7 @@ class Model(ModelBase):
                 act=self.act,
                 param_attr=fluid.ParamAttr(
                     name="trans.layer_fc.weight." + str(i)),
-                bias_attr=fluid.ParamAttr(name="trans.layer_fc.bias."+str(i)),
+                bias_attr=fluid.ParamAttr(name="trans.layer_fc.bias." + str(i)),
             ) for i in range(self.max_layers)
         ]
 
@@ -268,8 +268,8 @@ class Model(ModelBase):
                 num_flatten_dims=2,
                 act=self.act,
                 param_attr=fluid.ParamAttr(
-                    name="cls.concat_fc.weight."+str(i)),
-                bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias."+str(i))
+                    name="cls.concat_fc.weight." + str(i)),
+                bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias." + str(i))
             ) for i in range(self.max_layers)
         ]
 
@@ -348,7 +348,7 @@ class Model(ModelBase):
                 current_layer_node_num = self.first_layer_node.shape[1]
             else:
                 current_layer_node_num = current_layer_node.shape[1] * \
-                    current_layer_node.shape[2]
+                                         current_layer_node.shape[2]
 
             current_layer_node = fluid.layers.reshape(
                 current_layer_node, [-1, current_layer_node_num])
@@ -458,7 +458,7 @@ class Model(ModelBase):
             param_attr=fluid.ParamAttr(
                 name="trans.layer_fc.weight." + str(layer_idx)),
             bias_attr=fluid.ParamAttr(
-                name="trans.layer_fc.bias."+str(layer_idx)),
+                name="trans.layer_fc.bias." + str(layer_idx)),
         )
         return input_layer_fc_out
 
@@ -479,6 +479,6 @@ class Model(ModelBase):
             num_flatten_dims=2,
             act=self.act,
             param_attr=fluid.ParamAttr(
-                name="cls.concat_fc.weight."+str(layer_idx)),
-            bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias."+str(layer_idx)))
+                name="cls.concat_fc.weight." + str(layer_idx)),
+            bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias." + str(layer_idx)))
         return hidden_states_fc
