@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import abc
-import time
 import datetime
+import time
 
 import paddle.fluid as fluid
 
@@ -22,7 +22,7 @@ from paddlerec.core.utils import fs as fs
 from paddlerec.core.utils import util as util
 
 
-class Dataset(object):
+class DatasetHolder(object):
     """
     Dataset Base
     """
@@ -62,7 +62,7 @@ class Dataset(object):
         pass
 
 
-class TimeSplitDataset(Dataset):
+class TimeSplitDatasetHolder(DatasetHolder):
     """
     Dataset with time split dir.  root_path/$DAY/$HOUR
     """
@@ -141,16 +141,6 @@ class TimeSplitDataset(Dataset):
             time_window_mins = time_window_mins - self._split_interval
             data_time = data_time + datetime.timedelta(minutes=self._split_interval)
         return data_file_list
-
-
-class FluidTimeSplitDataset(TimeSplitDataset):
-    """
-    A Dataset with time split for PaddleFluid
-    """
-
-    def __init__(self, config):
-        """ """
-        TimeSplitDataset.__init__(self, config)
 
     def _alloc_dataset(self, file_list):
         """ """

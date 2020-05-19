@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-import numpy as np
 
+import os
+
+import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import MPISymetricRoleMaker
@@ -22,7 +23,7 @@ from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer
 
 
-class CtrPaddleTrainer(Trainer):
+class CtrTrainer(Trainer):
     """R
     """
 
@@ -87,7 +88,7 @@ class CtrPaddleTrainer(Trainer):
         optimizer = self.model.optimizer()
 
         optimizer = fleet.distributed_optimizer(optimizer, strategy={"use_cvm": False})
-        optimizer.minimize(self.model.get_cost_op())
+        optimizer.minimize(self.model.get_avg_cost())
 
         if fleet.is_server():
             context['status'] = 'server_pass'

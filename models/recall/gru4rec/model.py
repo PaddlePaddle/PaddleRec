@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -87,10 +86,8 @@ class Model(ModelBase):
         self._metrics["cost"] = avg_cost
         self._metrics["acc"] = acc
 
-
     def train_net(self):
         self.all_vocab_network()
-
 
     def infer_net(self):
         self.all_vocab_network(is_infer=True)
