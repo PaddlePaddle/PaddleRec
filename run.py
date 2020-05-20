@@ -68,13 +68,8 @@ def get_engine(args):
     engine = engine.upper()
 
     if engine not in engine_choices:
-<<<<<<< HEAD
-        raise ValueError(
-            "train.engin can not be chosen in {}".format(engine_choices))
-=======
         raise ValueError("train.engin can not be chosen in {}".format(
             engine_choices))
->>>>>>> upstream/master
 
     print("engines: \n{}".format(engines))
 
