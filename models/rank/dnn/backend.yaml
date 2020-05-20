@@ -23,4 +23,3 @@ engine:
     memory: "4Gi"
     storage: "10Gi"
     log_level: 0
-
