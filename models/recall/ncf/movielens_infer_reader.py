@@ -33,7 +33,9 @@ class EvaluateReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = line.strip().split(',')
-            
+
             feature_name = ["user_input", "item_input"]
-            yield zip(feature_name, [[int(features[0])]] + [[int(features[1])]])
+            yield zip(feature_name,
+                      [[int(features[0])]] + [[int(features[1])]])
+
         return reader
