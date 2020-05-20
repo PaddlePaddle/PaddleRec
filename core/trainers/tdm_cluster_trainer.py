@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Training use fluid with one node only.
 """
@@ -36,8 +35,8 @@ special_param = ["TDM_Tree_Travel", "TDM_Tree_Layer", "TDM_Tree_Info"]
 class TDMClusterTrainer(ClusterTrainer):
     def server(self, context):
         namespace = "train.startup"
-        init_model_path = envs.get_global_env(
-            "cluster.init_model_path", "", namespace)
+        init_model_path = envs.get_global_env("cluster.init_model_path", "",
+                                              namespace)
         assert init_model_path != "", "Cluster train must has init_model for TDM"
         fleet.init_server(init_model_path)
         logger.info("TDM: load model from {}".format(init_model_path))
@@ -48,24 +47,27 @@ class TDMClusterTrainer(ClusterTrainer):
         self._exe.run(fleet.startup_program)
 
         namespace = "train.startup"
-        load_tree = envs.get_global_env(
-            "tree.load_tree", True, namespace)
-        self.tree_layer_path = envs.get_global_env(
-            "tree.tree_layer_path", "", namespace)
-        self.tree_travel_path = envs.get_global_env(
-            "tree.tree_travel_path", "", namespace)
-        self.tree_info_path = envs.get_global_env(
-            "tree.tree_info_path", "", namespace)
+        load_tree = envs.get_global_env("tree.load_tree", True, namespace)
 
-        save_init_model = envs.get_global_env(
-            "cluster.save_init_model", False, namespace)
-        init_model_path = envs.get_global_env(
-            "cluster.init_model_path", "", namespace)
+        self.tree_layer_path = envs.get_global_env("tree.tree_layer_path", "",
+                                                   namespace)
+
+        self.tree_travel_path = envs.get_global_env("tree.tree_travel_path",
+                                                    "", namespace)
+
+        self.tree_info_path = envs.get_global_env("tree.tree_info_path", "",
+                                                  namespace)
+
+        save_init_model = envs.get_global_env("cluster.save_init_model", False,
+                                              namespace)
+        init_model_path = envs.get_global_env("cluster.init_model_path", "",
+                                              namespace)
 
         if load_tree:
             # covert tree to tensor, set it into Fluid's variable.
             for param_name in special_param:
-                param_t = fluid.global_scope().find_var(param_name).get_tensor()
+                param_t = fluid.global_scope().find_var(param_name).get_tensor(
+                )
                 param_array = self._tdm_prepare(param_name)
                 param_t.set(param_array.astype('int32'), self._place)
 
@@ -93,8 +95,8 @@ class TDMClusterTrainer(ClusterTrainer):
     def _tdm_travel_prepare(self):
         """load tdm tree param from npy/list file"""
         travel_array = np.load(self.tree_travel_path)
-        logger.info("TDM Tree leaf node nums: {}".format(
-            travel_array.shape[0]))
+        logger.info("TDM Tree leaf node nums: {}".format(travel_array.shape[
+            0]))
         return travel_array
 
     def _tdm_layer_prepare(self):
