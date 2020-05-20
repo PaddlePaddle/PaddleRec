@@ -21,9 +21,11 @@ from paddlerec.core.reader import Reader
 
 class TrainReader(Reader):
     def init(self):
-        all_field_id = ['101', '109_14', '110_14', '127_14', '150_14', '121', '122', '124', '125', '126', '127', '128',
-                        '129',
-                        '205', '206', '207', '210', '216', '508', '509', '702', '853', '301']
+        all_field_id = [
+            '101', '109_14', '110_14', '127_14', '150_14', '121', '122', '124',
+            '125', '126', '127', '128', '129', '205', '206', '207', '210',
+            '216', '508', '509', '702', '853', '301'
+        ]
         self.all_field_id_dict = defaultdict(int)
         for i, field_id in enumerate(all_field_id):
             self.all_field_id_dict[field_id] = [False, i]

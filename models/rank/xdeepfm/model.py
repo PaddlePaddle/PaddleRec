@@ -28,18 +28,22 @@ class Model(ModelBase):
             loc=0.0, scale=init_value_)
 
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
-        sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self._namespace)
-        sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
+        sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number", None, self._namespace)
+        sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim", None, self._namespace)
 
         # ------------------------- network input --------------------------
 
-        num_field = envs.get_global_env("hyper_parameters.num_field", None, self._namespace)
+        num_field = envs.get_global_env("hyper_parameters.num_field", None,
+                                        self._namespace)
         raw_feat_idx = self._sparse_data_var[1]
         raw_feat_value = self._dense_data_var[0]
         self.label = self._sparse_data_var[0]
 
         feat_idx = raw_feat_idx
-        feat_value = fluid.layers.reshape(raw_feat_value, [-1, num_field, 1])  # None * num_field * 1
+        feat_value = fluid.layers.reshape(
+            raw_feat_value, [-1, num_field, 1])  # None * num_field * 1
 
         feat_embeddings = fluid.embedding(
             input=feat_idx,
@@ -48,9 +52,9 @@ class Model(ModelBase):
             size=[sparse_feature_number + 1, sparse_feature_dim],
             padding_idx=0,
             param_attr=fluid.ParamAttr(initializer=initer))
-        feat_embeddings = fluid.layers.reshape(
-            feat_embeddings,
-            [-1, num_field, sparse_feature_dim])  # None * num_field * embedding_size
+        feat_embeddings = fluid.layers.reshape(feat_embeddings, [
+            -1, num_field, sparse_feature_dim
+        ])  # None * num_field * embedding_size
         feat_embeddings = feat_embeddings * feat_value  # None * num_field * embedding_size
 
         # -------------------- linear  --------------------
@@ -73,7 +77,8 @@ class Model(ModelBase):
 
         # -------------------- CIN  --------------------
 
-        layer_sizes_cin = envs.get_global_env("hyper_parameters.layer_sizes_cin", None, self._namespace)
+        layer_sizes_cin = envs.get_global_env(
+            "hyper_parameters.layer_sizes_cin", None, self._namespace)
         Xs = [feat_embeddings]
         last_s = num_field
         for s in layer_sizes_cin:
@@ -84,7 +89,8 @@ class Model(ModelBase):
                  1])  # None, embedding_size, num_field, 1
             X_k = fluid.layers.reshape(
                 fluid.layers.transpose(Xs[-1], [0, 2, 1]),
-                [-1, sparse_feature_dim, 1, last_s])  # None, embedding_size, 1, last_s
+                [-1, sparse_feature_dim, 1,
+                 last_s])  # None, embedding_size, 1, last_s
             Z_k_1 = fluid.layers.matmul(
                 X_0, X_k)  # None, embedding_size, num_field, last_s
 
@@ -124,16 +130,19 @@ class Model(ModelBase):
 
         # -------------------- DNN --------------------
 
-        layer_sizes_dnn = envs.get_global_env("hyper_parameters.layer_sizes_dnn", None, self._namespace)
-        act = envs.get_global_env("hyper_parameters.act", None, self._namespace)
+        layer_sizes_dnn = envs.get_global_env(
+            "hyper_parameters.layer_sizes_dnn", None, self._namespace)
+        act = envs.get_global_env("hyper_parameters.act", None,
+                                  self._namespace)
         y_dnn = fluid.layers.reshape(feat_embeddings,
                                      [-1, num_field * sparse_feature_dim])
         for s in layer_sizes_dnn:
-            y_dnn = fluid.layers.fc(input=y_dnn,
-                                    size=s,
-                                    act=act,
-                                    param_attr=fluid.ParamAttr(initializer=initer),
-                                    bias_attr=None)
+            y_dnn = fluid.layers.fc(
+                input=y_dnn,
+                size=s,
+                act=act,
+                param_attr=fluid.ParamAttr(initializer=initer),
+                bias_attr=None)
         y_dnn = fluid.layers.fc(input=y_dnn,
                                 size=1,
                                 act=None,
@@ -148,7 +157,10 @@ class Model(ModelBase):
         self.model._init_slots()
         self.xdeepfm_net()
 
-        cost = fluid.layers.log_loss(input=self.predict, label=fluid.layers.cast(self.label, "float32"), epsilon=0.0000001)
+        cost = fluid.layers.log_loss(
+            input=self.predict,
+            label=fluid.layers.cast(self.label, "float32"),
+            epsilon=0.0000001)
         batch_cost = fluid.layers.reduce_mean(cost)
         self._cost = batch_cost
 
@@ -162,7 +174,8 @@ class Model(ModelBase):
         self._metrics["BATCH_AUC"] = batch_auc_var
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
+                                            None, self._namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 

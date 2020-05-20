@@ -22,7 +22,7 @@ from paddlerec.core.metric import Metric
 
 class AUCMetric(Metric):
     """
-    Metric For Paddle Model
+    Metric For Fluid Model
     """
 
     def __init__(self, config, fleet):
@@ -83,7 +83,8 @@ class AUCMetric(Metric):
             if scope.find_var(metric_item['var'].name) is None:
                 result[metric_name] = None
                 continue
-            result[metric_name] = self.get_metric(scope, metric_item['var'].name)
+            result[metric_name] = self.get_metric(scope,
+                                                  metric_item['var'].name)
         return result
 
     def calculate_auc(self, global_pos, global_neg):
@@ -178,14 +179,18 @@ class AUCMetric(Metric):
             self._result['mean_q'] = 0
             return self._result
         if 'stat_pos' in result and 'stat_neg' in result:
-            result['auc'] = self.calculate_auc(result['stat_pos'], result['stat_neg'])
-            result['bucket_error'] = self.calculate_auc(result['stat_pos'], result['stat_neg'])
+            result['auc'] = self.calculate_auc(result['stat_pos'],
+                                               result['stat_neg'])
+            result['bucket_error'] = self.calculate_auc(result['stat_pos'],
+                                                        result['stat_neg'])
         if 'pos_ins_num' in result:
-            result['actual_ctr'] = result['pos_ins_num'] / result['total_ins_num']
+            result['actual_ctr'] = result['pos_ins_num'] / result[
+                'total_ins_num']
         if 'abserr' in result:
             result['mae'] = result['abserr'] / result['total_ins_num']
         if 'sqrerr' in result:
-            result['rmse'] = math.sqrt(result['sqrerr'] / result['total_ins_num'])
+            result['rmse'] = math.sqrt(result['sqrerr'] /
+                                       result['total_ins_num'])
         if 'prob' in result:
             result['predict_ctr'] = result['prob'] / result['total_ins_num']
             if abs(result['predict_ctr']) > 1e-6:
