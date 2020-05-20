@@ -52,7 +52,6 @@ def get_inters_from_yaml(file, filter):
     flattens = envs.flatten_environs(_envs)
 
     inters = {}
-
     for k, v in flattens.items():
         if k.startswith(filter):
             inters[k] = v
@@ -63,14 +62,16 @@ def get_engine(args):
     transpiler = get_transpiler()
     run_extras = get_inters_from_yaml(args.model, "train.")
 
-    engine  =  run_extras.get("train.engine", "single")
+    engine = run_extras.get("train.engine", "single")
     engine = engine.upper()
 
     if engine not in engine_choices:
         raise ValueError("train.engin can not be chosen in {}".format(engine_choices))
 
     print("engines: \n{}".format(engines))
+
     run_engine = engines[transpiler].get(engine, None)
+
     return run_engine
 
 
