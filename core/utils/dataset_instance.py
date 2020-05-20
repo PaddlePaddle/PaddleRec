@@ -17,10 +17,11 @@ import sys
 
 from paddlerec.core.utils.envs import lazy_instance_by_fliename
 from paddlerec.core.reader import SlotReader
-from paddlerec.core.utils import envs
 
 if len(sys.argv) < 4:
-    raise ValueError("reader only accept 3 argument: 1. reader_class 2.train/evaluate/slotreader 3.yaml_abs_path")
+    raise ValueError(
+        "reader only accept 3 argument: 1. reader_class 2.train/evaluate/slotreader 3.yaml_abs_path"
+    )
 
 reader_package = sys.argv[1]
 

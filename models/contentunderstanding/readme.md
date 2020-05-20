@@ -87,4 +87,3 @@ python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification
 | :------------------: | :--------------------: | :---------: |:---------: | :---------: |:---------: |
 |       ag news dataset        |       TagSpace       |       --        |       --          |       --          |       --          |
 |       --        |       Classification       |       --        |       --          |       --          |       --          |
-

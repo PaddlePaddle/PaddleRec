@@ -19,8 +19,9 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-class TrainReader(dg.MultiSlotDataGenerator):
 
+
+class TrainReader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
 
@@ -44,7 +45,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         self.categorical_range_ = range(14, 40)
         # load preprocessed feature dict 
         self.feat_dict_name = "aid_data/feat_dict_10.pkl2"
-        self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb')) 
+        self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
     def _process_line(self, line):
         features = line.rstrip('\n').split('\t')
@@ -77,14 +78,17 @@ class TrainReader(dg.MultiSlotDataGenerator):
         def data_iter():
             feat_idx, feat_value, label = self._process_line(line)
             s = ""
-            for i in [('feat_idx', feat_idx), ('feat_value', feat_value), ('label', label)]:
+            for i in [('feat_idx', feat_idx), ('feat_value', feat_value),
+                      ('label', label)]:
                 k = i[0]
                 v = i[1]
                 for j in v:
                     s += " " + k + ":" + str(j)
             print s.strip()
             yield None
+
         return data_iter
+
 
 reader = TrainReader("../config.yaml")
 reader.init()

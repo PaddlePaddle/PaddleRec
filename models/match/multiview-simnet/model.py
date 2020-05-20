@@ -103,12 +103,18 @@ class Model(ModelBase):
 
     def init_config(self):
         self._fetch_interval = 1
-        query_encoder = envs.get_global_env("hyper_parameters.query_encoder", None, self._namespace)
-        title_encoder = envs.get_global_env("hyper_parameters.title_encoder", None, self._namespace)
-        query_encode_dim = envs.get_global_env("hyper_parameters.query_encode_dim", None, self._namespace)
-        title_encode_dim = envs.get_global_env("hyper_parameters.title_encode_dim", None, self._namespace)
-        query_slots = envs.get_global_env("hyper_parameters.query_slots", None, self._namespace)
-        title_slots = envs.get_global_env("hyper_parameters.title_slots", None, self._namespace)
+        query_encoder = envs.get_global_env("hyper_parameters.query_encoder",
+                                            None, self._namespace)
+        title_encoder = envs.get_global_env("hyper_parameters.title_encoder",
+                                            None, self._namespace)
+        query_encode_dim = envs.get_global_env(
+            "hyper_parameters.query_encode_dim", None, self._namespace)
+        title_encode_dim = envs.get_global_env(
+            "hyper_parameters.title_encode_dim", None, self._namespace)
+        query_slots = envs.get_global_env("hyper_parameters.query_slots", None,
+                                          self._namespace)
+        title_slots = envs.get_global_env("hyper_parameters.title_slots", None,
+                                          self._namespace)
         factory = SimpleEncoderFactory()
         self.query_encoders = [
             factory.create(query_encoder, query_encode_dim)
@@ -119,10 +125,13 @@ class Model(ModelBase):
             for i in range(title_slots)
         ]
 
-        self.emb_size = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
-        self.emb_dim = envs.get_global_env("hyper_parameters.embedding_dim", None, self._namespace)
+        self.emb_size = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim", None, self._namespace)
+        self.emb_dim = envs.get_global_env("hyper_parameters.embedding_dim",
+                                           None, self._namespace)
         self.emb_shape = [self.emb_size, self.emb_dim]
-        self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size", None, self._namespace)
+        self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size",
+                                               None, self._namespace)
         self.margin = 0.1
 
     def input(self, is_train=True):
@@ -133,8 +142,10 @@ class Model(ModelBase):
         ]
         self.pt_slots = [
             fluid.data(
-                name="%d" % (i + len(self.query_encoders)), shape=[None, 1], lod_level=1, dtype='int64')
-            for i in range(len(self.title_encoders))
+                name="%d" % (i + len(self.query_encoders)),
+                shape=[None, 1],
+                lod_level=1,
+                dtype='int64') for i in range(len(self.title_encoders))
         ]
 
         if is_train == False:
@@ -142,9 +153,11 @@ class Model(ModelBase):
 
         self.nt_slots = [
             fluid.data(
-                name="%d" % (i + len(self.query_encoders) + len(self.title_encoders)), shape=[None, 1], lod_level=1,
-                dtype='int64')
-            for i in range(len(self.title_encoders))
+                name="%d" %
+                (i + len(self.query_encoders) + len(self.title_encoders)),
+                shape=[None, 1],
+                lod_level=1,
+                dtype='int64') for i in range(len(self.title_encoders))
         ]
 
         return self.q_slots + self.pt_slots + self.nt_slots
@@ -153,11 +166,15 @@ class Model(ModelBase):
         res = self.input()
         self._data_var = res
 
-        use_dataloader = envs.get_global_env("hyper_parameters.use_DataLoader", False, self._namespace)
+        use_dataloader = envs.get_global_env("hyper_parameters.use_DataLoader",
+                                             False, self._namespace)
 
         if self._platform != "LINUX" or use_dataloader:
             self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var, capacity=256, use_double_buffer=False, iterable=False)
+                feed_list=self._data_var,
+                capacity=256,
+                use_double_buffer=False,
+                iterable=False)
 
     def get_acc(self, x, y):
         less = tensor.cast(cf.less_than(x, y), dtype='float32')
@@ -190,10 +207,12 @@ class Model(ModelBase):
             self.query_encoders[i].forward(emb) for i, emb in enumerate(q_embs)
         ]
         pt_encodes = [
-            self.title_encoders[i].forward(emb) for i, emb in enumerate(pt_embs)
+            self.title_encoders[i].forward(emb)
+            for i, emb in enumerate(pt_embs)
         ]
         nt_encodes = [
-            self.title_encoders[i].forward(emb) for i, emb in enumerate(nt_embs)
+            self.title_encoders[i].forward(emb)
+            for i, emb in enumerate(nt_embs)
         ]
 
         # concat multi view for query, pos_title, neg_title
@@ -252,7 +271,8 @@ class Model(ModelBase):
         self.metrics()
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
+                                            None, self._namespace)
         optimizer = fluid.optimizer.Adam(learning_rate=learning_rate)
         return optimizer
 
@@ -261,7 +281,10 @@ class Model(ModelBase):
         self._infer_data_var = res
 
         self._infer_data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
+            feed_list=self._infer_data_var,
+            capacity=64,
+            use_double_buffer=False,
+            iterable=False)
 
     def infer_net(self):
         self.infer_input()
@@ -281,7 +304,8 @@ class Model(ModelBase):
             self.query_encoders[i].forward(emb) for i, emb in enumerate(q_embs)
         ]
         pt_encodes = [
-            self.title_encoders[i].forward(emb) for i, emb in enumerate(pt_embs)
+            self.title_encoders[i].forward(emb)
+            for i, emb in enumerate(pt_embs)
         ]
         # concat multi view for query, pos_title, neg_title
         q_concat = fluid.layers.concat(q_encodes)

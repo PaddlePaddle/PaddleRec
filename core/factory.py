@@ -19,24 +19,23 @@ import yaml
 
 from paddlerec.core.utils import envs
 
-trainer_abs = os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), "trainers")
+trainer_abs = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "trainers")
 trainers = {}
 
 
 def trainer_registry():
-    trainers["SingleTrainer"] = os.path.join(
-        trainer_abs, "single_trainer.py")
-    trainers["ClusterTrainer"] = os.path.join(
-        trainer_abs, "cluster_trainer.py")
-    trainers["CtrCodingTrainer"] = os.path.join(
-        trainer_abs, "ctr_coding_trainer.py")
-    trainers["CtrModulTrainer"] = os.path.join(
-        trainer_abs, "ctr_modul_trainer.py")
-    trainers["TDMSingleTrainer"] = os.path.join(
-        trainer_abs, "tdm_single_trainer.py")
-    trainers["TDMClusterTrainer"] = os.path.join(
-        trainer_abs, "tdm_cluster_trainer.py")
+    trainers["SingleTrainer"] = os.path.join(trainer_abs, "single_trainer.py")
+    trainers["ClusterTrainer"] = os.path.join(trainer_abs,
+                                              "cluster_trainer.py")
+    trainers["CtrCodingTrainer"] = os.path.join(trainer_abs,
+                                                "ctr_coding_trainer.py")
+    trainers["CtrModulTrainer"] = os.path.join(trainer_abs,
+                                               "ctr_modul_trainer.py")
+    trainers["TDMSingleTrainer"] = os.path.join(trainer_abs,
+                                                "tdm_single_trainer.py")
+    trainers["TDMClusterTrainer"] = os.path.join(trainer_abs,
+                                                 "tdm_cluster_trainer.py")
 
 
 trainer_registry()
@@ -55,8 +54,8 @@ class TrainerFactory(object):
 
         if trainer_abs is None:
             if not os.path.isfile(train_mode):
-                raise IOError(
-                    "trainer {} can not be recognized".format(train_mode))
+                raise IOError("trainer {} can not be recognized".format(
+                    train_mode))
             trainer_abs = train_mode
             train_mode = "UserDefineTrainer"
 
