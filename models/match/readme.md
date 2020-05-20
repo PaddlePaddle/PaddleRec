@@ -37,4 +37,3 @@
 python -m paddlerec.run -m paddlerec.models.match.dssm # dssm
 python -m paddlerec.run -m paddlerec.models.match.multiview-simnet # multiview-simnet
 ```
-

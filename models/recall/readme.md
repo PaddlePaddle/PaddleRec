@@ -78,4 +78,3 @@ python -m paddlerec.run -m paddlerec.models.recall.youtube_dnn # youtube_dnn
 |       MOVIELENS        |       NCF       |       0.688        |       --          |
 |       --        |       Youtube       |       --        |       --          |
 |       1 Billion Word Language Model Benchmark        |       Word2Vec       |       --         |       0.54          |
-
