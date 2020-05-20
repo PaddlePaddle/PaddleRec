@@ -30,12 +30,7 @@ function init() {
 }
 
 function check_style() {
-  trap 'abort' 0
   set -e
-
-  if [ -x "$(command -v gimme)" ]; then
-    eval "$(GIMME_GO_VERSION=1.8.3 gimme)"
-  fi
 
   export PATH=/usr/bin:$PATH
   pre-commit install
@@ -45,7 +40,7 @@ function check_style() {
     exit 1
   fi
 
-  trap : 0
+  exit 0
 }
 
 function main() {
