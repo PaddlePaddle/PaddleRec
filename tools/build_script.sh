@@ -61,6 +61,12 @@ function main() {
     check_style)
     check_style
     ;;
+      *)
+    echo "build failed"
+    exit 1
+        ;;
+    esac
+    echo "check_style finished as expected"
 }
 
 main $@
