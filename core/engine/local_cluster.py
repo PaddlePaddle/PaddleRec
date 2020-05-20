@@ -46,10 +46,13 @@ class LocalClusterEngine(Engine):
                     ports.append(new_port)
                     break
         user_endpoints = ",".join(["127.0.0.1:" + str(x) for x in ports])
-        user_endpoints_ips = [x.split(":")[0]
-                              for x in user_endpoints.split(",")]
-        user_endpoints_port = [x.split(":")[1]
-                               for x in user_endpoints.split(",")]
+
+        user_endpoints_ips = [
+            x.split(":")[0] for x in user_endpoints.split(",")
+        ]
+        user_endpoints_port = [
+            x.split(":")[1] for x in user_endpoints.split(",")
+        ]
 
         factory = "paddlerec.core.factory"
         cmd = [sys.executable, "-u", "-m", factory, self.trainer]
@@ -97,8 +100,10 @@ class LocalClusterEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].terminate()
-        print("all workers already completed, you can view logs under the `{}` directory".format(logs_dir),
-              file=sys.stderr)
+        print(
+            "all workers already completed, you can view logs under the `{}` directory".
+            format(logs_dir),
+            file=sys.stderr)
 
     def run(self):
         self.start_procs()

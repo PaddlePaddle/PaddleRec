@@ -35,6 +35,3 @@ wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/test_dir.ta
 tar xzvf test_dir.tar -C raw_data
 mv raw_data/data/test_dir test_data/
 rm -rf raw_data
-
-
-

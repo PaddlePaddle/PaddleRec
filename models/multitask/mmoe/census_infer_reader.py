@@ -19,6 +19,7 @@ from paddlerec.core.reader import Reader
 
 class EvaluateReader(Reader):
     def init(self):
+
         pass
 
     def generate_sample(self, line):
