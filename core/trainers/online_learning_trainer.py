@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Training use fluid with one node only.
 """
@@ -44,11 +43,14 @@ class OnlineLearningTrainer(TranspileTrainer):
             self.regist_context_processor('uninit', self.instance)
             self.regist_context_processor('init_pass', self.init)
             self.regist_context_processor('startup_pass', self.startup)
-            if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None, "train.reader") != "DataLoader":
+
+            if envs.get_platform() == "LINUX" and envs.get_global_env(
+                    "dataset_class", None, "train.reader") != "DataLoader":
                 self.regist_context_processor('train_pass', self.dataset_train)
             else:
-                self.regist_context_processor(
-                    'train_pass', self.dataloader_train)
+                self.regist_context_processor('train_pass',
+                                              self.dataloader_train)
+
             self.regist_context_processor('infer_pass', self.infer)
             self.regist_context_processor('terminal_pass', self.terminal)
 
@@ -110,27 +112,27 @@ class OnlineLearningTrainer(TranspileTrainer):
         if state == "TRAIN":
             inputs = self.model.get_inputs()
             namespace = "train.reader"
-            train_data_path = envs.get_global_env(
-                "train_data_path", None, namespace)
+            train_data_path = envs.get_global_env("train_data_path", None,
+                                                  namespace)
         else:
             inputs = self.model.get_infer_inputs()
             namespace = "evaluate.reader"
-            train_data_path = envs.get_global_env(
-                "test_data_path", None, namespace)
+            train_data_path = envs.get_global_env("test_data_path", None,
+                                                  namespace)
 
         threads = int(envs.get_runtime_environ("train.trainer.threads"))
         batch_size = envs.get_global_env("batch_size", None, namespace)
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
-        pipe_cmd = "python {} {} {} {}".format(
-            reader, reader_class, state, self._config_yaml)
+        pipe_cmd = "python {} {} {} {}".format(reader, reader_class, state,
+                                               self._config_yaml)
 
         if train_data_path.startswith("paddlerec::"):
             package_base = envs.get_runtime_environ("PACKAGE_BASE")
             assert package_base is not None
-            train_data_path = os.path.join(
-                package_base, train_data_path.split("::")[1])
+            train_data_path = os.path.join(package_base,
+                                           train_data_path.split("::")[1])
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
@@ -166,14 +168,16 @@ class OnlineLearningTrainer(TranspileTrainer):
                 ins = self._get_dataset_ins()
 
                 begin_time = time.time()
-                self._exe.train_from_dataset(program=fluid.default_main_program(),
-                                             dataset=dataset,
-                                             fetch_list=self.fetch_vars,
-                                             fetch_info=self.fetch_alias,
-                                             print_period=self.fetch_period)
+                self._exe.train_from_dataset(
+                    program=fluid.default_main_program(),
+                    dataset=dataset,
+                    fetch_list=self.fetch_vars,
+                    fetch_info=self.fetch_alias,
+                    print_period=self.fetch_period)
                 end_time = time.time()
-                times = end_time-begin_time
-                print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins/times))
+                times = end_time - begin_time
+                print("epoch {} using time {}, speed {:.2f} lines/s".format(
+                    i, times, ins / times))
                 self.save(i, "train", is_fleet=True)
 
         fleet.stop_worker()

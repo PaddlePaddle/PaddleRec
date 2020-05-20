@@ -25,38 +25,38 @@ class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
         # tree meta hyper parameters
-        self.max_layers = envs.get_global_env(
-            "tree_parameters.max_layers", 4, self._namespace)
-        self.node_nums = envs.get_global_env(
-            "tree_parameters.node_nums", 26, self._namespace)
+        self.max_layers = envs.get_global_env("tree_parameters.max_layers", 4,
+                                              self._namespace)
+        self.node_nums = envs.get_global_env("tree_parameters.node_nums", 26,
+                                             self._namespace)
         self.leaf_node_nums = envs.get_global_env(
             "tree_parameters.leaf_node_nums", 13, self._namespace)
         self.output_positive = envs.get_global_env(
             "tree_parameters.output_positive", True, self._namespace)
         self.layer_node_num_list = envs.get_global_env(
-            "tree_parameters.layer_node_num_list", [
-                2, 4, 7, 12], self._namespace)
-        self.child_nums = envs.get_global_env(
-            "tree_parameters.child_nums", 2, self._namespace)
-        self.tree_layer_path = envs.get_global_env(
-            "tree.tree_layer_path", None, "train.startup")
+            "tree_parameters.layer_node_num_list", [2, 4, 7,
+                                                    12], self._namespace)
+        self.child_nums = envs.get_global_env("tree_parameters.child_nums", 2,
+                                              self._namespace)
+        self.tree_layer_path = envs.get_global_env("tree.tree_layer_path",
+                                                   None, "train.startup")
 
         # model training hyper parameter
         self.node_emb_size = envs.get_global_env(
             "hyper_parameters.node_emb_size", 64, self._namespace)
         self.input_emb_size = envs.get_global_env(
             "hyper_parameters.input_emb_size", 768, self._namespace)
-        self.act = envs.get_global_env(
-            "hyper_parameters.act", "tanh", self._namespace)
+        self.act = envs.get_global_env("hyper_parameters.act", "tanh",
+                                       self._namespace)
         self.neg_sampling_list = envs.get_global_env(
-            "hyper_parameters.neg_sampling_list", [
-                1, 2, 3, 4], self._namespace)
+            "hyper_parameters.neg_sampling_list", [1, 2, 3,
+                                                   4], self._namespace)
 
         # model infer hyper parameter
-        self.topK = envs.get_global_env(
-            "hyper_parameters.node_nums", 1, self._namespace)
-        self.batch_size = envs.get_global_env(
-            "batch_size", 1, "evaluate.reader")
+        self.topK = envs.get_global_env("hyper_parameters.node_nums", 1,
+                                        self._namespace)
+        self.batch_size = envs.get_global_env("batch_size", 1,
+                                              "evaluate.reader")
 
     def train_net(self):
         self.train_input()
@@ -76,21 +76,22 @@ class Model(ModelBase):
         input_emb = fluid.data(
             name="input_emb",
             shape=[None, self.input_emb_size],
-            dtype="float32",
-        )
+            dtype="float32", )
         self._data_var.append(input_emb)
 
         item_label = fluid.data(
             name="item_label",
             shape=[None, 1],
-            dtype="int64",
-        )
+            dtype="int64", )
 
         self._data_var.append(item_label)
 
         if self._platform != "LINUX":
             self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
+                feed_list=self._data_var,
+                capacity=64,
+                use_double_buffer=False,
+                iterable=False)
 
     def tdm_net(self):
         """
@@ -116,8 +117,7 @@ class Model(ModelBase):
             output_list=True,
             seed=0,
             tree_dtype='int64',
-            dtype='int64'
-        )
+            dtype='int64')
 
         # 查表得到每个节点的Embedding
         sample_nodes_emb = [
@@ -125,35 +125,34 @@ class Model(ModelBase):
                 input=sample_nodes[i],
                 is_sparse=True,
                 size=[self.node_nums, self.node_emb_size],
-                param_attr=fluid.ParamAttr(
-                    name="TDM_Tree_Emb")
-            ) for i in range(self.max_layers)
+                param_attr=fluid.ParamAttr(name="TDM_Tree_Emb"))
+            for i in range(self.max_layers)
         ]
 
         # 此处进行Reshape是为了之后层次化的分类器训练
         sample_nodes_emb = [
-            fluid.layers.reshape(sample_nodes_emb[i],
-                                 [-1, self.neg_sampling_list[i] +
-                                  self.output_positive, self.node_emb_size]
-                                 ) for i in range(self.max_layers)
+            fluid.layers.reshape(sample_nodes_emb[i], [
+                -1, self.neg_sampling_list[i] + self.output_positive,
+                self.node_emb_size
+            ]) for i in range(self.max_layers)
         ]
 
         # 对输入的input_emb进行转换，使其维度与node_emb维度一致
         input_trans_emb = self.input_trans_layer(input_emb)
 
         # 分类器的主体网络，分别训练不同层次的分类器
-        layer_classifier_res = self.classifier_layer(
-            input_trans_emb, sample_nodes_emb)
+        layer_classifier_res = self.classifier_layer(input_trans_emb,
+                                                     sample_nodes_emb)
 
         # 最后的概率判别FC，将所有层次的node分类结果放到一起以相同的标准进行判别
         # 考虑到树极大可能不平衡，有些item不在最后一层，所以需要这样的机制保证每个item都有机会被召回
-        tdm_fc = fluid.layers.fc(input=layer_classifier_res,
-                                 size=2,
-                                 act=None,
-                                 num_flatten_dims=2,
-                                 param_attr=fluid.ParamAttr(
-                                     name="tdm.cls_fc.weight"),
-                                 bias_attr=fluid.ParamAttr(name="tdm.cls_fc.bias"))
+        tdm_fc = fluid.layers.fc(
+            input=layer_classifier_res,
+            size=2,
+            act=None,
+            num_flatten_dims=2,
+            param_attr=fluid.ParamAttr(name="tdm.cls_fc.weight"),
+            bias_attr=fluid.ParamAttr(name="tdm.cls_fc.bias"))
 
         # 将loss打平，放到一起计算整体网络的loss
         tdm_fc_re = fluid.layers.reshape(tdm_fc, [-1, 2])
@@ -202,7 +201,7 @@ class Model(ModelBase):
     def metrics(self):
         auc, batch_auc, _ = fluid.layers.auc(input=self._predict,
                                              label=self.mask_label,
-                                             num_thresholds=2 ** 12,
+                                             num_thresholds=2**12,
                                              slide_steps=20)
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
@@ -218,8 +217,7 @@ class Model(ModelBase):
             size=self.node_emb_size,
             act=None,
             param_attr=fluid.ParamAttr(name="trans.input_fc.weight"),
-            bias_attr=fluid.ParamAttr(name="trans.input_fc.bias"),
-        )
+            bias_attr=fluid.ParamAttr(name="trans.input_fc.bias"), )
 
         # 将input_emb映射到各个不同层次的向量表示空间
         input_layer_fc_out = [
@@ -229,8 +227,9 @@ class Model(ModelBase):
                 act=self.act,
                 param_attr=fluid.ParamAttr(
                     name="trans.layer_fc.weight." + str(i)),
-                bias_attr=fluid.ParamAttr(name="trans.layer_fc.bias." + str(i)),
-            ) for i in range(self.max_layers)
+                bias_attr=fluid.ParamAttr(
+                    name="trans.layer_fc.bias." + str(i)), )
+            for i in range(self.max_layers)
         ]
 
         return input_layer_fc_out
@@ -246,20 +245,22 @@ class Model(ModelBase):
                 input_layer_unsequeeze, expand_times=[1, node.shape[1], 1])
         else:
             input_layer_expand = fluid.layers.expand(
-                input_layer_unsequeeze, expand_times=[1, node[layer_idx].shape[1], 1])
+                input_layer_unsequeeze,
+                expand_times=[1, node[layer_idx].shape[1], 1])
         return input_layer_expand
 
     def classifier_layer(self, input, node):
         # 扩展input，使维度与node匹配
         input_expand = [
-            self._expand_layer(input[i], node, i) for i in range(self.max_layers)
+            self._expand_layer(input[i], node, i)
+            for i in range(self.max_layers)
         ]
 
         # 将input_emb与node_emb concat到一起过分类器FC
         input_node_concat = [
             fluid.layers.concat(
-                input=[input_expand[i], node[i]],
-                axis=2) for i in range(self.max_layers)
+                input=[input_expand[i], node[i]], axis=2)
+            for i in range(self.max_layers)
         ]
         hidden_states_fc = [
             fluid.layers.fc(
@@ -269,8 +270,8 @@ class Model(ModelBase):
                 act=self.act,
                 param_attr=fluid.ParamAttr(
                     name="cls.concat_fc.weight." + str(i)),
-                bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias." + str(i))
-            ) for i in range(self.max_layers)
+                bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias." + str(i)))
+            for i in range(self.max_layers)
         ]
 
         # 如果将所有层次的node放到一起计算loss，则需要在此处concat
@@ -285,12 +286,14 @@ class Model(ModelBase):
         input_emb = fluid.layers.data(
             name="input_emb",
             shape=[self.input_emb_size],
-            dtype="float32",
-        )
+            dtype="float32", )
         self._infer_data_var.append(input_emb)
 
         self._infer_data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
+            feed_list=self._infer_data_var,
+            capacity=64,
+            use_double_buffer=False,
+            iterable=False)
 
     def get_layer_list(self):
         """get layer list from layer_list.txt"""
@@ -318,10 +321,12 @@ class Model(ModelBase):
         node_list = []
         mask_list = []
         for id in first_layer_node:
-            node_list.append(fluid.layers.fill_constant(
-                [self.batch_size, 1], value=int(id), dtype='int64'))
-            mask_list.append(fluid.layers.fill_constant(
-                [self.batch_size, 1], value=0, dtype='int64'))
+            node_list.append(
+                fluid.layers.fill_constant(
+                    [self.batch_size, 1], value=int(id), dtype='int64'))
+            mask_list.append(
+                fluid.layers.fill_constant(
+                    [self.batch_size, 1], value=0, dtype='int64'))
         self.first_layer_node = fluid.layers.concat(node_list, axis=1)
         self.first_layer_node_mask = fluid.layers.concat(mask_list, axis=1)
 
@@ -359,28 +364,26 @@ class Model(ModelBase):
                 size=[self.node_nums, self.node_emb_size],
                 param_attr=fluid.ParamAttr(name="TDM_Tree_Emb"))
 
-            input_fc_out = self.layer_fc_infer(
-                input_trans_emb, layer_idx)
+            input_fc_out = self.layer_fc_infer(input_trans_emb, layer_idx)
 
             # 过每一层的分类器
-            layer_classifier_res = self.classifier_layer_infer(input_fc_out,
-                                                               node_emb,
-                                                               layer_idx)
+            layer_classifier_res = self.classifier_layer_infer(
+                input_fc_out, node_emb, layer_idx)
 
             # 过最终的判别分类器
-            tdm_fc = fluid.layers.fc(input=layer_classifier_res,
-                                     size=2,
-                                     act=None,
-                                     num_flatten_dims=2,
-                                     param_attr=fluid.ParamAttr(
-                                         name="tdm.cls_fc.weight"),
-                                     bias_attr=fluid.ParamAttr(name="tdm.cls_fc.bias"))
+            tdm_fc = fluid.layers.fc(
+                input=layer_classifier_res,
+                size=2,
+                act=None,
+                num_flatten_dims=2,
+                param_attr=fluid.ParamAttr(name="tdm.cls_fc.weight"),
+                bias_attr=fluid.ParamAttr(name="tdm.cls_fc.bias"))
 
             prob = fluid.layers.softmax(tdm_fc)
             positive_prob = fluid.layers.slice(
                 prob, axes=[2], starts=[1], ends=[2])
-            prob_re = fluid.layers.reshape(
-                positive_prob, [-1, current_layer_node_num])
+            prob_re = fluid.layers.reshape(positive_prob,
+                                           [-1, current_layer_node_num])
 
             # 过滤掉padding产生的无效节点（node_id=0）
             node_zero_mask = fluid.layers.cast(current_layer_node, 'bool')
@@ -395,11 +398,11 @@ class Model(ModelBase):
 
             # index_sample op根据下标索引tensor对应位置的值
             # 若paddle版本>2.0，调用方式为paddle.index_sample
-            top_node = fluid.contrib.layers.index_sample(
-                current_layer_node, topk_i)
+            top_node = fluid.contrib.layers.index_sample(current_layer_node,
+                                                         topk_i)
             prob_re_mask = prob_re * current_layer_node_mask  # 过滤掉非叶子节点
-            topk_value = fluid.contrib.layers.index_sample(
-                prob_re_mask, topk_i)
+            topk_value = fluid.contrib.layers.index_sample(prob_re_mask,
+                                                           topk_i)
             node_score.append(topk_value)
             node_list.append(top_node)
 
@@ -424,7 +427,8 @@ class Model(ModelBase):
         res_node = fluid.layers.reshape(res_layer_node, [-1, self.topK, 1])
 
         # 利用Tree_info信息，将node_id转换为item_id
-        tree_info = fluid.default_main_program().global_block().var("TDM_Tree_Info")
+        tree_info = fluid.default_main_program().global_block().var(
+            "TDM_Tree_Info")
         res_node_emb = fluid.layers.gather_nd(tree_info, res_node)
 
         res_item = fluid.layers.slice(
@@ -442,8 +446,7 @@ class Model(ModelBase):
             size=self.node_emb_size,
             act=None,
             param_attr=fluid.ParamAttr(name="trans.input_fc.weight"),
-            bias_attr=fluid.ParamAttr(name="trans.input_fc.bias"),
-        )
+            bias_attr=fluid.ParamAttr(name="trans.input_fc.bias"), )
         return input_fc_out
 
     def layer_fc_infer(self, input_fc_out, layer_idx):
@@ -458,8 +461,7 @@ class Model(ModelBase):
             param_attr=fluid.ParamAttr(
                 name="trans.layer_fc.weight." + str(layer_idx)),
             bias_attr=fluid.ParamAttr(
-                name="trans.layer_fc.bias." + str(layer_idx)),
-        )
+                name="trans.layer_fc.bias." + str(layer_idx)), )
         return input_layer_fc_out
 
     def classifier_layer_infer(self, input, node, layer_idx):
@@ -480,5 +482,6 @@ class Model(ModelBase):
             act=self.act,
             param_attr=fluid.ParamAttr(
                 name="cls.concat_fc.weight." + str(layer_idx)),
-            bias_attr=fluid.ParamAttr(name="cls.concat_fc.bias." + str(layer_idx)))
+            bias_attr=fluid.ParamAttr(
+                name="cls.concat_fc.bias." + str(layer_idx)))
         return hidden_states_fc

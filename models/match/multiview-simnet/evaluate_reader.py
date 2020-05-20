@@ -18,8 +18,10 @@ from paddlerec.core.utils import envs
 
 class EvaluateReader(Reader):
     def init(self):
-        self.query_slots = envs.get_global_env("hyper_parameters.query_slots", None, "train.model")
-        self.title_slots = envs.get_global_env("hyper_parameters.title_slots", None, "train.model")
+        self.query_slots = envs.get_global_env("hyper_parameters.query_slots",
+                                               None, "train.model")
+        self.title_slots = envs.get_global_env("hyper_parameters.title_slots",
+                                               None, "train.model")
 
         self.all_slots = []
         for i in range(self.query_slots):

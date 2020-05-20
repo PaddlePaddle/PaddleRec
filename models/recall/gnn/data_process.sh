@@ -31,5 +31,3 @@ mv diginetica/train.txt train_data
 
 mkdir test_data
 mv diginetica/test.txt test_data
-
-

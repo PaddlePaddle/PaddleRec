@@ -26,8 +26,10 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
         self.cost = None
         self.metrics = {}
-        self.vocab_text_size = envs.get_global_env("vocab_text_size", None, self._namespace)
-        self.vocab_tag_size = envs.get_global_env("vocab_tag_size", None, self._namespace)
+        self.vocab_text_size = envs.get_global_env("vocab_text_size", None,
+                                                   self._namespace)
+        self.vocab_tag_size = envs.get_global_env("vocab_tag_size", None,
+                                                  self._namespace)
         self.emb_dim = envs.get_global_env("emb_dim", None, self._namespace)
         self.hid_dim = envs.get_global_env("hid_dim", None, self._namespace)
         self.win_size = envs.get_global_env("win_size", None, self._namespace)
@@ -35,8 +37,9 @@ class Model(ModelBase):
         self.neg_size = envs.get_global_env("neg_size", None, self._namespace)
 
     def train_net(self):
-        """ network definition """
-        text = fluid.data(name="text", shape=[None, 1], lod_level=1, dtype='int64')
+        """ network"""
+        text = fluid.data(
+            name="text", shape=[None, 1], lod_level=1, dtype='int64')
         pos_tag = fluid.data(
             name="pos_tag", shape=[None, 1], lod_level=1, dtype='int64')
         neg_tag = fluid.data(
@@ -45,13 +48,19 @@ class Model(ModelBase):
         self._data_var = [text, pos_tag, neg_tag]
 
         text_emb = fluid.embedding(
-            input=text, size=[self.vocab_text_size, self.emb_dim], param_attr="text_emb")
+            input=text,
+            size=[self.vocab_text_size, self.emb_dim],
+            param_attr="text_emb")
         text_emb = fluid.layers.squeeze(input=text_emb, axes=[1])
         pos_tag_emb = fluid.embedding(
-            input=pos_tag, size=[self.vocab_tag_size, self.emb_dim], param_attr="tag_emb")
+            input=pos_tag,
+            size=[self.vocab_tag_size, self.emb_dim],
+            param_attr="tag_emb")
         pos_tag_emb = fluid.layers.squeeze(input=pos_tag_emb, axes=[1])
         neg_tag_emb = fluid.embedding(
-            input=neg_tag, size=[self.vocab_tag_size, self.emb_dim], param_attr="tag_emb")
+            input=neg_tag,
+            size=[self.vocab_tag_size, self.emb_dim],
+            param_attr="tag_emb")
         neg_tag_emb = fluid.layers.squeeze(input=neg_tag_emb, axes=[1])
 
         conv_1d = fluid.nets.sequence_conv_pool(
@@ -65,7 +74,8 @@ class Model(ModelBase):
                                    size=self.emb_dim,
                                    param_attr="text_hid")
         cos_pos = nn.cos_sim(pos_tag_emb, text_hid)
-        mul_text_hid = fluid.layers.sequence_expand_as(x=text_hid, y=neg_tag_emb)
+        mul_text_hid = fluid.layers.sequence_expand_as(
+            x=text_hid, y=neg_tag_emb)
         mul_cos_neg = nn.cos_sim(neg_tag_emb, mul_text_hid)
         cos_neg_all = fluid.layers.sequence_reshape(
             input=mul_cos_neg, new_dim=self.neg_size)
@@ -74,7 +84,10 @@ class Model(ModelBase):
         #calculate hinge loss
         loss_part1 = nn.elementwise_sub(
             tensor.fill_constant_batch_size_like(
-                input=cos_pos, shape=[-1, 1], value=self.margin, dtype='float32'),
+                input=cos_pos,
+                shape=[-1, 1],
+                value=self.margin,
+                dtype='float32'),
             cos_pos)
         loss_part2 = nn.elementwise_add(loss_part1, cos_neg)
         loss_part3 = nn.elementwise_max(
@@ -85,7 +98,7 @@ class Model(ModelBase):
         less = tensor.cast(cf.less_than(cos_neg, cos_pos), dtype='float32')
         correct = nn.reduce_sum(less)
         self.cost = avg_cost
-        
+
         self.metrics["correct"] = correct
         self.metrics["cos_pos"] = cos_pos
 
@@ -96,7 +109,8 @@ class Model(ModelBase):
         return self.metrics
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.base_lr", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.base_lr", None,
+                                            self._namespace)
         sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
         return sgd_optimizer
 

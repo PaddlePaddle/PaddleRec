@@ -22,6 +22,7 @@ from paddlerec.core.utils import fs as fs
 
 
 def save_program_proto(path, program=None):
+
     if program is None:
         _program = fluid.default_main_program()
     else:
@@ -175,7 +176,8 @@ class PathGenerator(object):
         """
         if template_name in self._templates:
             if 'time_format' in param:
-                str = param['time_format'].strftime(self._templates[template_name])
+                str = param['time_format'].strftime(self._templates[
+                    template_name])
                 return str.format(**param)
             return self._templates[template_name].format(**param)
         else:
@@ -198,31 +200,39 @@ class TimeTrainPass(object):
             self._begin_day = make_datetime(day_fields[0].strip())
             if len(day_fields) == 1 or len(day_fields[1]) == 0:
                 # 100 years, meaning to continuous running
-                self._end_day = self._begin_day + datetime.timedelta(days=36500)
+                self._end_day = self._begin_day + datetime.timedelta(
+                    days=36500)
             else:
                 # example: 2020212+10 
                 run_day = int(day_fields[1].strip())
-                self._end_day = self._begin_day + datetime.timedelta(days=run_day)
+                self._end_day = self._begin_day + datetime.timedelta(
+                    days=run_day)
         else:
             # example: {20191001..20191031}
-            days = os.popen("echo -n " + self._config['days']).read().split(" ")
+            days = os.popen("echo -n " + self._config['days']).read().split(
+                " ")
             self._begin_day = make_datetime(days[0])
             self._end_day = make_datetime(days[len(days) - 1])
         self._checkpoint_interval = self._config['checkpoint_interval']
         self._dump_inference_interval = self._config['dump_inference_interval']
-        self._interval_per_pass = self._config['train_time_interval']  # train N min data per pass
+        self._interval_per_pass = self._config[
+            'train_time_interval']  # train N min data per pass
 
         self._pass_id = 0
         self._inference_pass_id = 0
         self._pass_donefile_handler = None
         if 'pass_donefile_name' in self._config:
-            self._train_pass_donefile = global_config['output_path'] + '/' + self._config['pass_donefile_name']
+            self._train_pass_donefile = global_config[
+                'output_path'] + '/' + self._config['pass_donefile_name']
             if fs.is_afs_path(self._train_pass_donefile):
-                self._pass_donefile_handler = fs.FileHandler(global_config['io']['afs'])
+                self._pass_donefile_handler = fs.FileHandler(global_config[
+                    'io']['afs'])
             else:
-                self._pass_donefile_handler = fs.FileHandler(global_config['io']['local_fs'])
+                self._pass_donefile_handler = fs.FileHandler(global_config[
+                    'io']['local_fs'])
 
-            last_done = self._pass_donefile_handler.cat(self._train_pass_donefile).strip().split('\n')[-1]
+            last_done = self._pass_donefile_handler.cat(
+                self._train_pass_donefile).strip().split('\n')[-1]
             done_fileds = last_done.split('\t')
             if len(done_fileds) > 4:
                 self._base_key = done_fileds[1]
@@ -236,15 +246,18 @@ class TimeTrainPass(object):
         """
         return 24 * 60 / self._interval_per_pass
 
-    def save_train_progress(self, day, pass_id, base_key, model_path, is_checkpoint):
+    def save_train_progress(self, day, pass_id, base_key, model_path,
+                            is_checkpoint):
         """R
         """
         if is_checkpoint:
             self._checkpoint_pass_id = pass_id
             self._checkpoint_model_path = model_path
-        done_content = "%s\t%s\t%s\t%s\t%d\n" % (day, base_key,
-                                                 self._checkpoint_model_path, self._checkpoint_pass_id, pass_id)
-        self._pass_donefile_handler.write(done_content, self._train_pass_donefile, 'a')
+        done_content = "%s\t%s\t%s\t%s\t%d\n" % (
+            day, base_key, self._checkpoint_model_path,
+            self._checkpoint_pass_id, pass_id)
+        self._pass_donefile_handler.write(done_content,
+                                          self._train_pass_donefile, 'a')
         pass
 
     def init_pass_by_id(self, date_str, pass_id):
@@ -286,12 +299,14 @@ class TimeTrainPass(object):
         if self._pass_id < 1:
             self.init_pass_by_time(self._begin_day.strftime("%Y%m%d%H%M"))
         else:
-            next_time = self._current_train_time + datetime.timedelta(minutes=self._interval_per_pass)
+            next_time = self._current_train_time + datetime.timedelta(
+                minutes=self._interval_per_pass)
             if (next_time - self._end_day).total_seconds() > 0:
                 has_next = False
             else:
                 self.init_pass_by_time(next_time.strftime("%Y%m%d%H%M"))
-        if has_next and (self._inference_pass_id < self._pass_id or self._pass_id < old_pass_id):
+        if has_next and (self._inference_pass_id < self._pass_id or
+                         self._pass_id < old_pass_id):
             self._inference_pass_id = self._pass_id - 1
         return has_next
 
@@ -319,9 +334,11 @@ class TimeTrainPass(object):
         Return:
             date(current_train_time + delta_day)
         """
-        return (self._current_train_time + datetime.timedelta(days=delta_day)).strftime("%Y%m%d")
+        return (self._current_train_time + datetime.timedelta(days=delta_day)
+                ).strftime("%Y%m%d")
 
     def timestamp(self, delta_day=0):
         """R
         """
-        return (self._current_train_time + datetime.timedelta(days=delta_day)).timestamp()
+        return (self._current_train_time + datetime.timedelta(days=delta_day)
+                ).timestamp()
