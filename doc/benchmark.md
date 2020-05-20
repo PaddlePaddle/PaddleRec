@@ -10,6 +10,4 @@
 
 ## [多任务模型介绍及Benchmark](../models/multitask/readme.md)
 
-## [融合模型介绍及Benchmark](../models/match/readme.md)
-
 ## [树模型介绍及Benchamrk](../models/treebased/README.md)
