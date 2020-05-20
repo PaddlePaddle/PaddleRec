@@ -27,6 +27,7 @@ from paddlerec.core.utils import envs
 class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
+
         backend = envs.get_runtime_environ("engine_backend")
         if backend == "PaddleCloud":
             self.submit_script = os.path.join(abs_dir, "cloud/cluster.sh")
@@ -57,4 +58,5 @@ class ClusterEngine(Engine):
             self.start_worker_procs()
 
         else:
-            raise ValueError("role {} error, must in MASTER/WORKER".format(role))
+            raise ValueError("role {} error, must in MASTER/WORKER".format(
+                role))
