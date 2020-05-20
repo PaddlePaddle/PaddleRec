@@ -25,14 +25,20 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def input_data(self, is_infer=False):
-        
-        watch_vec_size = envs.get_global_env("hyper_parameters.watch_vec_size", None, self._namespace)
-        search_vec_size = envs.get_global_env("hyper_parameters.search_vec_size", None, self._namespace)
-        other_feat_size = envs.get_global_env("hyper_parameters.other_feat_size", None, self._namespace)
 
-        watch_vec = fluid.data(name="watch_vec", shape=[None, watch_vec_size], dtype="float32")
-        search_vec = fluid.data(name="search_vec", shape=[None, search_vec_size], dtype="float32")
-        other_feat = fluid.data(name="other_feat", shape=[None, other_feat_size], dtype="float32")
+        watch_vec_size = envs.get_global_env("hyper_parameters.watch_vec_size",
+                                             None, self._namespace)
+        search_vec_size = envs.get_global_env(
+            "hyper_parameters.search_vec_size", None, self._namespace)
+        other_feat_size = envs.get_global_env(
+            "hyper_parameters.other_feat_size", None, self._namespace)
+
+        watch_vec = fluid.data(
+            name="watch_vec", shape=[None, watch_vec_size], dtype="float32")
+        search_vec = fluid.data(
+            name="search_vec", shape=[None, search_vec_size], dtype="float32")
+        other_feat = fluid.data(
+            name="other_feat", shape=[None, other_feat_size], dtype="float32")
         label = fluid.data(name="label", shape=[None, 1], dtype="int64")
         inputs = [watch_vec] + [search_vec] + [other_feat] + [label]
         self._data_var = inputs
@@ -41,27 +47,32 @@ class Model(ModelBase):
 
     def fc(self, tag, data, out_dim, active='relu'):
         init_stddev = 1.0
-        scales = 1.0  / np.sqrt(data.shape[1])
-        
+        scales = 1.0 / np.sqrt(data.shape[1])
+
         if tag == 'l4':
-            p_attr = fluid.param_attr.ParamAttr(name='%s_weight' % tag,
-                        initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=init_stddev * scales))
+            p_attr = fluid.param_attr.ParamAttr(
+                name='%s_weight' % tag,
+                initializer=fluid.initializer.NormalInitializer(
+                    loc=0.0, scale=init_stddev * scales))
         else:
             p_attr = None
-                    
-        b_attr = fluid.ParamAttr(name='%s_bias' % tag, initializer=fluid.initializer.Constant(0.1))
+
+        b_attr = fluid.ParamAttr(
+            name='%s_bias' % tag, initializer=fluid.initializer.Constant(0.1))
 
         out = fluid.layers.fc(input=data,
-                            size=out_dim,
-                            act=active,
-                            param_attr=p_attr, 
-                            bias_attr =b_attr,
-                            name=tag)
+                              size=out_dim,
+                              act=active,
+                              param_attr=p_attr,
+                              bias_attr=b_attr,
+                              name=tag)
         return out
 
     def net(self, inputs):
-        output_size = envs.get_global_env("hyper_parameters.output_size", None, self._namespace)
-        layers = envs.get_global_env("hyper_parameters.layers", None, self._namespace)
+        output_size = envs.get_global_env("hyper_parameters.output_size", None,
+                                          self._namespace)
+        layers = envs.get_global_env("hyper_parameters.layers", None,
+                                     self._namespace)
         concat_feats = fluid.layers.concat(input=inputs[:-1], axis=-1)
 
         l1 = self.fc('l1', concat_feats, layers[0], 'relu')
