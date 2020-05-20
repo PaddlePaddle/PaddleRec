@@ -276,8 +276,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='paddle-rec run')
     parser.add_argument("-m", "--model", type=str)
     parser.add_argument("-b", "--backend", type=str, default=None)
-    parser.add_argument("-r", "--role", type=str,
-                        choices=['MASTER', 'WORKER'], default="MASTER")
+    parser.add_argument(
+        "-r",
+        "--role",
+        type=str,
+        choices=['MASTER', 'WORKER'],
+        default="MASTER")
 
     abs_dir = os.path.dirname(os.path.abspath(__file__))
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})

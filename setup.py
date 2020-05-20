@@ -61,8 +61,8 @@ def build(dirname):
     package_data = {}
 
     models_copy = [
-        'data/*.txt', 'data/*/*.txt',
-        '*.yaml', '*.sh', 'tree/*.npy', 'tree/*.txt'
+        'data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy',
+        'tree/*.txt'
     ]
     engine_copy = ['*/*.sh', '*/*.template']
     for package in packages:
