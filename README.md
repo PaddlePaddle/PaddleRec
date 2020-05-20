@@ -177,6 +177,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
+|  融合  |           [Listwise](models/rerank/listwise/model.py)           |      ✓      |      x      |       ✓       |
 
 
 
