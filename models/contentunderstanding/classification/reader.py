@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import sys
 
 from paddlerec.core.reader import Reader
@@ -38,7 +37,8 @@ class TrainReader(Reader):
             data = [int(i) for i in data]
             label = [int(i) for i in label]
             seq_len = [int(i) for i in seq_len]
-            print >> sys.stderr, str([('data', data), ('label', label), ('seq_len', seq_len)])
+            print >> sys.stderr, str(
+                [('data', data), ('label', label), ('seq_len', seq_len)])
             yield [('data', data), ('label', label), ('seq_len', seq_len)]
 
         return data_iter

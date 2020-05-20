@@ -21,6 +21,7 @@ except ImportError:
     import pickle
 import paddle.fluid.incubate.data_generator as dg
 
+
 class TrainReader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
@@ -48,7 +49,8 @@ class TrainReader(dg.MultiSlotDataGenerator):
             feat_idx, feat_value, label = self._process_line(line)
 
             s = ""
-            for i in [('feat_idx', feat_idx), ('feat_value', feat_value), ('label', label)]:
+            for i in [('feat_idx', feat_idx), ('feat_value', feat_value),
+                      ('label', label)]:
                 k = i[0]
                 v = i[1]
                 for j in v:
@@ -57,6 +59,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
             yield None
 
         return data_iter
+
 
 reader = TrainReader("../config.yaml")
 reader.init()

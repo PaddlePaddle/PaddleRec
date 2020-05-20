@@ -21,10 +21,14 @@ import numpy as np
 
 class TrainReader(Reader):
     def init(self):
-        self.watch_vec_size = envs.get_global_env("hyper_parameters.watch_vec_size", None, "train.model") 
-        self.search_vec_size = envs.get_global_env("hyper_parameters.search_vec_size", None, "train.model") 
-        self.other_feat_size = envs.get_global_env("hyper_parameters.other_feat_size", None, "train.model") 
-        self.output_size = envs.get_global_env("hyper_parameters.output_size", None, "train.model") 
+        self.watch_vec_size = envs.get_global_env(
+            "hyper_parameters.watch_vec_size", None, "train.model")
+        self.search_vec_size = envs.get_global_env(
+            "hyper_parameters.search_vec_size", None, "train.model")
+        self.other_feat_size = envs.get_global_env(
+            "hyper_parameters.other_feat_size", None, "train.model")
+        self.output_size = envs.get_global_env("hyper_parameters.output_size",
+                                               None, "train.model")
 
     def generate_sample(self, line):
         """
@@ -35,13 +39,12 @@ class TrainReader(Reader):
             """
             This function needs to be implemented by the user, based on data format
             """
-            
+
             feature_name = ["watch_vec", "search_vec", "other_feat", "label"]
-            yield zip(feature_name, [np.random.rand(self.watch_vec_size).tolist()] + 
-                    [np.random.rand(self.search_vec_size).tolist()] + 
-                    [np.random.rand(self.other_feat_size).tolist()] +
-                    [[np.random.randint(self.output_size)]] )
+            yield zip(feature_name,
+                      [np.random.rand(self.watch_vec_size).tolist()] +
+                      [np.random.rand(self.search_vec_size).tolist()] +
+                      [np.random.rand(self.other_feat_size).tolist()] +
+                      [[np.random.randint(self.output_size)]])
 
         return reader
-
-

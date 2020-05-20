@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Training use fluid with one node only.
 """
@@ -27,33 +26,38 @@ from paddlerec.core.utils import envs
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
-special_param = ["TDM_Tree_Travel", "TDM_Tree_Layer",
-                 "TDM_Tree_Info", "TDM_Tree_Emb"]
+special_param = [
+    "TDM_Tree_Travel", "TDM_Tree_Layer", "TDM_Tree_Info", "TDM_Tree_Emb"
+]
 
 
 class TDMSingleTrainer(SingleTrainer):
     def startup(self, context):
         namespace = "train.startup"
-        load_persistables = envs.get_global_env(
-            "single.load_persistables", False, namespace)
+        load_persistables = envs.get_global_env("single.load_persistables",
+                                                False, namespace)
+
         persistables_model_path = envs.get_global_env(
             "single.persistables_model_path", "", namespace)
 
-        load_tree = envs.get_global_env(
-            "tree.load_tree", False, namespace)
-        self.tree_layer_path = envs.get_global_env(
-            "tree.tree_layer_path", "", namespace)
-        self.tree_travel_path = envs.get_global_env(
-            "tree.tree_travel_path", "", namespace)
-        self.tree_info_path = envs.get_global_env(
-            "tree.tree_info_path", "", namespace)
-        self.tree_emb_path = envs.get_global_env(
-            "tree.tree_emb_path", "", namespace)
+        load_tree = envs.get_global_env("tree.load_tree", False, namespace)
 
-        save_init_model = envs.get_global_env(
-            "single.save_init_model", False, namespace)
-        init_model_path = envs.get_global_env(
-            "single.init_model_path", "", namespace)
+        self.tree_layer_path = envs.get_global_env("tree.tree_layer_path", "",
+                                                   namespace)
+
+        self.tree_travel_path = envs.get_global_env("tree.tree_travel_path",
+                                                    "", namespace)
+
+        self.tree_info_path = envs.get_global_env("tree.tree_info_path", "",
+                                                  namespace)
+
+        self.tree_emb_path = envs.get_global_env("tree.tree_emb_path", "",
+                                                 namespace)
+
+        save_init_model = envs.get_global_env("single.save_init_model", False,
+                                              namespace)
+        init_model_path = envs.get_global_env("single.init_model_path", "",
+                                              namespace)
         self._exe.run(fluid.default_startup_program())
 
         if load_persistables:
@@ -68,7 +72,8 @@ class TDMSingleTrainer(SingleTrainer):
         if load_tree:
             # covert tree to tensor, set it into Fluid's variable.
             for param_name in special_param:
-                param_t = fluid.global_scope().find_var(param_name).get_tensor()
+                param_t = fluid.global_scope().find_var(param_name).get_tensor(
+                )
                 param_array = self._tdm_prepare(param_name)
                 if param_name == 'TDM_Tree_Emb':
                     param_t.set(param_array.astype('float32'), self._place)
@@ -102,15 +107,15 @@ class TDMSingleTrainer(SingleTrainer):
     def _tdm_travel_prepare(self):
         """load tdm tree param from npy/list file"""
         travel_array = np.load(self.tree_travel_path)
-        logger.info("TDM Tree leaf node nums: {}".format(
-            travel_array.shape[0]))
+        logger.info("TDM Tree leaf node nums: {}".format(travel_array.shape[
+            0]))
         return travel_array
 
     def _tdm_emb_prepare(self):
         """load tdm tree param from npy/list file"""
         emb_array = np.load(self.tree_emb_path)
-        logger.info("TDM Tree node nums from emb: {}".format(
-            emb_array.shape[0]))
+        logger.info("TDM Tree node nums from emb: {}".format(emb_array.shape[
+            0]))
         return emb_array
 
     def _tdm_layer_prepare(self):

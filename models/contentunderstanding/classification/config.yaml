@@ -37,4 +37,3 @@ train:
       dirname: "inference"
       epoch_interval: 100
       save_last: True
-

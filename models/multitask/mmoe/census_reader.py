@@ -24,6 +24,7 @@ class TrainReader(Reader):
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
+
         """
 
         def reader():

@@ -27,21 +27,26 @@ class Model(ModelBase):
     def deepfm_net(self):
         init_value_ = 0.1
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
-        sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self._namespace)
-        sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
+        sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number", None, self._namespace)
+        sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim", None, self._namespace)
 
         # ------------------------- network input --------------------------
 
-        num_field = envs.get_global_env("hyper_parameters.num_field", None, self._namespace)
-        
+        num_field = envs.get_global_env("hyper_parameters.num_field", None,
+                                        self._namespace)
+
         raw_feat_idx = self._sparse_data_var[1]
         raw_feat_value = self._dense_data_var[0]
         self.label = self._sparse_data_var[0]
-        
+
         feat_idx = raw_feat_idx
-        feat_value = fluid.layers.reshape(raw_feat_value, [-1, num_field, 1])  # None * num_field * 1
-       
-        reg = envs.get_global_env("hyper_parameters.reg", 1e-4, self._namespace)
+        feat_value = fluid.layers.reshape(
+            raw_feat_value, [-1, num_field, 1])  # None * num_field * 1
+
+        reg = envs.get_global_env("hyper_parameters.reg", 1e-4,
+                                  self._namespace)
         first_weights_re = fluid.embedding(
             input=feat_idx,
             is_sparse=True,
@@ -55,7 +60,8 @@ class Model(ModelBase):
                 regularizer=fluid.regularizer.L1DecayRegularizer(reg)))
         first_weights = fluid.layers.reshape(
             first_weights_re, shape=[-1, num_field, 1])  # None * num_field * 1
-        y_first_order = fluid.layers.reduce_sum((first_weights * feat_value), 1)
+        y_first_order = fluid.layers.reduce_sum((first_weights * feat_value),
+                                                1)
 
         # ------------------------- second order term --------------------------
 
@@ -68,7 +74,8 @@ class Model(ModelBase):
             padding_idx=0,
             param_attr=fluid.ParamAttr(
                 initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_ / math.sqrt(float(sparse_feature_dim)))))
+                    loc=0.0,
+                    scale=init_value_ / math.sqrt(float(sparse_feature_dim)))))
         feat_embeddings = fluid.layers.reshape(
             feat_embeddings_re,
             shape=[-1, num_field,
@@ -76,8 +83,8 @@ class Model(ModelBase):
         feat_embeddings = feat_embeddings * feat_value  # None * num_field * embedding_size
 
         # sum_square part
-        summed_features_emb = fluid.layers.reduce_sum(feat_embeddings,
-                                                      1)  # None * embedding_size
+        summed_features_emb = fluid.layers.reduce_sum(
+            feat_embeddings, 1)  # None * embedding_size
         summed_features_emb_square = fluid.layers.square(
             summed_features_emb)  # None * embedding_size
 
@@ -88,13 +95,16 @@ class Model(ModelBase):
             squared_features_emb, 1)  # None * embedding_size
 
         y_second_order = 0.5 * fluid.layers.reduce_sum(
-            summed_features_emb_square - squared_sum_features_emb, 1,
+            summed_features_emb_square - squared_sum_features_emb,
+            1,
             keep_dim=True)  # None * 1
 
         # ------------------------- DNN --------------------------
 
-        layer_sizes = envs.get_global_env("hyper_parameters.fc_sizes", None, self._namespace)
-        act = envs.get_global_env("hyper_parameters.act", None, self._namespace)
+        layer_sizes = envs.get_global_env("hyper_parameters.fc_sizes", None,
+                                          self._namespace)
+        act = envs.get_global_env("hyper_parameters.act", None,
+                                  self._namespace)
         y_dnn = fluid.layers.reshape(feat_embeddings,
                                      [-1, num_field * sparse_feature_dim])
         for s in layer_sizes:
@@ -121,7 +131,8 @@ class Model(ModelBase):
 
         # ------------------------- DeepFM --------------------------
 
-        self.predict = fluid.layers.sigmoid(y_first_order + y_second_order + y_dnn)
+        self.predict = fluid.layers.sigmoid(y_first_order + y_second_order +
+                                            y_dnn)
 
     def train_net(self):
         self.model._init_slots()
@@ -129,7 +140,8 @@ class Model(ModelBase):
 
         # ------------------------- Cost(logloss) --------------------------
 
-        cost = fluid.layers.log_loss(input=self.predict, label=fluid.layers.cast(self.label, "float32"))
+        cost = fluid.layers.log_loss(
+            input=self.predict, label=fluid.layers.cast(self.label, "float32"))
         avg_cost = fluid.layers.reduce_sum(cost)
 
         self._cost = avg_cost
@@ -145,7 +157,8 @@ class Model(ModelBase):
         self._metrics["BATCH_AUC"] = batch_auc_var
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
+                                            None, self._namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 

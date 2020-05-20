@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import print_function
 
-import sys
 import abc
 import os
 
@@ -64,7 +64,11 @@ class SlotReader(dg.MultiSlotDataGenerator):
         from operator import mul
         self.sparse_slots = sparse_slots.strip().split(" ")
         self.dense_slots = dense_slots.strip().split(" ")
-        self.dense_slots_shape = [reduce(mul, [int(j) for j in i.split(":")[1].strip("[]").split(",")]) for i in self.dense_slots]
+        self.dense_slots_shape = [
+            reduce(mul,
+                   [int(j) for j in i.split(":")[1].strip("[]").split(",")])
+            for i in self.dense_slots
+        ]
         self.dense_slots = [i.split(":")[0] for i in self.dense_slots]
         self.slots = self.dense_slots + self.sparse_slots
         self.slot2index = {}
@@ -93,10 +97,13 @@ class SlotReader(dg.MultiSlotDataGenerator):
                 slot = i
                 if not self.visit[slot]:
                     if i in self.dense_slots:
-                        output[self.slot2index[i]][1].extend([self.padding] * self.dense_slots_shape[self.slot2index[i]])
+                        output[self.slot2index[i]][1].extend(
+                            [self.padding] *
+                            self.dense_slots_shape[self.slot2index[i]])
                     else:
                         output[self.slot2index[i]][1].extend([self.padding])
                 else:
                     self.visit[slot] = False
             yield output
+
         return reader

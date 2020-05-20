@@ -20,7 +20,7 @@ from paddlerec.core.utils import envs
 
 
 class Model(object):
-    """R
+    """Base Model
     """
     __metaclass__ = abc.ABCMeta
 
@@ -39,32 +39,43 @@ class Model(object):
         self._platform = envs.get_platform()
 
     def _init_slots(self):
-        sparse_slots = envs.get_global_env("sparse_slots", None, "train.reader")
+        sparse_slots = envs.get_global_env("sparse_slots", None,
+                                           "train.reader")
         dense_slots = envs.get_global_env("dense_slots", None, "train.reader")
 
         if sparse_slots is not None or dense_slots is not None:
             sparse_slots = sparse_slots.strip().split(" ")
             dense_slots = dense_slots.strip().split(" ")
-            dense_slots_shape = [[int(j) for j in i.split(":")[1].strip("[]").split(",")] for i in dense_slots]
+            dense_slots_shape = [[
+                int(j) for j in i.split(":")[1].strip("[]").split(",")
+            ] for i in dense_slots]
             dense_slots = [i.split(":")[0] for i in dense_slots]
             self._dense_data_var = []
             for i in range(len(dense_slots)):
-                l = fluid.layers.data(name=dense_slots[i], shape=dense_slots_shape[i], dtype="float32")
+                l = fluid.layers.data(
+                    name=dense_slots[i],
+                    shape=dense_slots_shape[i],
+                    dtype="float32")
                 self._data_var.append(l)
                 self._dense_data_var.append(l)
             self._sparse_data_var = []
             for name in sparse_slots:
-                l = fluid.layers.data(name=name, shape=[1], lod_level=1, dtype="int64")
+                l = fluid.layers.data(
+                    name=name, shape=[1], lod_level=1, dtype="int64")
                 self._data_var.append(l)
                 self._sparse_data_var.append(l)
 
-        dataset_class = envs.get_global_env("dataset_class", None, "train.reader")
+        dataset_class = envs.get_global_env("dataset_class", None,
+                                            "train.reader")
         if dataset_class == "DataLoader":
             self._init_dataloader()
 
     def _init_dataloader(self):
         self._data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._data_var, capacity=64, use_double_buffer=False, iterable=False)
+            feed_list=self._data_var,
+            capacity=64,
+            use_double_buffer=False,
+            iterable=False)
 
     def get_inputs(self):
         return self._data_var
@@ -96,8 +107,8 @@ class Model(object):
                 "configured optimizer can only supported SGD/Adam/Adagrad")
 
         if name == "SGD":
-            reg = envs.get_global_env(
-                "hyper_parameters.reg", 0.0001, self._namespace)
+            reg = envs.get_global_env("hyper_parameters.reg", 0.0001,
+                                      self._namespace)
             optimizer_i = fluid.optimizer.SGD(
                 lr, regularization=fluid.regularizer.L2DecayRegularizer(reg))
         elif name == "ADAM":
@@ -111,10 +122,10 @@ class Model(object):
         return optimizer_i
 
     def optimizer(self):
-        learning_rate = envs.get_global_env(
-            "hyper_parameters.learning_rate", None, self._namespace)
-        optimizer = envs.get_global_env(
-            "hyper_parameters.optimizer", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
+                                            None, self._namespace)
+        optimizer = envs.get_global_env("hyper_parameters.optimizer", None,
+                                        self._namespace)
         print(">>>>>>>>>>>.learnig rate: %s" % learning_rate)
         return self._build_optimizer(optimizer, learning_rate)
 

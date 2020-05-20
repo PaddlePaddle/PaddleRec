@@ -26,8 +26,8 @@ from collections import Counter
 import os
 import paddle.fluid.incubate.data_generator as dg
 
-class TrainReader(dg.MultiSlotDataGenerator):
 
+class TrainReader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
 
@@ -83,11 +83,11 @@ class TrainReader(dg.MultiSlotDataGenerator):
                     if idx == 2 else math.log(1 + float(features[idx])))
         for idx in self.cat_idx_:
             if features[idx] == '' or features[
-                idx] not in self.cat_feat_idx_dict_list[idx - 14]:
+                    idx] not in self.cat_feat_idx_dict_list[idx - 14]:
                 label_feat_list[idx].append(0)
             else:
                 label_feat_list[idx].append(self.cat_feat_idx_dict_list[
-                                                idx - 14][features[idx]])
+                    idx - 14][features[idx]])
         label_feat_list[0].append(int(features[0]))
         return label_feat_list
 
@@ -108,6 +108,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
             yield None
 
         return data_iter
+
 
 reader = TrainReader("../config.yaml")
 reader.init()

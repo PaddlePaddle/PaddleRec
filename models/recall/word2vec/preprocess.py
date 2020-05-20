@@ -49,8 +49,7 @@ def parse_args():
         '--file_nums',
         type=int,
         default=1024,
-        help="re-split input corpus file nums"
-    )
+        help="re-split input corpus file nums")
     parser.add_argument(
         '--downsample',
         type=float,
@@ -137,9 +136,11 @@ def filter_corpus(args):
     if not os.path.exists(args.output_corpus_dir):
         os.makedirs(args.output_corpus_dir)
     for file in os.listdir(args.input_corpus_dir):
-        with io.open(args.output_corpus_dir + '/convert_' + file + '.csv', "w") as wf:
+        with io.open(args.output_corpus_dir + '/convert_' + file + '.csv',
+                     "w") as wf:
             with io.open(
-                    args.input_corpus_dir + '/' + file, encoding='utf-8') as rf:
+                    args.input_corpus_dir + '/' + file,
+                    encoding='utf-8') as rf:
                 print(args.input_corpus_dir + '/' + file)
                 for line in rf:
                     signal = False
@@ -154,9 +155,9 @@ def filter_corpus(args):
                         count_w = id_counts[idx]
                         corpus_size = word_all_count
                         keep_prob = (
-                                            math.sqrt(count_w /
-                                                      (args.downsample * corpus_size)) + 1
-                                    ) * (args.downsample * corpus_size) / count_w
+                            math.sqrt(count_w /
+                                      (args.downsample * corpus_size)) + 1
+                        ) * (args.downsample * corpus_size) / count_w
                         r_value = random.random()
                         if r_value > keep_prob:
                             continue
@@ -182,7 +183,8 @@ def build_dict(args):
 
     for file in os.listdir(args.build_dict_corpus_dir):
         with io.open(
-                args.build_dict_corpus_dir + "/" + file, encoding='utf-8') as f:
+                args.build_dict_corpus_dir + "/" + file,
+                encoding='utf-8') as f:
             print("build dict : ", args.build_dict_corpus_dir + "/" + file)
             for line in f:
                 line = text_strip(line)
@@ -232,7 +234,8 @@ def data_split(args):
 
     for i in range(1, num + 1):
         with open(os.path.join(new_data_dir, "part_" + str(i)), 'w') as fout:
-            data = contents[(i - 1) * lines_per_file:min(i * lines_per_file, len(contents))]
+            data = contents[(i - 1) * lines_per_file:min(i * lines_per_file,
+                                                         len(contents))]
             for line in data:
                 fout.write(line)
 
