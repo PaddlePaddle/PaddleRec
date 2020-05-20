@@ -18,7 +18,7 @@ from paddle.fluid.incubate.fleet.utils.hdfs import HDFSClient
 
 
 def is_afs_path(path):
-    """R 
+    """is_afs_path
     """
     if path.startswith("afs") or path.startswith("hdfs"):
         return True
@@ -133,8 +133,9 @@ class FileHandler(object):
             if mode.find('a') >= 0:
                 org_content = self._hdfs_client.cat(dest_path)
             content = content + org_content
-            self._local_fs_client.write(content, temp_local_file,
-                                        mode)  # fleet hdfs_client only support upload, so write tmp file
+            self._local_fs_client.write(
+                content, temp_local_file, mode
+            )  # fleet hdfs_client only support upload, so write tmp file
             self._hdfs_client.delete(dest_path + ".tmp")
             self._hdfs_client.upload(dest_path + ".tmp", temp_local_file)
             self._hdfs_client.delete(dest_path + ".bak")
@@ -158,7 +159,8 @@ class FileHandler(object):
         files = []
         if is_afs_path(path):
             files = self._hdfs_client.ls(path)
-            files = [path + '/' + self.get_file_name(fi) for fi in files]  # absulte path
+            files = [path + '/' + self.get_file_name(fi)
+                     for fi in files]  # absulte path
         else:
             files = self._local_fs_client.ls(path)
             files = [path + '/' + fi for fi in files]  # absulte path

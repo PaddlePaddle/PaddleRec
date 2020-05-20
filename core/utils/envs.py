@@ -95,7 +95,7 @@ def path_adapter(path):
         l_p = path.split("paddlerec.")[1].replace(".", "/")
         return os.path.join(package, l_p)
     else:
-        return path 
+        return path
 
 
 def windows_path_converter(path):
@@ -159,8 +159,8 @@ def pretty_print_envs(envs, header=None):
 
 def lazy_instance_by_package(package, class_name):
     models = get_global_env("train.model.models")
-    model_package = __import__(
-        package, globals(), locals(), package.split("."))
+    model_package = __import__(package,
+                               globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
 
@@ -170,8 +170,8 @@ def lazy_instance_by_fliename(abs, class_name):
     sys.path.append(dirname)
     package = os.path.splitext(os.path.basename(abs))[0]
 
-    model_package = __import__(
-        package, globals(), locals(), package.split("."))
+    model_package = __import__(package,
+                               globals(), locals(), package.split("."))
     instance = getattr(model_package, class_name)
     return instance
 
@@ -189,8 +189,7 @@ def get_platform():
 
 def find_free_port():
     def __free_port():
-        with closing(socket.socket(socket.AF_INET,
-                                   socket.SOCK_STREAM)) as s:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
             s.bind(('', 0))
             return s.getsockname()[1]
 

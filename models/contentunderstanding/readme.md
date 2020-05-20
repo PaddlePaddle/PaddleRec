@@ -71,13 +71,13 @@ python text2paddle.py raw_big_train_data/ raw_big_test_data/ train_big_data test
 ### 训练
 
 ```
-python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification -d cpu -e single
+python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification
 ```
 
 ### 预测
 
 ```
-python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification -d cpu -e single
+python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification
 ```
 
 ## 效果对比
@@ -87,19 +87,3 @@ python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification 
 | :------------------: | :--------------------: | :---------: |:---------: | :---------: |:---------: |
 |       ag news dataset        |       TagSpace       |       --        |       --          |       --          |       --          |
 |       --        |       Classification       |       --        |       --          |       --          |       --          |
-
-
-## 分布式
-### 模型训练性能 (样本/s)
-|       数据集        |       模型       |       单机        |       同步 (4节点)          |       同步 (8节点)          |  同步 (16节点)          |  同步 (32节点)          |
-| :------------------: | :--------------------: | :---------: |:---------: |:---------: |:---------: |:---------: |
-|       --        |       TagSpace       |       --        |       --          |       --          |  --          |  --          |
-|       --        |       Classification       |       --        |       --          |       --          |   --          |   --          |
-
-
-----
-
-|       数据集        |       模型       |       单机        |       异步 (4节点)          |       异步 (8节点)          |  异步 (16节点)          |  异步 (32节点)          |
-| :------------------: | :--------------------: | :---------: |:---------: |:---------: |:---------: |:---------: |
-|       --        |       TagSpace       |       --        |       --          |       --          |  --          |  --          |
-|       --        |       Classification       |       --        |       --          |       --          |   --          |   --          |

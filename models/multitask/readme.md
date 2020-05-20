@@ -56,4 +56,3 @@ python -m paddlerec.run -m paddlerec.models.multitask.esmm # esmm
 |       Census-income Data     |       Share-Bottom       |       --        |     0.93120/0.99256         |
 |       Census-income Data        |       MMoE       |       --        |       0.94465/0.99324         |
 |          Ali-CCP     |    ESMM       |       --        |      0.97181/0.49967          |
-

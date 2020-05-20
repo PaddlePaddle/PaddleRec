@@ -33,10 +33,9 @@ class TrainReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = line.strip().split(',')
-            
+
             feature_name = ["user_input", "item_input", "label"]
-            yield zip(feature_name, [[int(features[0])]] + [[int(features[1])]] + [[int(features[2])]])
+            yield zip(feature_name, [[int(features[0])]] +
+                      [[int(features[1])]] + [[int(features[2])]])
 
         return reader
-
-

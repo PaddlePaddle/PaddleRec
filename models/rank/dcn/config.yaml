@@ -22,9 +22,10 @@ train:
 
   reader:
     batch_size: 2
-    class: "{workspace}/criteo_reader.py"
-    train_data_path: "{workspace}/data/train"
+    train_data_path: "{workspace}/data/slot_train"
     feat_dict_name: "{workspace}/data/vocab"
+    sparse_slots: "label C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26"
+    dense_slots: "I1:1 I2:1 I3:1 I4:1 I5:1 I6:1 I7:1 I8:1 I9:1 I10:1 I11:1 I12:1 I13:1"
 
   model:
     models: "{workspace}/model.py"

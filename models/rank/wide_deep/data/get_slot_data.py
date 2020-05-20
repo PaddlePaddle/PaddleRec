@@ -11,18 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from __future__ import print_function
-
+import yaml
+from paddlerec.core.reader import Reader
+from paddlerec.core.utils import envs
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
+import paddle.fluid.incubate.data_generator as dg
 
-from paddlerec.core.reader import Reader
 
+class TrainReader(dg.MultiSlotDataGenerator):
+    def __init__(self, config):
+        dg.MultiSlotDataGenerator.__init__(self)
 
-class TrainReader(Reader):
+        if os.path.isfile(config):
+            with open(config, 'r') as rb:
+                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        else:
+            raise ValueError("reader config only support yaml")
+
     def init(self):
         pass
 
@@ -41,6 +49,20 @@ class TrainReader(Reader):
 
         def data_iter():
             wide_feat, deep_deat, label = self._process_line(line)
-            yield [('wide_input', wide_feat), ('deep_input', deep_deat), ('label', label)]
+
+            s = ""
+            for i in [('wide_input', wide_feat), ('deep_input', deep_deat),
+                      ('label', label)]:
+                k = i[0]
+                v = i[1]
+                for j in v:
+                    s += " " + k + ":" + str(j)
+            print s.strip()
+            yield None
 
         return data_iter
+
+
+reader = TrainReader("../config.yaml")
+reader.init()
+reader.run_from_stdin()
