@@ -11,20 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
 import math
 import sys
-
+import yaml
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
+import math
+import os
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
 from collections import Counter
 import os
+import paddle.fluid.incubate.data_generator as dg
 
-class TrainReader(Reader):
+
+class TrainReader(dg.MultiSlotDataGenerator):
+    def __init__(self, config):
+        dg.MultiSlotDataGenerator.__init__(self)
+
+        if os.path.isfile(config):
+            with open(config, 'r') as rb:
+                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        else:
+            raise ValueError("reader config only support yaml")
+
     def init(self):
         self.cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.cont_max_ = [
@@ -45,15 +57,15 @@ class TrainReader(Reader):
         self.label_feat_names = target + dense_feat_names + sparse_feat_names
 
         self.cat_feat_idx_dict_list = [{} for _ in range(26)]
-        
+
         # TODO: set vocabulary dictionary
-        vocab_dir = envs.get_global_env("feat_dict_name", None, "train.reader")
+        vocab_dir = "./vocab/"
         for i in range(26):
             lookup_idx = 1  # remain 0 for default value
             for line in open(
                     os.path.join(vocab_dir, 'C' + str(i + 1) + '.txt')):
                 self.cat_feat_idx_dict_list[i][line.strip()] = lookup_idx
-                lookup_idx += 1 
+                lookup_idx += 1
 
     def _process_line(self, line):
         features = line.rstrip('\n').split('\t')
@@ -78,13 +90,26 @@ class TrainReader(Reader):
                     idx - 14][features[idx]])
         label_feat_list[0].append(int(features[0]))
         return label_feat_list
-    
+
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
+
         def data_iter():
             label_feat_list = self._process_line(line)
-            yield list(zip(self.label_feat_names, label_feat_list))
+            s = ""
+            for i in list(zip(self.label_feat_names, label_feat_list)):
+                k = i[0]
+                v = i[1]
+                for j in v:
+                    s += " " + k + ":" + str(j)
+            print s.strip()
+            yield None
 
         return data_iter
+
+
+reader = TrainReader("../config.yaml")
+reader.init()
+reader.run_from_stdin()

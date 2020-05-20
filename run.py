@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
 import subprocess
-import tempfile
 
+import argparse
+import tempfile
 import yaml
 
 from paddlerec.core.factory import TrainerFactory
@@ -26,8 +26,10 @@ from paddlerec.core.utils import util
 engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
-engine_choices = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER",
-                  "TDM_SINGLE", "TDM_LOCAL_CLUSTER", "TDM_CLUSTER"]
+engine_choices = [
+    "SINGLE", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE", "TDM_LOCAL_CLUSTER",
+    "TDM_CLUSTER"
+]
 custom_model = ['TDM']
 model_name = ""
 
@@ -66,8 +68,13 @@ def get_engine(args):
     engine = engine.upper()
 
     if engine not in engine_choices:
+<<<<<<< HEAD
         raise ValueError(
             "train.engin can not be chosen in {}".format(engine_choices))
+=======
+        raise ValueError("train.engin can not be chosen in {}".format(
+            engine_choices))
+>>>>>>> upstream/master
 
     print("engines: \n{}".format(engines))
 
@@ -78,8 +85,10 @@ def get_engine(args):
 
 def get_transpiler():
     FNULL = open(os.devnull, 'w')
-    cmd = ["python", "-c",
-           "import paddle.fluid as fluid; fleet_ptr = fluid.core.Fleet(); [fleet_ptr.copy_table_by_feasign(10, 10, [2020, 1010])];"]
+    cmd = [
+        "python", "-c",
+        "import paddle.fluid as fluid; fleet_ptr = fluid.core.Fleet(); [fleet_ptr.copy_table_by_feasign(10, 10, [2020, 1010])];"
+    ]
     proc = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL, cwd=os.getcwd())
     ret = proc.wait()
     if ret == -11:
@@ -161,7 +170,8 @@ def cluster_engine(args):
             flattens["CPU_NUM"] = 2
 
         envs.set_runtime_environs(flattens)
-        print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value")))
+        print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value"
+                                                )))
 
         launch = ClusterEngine(None, args.model)
         return launch
@@ -192,7 +202,8 @@ def cluster_engine(args):
 
 
 def cluster_mpi_engine(args):
-    print("launch cluster engine with cluster to run model: {}".format(args.model))
+    print("launch cluster engine with cluster to run model: {}".format(
+        args.model))
 
     cluster_envs = {}
     cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
@@ -220,7 +231,8 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     cluster_envs["CPU_NUM"] = "2"
-    print("launch {} engine with cluster to run model: {}".format(trainer, args.model))
+    print("launch {} engine with cluster to run model: {}".format(trainer,
+                                                                  args.model))
 
     set_runtime_envs(cluster_envs, args.model)
     launch = LocalClusterEngine(cluster_envs, args.model)
@@ -228,10 +240,12 @@ def local_cluster_engine(args):
 
 
 def local_mpi_engine(args):
-    print("launch cluster engine with cluster to run model: {}".format(args.model))
+    print("launch cluster engine with cluster to run model: {}".format(
+        args.model))
     from paddlerec.core.engine.local_mpi import LocalMPIEngine
 
-    print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(args.model))
+    print("use 1X1 MPI ClusterTraining at localhost to run model: {}".format(
+        args.model))
 
     mpi = util.run_which("mpirun")
     if not mpi:

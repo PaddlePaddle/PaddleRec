@@ -15,10 +15,9 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import subprocess
-import sys
-import os
 import copy
+import os
+import subprocess
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.factory import TrainerFactory
@@ -28,7 +27,11 @@ from paddlerec.core.utils import envs
 class ClusterEngine(Engine):
     def __init_impl__(self):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
+<<<<<<< HEAD
         envs.set_runtime_environs({'abs_dir': abs_dir})
+=======
+
+>>>>>>> upstream/master
         backend = envs.get_runtime_environ("engine_backend")
         if backend == "PaddleCloud":
             self.submit_script = os.path.join(abs_dir, "cloud/cluster.sh")
@@ -61,5 +64,10 @@ class ClusterEngine(Engine):
             self.start_worker_procs()
 
         else:
+<<<<<<< HEAD
             raise ValueError(
                 "role {} error, must in MASTER/WORKER".format(role))
+=======
+            raise ValueError("role {} error, must in MASTER/WORKER".format(
+                role))
+>>>>>>> upstream/master

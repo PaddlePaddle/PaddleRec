@@ -53,7 +53,7 @@ class Metric(object):
         pass
 
     @abc.abstractmethod
-    def get_result_to_string(self):
+    def __str__(self):
         """
         Return:
             result(string) : calculate result with string format, for output

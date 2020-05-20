@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import paddle.fluid as fluid
+
 from paddlerec.core.layer import Layer
 
 
-class EmbeddingInputLayer(Layer):
-    """R
+class EmbeddingFuseLayer(Layer):
+    """embedding + sequence + concat
     """
 
     def __init__(self, config):
@@ -31,7 +32,7 @@ class EmbeddingInputLayer(Layer):
         self._emb_dim = self._mf_dim + 3  # append show ctr lr
         self._emb_layers = []
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         show_clk = fluid.layers.concat(
@@ -39,7 +40,8 @@ class EmbeddingInputLayer(Layer):
         show_clk.stop_gradient = True
         data_var = []
         for slot in self._slots:
-            l = fluid.layers.data(name=slot, shape=[1], dtype="int64", lod_level=1)
+            l = fluid.layers.data(
+                name=slot, shape=[1], dtype="int64", lod_level=1)
             data_var.append(l)
             emb = fluid.layers.embedding(input=l, size=[10, self._emb_dim], \
                                          is_sparse=True, is_distributed=True,
@@ -47,7 +49,8 @@ class EmbeddingInputLayer(Layer):
             emb = fluid.layers.sequence_pool(input=emb, pool_type='sum')
             emb = fluid.layers.continuous_value_model(emb, show_clk, self._cvm)
             self._emb_layers.append(emb)
-        output = fluid.layers.concat(input=self._emb_layers, axis=1, name=self._name)
+        output = fluid.layers.concat(
+            input=self._emb_layers, axis=1, name=self._name)
         return output, {'data_var': data_var}
 
 
@@ -63,7 +66,7 @@ class LabelInputLayer(Layer):
         self._data_type = config.get('data_type', "int64")
         self._label_idx = config['label_idx']
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         label = fluid.layers.data(name=self._name, shape=[-1, self._dim], \
@@ -85,7 +88,7 @@ class TagInputLayer(Layer):
         self._dim = config.get('dim', 1)
         self._data_type = config['data_type']
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         output = fluid.layers.data(name=self._name, shape=[-1, self._dim], \
@@ -107,10 +110,16 @@ class ParamLayer(Layer):
         self._data_type = config.get('data_type', 'float32')
         self._config = config
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
-        return self._config, {'inference_param': {'name': 'param', 'params': [], 'table_id': self._table_id}}
+        return self._config, {
+            'inference_param': {
+                'name': 'param',
+                'params': [],
+                'table_id': self._table_id
+            }
+        }
 
 
 class SummaryLayer(Layer):
@@ -125,13 +134,19 @@ class SummaryLayer(Layer):
         self._data_type = config.get('data_type', 'float32')
         self._config = config
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
-        return self._config, {'inference_param': {'name': 'summary', 'params': [], 'table_id': self._table_id}}
+        return self._config, {
+            'inference_param': {
+                'name': 'summary',
+                'params': [],
+                'table_id': self._table_id
+            }
+        }
 
 
-class NormalizetionLayer(Layer):
+class NormalizationLayer(Layer):
     """R
     """
 
@@ -143,7 +158,7 @@ class NormalizetionLayer(Layer):
         self._summary = config['summary']
         self._table_id = config.get('table_id', -1)
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         input_layer = param['layer'][self._input[0]]
@@ -151,14 +166,24 @@ class NormalizetionLayer(Layer):
         if len(self._input) > 0:
             input_list = [param['layer'][i] for i in self._input]
             input_layer = fluid.layers.concat(input=input_list, axis=1)
-        bn = fluid.layers.data_norm(input=input_layer, name=self._name, epsilon=1e-4, param_attr={
-            "batch_size": 1e4, "batch_sum_default": 0.0, "batch_square": 1e4})
-        inference_param = [self._name + '.batch_size', self._name + '.batch_sum', self._name + '.batch_square_sum']
+        bn = fluid.layers.data_norm(
+            input=input_layer,
+            name=self._name,
+            epsilon=1e-4,
+            param_attr={
+                "batch_size": 1e4,
+                "batch_sum_default": 0.0,
+                "batch_square": 1e4
+            })
+        inference_param = [
+            self._name + '.batch_size', self._name + '.batch_sum',
+            self._name + '.batch_square_sum'
+        ]
         return bn, {'inference_param': {'name': 'summary', \
                                         'params': inference_param, 'table_id': summary_layer.get('table_id', -1)}}
 
 
-class NeuralLayer(Layer):
+class FCLayer(Layer):
     """R
     """
 
@@ -171,7 +196,7 @@ class NeuralLayer(Layer):
         self._bias = config.get('bias', True)
         self._act_func = config.get('act_func', None)
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         param_layer = param['layer'][self._param]
@@ -180,11 +205,13 @@ class NeuralLayer(Layer):
             input_list = [param['layer'][i] for i in self._input]
             input_layer = fluid.layers.concat(input=input_list, axis=1)
         input_coln = input_layer.shape[1]
-        scale = param_layer['init_range'] / (input_coln ** 0.5)
+        scale = param_layer['init_range'] / (input_coln**0.5)
         bias = None
         if self._bias:
-            bias = fluid.ParamAttr(learning_rate=1.0,
-                                   initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=scale))
+            bias = fluid.ParamAttr(
+                learning_rate=1.0,
+                initializer=fluid.initializer.NormalInitializer(
+                    loc=0.0, scale=scale))
         fc = fluid.layers.fc(
             name=self._name,
             input=input_layer,
@@ -199,7 +226,7 @@ class NeuralLayer(Layer):
                                         'table_id': param_layer.get('table_id', -1)}}
 
 
-class SigmoidLossLayer(Layer):
+class LogLossLayer(Layer):
     """R
     """
 
@@ -215,29 +242,60 @@ class SigmoidLossLayer(Layer):
         self._extend_output = {
             'metric_label': self._metric_label,
             'metric_dict': {
-                'auc': {'var': None},
-                'batch_auc': {'var': None},
-                'stat_pos': {'var': None, 'data_type': 'int64'},
-                'stat_neg': {'var': None, 'data_type': 'int64'},
-                'batch_stat_pos': {'var': None, 'data_type': 'int64'},
-                'batch_stat_neg': {'var': None, 'data_type': 'int64'},
-                'pos_ins_num': {'var': None},
-                'abserr': {'var': None},
-                'sqrerr': {'var': None},
-                'prob': {'var': None},
-                'total_ins_num': {'var': None},
-                'q': {'var': None}
+                'auc': {
+                    'var': None
+                },
+                'batch_auc': {
+                    'var': None
+                },
+                'stat_pos': {
+                    'var': None,
+                    'data_type': 'int64'
+                },
+                'stat_neg': {
+                    'var': None,
+                    'data_type': 'int64'
+                },
+                'batch_stat_pos': {
+                    'var': None,
+                    'data_type': 'int64'
+                },
+                'batch_stat_neg': {
+                    'var': None,
+                    'data_type': 'int64'
+                },
+                'pos_ins_num': {
+                    'var': None
+                },
+                'abserr': {
+                    'var': None
+                },
+                'sqrerr': {
+                    'var': None
+                },
+                'prob': {
+                    'var': None
+                },
+                'total_ins_num': {
+                    'var': None
+                },
+                'q': {
+                    'var': None
+                }
             }
         }
 
-    def generate_fluid(self, param):
+    def generate(self, param):
         """R
         """
         input_layer = param['layer'][self._input[0]]
         label_layer = param['layer'][self._label]
-        output = fluid.layers.clip(input_layer, self._bound[0], self._bound[1], name=self._name)
+        output = fluid.layers.clip(
+            input_layer, self._bound[0], self._bound[1], name=self._name)
         norm = fluid.layers.sigmoid(output, name=self._name)
-        output = fluid.layers.log_loss(norm, fluid.layers.cast(x=label_layer, dtype='float32'))
+        output = fluid.layers.log_loss(
+            norm, fluid.layers.cast(
+                x=label_layer, dtype='float32'))
         if self._weight:
             weight_layer = param['layer'][self._weight]
             output = fluid.layers.elementwise_mul(output, weight_layer)
@@ -247,7 +305,11 @@ class SigmoidLossLayer(Layer):
         # For AUC Metric
         metric = self._extend_output['metric_dict']
         binary_predict = fluid.layers.concat(
-            input=[fluid.layers.elementwise_sub(fluid.layers.ceil(norm), norm), norm], axis=1)
+            input=[
+                fluid.layers.elementwise_sub(fluid.layers.ceil(norm), norm),
+                norm
+            ],
+            axis=1)
         metric['auc']['var'], metric['batch_auc']['var'], [metric['batch_stat_pos']['var'], \
                                                            metric['batch_stat_neg']['var'], metric['stat_pos']['var'],
                                                            metric['stat_neg']['var']] = \

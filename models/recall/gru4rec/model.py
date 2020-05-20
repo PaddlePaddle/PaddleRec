@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -25,14 +24,22 @@ class Model(ModelBase):
 
     def all_vocab_network(self, is_infer=False):
         """ network definition """
-        recall_k = envs.get_global_env("hyper_parameters.recall_k", None, self._namespace)
-        vocab_size = envs.get_global_env("hyper_parameters.vocab_size", None, self._namespace)
-        hid_size = envs.get_global_env("hyper_parameters.hid_size", None, self._namespace)
-        init_low_bound = envs.get_global_env("hyper_parameters.init_low_bound", None, self._namespace)
-        init_high_bound = envs.get_global_env("hyper_parameters.init_high_bound", None, self._namespace)
-        emb_lr_x = envs.get_global_env("hyper_parameters.emb_lr_x", None, self._namespace)
-        gru_lr_x = envs.get_global_env("hyper_parameters.gru_lr_x", None, self._namespace)
-        fc_lr_x = envs.get_global_env("hyper_parameters.fc_lr_x", None, self._namespace)
+        recall_k = envs.get_global_env("hyper_parameters.recall_k", None,
+                                       self._namespace)
+        vocab_size = envs.get_global_env("hyper_parameters.vocab_size", None,
+                                         self._namespace)
+        hid_size = envs.get_global_env("hyper_parameters.hid_size", None,
+                                       self._namespace)
+        init_low_bound = envs.get_global_env("hyper_parameters.init_low_bound",
+                                             None, self._namespace)
+        init_high_bound = envs.get_global_env(
+            "hyper_parameters.init_high_bound", None, self._namespace)
+        emb_lr_x = envs.get_global_env("hyper_parameters.emb_lr_x", None,
+                                       self._namespace)
+        gru_lr_x = envs.get_global_env("hyper_parameters.gru_lr_x", None,
+                                       self._namespace)
+        fc_lr_x = envs.get_global_env("hyper_parameters.fc_lr_x", None,
+                                      self._namespace)
         # Input data
         src_wordseq = fluid.data(
             name="src_wordseq", shape=[None, 1], dtype="int64", lod_level=1)
@@ -42,7 +49,10 @@ class Model(ModelBase):
         if is_infer:
             self._infer_data_var = [src_wordseq, dst_wordseq]
             self._infer_data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._infer_data_var, capacity=64, use_double_buffer=False, iterable=False)
+                feed_list=self._infer_data_var,
+                capacity=64,
+                use_double_buffer=False,
+                iterable=False)
 
         emb = fluid.embedding(
             input=src_wordseq,
@@ -57,7 +67,8 @@ class Model(ModelBase):
                               size=hid_size * 3,
                               param_attr=fluid.ParamAttr(
                                   initializer=fluid.initializer.Uniform(
-                                      low=init_low_bound, high=init_high_bound),
+                                      low=init_low_bound,
+                                      high=init_high_bound),
                                   learning_rate=gru_lr_x))
         gru_h0 = fluid.layers.dynamic_gru(
             input=fc0,
@@ -87,10 +98,8 @@ class Model(ModelBase):
         self._metrics["cost"] = avg_cost
         self._metrics["acc"] = acc
 
-
     def train_net(self):
         self.all_vocab_network()
-
 
     def infer_net(self):
         self.all_vocab_network(is_infer=True)

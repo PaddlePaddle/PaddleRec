@@ -22,8 +22,9 @@ train:
 
   reader:
     batch_size: 2
-    class: "{workspace}/criteo_reader.py"
-    train_data_path: "{workspace}/data/train_data"
+    train_data_path: "{workspace}/data/slot_train_data"
+    sparse_slots: "label feat_idx"
+    dense_slots: "feat_value:39"
 
   model:
     models: "{workspace}/model.py"
