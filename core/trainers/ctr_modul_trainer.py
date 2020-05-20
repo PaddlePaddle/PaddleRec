@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import datetime
 import json
 import sys
@@ -22,7 +21,6 @@ import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
-
 
 from paddlerec.core.utils import fs as fs
 from paddlerec.core.utils import util as util
@@ -80,20 +78,31 @@ class CtrTrainer(Trainer):
         """R
         """
         Trainer.__init__(self, config)
-        config['output_path'] = util.get_absolute_path(
-            config['output_path'], config['io']['afs'])
+        config['output_path'] = util.get_absolute_path(config['output_path'],
+                                                       config['io']['afs'])
 
         self.global_config = config
         self._metrics = {}
 
         self._path_generator = util.PathGenerator({
-            'templates': [
-                {'name': 'xbox_base_done', 'template': config['output_path'] + '/xbox_base_done.txt'},
-                {'name': 'xbox_delta_done', 'template': config['output_path'] + '/xbox_patch_done.txt'},
-                {'name': 'xbox_base', 'template': config['output_path'] + '/xbox/{day}/base/'},
-                {'name': 'xbox_delta', 'template': config['output_path'] + '/xbox/{day}/delta-{pass_id}/'},
-                {'name': 'batch_model', 'template': config['output_path'] + '/batch_model/{day}/{pass_id}/'}
-            ]
+            'templates': [{
+                'name': 'xbox_base_done',
+                'template': config['output_path'] + '/xbox_base_done.txt'
+            }, {
+                'name': 'xbox_delta_done',
+                'template': config['output_path'] + '/xbox_patch_done.txt'
+            }, {
+                'name': 'xbox_base',
+                'template': config['output_path'] + '/xbox/{day}/base/'
+            }, {
+                'name': 'xbox_delta',
+                'template':
+                config['output_path'] + '/xbox/{day}/delta-{pass_id}/'
+            }, {
+                'name': 'batch_model',
+                'template':
+                config['output_path'] + '/batch_model/{day}/{pass_id}/'
+            }]
         })
         if 'path_generator' in config:
             self._path_generator.add_path_template(config['path_generator'])
@@ -111,9 +120,11 @@ class CtrTrainer(Trainer):
         if self.global_config.get('process_mode', 'mpi') == 'brilliant_cpu':
             afs_config = self.global_config['io']['afs']
             role_maker = GeneralRoleMaker(
-                hdfs_name=afs_config['fs_name'], hdfs_ugi=afs_config['fs_ugi'],
+                hdfs_name=afs_config['fs_name'],
+                hdfs_ugi=afs_config['fs_ugi'],
                 path=self.global_config['output_path'] + "/gloo",
-                init_timeout_seconds=1200, run_timeout_seconds=1200)
+                init_timeout_seconds=1200,
+                run_timeout_seconds=1200)
         fleet.init(role_maker)
         data_var_list = []
         data_var_name_dict = {}
@@ -125,7 +136,8 @@ class CtrTrainer(Trainer):
             scope = fluid.Scope()
             self._exector_context[executor['name']] = {}
             self._exector_context[executor['name']]['scope'] = scope
-            self._exector_context[executor['name']]['model'] = model_basic.create(executor)
+            self._exector_context[executor['name']][
+                'model'] = model_basic.create(executor)
             model = self._exector_context[executor['name']]['model']
             self._metrics.update(model.get_metrics())
             runnnable_scope.append(scope)
@@ -146,9 +158,12 @@ class CtrTrainer(Trainer):
             model = self._exector_context[executor['name']]['model']
             program = model._build_param['model']['train_program']
             if not executor['is_update_sparse']:
-                program._fleet_opt["program_configs"][str(id(model.get_avg_cost().block.program))]["push_sparse"] = []
+                program._fleet_opt["program_configs"][str(
+                    id(model.get_avg_cost().block.program))][
+                        "push_sparse"] = []
             if 'train_thread_num' not in executor:
-                executor['train_thread_num'] = self.global_config['train_thread_num']
+                executor['train_thread_num'] = self.global_config[
+                    'train_thread_num']
             with fluid.scope_guard(scope):
                 self._exe.run(model._build_param['model']['startup_program'])
             model.dump_model_program('./')
@@ -162,7 +177,8 @@ class CtrTrainer(Trainer):
             dataset_item['data_vars'] = data_var_list
             dataset_item.update(self.global_config['io']['afs'])
             dataset_item["batch_size"] = self.global_config['batch_size']
-            self._dataset[dataset_item['name']] = dataset.FluidTimeSplitDataset(dataset_item)
+            self._dataset[dataset_item[
+                'name']] = dataset.FluidTimeSplitDataset(dataset_item)
         # if config.need_reqi_changeslot and config.reqi_dnn_plugin_day >= last_day and config.reqi_dnn_plugin_pass >= last_pass:
         #    util.reqi_changeslot(config.hdfs_dnn_plugin_path, join_save_params, common_save_params, update_save_params, scope2, scope3)
         fleet.init_worker()
@@ -190,23 +206,30 @@ class CtrTrainer(Trainer):
             metric_param = {'label': metric, 'metric_dict': metrics[metric]}
             metric_calculator.calculate(scope, metric_param)
             metric_result = metric_calculator.get_result_to_string()
-            self.print_log(metric_result, {'master': True, 'stdout': stdout_str})
+            self.print_log(metric_result,
+                           {'master': True,
+                            'stdout': stdout_str})
             monitor_data += metric_result
             metric_calculator.clear(scope, metric_param)
 
     def save_model(self, day, pass_index, base_key):
         """R
         """
-        cost_printer = util.CostPrinter(util.print_cost,
-                                        {'master': True, 'log_format': 'save model cost %s sec'})
-        model_path = self._path_generator.generate_path('batch_model', {'day': day, 'pass_id': pass_index})
+        cost_printer = util.CostPrinter(util.print_cost, {
+            'master': True,
+            'log_format': 'save model cost %s sec'
+        })
+        model_path = self._path_generator.generate_path(
+            'batch_model', {'day': day,
+                            'pass_id': pass_index})
         save_mode = 0  # just save all
         if pass_index < 1:  # batch_model
             save_mode = 3  # unseen_day++, save all
         util.rank0_print("going to save_model %s" % model_path)
         fleet.save_persistables(None, model_path, mode=save_mode)
         if fleet._role_maker.is_first_worker():
-            self._train_pass.save_train_progress(day, pass_index, base_key, model_path, is_checkpoint=True)
+            self._train_pass.save_train_progress(
+                day, pass_index, base_key, model_path, is_checkpoint=True)
         cost_printer.done()
         return model_path
 
@@ -225,46 +248,58 @@ class CtrTrainer(Trainer):
         if pass_index < 1:
             save_mode = 2
             xbox_patch_id = xbox_base_key
-            model_path = self._path_generator.generate_path('xbox_base', {'day': day})
-            xbox_model_donefile = self._path_generator.generate_path('xbox_base_done', {'day': day})
+            model_path = self._path_generator.generate_path('xbox_base',
+                                                            {'day': day})
+            xbox_model_donefile = self._path_generator.generate_path(
+                'xbox_base_done', {'day': day})
         else:
             save_mode = 1
-            model_path = self._path_generator.generate_path('xbox_delta', {'day': day, 'pass_id': pass_index})
-            xbox_model_donefile = self._path_generator.generate_path('xbox_delta_done', {'day': day})
-        total_save_num = fleet.save_persistables(None, model_path, mode=save_mode)
+            model_path = self._path_generator.generate_path(
+                'xbox_delta', {'day': day,
+                               'pass_id': pass_index})
+            xbox_model_donefile = self._path_generator.generate_path(
+                'xbox_delta_done', {'day': day})
+        total_save_num = fleet.save_persistables(
+            None, model_path, mode=save_mode)
         cost_printer.done()
 
-        cost_printer = util.CostPrinter(util.print_cost, {'master': True,
-                                                          'log_format': 'save cache model cost %s sec',
-                                                          'stdout': stdout_str})
+        cost_printer = util.CostPrinter(util.print_cost, {
+            'master': True,
+            'log_format': 'save cache model cost %s sec',
+            'stdout': stdout_str
+        })
         model_file_handler = fs.FileHandler(self.global_config['io']['afs'])
         if self.global_config['save_cache_model']:
-            cache_save_num = fleet.save_cache_model(None, model_path, mode=save_mode)
+            cache_save_num = fleet.save_cache_model(
+                None, model_path, mode=save_mode)
             model_file_handler.write(
                 "file_prefix:part\npart_num:16\nkey_num:%d\n" % cache_save_num,
                 model_path + '/000_cache/sparse_cache.meta', 'w')
         cost_printer.done()
-        util.rank0_print("save xbox cache model done, key_num=%s" % cache_save_num)
+        util.rank0_print("save xbox cache model done, key_num=%s" %
+                         cache_save_num)
 
-        save_env_param = {
-            'executor': self._exe,
-            'save_combine': True
-        }
-        cost_printer = util.CostPrinter(util.print_cost, {'master': True,
-                                                          'log_format': 'save dense model cost %s sec',
-                                                          'stdout': stdout_str})
+        save_env_param = {'executor': self._exe, 'save_combine': True}
+        cost_printer = util.CostPrinter(util.print_cost, {
+            'master': True,
+            'log_format': 'save dense model cost %s sec',
+            'stdout': stdout_str
+        })
         if fleet._role_maker.is_first_worker():
             for executor in self.global_config['executor']:
                 if 'layer_for_inference' not in executor:
                     continue
                 executor_name = executor['name']
                 model = self._exector_context[executor_name]['model']
-                save_env_param['inference_list'] = executor['layer_for_inference']
-                save_env_param['scope'] = self._exector_context[executor_name]['scope']
+                save_env_param['inference_list'] = executor[
+                    'layer_for_inference']
+                save_env_param['scope'] = self._exector_context[executor_name][
+                    'scope']
                 model.dump_inference_param(save_env_param)
                 for dnn_layer in executor['layer_for_inference']:
                     model_file_handler.cp(dnn_layer['save_file_name'],
-                                          model_path + '/dnn_plugin/' + dnn_layer['save_file_name'])
+                                          model_path + '/dnn_plugin/' +
+                                          dnn_layer['save_file_name'])
         fleet._role_maker._barrier_worker()
         cost_printer.done()
 
@@ -282,9 +317,15 @@ class CtrTrainer(Trainer):
             "job_name": util.get_env_value("JOB_NAME")
         }
         if fleet._role_maker.is_first_worker():
-            model_file_handler.write(json.dumps(xbox_done_info) + "\n", xbox_model_donefile, 'a')
+            model_file_handler.write(
+                json.dumps(xbox_done_info) + "\n", xbox_model_donefile, 'a')
             if pass_index > 0:
-                self._train_pass.save_train_progress(day, pass_index, xbox_base_key, model_path, is_checkpoint=False)
+                self._train_pass.save_train_progress(
+                    day,
+                    pass_index,
+                    xbox_base_key,
+                    model_path,
+                    is_checkpoint=False)
         fleet._role_maker._barrier_worker()
         return stdout_str
 
@@ -301,21 +342,28 @@ class CtrTrainer(Trainer):
             util.rank0_print("Begin " + executor_name + " pass")
             begin = time.time()
             program = model._build_param['model']['train_program']
-            self._exe.train_from_dataset(program, dataset, scope,
-                                         thread=executor_config['train_thread_num'], debug=self.global_config['debug'])
+            self._exe.train_from_dataset(
+                program,
+                dataset,
+                scope,
+                thread=executor_config['train_thread_num'],
+                debug=self.global_config['debug'])
             end = time.time()
             local_cost = (end - begin) / 60.0
             avg_cost = worker_numric_avg(local_cost)
             min_cost = worker_numric_min(local_cost)
             max_cost = worker_numric_max(local_cost)
-            util.rank0_print("avg train time %s mins, min %s mins, max %s mins" % (avg_cost, min_cost, max_cost))
+            util.rank0_print("avg train time %s mins, min %s mins, max %s mins"
+                             % (avg_cost, min_cost, max_cost))
             self._exector_context[executor_name]['cost'] = max_cost
 
             monitor_data = ""
             self.print_global_metrics(scope, model, monitor_data, stdout_str)
             util.rank0_print("End " + executor_name + " pass")
-            if self._train_pass.need_dump_inference(pass_id) and executor_config['dump_inference_model']:
-                stdout_str += self.save_xbox_model(day, pass_id, xbox_base_key, monitor_data)
+            if self._train_pass.need_dump_inference(
+                    pass_id) and executor_config['dump_inference_model']:
+                stdout_str += self.save_xbox_model(day, pass_id, xbox_base_key,
+                                                   monitor_data)
         fleet._role_maker._barrier_worker()
 
     def startup(self, context):
@@ -328,10 +376,14 @@ class CtrTrainer(Trainer):
         stdout_str = ""
         self._train_pass = util.TimeTrainPass(self.global_config)
         if not self.global_config['cold_start']:
-            cost_printer = util.CostPrinter(util.print_cost,
-                                            {'master': True, 'log_format': 'load model cost %s sec',
-                                             'stdout': stdout_str})
-            self.print_log("going to load model %s" % self._train_pass._checkpoint_model_path, {'master': True})
+            cost_printer = util.CostPrinter(util.print_cost, {
+                'master': True,
+                'log_format': 'load model cost %s sec',
+                'stdout': stdout_str
+            })
+            self.print_log("going to load model %s" %
+                           self._train_pass._checkpoint_model_path,
+                           {'master': True})
             # if config.need_reqi_changeslot and config.reqi_dnn_plugin_day >= self._train_pass.date()
             #    and config.reqi_dnn_plugin_pass >= self._pass_id:
             #    fleet.load_one_table(0, self._train_pass._checkpoint_model_path)
@@ -340,9 +392,12 @@ class CtrTrainer(Trainer):
             cost_printer.done()
         if self.global_config['save_first_base']:
             self.print_log("save_first_base=True", {'master': True})
-            self.print_log("going to save xbox base model", {'master': True, 'stdout': stdout_str})
+            self.print_log("going to save xbox base model",
+                           {'master': True,
+                            'stdout': stdout_str})
             self._train_pass._base_key = int(time.time())
-            stdout_str += self.save_xbox_model(self._train_pass.date(), 0, self._train_pass._base_key, "")
+            stdout_str += self.save_xbox_model(self._train_pass.date(), 0,
+                                               self._train_pass._base_key, "")
         context['status'] = 'begin_day'
 
     def begin_day(self, context):
@@ -353,7 +408,9 @@ class CtrTrainer(Trainer):
             context['is_exit'] = True
         day = self._train_pass.date()
         pass_id = self._train_pass._pass_id
-        self.print_log("======== BEGIN DAY:%s ========" % day, {'master': True, 'stdout': stdout_str})
+        self.print_log("======== BEGIN DAY:%s ========" % day,
+                       {'master': True,
+                        'stdout': stdout_str})
         if pass_id == self._train_pass.max_pass_num_day():
             context['status'] = 'end_day'
         else:
@@ -368,8 +425,10 @@ class CtrTrainer(Trainer):
         context['status'] = 'begin_day'
 
         util.rank0_print("shrink table")
-        cost_printer = util.CostPrinter(util.print_cost,
-                                        {'master': True, 'log_format': 'shrink table done, cost %s sec'})
+        cost_printer = util.CostPrinter(util.print_cost, {
+            'master': True,
+            'log_format': 'shrink table done, cost %s sec'
+        })
         fleet.shrink_sparse_table()
         for executor in self._exector_context:
             self._exector_context[executor]['model'].shrink({
@@ -394,7 +453,9 @@ class CtrTrainer(Trainer):
         pass_id = self._train_pass._pass_id
         base_key = self._train_pass._base_key
         pass_time = self._train_pass._current_train_time.strftime("%Y%m%d%H%M")
-        self.print_log("    ==== begin delta:%s ========" % pass_id, {'master': True, 'stdout': stdout_str})
+        self.print_log("    ==== begin delta:%s ========" % pass_id,
+                       {'master': True,
+                        'stdout': stdout_str})
         train_begin_time = time.time()
 
         cost_printer = util.CostPrinter(util.print_cost, \
@@ -403,35 +464,46 @@ class CtrTrainer(Trainer):
         current_dataset = {}
         for name in self._dataset:
             current_dataset[name] = self._dataset[name].load_dataset({
-                'node_num': fleet.worker_num(), 'node_idx': fleet.worker_index(),
-                'begin_time': pass_time, 'time_window_min': self._train_pass._interval_per_pass
+                'node_num': fleet.worker_num(),
+                'node_idx': fleet.worker_index(),
+                'begin_time': pass_time,
+                'time_window_min': self._train_pass._interval_per_pass
             })
         fleet._role_maker._barrier_worker()
         cost_printer.done()
 
         util.rank0_print("going to global shuffle")
         cost_printer = util.CostPrinter(util.print_cost, {
-            'master': True, 'stdout': stdout_str,
-            'log_format': 'global shuffle done, cost %s sec'})
+            'master': True,
+            'stdout': stdout_str,
+            'log_format': 'global shuffle done, cost %s sec'
+        })
         for name in current_dataset:
-            current_dataset[name].global_shuffle(fleet, self.global_config['dataset']['shuffle_thread'])
+            current_dataset[name].global_shuffle(
+                fleet, self.global_config['dataset']['shuffle_thread'])
         cost_printer.done()
         # str(dataset.get_shuffle_data_size(fleet))
         fleet._role_maker._barrier_worker()
 
         if self.global_config['prefetch_data']:
-            next_pass_time = (self._train_pass._current_train_time +
-                              datetime.timedelta(minutes=self._train_pass._interval_per_pass)).strftime("%Y%m%d%H%M")
+            next_pass_time = (
+                self._train_pass._current_train_time + datetime.timedelta(
+                    minutes=self._train_pass._interval_per_pass)
+            ).strftime("%Y%m%d%H%M")
             for name in self._dataset:
                 self._dataset[name].preload_dataset({
-                    'node_num': fleet.worker_num(), 'node_idx': fleet.worker_index(),
-                    'begin_time': next_pass_time, 'time_window_min': self._train_pass._interval_per_pass
+                    'node_num': fleet.worker_num(),
+                    'node_idx': fleet.worker_index(),
+                    'begin_time': next_pass_time,
+                    'time_window_min': self._train_pass._interval_per_pass
                 })
 
         fleet._role_maker._barrier_worker()
         pure_train_begin = time.time()
         for executor in self.global_config['executor']:
-            self.run_executor(executor, current_dataset[executor['dataset_name']], stdout_str)
+            self.run_executor(executor,
+                              current_dataset[executor['dataset_name']],
+                              stdout_str)
         cost_printer = util.CostPrinter(util.print_cost, \
                                         {'master': True, 'log_format': 'release_memory cost %s sec'})
         for name in current_dataset:
@@ -444,9 +516,11 @@ class CtrTrainer(Trainer):
         train_end_time = time.time()
         train_cost = train_end_time - train_begin_time
         other_cost = train_cost - pure_train_cost
-        log_str = "finished train day %s pass %s time cost:%s sec job time cost:" % (day, pass_id, train_cost)
+        log_str = "finished train day %s pass %s time cost:%s sec job time cost:" % (
+            day, pass_id, train_cost)
         for executor in self._exector_context:
-            log_str += '[' + executor + ':' + str(self._exector_context[executor]['cost']) + ']'
+            log_str += '[' + executor + ':' + str(self._exector_context[
+                executor]['cost']) + ']'
         log_str += '[other_cost:' + str(other_cost) + ']'
         util.rank0_print(log_str)
         stdout_str += util.now_time_str() + log_str

@@ -59,8 +59,10 @@ class CtrTrainer(Trainer):
         reader_class = envs.get_global_env("class", None, namespace)
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
-        pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN", self._config_yaml)
-        train_data_path = envs.get_global_env("train_data_path", None, namespace)
+        pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN",
+                                               self._config_yaml)
+        train_data_path = envs.get_global_env("train_data_path", None,
+                                              namespace)
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(inputs)
@@ -87,7 +89,8 @@ class CtrTrainer(Trainer):
         self.model.train_net()
         optimizer = self.model.optimizer()
 
-        optimizer = fleet.distributed_optimizer(optimizer, strategy={"use_cvm": False})
+        optimizer = fleet.distributed_optimizer(
+            optimizer, strategy={"use_cvm": False})
         optimizer.minimize(self.model.get_avg_cost())
 
         if fleet.is_server():
@@ -118,16 +121,18 @@ class CtrTrainer(Trainer):
         gs = shuf * 0
         fleet._role_maker._node_type_comm.Allreduce(shuf, gs)
 
-        print("trainer id: {}, trainers: {}, gs: {}".format(fleet.worker_index(), fleet.worker_num(), gs))
+        print("trainer id: {}, trainers: {}, gs: {}".format(fleet.worker_index(
+        ), fleet.worker_num(), gs))
 
         epochs = envs.get_global_env("train.epochs")
 
         for i in range(epochs):
-            self._exe.train_from_dataset(program=fluid.default_main_program(),
-                                         dataset=dataset,
-                                         fetch_list=self.fetch_vars,
-                                         fetch_info=self.fetch_alias,
-                                         print_period=self.fetch_period)
+            self._exe.train_from_dataset(
+                program=fluid.default_main_program(),
+                dataset=dataset,
+                fetch_list=self.fetch_vars,
+                fetch_info=self.fetch_alias,
+                print_period=self.fetch_period)
 
         context['status'] = 'terminal_pass'
         fleet.stop_worker()
