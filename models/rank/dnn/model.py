@@ -31,8 +31,10 @@ class Model(ModelBase):
 
     def net(self):
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
-        sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number", None, self._namespace)
-        sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim", None, self._namespace)
+        sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number", None, self._namespace)
+        sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim", None, self._namespace)
 
         def embedding_layer(input):
             emb = fluid.layers.embedding(
@@ -42,25 +44,27 @@ class Model(ModelBase):
                 size=[sparse_feature_number, sparse_feature_dim],
                 param_attr=fluid.ParamAttr(
                     name="SparseFeatFactors",
-                    initializer=fluid.initializer.Uniform()),
-            )
-            emb_sum = fluid.layers.sequence_pool(
-                input=emb, pool_type='sum')
+                    initializer=fluid.initializer.Uniform()), )
+            emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
             return emb_sum
 
         def fc(input, output_size):
             output = fluid.layers.fc(
-                input=input, size=output_size,
-                act='relu', param_attr=fluid.ParamAttr(
+                input=input,
+                size=output_size,
+                act='relu',
+                param_attr=fluid.ParamAttr(
                     initializer=fluid.initializer.Normal(
                         scale=1.0 / math.sqrt(input.shape[1]))))
             return output
 
         sparse_embed_seq = list(map(embedding_layer, self.sparse_inputs))
-        concated = fluid.layers.concat(sparse_embed_seq + [self.dense_input], axis=1)
+        concated = fluid.layers.concat(
+            sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
-        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None, self._namespace)
+        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None,
+                                            self._namespace)
 
         for size in hidden_layers:
             fcs.append(fc(fcs[-1], size))
@@ -75,14 +79,15 @@ class Model(ModelBase):
         self.predict = predict
 
     def avg_loss(self):
-        cost = fluid.layers.cross_entropy(input=self.predict, label=self.label_input)
+        cost = fluid.layers.cross_entropy(
+            input=self.predict, label=self.label_input)
         avg_cost = fluid.layers.reduce_mean(cost)
         self._cost = avg_cost
 
     def metrics(self):
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
                                              label=self.label_input,
-                                             num_thresholds=2 ** 12,
+                                             num_thresholds=2**12,
                                              slide_steps=20)
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
@@ -95,7 +100,8 @@ class Model(ModelBase):
         self.metrics()
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate", None, self._namespace)
+        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
+                                            None, self._namespace)
         optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
         return optimizer
 

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Training use fluid with one node only.
 """
@@ -43,11 +42,14 @@ class ClusterTrainer(TranspileTrainer):
             self.regist_context_processor('uninit', self.instance)
             self.regist_context_processor('init_pass', self.init)
             self.regist_context_processor('startup_pass', self.startup)
-            if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None, "train.reader") != "DataLoader":
+
+            if envs.get_platform() == "LINUX" and envs.get_global_env(
+                    "dataset_class", None, "train.reader") != "DataLoader":
                 self.regist_context_processor('train_pass', self.dataset_train)
             else:
-                self.regist_context_processor(
-                    'train_pass', self.dataloader_train)
+                self.regist_context_processor('train_pass',
+                                              self.dataloader_train)
+
             self.regist_context_processor('infer_pass', self.infer)
             self.regist_context_processor('terminal_pass', self.terminal)
 
@@ -75,8 +77,8 @@ class ClusterTrainer(TranspileTrainer):
     def init(self, context):
         self.model.train_net()
         optimizer = self.model.optimizer()
-        optimizer_name = envs.get_global_env(
-            "hyper_parameters.optimizer", None, "train.model")
+        optimizer_name = envs.get_global_env("hyper_parameters.optimizer",
+                                             None, "train.model")
         if optimizer_name not in ["", "sgd", "SGD", "Sgd"]:
             os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
 
@@ -114,9 +116,9 @@ class ClusterTrainer(TranspileTrainer):
 
         program = fluid.compiler.CompiledProgram(
             fleet.main_program).with_data_parallel(
-            loss_name=self.model.get_avg_cost().name,
-            build_strategy=self.strategy.get_build_strategy(),
-            exec_strategy=self.strategy.get_execute_strategy())
+                loss_name=self.model.get_avg_cost().name,
+                build_strategy=self.strategy.get_build_strategy(),
+                exec_strategy=self.strategy.get_execute_strategy())
 
         metrics_varnames = []
         metrics_format = []
@@ -135,9 +137,8 @@ class ClusterTrainer(TranspileTrainer):
             batch_id = 0
             try:
                 while True:
-                    metrics_rets = self._exe.run(
-                        program=program,
-                        fetch_list=metrics_varnames)
+                    metrics_rets = self._exe.run(program=program,
+                                                 fetch_list=metrics_varnames)
 
                     metrics = [epoch, batch_id]
                     metrics.extend(metrics_rets)
@@ -162,14 +163,16 @@ class ClusterTrainer(TranspileTrainer):
 
         for i in range(epochs):
             begin_time = time.time()
-            self._exe.train_from_dataset(program=fluid.default_main_program(),
-                                         dataset=dataset,
-                                         fetch_list=self.fetch_vars,
-                                         fetch_info=self.fetch_alias,
-                                         print_period=self.fetch_period)
+            self._exe.train_from_dataset(
+                program=fluid.default_main_program(),
+                dataset=dataset,
+                fetch_list=self.fetch_vars,
+                fetch_info=self.fetch_alias,
+                print_period=self.fetch_period)
             end_time = time.time()
-            times = end_time-begin_time
-            print("epoch {} using time {}, speed {:.2f} lines/s".format(i, times, ins/times))
+            times = end_time - begin_time
+            print("epoch {} using time {}, speed {:.2f} lines/s".format(
+                i, times, ins / times))
 
             self.save(i, "train", is_fleet=True)
         fleet.stop_worker()
