@@ -37,14 +37,8 @@ function check_style() {
     eval "$(GIMME_GO_VERSION=1.8.3 gimme)"
   fi
 
-  pip install cpplint
-  # set up go environment for running gometalinter
-  mkdir -p $GOPATH/src/github.com/SeiriosPlus/PaddleRec
-  ln -sf ${ROOT} $GOPATH/src/github.com/SeiriosPlus/PaddleRec
-
   export PATH=/usr/bin:$PATH
   pre-commit install
-  clang-format --version
 
   if ! pre-commit run -a; then
     git diff
