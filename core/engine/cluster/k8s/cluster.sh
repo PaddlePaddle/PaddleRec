@@ -9,15 +9,31 @@
 #                            variable define                                   #
 # ---------------------------------------------------------------------------- #
 
+
+#-----------------------------------------------------------------------------------------------------------------
+#fun : create ConfigMap for k8s pod
+#param : N/A
+#return : 0 -- success; not 0 -- failure
+#-----------------------------------------------------------------------------------------------------------------
 function create_config_map() {
   echo "Create configmap"
+  echo "Delete exist configmap which named 'modelconfig'"
   kubectl delete configmap modelconfig
   kubectl create configmap modelconfig --from-file=${abs_dir}/k8s/set_k8s_env.sh,${paddlerec_model_config}
 }
 
+
+#-----------------------------------------------------------------------------------------------------------------
+#fun : create yaml config for k8s job
+#param : N/A
+#return : 0 -- success; not 0 -- failure
+#-----------------------------------------------------------------------------------------------------------------
 function create_k8s_yaml() {
   echo "Create k8s.yaml"
-  rm ${PWD}/k8s.yaml
+  if [ -f ${PWD}/k8s.yaml ]; then
+    echo "Delete exist k8s.yaml at ${PWD}"
+    rm ${PWD}/k8s.yaml
+  fi
 
   let total_pod_num=${engine_submit_trainer_num}+${engine_submit_server_num}
   echo "--K8S ENV-- Job name: ${engine_job_name}"
@@ -46,12 +62,13 @@ function create_k8s_yaml() {
 
 
 #-----------------------------------------------------------------------------------------------------------------
-#fun : submit to cluster
+#fun : submit to k8s cluster
 #param : N/A
 #return : 0 -- success; not 0 -- failure
 #-----------------------------------------------------------------------------------------------------------------
 function submit() {
   echo "Submit"
+  echo "Delete exist job which named ${engine_job_name}"
   kubectl delete jobs.batch.volcano.sh $engine_job_name
   kubectl apply -f ${PWD}/k8s.yaml
 }

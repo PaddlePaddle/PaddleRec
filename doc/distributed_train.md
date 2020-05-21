@@ -2,6 +2,29 @@
 
 paddlerec支持依托`k8s`进行分布式训练，同时支持`PaddleCloud`及`mpi`集群等环境的大规模分布式任务提交。
 
+## 分布式任务提交原理
+
+paddlerec在运行时，通过额外的`-b`启动命令指定分布式运行的配置`backend.yaml`。以k8s为提交示例：
+```yaml
+engine:
+  backend: "k8s"
+  job_name: "k8s-ctr-dnn"
+
+  submit:
+    server_num: 2
+    trainer_num: 2
+    docker_image: "hub.baidubce.com/ctr/paddlerec:alpha"
+    memory: "4Gi"
+    storage: "10Gi"
+    log_level: 0
+```
+
+首先最重要的配置是`backend`选项，指定了分布式运行的集群，例如：`k8s`,`PaddleCloud`,`MPI`等，paddlerec会根据该选项调用不同的分布式提交脚本，如k8s的启动脚本[cluster.sh](../core/engine/cluster/k8s/cluster.sh)，进行不同的分布式流程。
+
+`job_name`是分布式任务提交的唯一区分标识，有关的日志及配置文件，以该名称进行构造及保存。
+
+`submit`下的各项配置是各分布式集群所特有的选项，其`backend_yaml`有所区别，可以通过不同示例了解提交流程。
+
 分布式训练及预测教程将随版本迭代不断更新，欢迎关注。如有任何问题或建议，欢迎在[Github Issue](https://github.com/PaddlePaddle/PaddleRec/issues)提出。
 
 ### K8S集群运行分布式
@@ -94,6 +117,8 @@ engine:
 - mermory: 每个节点的内存上限
 - storage: 每个节点的存储空间上限
 - log_level: paddle运行中GLOG的等级，建议为0，需要进行开发者模型调试OP时可适当调整
+
+paddlerec会根据以上配置，使用模板[k8s.yaml.template](../core/engine/cluster/k8s/k8s.yaml.template)生成k8s任务所需的`k8s.yaml`，进而依赖`kubectl`完成任务的提交。
 
 #### 执行k8s分布式训练
 
