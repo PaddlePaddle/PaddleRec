@@ -23,6 +23,8 @@ from paddlerec.core.model import Model as ModelBase
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
+
+    def _init_hyper_parameters(self):
         self.item_len = envs.get_global_env("hyper_parameters.self.item_len",
                                             None, self._namespace)
         self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size",
@@ -65,7 +67,7 @@ class Model(ModelBase):
             self._data_var = inputs
             self._data_loader = fluid.io.DataLoader.from_generator(
                 feed_list=self._data_var,
-                capacity=10000,
+                capacity=64,
                 use_double_buffer=False,
                 iterable=False)
 
