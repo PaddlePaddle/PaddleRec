@@ -142,6 +142,7 @@ class Model(object):
     def train_net(self):
         input_data = self.input_data(is_infer=False)
         self._data_var = input_data
+        # if use dataset _data_loader not used
         self._data_loader = fluid.io.DataLoader.from_generator(
             feed_list=self._data_var,
             capacity=64,
