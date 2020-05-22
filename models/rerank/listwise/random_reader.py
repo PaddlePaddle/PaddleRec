@@ -44,11 +44,7 @@ class TrainReader(Reader):
             length = [self.item_len] * self.batch_size
             label = np.random.randint(
                 2, size=(self.batch_size, self.item_len)).tolist()
-            output = []
-            output.append(user_slot_name)
-            output.append(item_slot_name)
-            output.append(length)
-            output.append(label)
+            output = [user_slot_name, item_slot_name, length, label]
 
             yield output
 
