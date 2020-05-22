@@ -56,67 +56,11 @@ class Model(ModelBase):
 
         inputs = [user_slot_names] + [item_slot_names] + [lens] + [labels]
 
+        # demo: hot to use is_infer:
         if is_infer:
-            self._infer_data_var = inputs
-            self._infer_data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._infer_data_var,
-                capacity=64,
-                use_double_buffer=False,
-                iterable=False)
+            return inputs
         else:
-            self._data_var = inputs
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var,
-                capacity=64,
-                use_double_buffer=False,
-                iterable=False)
-
-        return inputs
-
-    def _fluid_sequence_pad(self, input, pad_value, maxlen=None):
-        """
-        args:
-            input: (batch*seq_len, dim)
-        returns:
-            (batch, max_seq_len, dim)
-        """
-        pad_value = fluid.layers.cast(
-            fluid.layers.assign(input=np.array([pad_value], 'float32')),
-            input.dtype)
-        input_padded, _ = fluid.layers.sequence_pad(
-            input, pad_value,
-            maxlen=maxlen)  # (batch, max_seq_len, 1), (batch, 1)
-        # TODO, maxlen=300, used to solve issues: https://github.com/PaddlePaddle/Paddle/issues/14164
-        return input_padded
-
-    def _fluid_sequence_get_pos(self, lodtensor):
-        """
-        args:
-            lodtensor: lod = [[0,4,7]]
-        return:
-            pos: lod = [[0,4,7]]
-                 data = [0,1,2,3,0,1,3]
-                 shape = [-1, 1]
-        """
-        lodtensor = fluid.layers.reduce_sum(lodtensor, dim=1, keep_dim=True)
-        assert lodtensor.shape == (-1, 1), (lodtensor.shape())
-        ones = fluid.layers.cast(lodtensor * 0 + 1,
-                                 'float32')  # (batch*seq_len, 1)
-        ones_padded = self._fluid_sequence_pad(ones,
-                                               0)  # (batch, max_seq_len, 1)
-        ones_padded = fluid.layers.squeeze(ones_padded,
-                                           [2])  # (batch, max_seq_len)
-        seq_len = fluid.layers.cast(
-            fluid.layers.reduce_sum(
-                ones_padded, 1, keep_dim=True), 'int64')  # (batch, 1)
-        seq_len = fluid.layers.squeeze(seq_len, [1])
-
-        pos = fluid.layers.cast(
-            fluid.layers.cumsum(
-                ones_padded, 1, exclusive=True), 'int64')
-        pos = fluid.layers.sequence_unpad(pos, seq_len)  # (batch*seq_len, 1)
-        pos.stop_gradient = True
-        return pos
+            return inputs
 
     def net(self, inputs, is_infer=False):
         # user encode
@@ -225,10 +169,55 @@ class Model(ModelBase):
         self._cost = loss
         self._metrics['auc'] = auc_val
 
-    def train_net(self):
-        input_data = self.input_data()
-        self.net(input_data)
+    def _fluid_sequence_pad(self, input, pad_value, maxlen=None):
+        """
+        args:
+            input: (batch*seq_len, dim)
+        returns:
+            (batch, max_seq_len, dim)
+        """
+        pad_value = fluid.layers.cast(
+            fluid.layers.assign(input=np.array([pad_value], 'float32')),
+            input.dtype)
+        input_padded, _ = fluid.layers.sequence_pad(
+            input, pad_value,
+            maxlen=maxlen)  # (batch, max_seq_len, 1), (batch, 1)
+        # TODO, maxlen=300, used to solve issues: https://github.com/PaddlePaddle/Paddle/issues/14164
+        return input_padded
 
-    def infer_net(self):
-        input_data = self.input_data(is_infer=True)
-        self.net(input_data, is_infer=True)
+    def _fluid_sequence_get_pos(self, lodtensor):
+        """
+        args:
+            lodtensor: lod = [[0,4,7]]
+        return:
+            pos: lod = [[0,4,7]]
+                 data = [0,1,2,3,0,1,3]
+                 shape = [-1, 1]
+        """
+        lodtensor = fluid.layers.reduce_sum(lodtensor, dim=1, keep_dim=True)
+        assert lodtensor.shape == (-1, 1), (lodtensor.shape())
+        ones = fluid.layers.cast(lodtensor * 0 + 1,
+                                 'float32')  # (batch*seq_len, 1)
+        ones_padded = self._fluid_sequence_pad(ones,
+                                               0)  # (batch, max_seq_len, 1)
+        ones_padded = fluid.layers.squeeze(ones_padded,
+                                           [2])  # (batch, max_seq_len)
+        seq_len = fluid.layers.cast(
+            fluid.layers.reduce_sum(
+                ones_padded, 1, keep_dim=True), 'int64')  # (batch, 1)
+        seq_len = fluid.layers.squeeze(seq_len, [1])
+
+        pos = fluid.layers.cast(
+            fluid.layers.cumsum(
+                ones_padded, 1, exclusive=True), 'int64')
+        pos = fluid.layers.sequence_unpad(pos, seq_len)  # (batch*seq_len, 1)
+        pos.stop_gradient = True
+        return pos
+
+    #def train_net(self):
+    #    input_data = self.input_data()
+    #    self.net(input_data)
+
+    #def infer_net(self):
+    #    input_data = self.input_data(is_infer=True)
+    #    self.net(input_data, is_infer=True)
