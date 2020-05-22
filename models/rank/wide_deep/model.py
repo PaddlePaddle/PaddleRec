@@ -123,5 +123,4 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self):
-        #self._init_slots()
         self.train_net()
