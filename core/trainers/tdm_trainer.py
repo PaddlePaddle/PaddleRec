@@ -74,8 +74,8 @@ class TDMTrainer(GeneralTrainer):
 
         if load_paddle_model:
             # 从paddle二进制模型加载参数
-            warmup_model_path = envs.get_global_env("warmup_model_path",
-                                                    None, "train.trainer")
+            warmup_model_path = envs.get_global_env("warmup_model_path", None,
+                                                    "train.trainer")
             assert warmup_model_path != None, "set train.trainer.warmup_model_path for loading model"
             fluid.io.load_persistables(
                 executor=self._exe,

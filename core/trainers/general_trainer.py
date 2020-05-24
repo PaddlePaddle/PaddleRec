@@ -141,8 +141,8 @@ class GeneralTrainer(Trainer):
             context['status'] = 'startup_pass'
 
     def server(self, context):
-        warmup_model_path = envs.get_global_env("warmup_model_path",
-                                                None, "train.trainer")
+        warmup_model_path = envs.get_global_env("warmup_model_path", None,
+                                                "train.trainer")
         fleet.init_server(warmup_model_path)
         fleet.run_server()
         context['is_exit'] = True
