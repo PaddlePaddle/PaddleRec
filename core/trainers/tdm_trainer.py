@@ -30,7 +30,6 @@ special_param = ["TDM_Tree_Travel", "TDM_Tree_Layer", "TDM_Tree_Info"]
 
 
 class TDMTrainer(GeneralTrainer):
-
     def startup(self, context):
         logger.info("Run TDM Trainer Startup Pass")
         if self.engine == EngineMode.SINGLE:
