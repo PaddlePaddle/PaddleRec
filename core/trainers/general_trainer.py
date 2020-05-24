@@ -106,8 +106,8 @@ class GeneralTrainer(Trainer):
         if self.is_fleet:
             strategy = self._build_strategy()
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
-            optimizer_name = envs.get_global_env(
-                "hyper_parameters.optimizer", None, "train.model")
+            optimizer_name = envs.get_global_env("hyper_parameters.optimizer",
+                                                 None, "train.model")
             if optimizer_name.upper() == "SGD":
                 os.environ["FLAGS_communicator_is_sgd_optimizer"] = '1'
             else:
@@ -141,8 +141,8 @@ class GeneralTrainer(Trainer):
             context['status'] = 'startup_pass'
 
     def server(self, context):
-        warmup_model_path = envs.get_global_env(
-            "warmup_model_path", None, "train.trainer")
+        warmup_model_path = envs.get_global_env("warmup_model_path",
+                                                None, "train.trainer")
         fleet.init_server(warmup_model_path)
         fleet.run_server()
         context['is_exit'] = True
@@ -392,7 +392,8 @@ class GeneralTrainer(Trainer):
             padding = envs.get_global_env("padding", 0, namespace)
             pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
                 reader, "slot", "slot", self._config_yaml, namespace,
-                sparse_slots.replace(" ", "#"), dense_slots.replace(" ", "#"), str(padding))
+                sparse_slots.replace(" ", "#"),
+                dense_slots.replace(" ", "#"), str(padding))
 
         if train_data_path.startswith("paddlerec::"):
             package_base = envs.get_runtime_environ("PACKAGE_BASE")

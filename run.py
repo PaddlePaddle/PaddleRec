@@ -26,9 +26,7 @@ from paddlerec.core.utils import util
 engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
-engine_choices = [
-    "SINGLE", "LOCAL_CLUSTER", "CLUSTER"
-]
+engine_choices = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 
 
 def engine_registry():

@@ -42,20 +42,20 @@ class TDMTrainer(GeneralTrainer):
 
     def _single_startup(self, context):
         namespace = "train.startup"
-        load_tree_from_numpy = envs.get_global_env("single.load_tree_from_numpy",
-                                                   False, namespace)
+        load_tree_from_numpy = envs.get_global_env(
+            "single.load_tree_from_numpy", False, namespace)
         self._exe.run(self._startup_program)
         if load_tree_from_numpy:
             logger.info("load tree from numpy")
 
-            self.tree_layer_path = envs.get_global_env("tree.tree_layer_path", "",
-                                                       namespace)
+            self.tree_layer_path = envs.get_global_env("tree.tree_layer_path",
+                                                       "", namespace)
 
-            self.tree_travel_path = envs.get_global_env("tree.tree_travel_path",
-                                                        "", namespace)
+            self.tree_travel_path = envs.get_global_env(
+                "tree.tree_travel_path", "", namespace)
 
-            self.tree_info_path = envs.get_global_env("tree.tree_info_path", "",
-                                                      namespace)
+            self.tree_info_path = envs.get_global_env("tree.tree_info_path",
+                                                      "", namespace)
 
             self.tree_emb_path = envs.get_global_env("tree.tree_emb_path", "",
                                                      namespace)
@@ -74,8 +74,8 @@ class TDMTrainer(GeneralTrainer):
 
         if load_paddle_model:
             # 从paddle二进制模型加载参数
-            warmup_model_path = envs.get_global_env(
-                "warmup_model_path", None, "train.trainer")
+            warmup_model_path = envs.get_global_env("warmup_model_path",
+                                                    None, "train.trainer")
             assert warmup_model_path != None, "set train.trainer.warmup_model_path for loading model"
             fluid.io.load_persistables(
                 executor=self._exe,
@@ -84,10 +84,10 @@ class TDMTrainer(GeneralTrainer):
             logger.info("Load persistables from \"{}\"".format(
                 warmup_model_path))
 
-        save_init_model = envs.get_global_env("single.save_init_model",
-                                              False, namespace)
-        init_model_path = envs.get_global_env(
-            "single.init_model_path", "", namespace)
+        save_init_model = envs.get_global_env("single.save_init_model", False,
+                                              namespace)
+        init_model_path = envs.get_global_env("single.init_model_path", "",
+                                              namespace)
         if save_init_model:
             logger.info("Begin Save Init model.")
             fluid.io.save_persistables(
@@ -95,8 +95,8 @@ class TDMTrainer(GeneralTrainer):
             logger.info("End Save Init model.")
 
     def _cluster_startup(self, context):
-        warmup_model_path = envs.get_global_env(
-            "warmup_model_path", None, "train.trainer")
+        warmup_model_path = envs.get_global_env("warmup_model_path", None,
+                                                "train.trainer")
         assert warmup_model_path != None, "set train.trainer.warmup_model_path for loading model"
         self._exe.run(self._startup_program)
 
@@ -104,10 +104,11 @@ class TDMTrainer(GeneralTrainer):
             res = var.name in special_param
             return res
 
-        fluid.io.load_vars(self._exe,
-                           dirname=warmup_model_path,
-                           main_program=self._main_program,
-                           predicate=is_tdm_tree_var)
+        fluid.io.load_vars(
+            self._exe,
+            dirname=warmup_model_path,
+            main_program=self._main_program,
+            predicate=is_tdm_tree_var)
 
     def _tdm_prepare(self, param_name):
         if param_name == "TDM_Tree_Travel":

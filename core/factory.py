@@ -25,10 +25,10 @@ trainers = {}
 
 
 def trainer_registry():
-    trainers["GeneralTrainer"] = os.path.join(
-        trainer_abs, "general_trainer.py")
-    trainers["TDMTrainer"] = os.path.join(
-        trainer_abs, "tdm_trainer.py")
+    trainers["GeneralTrainer"] = os.path.join(trainer_abs,
+                                              "general_trainer.py")
+    trainers["TDMTrainer"] = os.path.join(trainer_abs,
+                                          "tdm_trainer.py")
 
 
 trainer_registry()
