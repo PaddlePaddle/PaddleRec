@@ -121,8 +121,8 @@ class Model(ModelBase):
 
         # 查表得到每个节点的Embedding
         sample_nodes = [
-            fluid.layers.reshape(sample_nodes[i], [-1, 1]
-                                 ) for i in range(self.max_layers)
+            fluid.layers.reshape(sample_nodes[i], [-1, 1])
+            for i in range(self.max_layers)
         ]
         sample_nodes_emb = [
             fluid.layers.embedding(
