@@ -27,8 +27,7 @@ engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 engine_choices = [
-    "SINGLE", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE", "TDM_LOCAL_CLUSTER",
-    "TDM_CLUSTER"
+    "SINGLE", "LOCAL_CLUSTER", "CLUSTER"
 ]
 
 
@@ -109,16 +108,13 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
-def get_trainer_prefix(args):
-    trainer_prefix = ""
-    train_env = get_inters_from_yaml(args.model, "train.trainer_prefix")
-    if "train.trainer_prefix" in train_env:
-        trainer_prefix = train_env["train.trainer_prefix"]
-    return trainer_prefix
-
-
 def single_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleTrainer"
+    train_env = get_inters_from_yaml(args.model, "train.trainer")
+    if "train.trainer.trainer" in train_env:
+        trainer = train_env["train.trainer.trainer"]
+    else:
+        trainer = "GeneralTrainer"
+
     single_envs = {}
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.threads"] = "2"
@@ -165,7 +161,13 @@ def cluster_engine(args):
 
     def worker():
         role = "WORKER"
-        trainer = get_trainer_prefix(args) + "ClusterTrainer"
+
+        train_env = get_inters_from_yaml(args.model, "train.trainer")
+        if "train.trainer.trainer" in train_env:
+            trainer = train_env["train.trainer.trainer"]
+        else:
+            trainer = "GeneralTrainer"
+
         cluster_envs = {}
         cluster_envs["train.trainer.trainer"] = trainer
         cluster_envs["train.trainer.engine"] = "cluster"
@@ -204,7 +206,12 @@ def cluster_mpi_engine(args):
 def local_cluster_engine(args):
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
-    trainer = get_trainer_prefix(args) + "ClusterTrainer"
+    train_env = get_inters_from_yaml(args.model, "train.trainer")
+    if "train.trainer.trainer" in train_env:
+        trainer = train_env["train.trainer.trainer"]
+    else:
+        trainer = "GeneralTrainer"
+
     cluster_envs = {}
     cluster_envs["server_num"] = 1
     cluster_envs["worker_num"] = 1

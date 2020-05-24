@@ -16,10 +16,11 @@ train:
   trainer:
     # for cluster training
     strategy: "async"
-  
+    trainer: "TDMTrainer"
+    warmup_model_path: "{workspace}/init_model"
+
   engine: single
-  trainer_prefix: "TDM"
-  epochs: 2
+  epochs: 4
   workspace: "paddlerec.models.treebased.tdm"
 
   reader:
@@ -51,18 +52,15 @@ train:
   startup:
     tree:
       # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
-      # 分布式训练trainer需要独立load 
-      load_tree: True
+      # 分布式训练trainer及server都需要load模型中的部分参数 
       tree_layer_path: "{workspace}/tree/layer_list.txt"
       tree_travel_path: "{workspace}/tree/travel_list.npy"
       tree_info_path: "{workspace}/tree/tree_info.npy"
       tree_emb_path: "{workspace}/tree/tree_emb.npy"
     single:
-      load_persistables: False
-      persistables_model_path: ""
+      load_tree_from_numpy: True
+      load_paddle_model: False
       save_init_model: True
-      init_model_path: "{workspace}/init_model"
-    cluster:
       init_model_path: "{workspace}/init_model"
 
   save:

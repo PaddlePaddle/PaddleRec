@@ -41,6 +41,12 @@ class Trainer(object):
         with open(config, 'r') as rb:
             self._config = yaml.load(rb.read(), Loader=yaml.FullLoader)
 
+    def processor_register(self):
+        print(
+            "Need implement by trainer, `self.regist_context_processor('uninit', self.instance)` must be the first"
+        )
+        pass
+
     def regist_context_processor(self, status_name, processor):
         """
         regist a processor for specify status

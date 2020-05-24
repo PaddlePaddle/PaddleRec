@@ -120,8 +120,11 @@ class Model(ModelBase):
             dtype='int64')
 
         # 查表得到每个节点的Embedding
+        sample_nodes = [
+            fluid.layers.reshape(sample_nodes[i], [-1, 1]) for i in range(self.max_layers)
+        ]
         sample_nodes_emb = [
-            fluid.embedding(
+            fluid.layers.embedding(
                 input=sample_nodes[i],
                 is_sparse=True,
                 size=[self.node_nums, self.node_emb_size],
@@ -353,7 +356,7 @@ class Model(ModelBase):
                 current_layer_node_num = self.first_layer_node.shape[1]
             else:
                 current_layer_node_num = current_layer_node.shape[1] * \
-                                         current_layer_node.shape[2]
+                    current_layer_node.shape[2]
 
             current_layer_node = fluid.layers.reshape(
                 current_layer_node, [-1, current_layer_node_num])
