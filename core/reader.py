@@ -40,6 +40,7 @@ class Reader(dg.MultiSlotDataGenerator):
 
     @abc.abstractmethod
     def init(self):
+        """init"""
         pass
 
     @abc.abstractmethod
