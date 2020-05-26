@@ -24,39 +24,32 @@ class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
 
-    def input(self):
+    def _init_hyper_parameters(self):
+        self.is_distributed = True if envs.get_trainer(
+        ) == "CtrTrainer" else False
+        self.sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number", None, self._namespace)
+        self.sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim", None, self._namespace)
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.learning_rate", None, self._namespace)
+
+    def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]
         self.dense_input = self._dense_data_var[0]
         self.label_input = self._sparse_data_var[0]
-
-    def net(self):
-        is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
-        sparse_feature_number = envs.get_global_env(
-            "hyper_parameters.sparse_feature_number", None, self._namespace)
-        sparse_feature_dim = envs.get_global_env(
-            "hyper_parameters.sparse_feature_dim", None, self._namespace)
 
         def embedding_layer(input):
             emb = fluid.layers.embedding(
                 input=input,
                 is_sparse=True,
-                is_distributed=is_distributed,
-                size=[sparse_feature_number, sparse_feature_dim],
+                is_distributed=self.is_distributed,
+                size=[self.sparse_feature_number, self.sparse_feature_dim],
                 param_attr=fluid.ParamAttr(
                     name="SparseFeatFactors",
                     initializer=fluid.initializer.Uniform()), )
             emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
             return emb_sum
-
-        def fc(input, output_size):
-            output = fluid.layers.fc(
-                input=input,
-                size=output_size,
-                act='relu',
-                param_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.Normal(
-                        scale=1.0 / math.sqrt(input.shape[1]))))
-            return output
 
         sparse_embed_seq = list(map(embedding_layer, self.sparse_inputs))
         concated = fluid.layers.concat(
@@ -67,7 +60,14 @@ class Model(ModelBase):
                                             self._namespace)
 
         for size in hidden_layers:
-            fcs.append(fc(fcs[-1], size))
+            output = fluid.layers.fc(
+                input=fcs[-1],
+                size=size,
+                act='relu',
+                param_attr=fluid.ParamAttr(
+                    initializer=fluid.initializer.Normal(
+                        scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
+            fcs.append(output)
 
         predict = fluid.layers.fc(
             input=fcs[-1],
@@ -78,13 +78,10 @@ class Model(ModelBase):
 
         self.predict = predict
 
-    def avg_loss(self):
         cost = fluid.layers.cross_entropy(
             input=self.predict, label=self.label_input)
         avg_cost = fluid.layers.reduce_mean(cost)
         self._cost = avg_cost
-
-    def metrics(self):
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
                                              label=self.label_input,
                                              num_thresholds=2**12,
@@ -92,20 +89,9 @@ class Model(ModelBase):
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
 
-    def train_net(self):
-        self.model._init_slots()
-        self.input()
-        self.net()
-        self.avg_loss()
-        self.metrics()
-
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
-                                            None, self._namespace)
-        optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
+        optimizer = fluid.optimizer.Adam(self.learning_rate, lazy_mode=True)
         return optimizer
 
     def infer_net(self):
-        self.model._init_slots()
-        self.input()
-        self.net()
+        pass
