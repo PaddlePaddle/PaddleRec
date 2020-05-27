@@ -23,10 +23,6 @@ def dataloader_by_name(readerclass, dataset_name, yaml_file):
     reader_class = lazy_instance_by_fliename(readerclass, "TrainReader")
     name = "dataset." + dataset_name + "."
     data_path = get_global_env(name + "data_path")
-    #else:
-    #    reader_name = "SlotReader"
-    #    namespace = "evaluate.reader"
-    #    data_path = get_global_env("test_data_path", None, namespace)
 
     if data_path.startswith("paddlerec::"):
         package_base = get_runtime_environ("PACKAGE_BASE")
@@ -71,7 +67,7 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file):
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
-
+    
     sparse = get_global_env(name + "sparse_slots")
     dense = get_global_env(name + "dense_slots")
     padding = get_global_env(name + "padding", 0)
