@@ -119,6 +119,10 @@ class TranspileTrainer(Trainer):
             pipe_cmd = "python {} {} {} {}".format(reader, reader_class, state,
                                                    self._config_yaml)
         else:
+            if sparse_slots is None:
+                sparse_slots = "#"
+            if dense_slots is None:
+                dense_slots = "#"
             padding = envs.get_global_env("padding", 0, namespace)
             pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
                 reader, "slot", "slot", self._config_yaml, namespace, \

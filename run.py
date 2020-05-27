@@ -28,7 +28,7 @@ device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 engine_choices = [
     "SINGLE", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE", "TDM_LOCAL_CLUSTER",
-    "TDM_CLUSTER", "SINGLE_YAMLOPT", "SINGLE_AUC_YAMLOPT"
+    "TDM_CLUSTER"
 ]
 custom_model = ['TDM']
 model_name = ""
@@ -41,10 +41,6 @@ def engine_registry():
     engines["TRANSPILER"]["SINGLE"] = single_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
-
-    engines["TRANSPILER"]["SINGLE_YAMLOPT"] = single_yamlopt_engine
-    engines["TRANSPILER"]["SINGLE_AUC_YAMLOPT"] = single_auc_yamlopt_engine
-
     engines["PSLIB"]["SINGLE"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
@@ -132,32 +128,6 @@ def single_engine(args):
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
-    single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
-
-    set_runtime_envs(single_envs, args.model)
-    trainer = TrainerFactory.create(args.model)
-    return trainer
-
-def single_yamlopt_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleTrainerYamlOpt"
-    single_envs = {}
-    single_envs["train.trainer.trainer"] = trainer
-    single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single_yamlopt"
-    single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
-
-    set_runtime_envs(single_envs, args.model)
-    trainer = TrainerFactory.create(args.model)
-    return trainer
-
-def single_auc_yamlopt_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleAucYamlOpt"
-    single_envs = {}
-    single_envs["train.trainer.trainer"] = trainer
-    single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single_yamlopt"
     single_envs["train.trainer.platform"] = envs.get_platform()
     print("use {} engine to run model: {}".format(trainer, args.model))
 
