@@ -51,3 +51,4 @@ executor:
    model: "{workspace}/model.py"
    dataset_name: dataset_2
    thread_num: 1
+   is_infer: False
