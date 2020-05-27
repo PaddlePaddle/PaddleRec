@@ -94,24 +94,30 @@ class TranspileTrainer(Trainer):
                 count += 1
         return count
 
-    def _get_dataset(self, state="TRAIN"):
-        if state == "TRAIN":
-            inputs = self.model.get_inputs()
-            namespace = "train.reader"
-            train_data_path = envs.get_global_env("train_data_path", None,
-                                                  namespace)
-        else:
-            inputs = self.model.get_infer_inputs()
-            namespace = "evaluate.reader"
-            train_data_path = envs.get_global_env("test_data_path", None,
-                                                  namespace)
-
-        sparse_slots = envs.get_global_env("sparse_slots", None, namespace)
-        dense_slots = envs.get_global_env("dense_slots", None, namespace)
-
-        threads = int(envs.get_runtime_environ("train.trainer.threads"))
-        batch_size = envs.get_global_env("batch_size", None, namespace)
-        reader_class = envs.get_global_env("class", None, namespace)
+    #def _get_dataset(self, state="TRAIN"):
+        #if state == "TRAIN":
+        #    inputs = self.model.get_inputs()
+        #    namespace = "train.reader"
+        #    train_data_path = envs.get_global_env("train_data_path", None,
+        #                                          namespace)
+        #else:
+        #    inputs = self.model.get_infer_inputs()
+        #    namespace = "evaluate.reader"
+        #    train_data_path = envs.get_global_env("test_data_path", None,
+        #                                          namespace)
+    def _get_dataset(self, dataset_name):
+        namespace = "dataset." + dataset_name + "."
+        sparse_slots = envs.get_global_env(namespace + "sparse_slots")
+        dense_slots = envs.get_global_env(namespace + "dense_slots")
+        thread_num = envs.get_global_env(namespace + "thread_num")
+        #threads = int(envs.get_runtime_environ("train.trainer.threads"))
+        #batch_size = envs.get_global_env("batch_size", None, namespace)
+        batch_size = envs.get_global_env(namespace + "batch_size")
+        reader_type = envs.get_global_env(namespace + "type")
+        if envs.get_platform() != "LINUX":
+            print("platform ", envs.get_platform(), " change reader to DataLoader")
+            reader_type = "DataLoader"
+        reader_class = envs.get_global_env(namespace + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
 
