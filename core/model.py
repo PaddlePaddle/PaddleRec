@@ -39,15 +39,32 @@ class Model(object):
         self._platform = envs.get_platform()
         self._init_hyper_parameters()
         self._env = config
+        self._slot_inited = False
 
     def _init_hyper_parameters(self):
         pass
 
-    def _init_slots(self):
-        sparse_slots = envs.get_global_env("sparse_slots", None,
-                                           "train.reader")
-        dense_slots = envs.get_global_env("dense_slots", None, "train.reader")
-
+    def _init_slots(self, **kargs):
+        if self._slot_inited:
+            return
+        self._slot_inited = True
+        dataset = {}
+        model_dict = {}#self._env["executor"]#[kargs["name"]]
+        for i in self._env["executor"]:
+            if i["name"] == kargs["name"]:
+                model_dict = i
+                break
+        for i in self._env["dataset"]:
+            if i["name"] == model_dict["dataset_name"]:
+                dataset = i
+                break
+        name = "dataset." + dataset["name"] + "."
+        sparse_slots = envs.get_global_env(name + "sparse_slots")#"sparse_slots", None,
+                                           #"train.reader")
+        dense_slots = envs.get_global_env(name + "dense_slots")
+        #"dense_slots", None, "train.reader")
+        #print(sparse_slots)
+        #print(dense_slots)
         if sparse_slots is not None or dense_slots is not None:
             sparse_slots = sparse_slots.strip().split(" ")
             dense_slots = dense_slots.strip().split(" ")
@@ -70,12 +87,13 @@ class Model(object):
                 self._data_var.append(l)
                 self._sparse_data_var.append(l)
 
-        dataset_class = envs.get_global_env("dataset_class", None,
-                                            "train.reader")
-        if dataset_class == "DataLoader":
-            self._init_dataloader()
+        #dataset_class = dataset["type"]#envs.get_global_env("dataset_class", None,
+                        #                    "train.reader")
+        #if dataset_class == "DataLoader":
+        #    self._init_dataloader()
 
     def _init_dataloader(self):
+        #print(self._data_var)
         self._data_loader = fluid.io.DataLoader.from_generator(
             feed_list=self._data_var,
             capacity=64,
@@ -131,7 +149,6 @@ class Model(object):
                                             None, self._namespace)
         optimizer = envs.get_global_env("hyper_parameters.optimizer", None,
                                         self._namespace)
-        print(">>>>>>>>>>>.learnig rate: %s" % learning_rate)
         return self._build_optimizer(optimizer, learning_rate)
 
     def input_data(self, is_infer=False, **kwargs):

@@ -80,8 +80,6 @@ def set_global_envs(envs):
                 global_envs[global_k] = v
 
     fatten_env_namespace([], envs)
-    for i in global_envs:
-        print i,":",global_envs[i]
 
 def get_global_env(env_name, default_value=None, namespace=None):
     """
