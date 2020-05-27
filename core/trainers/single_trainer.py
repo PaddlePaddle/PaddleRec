@@ -212,8 +212,11 @@ class SingleTrainer(TranspileTrainer):
                     self._executor_dataloader_train(model_dict)
                 else:
                     self._executor_dataset_train(model_dict)
-                with fluid.scope_guard(self._model[model_name][2]):
-                    self.save(self, j)
+                with fluid.scope_guard(self._model[model_dict["name"]][2]):
+                    train_prog = self._model[model_dict["name"]][0]
+                    startup_prog = self._model[model_dict["name"]][1]
+                    with fluid.program_guard(train_prog, startup_prog):
+                        self.save(j)
                 end_time = time.time()
                 seconds = end_time - begin_time
             print("epoch {} done, time elasped: {}".format(j, seconds))
@@ -318,10 +321,9 @@ class SingleTrainer(TranspileTrainer):
             else:
                 fluid.io.save_inference_model(dirname, feed_varnames,
                                               fetch_vars, self._exe)
-            self.inference_models.append((epoch_id, dirname))
 
         def save_persistables():
-            save_interval = envs.get_global_env("epoch.save_checkpoint_interval", -1)
+            save_interval = int(envs.get_global_env("epoch.save_checkpoint_interval", -1))
             if not need_save(epoch_id, save_interval, False):
                 return
             dirname = envs.get_global_env("epoch.save_checkpoint_path", None)
@@ -331,7 +333,6 @@ class SingleTrainer(TranspileTrainer):
                 fleet.save_persistables(self._exe, dirname)
             else:
                 fluid.io.save_persistables(self._exe, dirname)
-            self.increment_models.append((epoch_id, dirname))
 
         save_persistables()
         save_inference_model()
