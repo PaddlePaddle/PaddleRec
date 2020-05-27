@@ -27,12 +27,12 @@ class Model(ModelBase):
     def _init_hyper_parameters(self):
         self.is_distributed = True if envs.get_trainer(
         ) == "CtrTrainer" else False
-        self.sparse_feature_number = envs.get_global_env(
-            "hyper_parameters.sparse_feature_number", None, self._namespace)
-        self.sparse_feature_dim = envs.get_global_env(
-            "hyper_parameters.sparse_feature_dim", None, self._namespace)
-        self.learning_rate = envs.get_global_env(
-            "hyper_parameters.learning_rate", None, self._namespace)
+        self.sparse_feature_number = 1000001 #envs.get_global_env(
+            #"hyper_parameters.sparse_feature_number", None, self._namespace)
+        self.sparse_feature_dim = 9#envs.get_global_env(
+            #"hyper_parameters.sparse_feature_dim", None, self._namespace)
+        self.learning_rate = 0.001#envs.get_global_env(
+            #"hyper_parameters.learning_rate", None, self._namespace)
 
     def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]
@@ -56,8 +56,8 @@ class Model(ModelBase):
             sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
-        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None,
-                                            self._namespace)
+        hidden_layers = [512, 256, 128, 32]#envs.get_global_env("hyper_parameters.fc_sizes", None,
+                        #                    self._namespace)
 
         for size in hidden_layers:
             output = fluid.layers.fc(
@@ -82,6 +82,8 @@ class Model(ModelBase):
             input=self.predict, label=self.label_input)
         avg_cost = fluid.layers.reduce_mean(cost)
         self._cost = avg_cost
+
+
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
                                              label=self.label_input,
                                              num_thresholds=2**12,

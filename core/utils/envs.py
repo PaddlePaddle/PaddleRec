@@ -20,6 +20,7 @@ import sys
 
 global_envs = {}
 
+global_envs_raw = {}
 
 def flatten_environs(envs, separator="."):
     flatten_dict = {}
@@ -61,6 +62,10 @@ def get_trainer():
 
 def set_global_envs(envs):
     assert isinstance(envs, dict)
+
+    global_envs_raw = envs
+    
+    return
 
     def fatten_env_namespace(namespace_nests, local_envs):
         for k, v in local_envs.items():
