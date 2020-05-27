@@ -37,6 +37,7 @@ def trainer_registry():
     trainers["TDMClusterTrainer"] = os.path.join(trainer_abs,
                                                  "tdm_cluster_trainer.py")
 
+
 trainer_registry()
 
 
