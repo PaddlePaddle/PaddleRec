@@ -62,15 +62,8 @@ def dataloader_by_name(readerclass, dataset_name, yaml_file):
 
 def slotdataloader_by_name(readerclass, dataset_name, yaml_file):
     name = "dataset." + dataset_name + "."
-    #if train == "TRAIN":
     reader_name = "SlotReader"
-    #    namespace = "train.reader"
-    print(name)
     data_path = get_global_env(name + "data_path")
-    #else:
-    #    reader_name = "SlotReader"
-    #    namespace = "evaluate.reader"
-    #    data_path = get_global_env("test_data_path", None, namespace)
 
     if data_path.startswith("paddlerec::"):
         package_base = get_runtime_environ("PACKAGE_BASE")
@@ -79,10 +72,6 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file):
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
 
-    #sparse = get_global_env("sparse_slots", None, namespace)
-    #dense = get_global_env("dense_slots", None, namespace)
-    #padding = get_global_env("padding", 0, namespace)
-    #name = "dataset." + dataset_name + "."
     sparse = get_global_env(name + "sparse_slots")
     dense = get_global_env(name + "dense_slots")
     padding = get_global_env(name + "padding", 0)
