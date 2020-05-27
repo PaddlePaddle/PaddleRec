@@ -49,7 +49,7 @@ class Model(object):
             return
         self._slot_inited = True
         dataset = {}
-        model_dict = {}#self._env["executor"]#[kargs["name"]]
+        model_dict = {}
         for i in self._env["executor"]:
             if i["name"] == kargs["name"]:
                 model_dict = i
@@ -59,12 +59,8 @@ class Model(object):
                 dataset = i
                 break
         name = "dataset." + dataset["name"] + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")#"sparse_slots", None,
-                                           #"train.reader")
+        sparse_slots = envs.get_global_env(name + "sparse_slots")
         dense_slots = envs.get_global_env(name + "dense_slots")
-        #"dense_slots", None, "train.reader")
-        #print(sparse_slots)
-        #print(dense_slots)
         if sparse_slots is not None or dense_slots is not None:
             sparse_slots = sparse_slots.strip().split(" ")
             dense_slots = dense_slots.strip().split(" ")
@@ -87,13 +83,11 @@ class Model(object):
                 self._data_var.append(l)
                 self._sparse_data_var.append(l)
 
-        #dataset_class = dataset["type"]#envs.get_global_env("dataset_class", None,
-                        #                    "train.reader")
-        #if dataset_class == "DataLoader":
-        #    self._init_dataloader()
+        dataset_class = dataset["type"]
+        if dataset_class == "DataLoader":
+            self._init_dataloader()
 
     def _init_dataloader(self):
-        #print(self._data_var)
         self._data_loader = fluid.io.DataLoader.from_generator(
             feed_list=self._data_var,
             capacity=64,
