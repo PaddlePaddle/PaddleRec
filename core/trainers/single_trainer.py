@@ -32,7 +32,7 @@ logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
 
 
-class SingleTrainerYamlOpt(TranspileTrainer):
+class SingleTrainer(TranspileTrainer):
     def __init__(self, config=None):
         super(TranspileTrainer, self).__init__(config)
         self._env = self._config
