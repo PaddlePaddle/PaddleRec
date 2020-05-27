@@ -28,7 +28,7 @@ device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 engine_choices = [
     "SINGLE", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE", "TDM_LOCAL_CLUSTER",
-    "TDM_CLUSTER"
+    "TDM_CLUSTER", "SINGLE_YAMLOPT"
 ]
 custom_model = ['TDM']
 model_name = ""
@@ -42,12 +42,14 @@ def engine_registry():
     engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
 
+    engines["TRANSPILER"]["SINGLE_YAMLOPT"] = single_yamlopt_engine
+
     engines["PSLIB"]["SINGLE"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
 
 
-def get_inters_from_yaml(file, filter):
+def get_inters_from_yaml(file, filters):
     with open(file, 'r') as rb:
         _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
 
@@ -55,16 +57,22 @@ def get_inters_from_yaml(file, filter):
 
     inters = {}
     for k, v in flattens.items():
-        if k.startswith(filter):
-            inters[k] = v
+        for f in filters:
+            if k.startswith(f):
+                inters[k] = v
     return inters
 
 
 def get_engine(args):
     transpiler = get_transpiler()
-    run_extras = get_inters_from_yaml(args.model, "train.")
+    run_extras = get_inters_from_yaml(args.model, ["train.", "epoch."])
 
-    engine = run_extras.get("train.engine", "single")
+    engine = run_extras.get("train.engine", None)
+    if engine is None:
+        engine = run_extras.get("epoch.trainer_class", None)
+    if engine is None:
+        engine = "single"
+    
     engine = engine.upper()
 
     if engine not in engine_choices:
@@ -130,6 +138,18 @@ def single_engine(args):
     trainer = TrainerFactory.create(args.model)
     return trainer
 
+def single_yamlopt_engine(args):
+    trainer = get_trainer_prefix(args) + "SingleTrainerYamlOpt"
+    single_envs = {}
+    single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.threads"] = "2"
+    single_envs["train.trainer.engine"] = "single_yamlopt"
+    single_envs["train.trainer.platform"] = envs.get_platform()
+    print("use {} engine to run model: {}".format(trainer, args.model))
+
+    set_runtime_envs(single_envs, args.model)
+    trainer = TrainerFactory.create(args.model)
+    return trainer
 
 def cluster_engine(args):
     def update_workspace(cluster_envs):

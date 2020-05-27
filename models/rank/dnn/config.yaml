@@ -46,7 +46,7 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 epoch:
-  trainer_class: Single
+  trainer_class: single_yamlopt
   save_checkpoint_interval: 2
   save_inference_interval: 4
   save_checkpoint_path: "increment"
