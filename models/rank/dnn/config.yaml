@@ -39,6 +39,7 @@ hyper_parameters:
 
 epoch:
   trainer_class: single_yamlopt
+  #trainer_class: single_auc_yamlopt
   save_checkpoint_interval: 2
   save_inference_interval: 4
   save_checkpoint_path: "increment"
