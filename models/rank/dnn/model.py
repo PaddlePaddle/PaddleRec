@@ -53,8 +53,7 @@ class Model(ModelBase):
             sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
-        hidden_layers = [512, 256, 128, 32]#envs.get_global_env("hyper_parameters.fc_sizes", None,
-                        #                    self._namespace)
+        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
 
         for size in hidden_layers:
             output = fluid.layers.fc(
