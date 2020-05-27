@@ -20,7 +20,7 @@ import sys
 
 global_envs = {}
 
-global_envs_raw = {}
+#global_envs_raw = {}
 
 def flatten_environs(envs, separator="."):
     flatten_dict = {}
@@ -63,23 +63,44 @@ def get_trainer():
 def set_global_envs(envs):
     assert isinstance(envs, dict)
 
-    global_envs_raw = envs
-    
-    return
-
+#    namespace_nests = []
+    #print(envs)
     def fatten_env_namespace(namespace_nests, local_envs):
+#        if not isinstance(local_envs, dict):
+#            global_k = ".".join(namespace_nests)
+#            global_envs[global_k] = local_envs
+#            return
         for k, v in local_envs.items():
+            #print(k)
             if isinstance(v, dict):
                 nests = copy.deepcopy(namespace_nests)
                 nests.append(k)
                 fatten_env_namespace(nests, v)
+            elif (k == "dataset" or k == "executor") and isinstance(v, list):
+                #print("=======================")
+                #print([i for i in v])
+                for i in v:
+                    if i.get("name") is None:
+                        raise ValueError("name must be in dataset list ", v)
+                    nests = copy.deepcopy(namespace_nests)
+                    nests.append(k)
+                    nests.append(i["name"])
+                    fatten_env_namespace(nests, i)
+                    #global_k = ".".join(namespace_nests + [k, i["name"]])
+                    #global_envs[global_k] = i
+
+                #print([i for i in v])
+                #global_k = ".".join(namespace_nests + [k])
+                #global_envs[global_k] = v
             else:
                 global_k = ".".join(namespace_nests + [k])
                 global_envs[global_k] = v
 
-    for k, v in envs.items():
-        fatten_env_namespace([k], v)
-
+    #for k, v in envs.items():
+    #    fatten_env_namespace([k], v)
+    fatten_env_namespace([], envs)
+    for i in global_envs:
+        print i,":",global_envs[i]
 
 def get_global_env(env_name, default_value=None, namespace=None):
     """
@@ -111,7 +132,7 @@ def windows_path_converter(path):
 
 
 def update_workspace():
-    workspace = global_envs.get("train.workspace", None)
+    workspace = global_envs.get("workspace")
     if not workspace:
         return
     workspace = path_adapter(workspace)

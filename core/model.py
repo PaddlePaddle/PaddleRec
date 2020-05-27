@@ -134,18 +134,10 @@ class Model(object):
         print(">>>>>>>>>>>.learnig rate: %s" % learning_rate)
         return self._build_optimizer(optimizer, learning_rate)
 
-    def input_data(self, is_infer=False, dataset_name=None, program=None):
-        dataset = {}
-        for i in self._env["dataset"]:
-            if i["name"] == dataset_name:
-                dataset = i
-                break
-        sparse_slots = dataset.get("sparse_slots", None)
-        #sparse_slots = 
-        #envs.get_global_env("sparse_slots", None,
-                       #                    "train.reader")
-        #dense_slots = envs.get_global_env("dense_slots", None, "train.reader")
-        dense_slots = dataset.get("dense_slots", None)
+    def input_data(self, is_infer=False, **kwargs):
+        name = "dataset." + kwargs.get("dataset_name") + "."
+        sparse_slots = envs.get_global_env(name + "sparse_slots")
+        dense_slots = envs.get_global_env(name + "dense_slots")
         if sparse_slots is not None or dense_slots is not None:
             sparse_slots = sparse_slots.strip().split(" ")
             dense_slots = dense_slots.strip().split(" ")
@@ -168,8 +160,6 @@ class Model(object):
                     name=name, shape=[1], lod_level=1, dtype="int64")
                 data_var_.append(l)
                 self._sparse_data_var.append(l)
-            print(self._dense_data_var)
-            print(self._sparse_data_var)
             return data_var_
 
         else:

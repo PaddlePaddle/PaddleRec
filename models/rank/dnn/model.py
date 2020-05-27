@@ -83,7 +83,6 @@ class Model(ModelBase):
         avg_cost = fluid.layers.reduce_mean(cost)
         self._cost = avg_cost
 
-
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
                                              label=self.label_input,
                                              num_thresholds=2**12,
