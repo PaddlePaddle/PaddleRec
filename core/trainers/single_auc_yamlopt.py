@@ -31,7 +31,7 @@ logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
 
 
-class SingleTrainerYamlOpt(TranspileTrainer):
+class SingleAucYamlOpt(TranspileTrainer):
     def __init__(self, config=None):
         super(TranspileTrainer, self).__init__(config)
         self._env = self._config
@@ -110,7 +110,7 @@ class SingleTrainerYamlOpt(TranspileTrainer):
                     model_path = model_dict["model"].replace("{workspace}", envs.path_adapter(self._env["workspace"]))
                     model = envs.lazy_instance_by_fliename(model_path, "Model")(self._env)
                     model._data_var = model.input_data(dataset_name=model_dict["dataset_name"])
-                    model.net(None)
+                    model.net(None, is_infer=True)
                     optimizer = model._build_optimizer(opt_name, opt_lr, opt_strategy)
                     optimizer.minimize(model._cost)
             self._model[model_dict["name"]][0] = train_program
