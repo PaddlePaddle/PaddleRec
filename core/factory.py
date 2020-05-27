@@ -36,7 +36,8 @@ def trainer_registry():
                                                 "tdm_single_trainer.py")
     trainers["TDMClusterTrainer"] = os.path.join(trainer_abs,
                                                  "tdm_cluster_trainer.py")
-
+    trainers["SingleTrainerYamlOpt"] = os.path.join(trainer_abs,
+                                                 "single_trainer_yamlopt.py")
 
 trainer_registry()
 
