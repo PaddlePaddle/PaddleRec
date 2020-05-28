@@ -68,7 +68,7 @@ def get_engine(args):
     if engine is None:
         engine = run_extras.get("epoch.trainer_class", None)
     if engine is None:
-        engine = "single" 
+        engine = "single"
     engine = engine.upper()
     if engine not in engine_choices:
         raise ValueError("train.engin can not be chosen in {}".format(
