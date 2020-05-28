@@ -112,7 +112,8 @@ class SingleTrainer(TranspileTrainer):
         if sparse_slots is None and dense_slots is None:
             reader = dataloader_instance.dataloader_by_name(
                 reader_class, dataset_name, self._config_yaml)
-            reader_class = envs.lazy_instance_by_fliename(reader_class, "TrainReader")
+            reader_class = envs.lazy_instance_by_fliename(reader_class,
+                                                          "TrainReader")
             reader_ins = reader_class(self._config_yaml)
         else:
             reader = dataloader_instance.slotdataloader_by_name(
@@ -178,8 +179,8 @@ class SingleTrainer(TranspileTrainer):
                             model.net(model._infer_data_var, True)
                         else:
                             model.net(model._data_var, False)
-                            optimizer = model._build_optimizer(opt_name, opt_lr,
-                                                               opt_strategy)
+                            optimizer = model._build_optimizer(
+                                opt_name, opt_lr, opt_strategy)
                             optimizer.minimize(model._cost)
                         model_dict["is_infer"] = is_infer
             self._model[model_dict["name"]][0] = train_program
