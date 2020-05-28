@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# num of epochs
-epochs: 10
-# device to run training or infer
-device: cpu
 # workspace
 workspace: "paddlerec.models.rank.dnn"
 
@@ -30,7 +26,7 @@ dataset:
 - name: dataset_infer # name
   batch_size: 2
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/sample_data/test"
+  data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
 
@@ -55,15 +51,23 @@ mode: runner1
 runner:
 - name: runner1
   class: single_train
+  # num of epochs
+  epochs: 10
+  # device to run training or infer
+  device: cpu
   save_checkpoint_interval: 2 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment" # save checkpoint path
   save_inference_path: "inference" # save inference path
-  # save_inference_feed_varnames: [] # feed vars of save inference
-  # save_inference_fetch_varnames: [] # fetch vars of save inference
-  # init_model_path: "xxxx" # load model path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
 - name: runner2
   class: single_infer
+  # num of epochs
+  epochs: 10
+  # device to run training or infer
+  device: cpu
   init_model_path: "increment/0" # load model path
 
 # runner will run all the phase in each epoch
