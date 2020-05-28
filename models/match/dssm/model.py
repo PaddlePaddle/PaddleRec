@@ -22,45 +22,35 @@ class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
 
-    def input(self):
-        TRIGRAM_D = envs.get_global_env("hyper_parameters.TRIGRAM_D", None,
-                                        self._namespace)
+    def _init_hyper_parameters(self):
+        self.TRIGRAM_D = envs.get_global_env("hyper_parameters.TRIGRAM_D")
+        self.Neg = envs.get_global_env("hyper_parameters.NEG")
+        self.hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
+        self.hidden_acts = envs.get_global_env("hyper_parameters.fc_acts")
+        self.learning_rate = envs.get_global_env("hyper_parameters.learning_rate")
 
-        Neg = envs.get_global_env("hyper_parameters.NEG", None,
-                                  self._namespace)
-
-        self.query = fluid.data(
-            name="query", shape=[-1, TRIGRAM_D], dtype='float32', lod_level=0)
-        self.doc_pos = fluid.data(
+    def input_data(self, is_infer=False, **kwargs):
+        query = fluid.data(
+            name="query", shape=[-1, self.TRIGRAM_D], dtype='float32', lod_level=0)
+        doc_pos = fluid.data(
             name="doc_pos",
-            shape=[-1, TRIGRAM_D],
+            shape=[-1, self.TRIGRAM_D],
             dtype='float32',
             lod_level=0)
-        self.doc_negs = [
+        
+        if is_infer:
+            return [query, doc_pos]
+
+        doc_negs = [
             fluid.data(
                 name="doc_neg_" + str(i),
-                shape=[-1, TRIGRAM_D],
+                shape=[-1, self.TRIGRAM_D],
                 dtype="float32",
-                lod_level=0) for i in range(Neg)
+                lod_level=0) for i in range(self.Neg)
         ]
-        self._data_var.append(self.query)
-        self._data_var.append(self.doc_pos)
-        for input in self.doc_negs:
-            self._data_var.append(input)
+        return [query, doc_pos] + doc_negs
 
-        if self._platform != "LINUX":
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var,
-                capacity=64,
-                use_double_buffer=False,
-                iterable=False)
-
-    def net(self, is_infer=False):
-        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes", None,
-                                            self._namespace)
-        hidden_acts = envs.get_global_env("hyper_parameters.fc_acts", None,
-                                          self._namespace)
-
+    def net(self, inputs, is_infer=False):
         def fc(data, hidden_layers, hidden_acts, names):
             fc_inputs = [data]
             for i in range(len(hidden_layers)):
@@ -77,71 +67,31 @@ class Model(ModelBase):
                 fc_inputs.append(out)
             return fc_inputs[-1]
 
-        query_fc = fc(self.query, hidden_layers, hidden_acts,
+        query_fc = fc(inputs[0], self.hidden_layers, self.hidden_acts,
                       ['query_l1', 'query_l2', 'query_l3'])
-        doc_pos_fc = fc(self.doc_pos, hidden_layers, hidden_acts,
+        doc_pos_fc = fc(inputs[1], self.hidden_layers, self.hidden_acts,
                         ['doc_pos_l1', 'doc_pos_l2', 'doc_pos_l3'])
-        self.R_Q_D_p = fluid.layers.cos_sim(query_fc, doc_pos_fc)
+        R_Q_D_p = fluid.layers.cos_sim(query_fc, doc_pos_fc)
 
         if is_infer:
+            self._infer_results["query_doc_sim"] = R_Q_D_p
             return
 
         R_Q_D_ns = []
-        for i, doc_neg in enumerate(self.doc_negs):
-            doc_neg_fc_i = fc(doc_neg, hidden_layers, hidden_acts, [
+        for i in range(len(inputs)-2):
+            doc_neg_fc_i = fc(inputs[i+2], self.hidden_layers, self.hidden_acts, [
                 'doc_neg_l1_' + str(i), 'doc_neg_l2_' + str(i),
                 'doc_neg_l3_' + str(i)
             ])
             R_Q_D_ns.append(fluid.layers.cos_sim(query_fc, doc_neg_fc_i))
         concat_Rs = fluid.layers.concat(
-            input=[self.R_Q_D_p] + R_Q_D_ns, axis=-1)
+            input=[R_Q_D_p] + R_Q_D_ns, axis=-1)
         prob = fluid.layers.softmax(concat_Rs, axis=1)
 
         hit_prob = fluid.layers.slice(
             prob, axes=[0, 1], starts=[0, 0], ends=[4, 1])
         loss = -fluid.layers.reduce_sum(fluid.layers.log(hit_prob))
-        self.avg_cost = fluid.layers.mean(x=loss)
+        avg_cost = fluid.layers.mean(x=loss)
+        self._cost = avg_cost
+        self._metrics["LOSS"] = avg_cost
 
-    def infer_results(self):
-        self._infer_results['query_doc_sim'] = self.R_Q_D_p
-
-    def avg_loss(self):
-        self._cost = self.avg_cost
-
-    def metrics(self):
-        self._metrics["LOSS"] = self.avg_cost
-
-    def train_net(self):
-        self.input()
-        self.net(is_infer=False)
-        self.avg_loss()
-        self.metrics()
-
-    def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
-                                            None, self._namespace)
-        optimizer = fluid.optimizer.SGD(learning_rate)
-        return optimizer
-
-    def infer_input(self):
-        TRIGRAM_D = envs.get_global_env("hyper_parameters.TRIGRAM_D", None,
-                                        self._namespace)
-        self.query = fluid.data(
-            name="query", shape=[-1, TRIGRAM_D], dtype='float32', lod_level=0)
-        self.doc_pos = fluid.data(
-            name="doc_pos",
-            shape=[-1, TRIGRAM_D],
-            dtype='float32',
-            lod_level=0)
-        self._infer_data_var = [self.query, self.doc_pos]
-
-        self._infer_data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._infer_data_var,
-            capacity=64,
-            use_double_buffer=False,
-            iterable=False)
-
-    def infer_net(self):
-        self.infer_input()
-        self.net(is_infer=True)
-        self.infer_results()
