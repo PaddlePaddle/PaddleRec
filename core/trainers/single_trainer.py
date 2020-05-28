@@ -302,7 +302,7 @@ class SingleTrainer(TranspileTrainer):
 
         def save_inference_model():
             save_interval = int(
-                envs.get_global_env("epoch.save_inference_interval", -1)
+                envs.get_global_env("epoch.save_inference_interval", -1))
             if not need_save(epoch_id, save_interval, False):
                 return
             feed_varnames = envs.get_global_env("epoch.save_inference_feed_varnames", None)
