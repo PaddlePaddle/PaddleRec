@@ -87,9 +87,13 @@ class Model(object):
         if dataset_class == "DataLoader":
             self._init_dataloader()
 
-    def _init_dataloader(self):
+    def _init_dataloader(self, is_infer=False):
+        if is_infer:
+            data = self._infer_data_var
+        else:
+            data = self._data_var
         self._data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._data_var,
+            feed_list=data,
             capacity=64,
             use_double_buffer=False,
             iterable=False)
