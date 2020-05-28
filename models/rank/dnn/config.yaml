@@ -61,3 +61,8 @@ executor:
    dataset_name: dataset_2 # 名字，用来区分不同的阶段
    thread_num: 1 # 线程数
    is_infer: False # 是否是infer
+# - name: infer
+#   model: "{workspace}/model.py" # 模型路径
+#   dataset_name: dataset_2 # 名字，用来区分不同的阶段
+#   thread_num: 1 # 线程数
+#   is_infer: True # 是否是infer
