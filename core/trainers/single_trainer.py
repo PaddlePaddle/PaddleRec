@@ -69,13 +69,14 @@ class SingleTrainer(TranspileTrainer):
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
 
         if sparse_slots is None and dense_slots is None:
-            pipe_cmd = "python {} {} {} {}".format(reader, reader_class, "TRAIN", self._config_yaml)
+            pipe_cmd = "python {} {} {} {}".format(reader, reader_class,
+                                                   "TRAIN", self._config_yaml)
         else:
             if sparse_slots is None:
                 sparse_slots = "#"
             if dense_slots is None:
                 dense_slots = "#"
-            padding = envs.get_global_env(name +"padding", 0)
+            padding = envs.get_global_env(name + "padding", 0)
             pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
                 reader, "slot", "slot", self._config_yaml, "fake", \
                 sparse_slots.replace(" ", "#"), dense_slots.replace(" ", "#"), str(padding))
@@ -145,19 +146,29 @@ class SingleTrainer(TranspileTrainer):
             scope = fluid.Scope()
             dataset_name = model_dict["dataset_name"]
             opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-            opt_lr = envs.get_global_env("hyper_parameters.optimizer.learning_rate")
-            opt_strategy = envs.get_global_env("hyper_parameters.optimizer.strategy")
+            opt_lr = envs.get_global_env(
+                "hyper_parameters.optimizer.learning_rate")
+            opt_strategy = envs.get_global_env(
+                "hyper_parameters.optimizer.strategy")
             with fluid.program_guard(train_program, startup_program):
                 with fluid.unique_name.guard():
                     with fluid.scope_guard(scope):
-                        model_path = model_dict["model"].replace("{workspace}", envs.path_adapter(self._env["workspace"]))
-                        model = envs.lazy_instance_by_fliename(model_path, "Model")(self._env)
-                        model._data_var = model.input_data(dataset_name=model_dict["dataset_name"])
-                        if envs.get_global_env("dataset." + dataset_name + ".type") == "DataLoader":
+                        model_path = model_dict["model"].replace(
+                            "{workspace}",
+                            envs.path_adapter(self._env["workspace"]))
+                        model = envs.lazy_instance_by_fliename(
+                            model_path, "Model")(self._env)
+                        model._data_var = model.input_data(
+                            dataset_name=model_dict["dataset_name"])
+                        if envs.get_global_env("dataset." + dataset_name +
+                                               ".type") == "DataLoader":
                             model._init_dataloader()
-                            self._get_dataloader(dataset_name, model._data_loader)
-                        model.net(model._data_var, is_infer=model_dict.get("is_infer", False))
-                        optimizer = model._build_optimizer(opt_name, opt_lr, opt_strategy)
+                            self._get_dataloader(dataset_name,
+                                                 model._data_loader)
+                        model.net(model._data_var,
+                                  is_infer=model_dict.get("is_infer", False))
+                        optimizer = model._build_optimizer(opt_name, opt_lr,
+                                                           opt_strategy)
                         optimizer.minimize(model._cost)
             self._model[model_dict["name"]][0] = train_program
             self._model[model_dict["name"]][1] = startup_program
@@ -167,13 +178,14 @@ class SingleTrainer(TranspileTrainer):
 
         for dataset in self._env["dataset"]:
             if dataset["type"] != "DataLoader":
-                self._dataset[dataset["name"]] = self._create_dataset(dataset["name"]) 
+                self._dataset[dataset["name"]] = self._create_dataset(dataset[
+                    "name"]) 
 
         context['status'] = 'startup_pass'
 
     def startup(self, context):
         for model_dict in self._env["executor"]:
-            with fluid.scope_guard(self._model[model_dict["name"]][2]):            
+            with fluid.scope_guard(self._model[model_dict["name"]][2]):
                 self._exe.run(self._model[model_dict["name"]][1])
         context['status'] = 'train_pass'
 
@@ -289,7 +301,8 @@ class SingleTrainer(TranspileTrainer):
             return epoch_id % epoch_interval == 0
 
         def save_inference_model():
-            save_interval = envs.get_global_env("epoch.save_inference_interval", -1)
+            save_interval = int(
+                envs.get_global_env("epoch.save_inference_interval", -1)
             if not need_save(epoch_id, save_interval, False):
                 return
             feed_varnames = envs.get_global_env("epoch.save_inference_feed_varnames", None)
@@ -313,7 +326,8 @@ class SingleTrainer(TranspileTrainer):
                                               fetch_vars, self._exe)
 
         def save_persistables():
-            save_interval = int(envs.get_global_env("epoch.save_checkpoint_interval", -1))
+            save_interval = int(
+                envs.get_global_env("epoch.save_checkpoint_interval", -1))
             if not need_save(epoch_id, save_interval, False):
                 return
             dirname = envs.get_global_env("epoch.save_checkpoint_path", None)

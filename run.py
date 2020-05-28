@@ -68,10 +68,8 @@ def get_engine(args):
     if engine is None:
         engine = run_extras.get("epoch.trainer_class", None)
     if engine is None:
-        engine = "single"
-    
+        engine = "single" 
     engine = engine.upper()
-
     if engine not in engine_choices:
         raise ValueError("train.engin can not be chosen in {}".format(
             engine_choices))
@@ -134,6 +132,7 @@ def single_engine(args):
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
+
 
 def cluster_engine(args):
     def update_workspace(cluster_envs):

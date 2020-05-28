@@ -27,9 +27,12 @@ class Model(ModelBase):
     def _init_hyper_parameters(self):
         self.is_distributed = True if envs.get_trainer(
         ) == "CtrTrainer" else False
-        self.sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number")
-        self.sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim")
-        self.learning_rate = envs.get_global_env("hyper_parameters.learning_rate")
+        self.sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number")
+        self.sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim")
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.learning_rate")
 
     def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]

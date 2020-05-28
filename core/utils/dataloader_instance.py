@@ -19,6 +19,7 @@ from paddlerec.core.utils.envs import get_global_env
 from paddlerec.core.utils.envs import get_runtime_environ
 from paddlerec.core.reader import SlotReader
 
+
 def dataloader_by_name(readerclass, dataset_name, yaml_file):
     reader_class = lazy_instance_by_fliename(readerclass, "TrainReader")
     name = "dataset." + dataset_name + "."
@@ -30,9 +31,9 @@ def dataloader_by_name(readerclass, dataset_name, yaml_file):
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
-
     reader = reader_class(yaml_file)
     reader.init()
+
     def gen_reader():
         for file in files:
             with open(file, 'r') as f:
@@ -67,7 +68,6 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file):
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
-    
     sparse = get_global_env(name + "sparse_slots")
     dense = get_global_env(name + "dense_slots")
     padding = get_global_env(name + "padding", 0)
@@ -95,6 +95,7 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file):
     if hasattr(reader, 'generate_batch_from_trainfiles'):
         return gen_batch_reader()
     return gen_reader
+
 
 def dataloader(readerclass, train, yaml_file):
     if train == "TRAIN":
