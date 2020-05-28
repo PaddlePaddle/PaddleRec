@@ -61,21 +61,20 @@ class SingleTrainer(TranspileTrainer):
 
     def _get_dataset(self, dataset_name):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
-
-        if sparse_slots is None and dense_slots is None:
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        if sparse_slots != "" and dense_slots != "":
             pipe_cmd = "python {} {} {} {}".format(reader, reader_class,
                                                    "TRAIN", self._config_yaml)
         else:
-            if sparse_slots is None:
+            if sparse_slots == "":
                 sparse_slots = "#"
-            if dense_slots is None:
+            if dense_slots == "":
                 dense_slots = "#"
             padding = envs.get_global_env(name + "padding", 0)
             pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
@@ -101,13 +100,13 @@ class SingleTrainer(TranspileTrainer):
 
     def _get_dataloader(self, dataset_name, dataloader):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        if sparse_slots is None and dense_slots is None:
+        if sparse_slots == "" and dense_slots == "":
             reader = dataloader_instance.dataloader_by_name(
                 reader_class, dataset_name, self._config_yaml)
             reader_class = envs.lazy_instance_by_fliename(reader_class,
@@ -125,8 +124,8 @@ class SingleTrainer(TranspileTrainer):
 
     def _create_dataset(self, dataset_name):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         type_name = envs.get_global_env(name + "type")
@@ -225,7 +224,9 @@ class SingleTrainer(TranspileTrainer):
         model_class = self._model[model_name][3]
         fetch_vars = []
         fetch_alias = []
-        fetch_period = 20
+        fetch_period = int(
+            envs.get_global_env("runner." + self._runner_name +
+                                ".fetch_period", 20))
         metrics = model_class.get_metrics()
         if metrics:
             fetch_vars = metrics.values()
@@ -250,14 +251,15 @@ class SingleTrainer(TranspileTrainer):
             loss_name=model_class.get_avg_cost().name)
         fetch_vars = []
         fetch_alias = []
-        fetch_period = 20
+        fetch_period = int(
+            envs.get_global_env("runner." + self._runner_name +
+                                ".fetch_period", 20))
         metrics = model_class.get_metrics()
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
         metrics_varnames = []
         metrics_format = []
-        fetch_period = 20
         metrics_format.append("{}: {{}}".format("batch"))
         for name, var in metrics.items():
             metrics_varnames.append(var.name)
@@ -312,10 +314,11 @@ class SingleTrainer(TranspileTrainer):
             if not need_save(epoch_id, save_interval, False):
                 return
             feed_varnames = envs.get_global_env(
-                name + "save_inference_feed_varnames", None)
+                name + "save_inference_feed_varnames", [])
             fetch_varnames = envs.get_global_env(
-                name + "save_inference_fetch_varnames", None)
-            if feed_varnames is None or fetch_varnames is None or feed_varnames == "":
+                name + "save_inference_fetch_varnames", [])
+            if feed_varnames is None or fetch_varnames is None or feed_varnames == "" or fetch_varnames == "" or \
+               len(feed_varnames) == 0 or len(fetch_varnames) == 0:
                 return
             fetch_vars = [
                 fluid.default_main_program().global_block().vars[varname]

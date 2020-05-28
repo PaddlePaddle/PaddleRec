@@ -67,15 +67,14 @@ class SingleInfer(TranspileTrainer):
 
     def _get_dataset(self, dataset_name):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
-
-        if sparse_slots is None and dense_slots is None:
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        if sparse_slots == "" and dense_slots == "":
             pipe_cmd = "python {} {} {} {}".format(reader, reader_class,
                                                    "TRAIN", self._config_yaml)
         else:
@@ -107,13 +106,13 @@ class SingleInfer(TranspileTrainer):
 
     def _get_dataloader(self, dataset_name, dataloader):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        if sparse_slots is None and dense_slots is None:
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        if sparse_slots == "" and dense_slots == "":
             reader = dataloader_instance.dataloader_by_name(
                 reader_class, dataset_name, self._config_yaml)
             reader_class = envs.lazy_instance_by_fliename(reader_class,
@@ -228,7 +227,9 @@ class SingleInfer(TranspileTrainer):
         model_class = self._model[model_name][3]
         fetch_vars = []
         fetch_alias = []
-        fetch_period = 20
+        fetch_period = int(
+            envs.get_global_env("runner." + self._runner_name +
+                                ".fetch_period", 20))
         metrics = model_class.get_infer_results()
         if metrics:
             fetch_vars = metrics.values()
@@ -251,14 +252,15 @@ class SingleInfer(TranspileTrainer):
         program = self._model[model_name][0].clone()
         fetch_vars = []
         fetch_alias = []
-        fetch_period = 20
         metrics = model_class.get_infer_results()
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
         metrics_varnames = []
         metrics_format = []
-        fetch_period = 20
+        fetch_period = int(
+            envs.get_global_env("runner." + self._runner_name +
+                                ".fetch_period", 20))
         metrics_format.append("{}: {{}}".format("batch"))
         for name, var in metrics.items():
             metrics_varnames.append(var.name)

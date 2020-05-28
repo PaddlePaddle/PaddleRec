@@ -59,11 +59,17 @@ class Model(object):
                 dataset = i
                 break
         name = "dataset." + dataset["name"] + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
-        if sparse_slots is not None or dense_slots is not None:
-            sparse_slots = sparse_slots.strip().split(" ")
-            dense_slots = dense_slots.strip().split(" ")
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        if sparse_slots != "" or dense_slots != "":
+            if sparse_slots == "":
+                sparse_slots = []
+            else:
+                sparse_slots = sparse_slots.strip().split(" ")
+            if dense_slots == "":
+                dense_slots = []
+            else:
+                dense_slots = dense_slots.strip().split(" ")
             dense_slots_shape = [[
                 int(j) for j in i.split(":")[1].strip("[]").split(",")
             ] for i in dense_slots]
@@ -151,11 +157,17 @@ class Model(object):
 
     def input_data(self, is_infer=False, **kwargs):
         name = "dataset." + kwargs.get("dataset_name") + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots")
-        dense_slots = envs.get_global_env(name + "dense_slots")
-        if sparse_slots is not None or dense_slots is not None:
-            sparse_slots = sparse_slots.strip().split(" ")
-            dense_slots = dense_slots.strip().split(" ")
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        if sparse_slots != "" or dense_slots != "":
+            if sparse_slots == "":
+                sparse_slots = []
+            else:
+                sparse_slots = sparse_slots.strip().split(" ")
+            if dense_slots == "":
+                dense_slots = []
+            else:
+                dense_slots = dense_slots.strip().split(" ")
             dense_slots_shape = [[
                 int(j) for j in i.split(":")[1].strip("[]").split(",")
             ] for i in dense_slots]
