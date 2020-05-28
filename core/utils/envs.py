@@ -20,6 +20,7 @@ import sys
 
 global_envs = {}
 
+
 def flatten_environs(envs, separator="."):
     flatten_dict = {}
     assert isinstance(envs, dict)
@@ -80,6 +81,7 @@ def set_global_envs(envs):
                 global_envs[global_k] = v
 
     fatten_env_namespace([], envs)
+
 
 def get_global_env(env_name, default_value=None, namespace=None):
     """
