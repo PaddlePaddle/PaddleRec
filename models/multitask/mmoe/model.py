@@ -124,6 +124,3 @@ class Model(ModelBase):
         self._metrics["BATCH_AUC_income"] = batch_auc_1
         self._metrics["AUC_marital"] = auc_marital
         self._metrics["BATCH_AUC_marital"] = batch_auc_2
-
-    def infer_net(self):
-        pass
