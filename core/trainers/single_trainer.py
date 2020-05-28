@@ -36,18 +36,18 @@ class SingleTrainer(TranspileTrainer):
     def __init__(self, config=None):
         super(TranspileTrainer, self).__init__(config)
         self._env = self._config
-        device = envs.get_global_env("device")
-        if device == 'gpu':
-            self._place = fluid.CUDAPlace(0)
-        elif device == 'cpu':
-            self._place = fluid.CPUPlace()
-        self._exe = fluid.Executor(self._place)
         self.processor_register()
         self._model = {}
         self._dataset = {}
         envs.set_global_envs(self._config)
         envs.update_workspace()
         self._runner_name = envs.get_global_env("mode")
+        device = envs.get_global_env("runner." + self._runner_name + ".device")
+        if device == 'gpu':
+            self._place = fluid.CUDAPlace(0)
+        elif device == 'cpu':
+            self._place = fluid.CPUPlace()
+        self._exe = fluid.Executor(self._place)
 
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)
@@ -192,7 +192,8 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'train_pass'
 
     def executor_train(self, context):
-        epochs = int(self._env["epochs"])
+        epochs = int(
+            envs.get_global_env("runner." + self._runner_name + ".epochs"))
         for j in range(epochs):
             for model_dict in self._env["phase"]:
                 if j == 0:
