@@ -288,7 +288,7 @@ class SingleTrainer(TranspileTrainer):
     def load(self, is_fleet=False):
         dirname = envs.get_global_env(
             "runner." + self._runner_name + ".init_model_path", None)
-        if dirname is None:
+        if dirname is None or dirname == "":
             return
         print("going to load ", dirname)
         if is_fleet:

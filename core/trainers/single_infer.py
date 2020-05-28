@@ -289,7 +289,7 @@ class SingleInfer(TranspileTrainer):
     def load(self, is_fleet=False):
         name = "runner." + self._runner_name + "."
         dirname = envs.get_global_env("epoch.init_model_path", None)
-        if dirname is None:
+        if dirname is None or dirname == "":
             return
         print("single_infer going to load ", dirname)
         if is_fleet:
