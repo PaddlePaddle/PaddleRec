@@ -68,7 +68,8 @@ def set_global_envs(envs):
                 nests = copy.deepcopy(namespace_nests)
                 nests.append(k)
                 fatten_env_namespace(nests, v)
-            elif (k == "dataset" or k == "executor") and isinstance(v, list):
+            elif (k == "dataset" or k == "phase" or
+                  k == "runner") and isinstance(v, list):
                 for i in v:
                     if i.get("name") is None:
                         raise ValueError("name must be in dataset list ", v)
