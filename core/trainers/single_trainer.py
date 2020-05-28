@@ -132,7 +132,7 @@ class SingleTrainer(TranspileTrainer):
         padding = 0
 
         if type_name == "DataLoader":
-            return None#self._get_dataloader(dataset_name)
+            return None
         else:
             return self._get_dataset(dataset_name)
 
@@ -243,7 +243,6 @@ class SingleTrainer(TranspileTrainer):
         metrics_varnames = []
         metrics_format = []
         fetch_period = 20
-        #metrics_format.append("{}: {{}}".format("epoch"))
         metrics_format.append("{}: {{}}".format("batch"))
         for name, var in model_class.get_metrics().items():
             metrics_varnames.append(var.name)
@@ -259,7 +258,7 @@ class SingleTrainer(TranspileTrainer):
                 while True:
                     metrics_rets = self._exe.run(program=program,
                                                  fetch_list=metrics_varnames)
-                    metrics = [batch_id]#[epoch, batch_id]
+                    metrics = [batch_id]
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
@@ -275,7 +274,6 @@ class SingleTrainer(TranspileTrainer):
         dirname = envs.get_global_env("epoch.init_model_path", None)
         if dirname is None:
             return
-        dirname = os.path.join(dirname, str(epoch_id))
         if is_fleet:
             fleet.load_persistables(self._exe, dirname)
         else:
