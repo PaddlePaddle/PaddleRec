@@ -21,10 +21,16 @@ workspace: "paddlerec.models.rank.dnn"
 
 # dataset列表
 dataset:
-- name: dataset_2 # 名字，用来区分不同的dataset
+- name: dataset_train # 名字，用来区分不同的dataset
   batch_size: 2
   type: DataLoader # 或者QueueDataset 
   data_path: "{workspace}/data/sample_data/train" # 数据路径
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
+- name: dataset_infer # 名字，用来区分不同的dataset
+  batch_size: 2
+  type: DataLoader # 或者QueueDataset
+  data_path: "{workspace}/data/sample_data/test" # 数据路径
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
 
@@ -42,22 +48,29 @@ hyper_parameters:
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
 
-# executor配置
-epoch:
-  name:
-  trainer_class: single
-  save_checkpoint_interval: 2 # 保存模型
-  save_inference_interval: 4 # 保存预测模型
-  save_checkpoint_path: "increment" # 保存模型路径
-  save_inference_path: "inference" # 保存预测模型路径
-  #save_inference_feed_varnames: [] # 预测模型feed vars
-  #save_inference_fetch_varnames: [] # 预测模型 fetch vars
-  #init_model_path: "xxxx" # 加载模型
+mode: runner1
+# runner配置
+runner:
+ - name: runner1
+   class: single_train
+   save_checkpoint_interval: 2 # 保存模型
+   save_inference_interval: 4 # 保存预测模型
+   save_checkpoint_path: "increment" # 保存模型路径
+   save_inference_path: "inference" # 保存预测模型路径
+   #save_inference_feed_varnames: [] # 预测模型feed vars
+   #save_inference_fetch_varnames: [] # 预测模型 fetch vars
+   #init_model_path: "xxxx" # 加载模型
+ - name: runner2
+   class: single_infer
+   init_model_path: "increment/0" # 加载模型
 
-# 执行器，每轮要跑的所有模型
-executor:
- - name: train
+# 执行器，每轮要跑的所有阶段
+phase:
+ - name: phase1
    model: "{workspace}/model.py" # 模型路径
-   dataset_name: dataset_2 # 名字，用来区分不同的阶段
+   dataset_name: dataset_train # 名字，用来区分不同的阶段
    thread_num: 1 # 线程数
-   is_infer: False # 是否是infer
+# - name: phase2
+#   model: "{workspace}/model.py" # 模型路径
+#   dataset_name: dataset_infer # 名字，用来区分不同的阶段
+#   thread_num: 1 # 线程数

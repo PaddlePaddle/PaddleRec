@@ -26,6 +26,7 @@ trainers = {}
 
 def trainer_registry():
     trainers["SingleTrainer"] = os.path.join(trainer_abs, "single_trainer.py")
+    trainers["SingleInfer"] = os.path.join(trainer_abs, "single_infer.py")
     trainers["ClusterTrainer"] = os.path.join(trainer_abs,
                                               "cluster_trainer.py")
     trainers["CtrCodingTrainer"] = os.path.join(trainer_abs,
