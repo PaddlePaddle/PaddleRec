@@ -47,6 +47,7 @@ class SingleTrainer(TranspileTrainer):
         self._dataset = {}
         envs.set_global_envs(self._config)
         envs.update_workspace()
+        self._runner_name = envs.get_global_env("mode")
 
     def processor_register(self):
         self.regist_context_processor('uninit', self.instance)
@@ -90,13 +91,10 @@ class SingleTrainer(TranspileTrainer):
             for x in os.listdir(train_data_path)
         ]
         dataset.set_filelist(file_list)
-        for model_dict in self._env["executor"]:
+        for model_dict in self._env["phase"]:
             if model_dict["dataset_name"] == dataset_name:
                 model = self._model[model_dict["name"]][3]
-                if model_dict["is_infer"]:
-                    inputs = model._infer_data_var
-                else:
-                    inputs = model._data_var
+                inputs = model._data_var
                 dataset.set_use_var(inputs)
                 break
         return dataset
@@ -144,7 +142,7 @@ class SingleTrainer(TranspileTrainer):
             return self._get_dataset(dataset_name)
 
     def init(self, context):
-        for model_dict in self._env["executor"]:
+        for model_dict in self._env["phase"]:
             self._model[model_dict["name"]] = [None] * 5
             train_program = fluid.Program()
             startup_program = fluid.Program()
@@ -163,26 +161,17 @@ class SingleTrainer(TranspileTrainer):
                             envs.path_adapter(self._env["workspace"]))
                         model = envs.lazy_instance_by_fliename(
                             model_path, "Model")(self._env)
-                        is_infer = model_dict.get("is_infer", False)
-                        if is_infer:
-                            model._infer_data_var = model.input_data(
-                                dataset_name=model_dict["dataset_name"])
-                        else:
-                            model._data_var = model.input_data(
-                                dataset_name=model_dict["dataset_name"])
+                        model._data_var = model.input_data(
+                            dataset_name=model_dict["dataset_name"])
                         if envs.get_global_env("dataset." + dataset_name +
                                                ".type") == "DataLoader":
-                            model._init_dataloader(is_infer=is_infer)
+                            model._init_dataloader(is_infer=False)
                             self._get_dataloader(dataset_name,
                                                  model._data_loader)
-                        if is_infer:
-                            model.net(model._infer_data_var, True)
-                        else:
-                            model.net(model._data_var, False)
-                            optimizer = model._build_optimizer(
-                                opt_name, opt_lr, opt_strategy)
-                            optimizer.minimize(model._cost)
-                        model_dict["is_infer"] = is_infer
+                        model.net(model._data_var, False)
+                        optimizer = model._build_optimizer(opt_name, opt_lr,
+                                                           opt_strategy)
+                        optimizer.minimize(model._cost)
             self._model[model_dict["name"]][0] = train_program
             self._model[model_dict["name"]][1] = startup_program
             self._model[model_dict["name"]][2] = scope
@@ -197,7 +186,7 @@ class SingleTrainer(TranspileTrainer):
         context['status'] = 'startup_pass'
 
     def startup(self, context):
-        for model_dict in self._env["executor"]:
+        for model_dict in self._env["phase"]:
             with fluid.scope_guard(self._model[model_dict["name"]][2]):
                 self._exe.run(self._model[model_dict["name"]][1])
         context['status'] = 'train_pass'
@@ -205,7 +194,7 @@ class SingleTrainer(TranspileTrainer):
     def executor_train(self, context):
         epochs = int(self._env["epochs"])
         for j in range(epochs):
-            for model_dict in self._env["executor"]:
+            for model_dict in self._env["phase"]:
                 if j == 0:
                     with fluid.scope_guard(self._model[model_dict["name"]][2]):
                         train_prog = self._model[model_dict["name"]][0]
@@ -236,10 +225,7 @@ class SingleTrainer(TranspileTrainer):
         fetch_vars = []
         fetch_alias = []
         fetch_period = 20
-        if model_dict["is_infer"]:
-            metrics = model_class.get_infer_results()
-        else:
-            metrics = model_class.get_metrics()
+        metrics = model_class.get_metrics()
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
@@ -247,37 +233,24 @@ class SingleTrainer(TranspileTrainer):
         program = self._model[model_name][0]
         reader = self._dataset[reader_name]
         with fluid.scope_guard(scope):
-            if model_dict["is_infer"]:
-                self._exe.infer_from_dataset(
-                    program=program,
-                    dataset=reader,
-                    fetch_list=fetch_vars,
-                    fetch_info=fetch_alias,
-                    print_period=fetch_period)
-            else:
-                self._exe.train_from_dataset(
-                    program=program,
-                    dataset=reader,
-                    fetch_list=fetch_vars,
-                    fetch_info=fetch_alias,
-                    print_period=fetch_period)
+            self._exe.train_from_dataset(
+                program=program,
+                dataset=reader,
+                fetch_list=fetch_vars,
+                fetch_info=fetch_alias,
+                print_period=fetch_period)
 
     def _executor_dataloader_train(self, model_dict):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = self._model[model_name][3]
         program = self._model[model_name][0].clone()
-        if not model_dict["is_infer"]:
-            program = fluid.compiler.CompiledProgram(
-                program).with_data_parallel(
-                    loss_name=model_class.get_avg_cost().name)
+        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
+            loss_name=model_class.get_avg_cost().name)
         fetch_vars = []
         fetch_alias = []
         fetch_period = 20
-        if model_dict["is_infer"]:
-            metrics = model_class.get_infer_results()
-        else:
-            metrics = model_class.get_metrics()
+        metrics = model_class.get_metrics()
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
@@ -312,7 +285,8 @@ class SingleTrainer(TranspileTrainer):
         context['is_exit'] = True
 
     def load(self, is_fleet=False):
-        dirname = envs.get_global_env("epoch.init_model_path", None)
+        dirname = envs.get_global_env(
+            "runner." + self._runner_name + ".init_model_path", None)
         if dirname is None:
             return
         print("going to load ", dirname)
@@ -331,21 +305,22 @@ class SingleTrainer(TranspileTrainer):
             return epoch_id % epoch_interval == 0
 
         def save_inference_model():
+            name = "runner." + self._runner_name + "."
             save_interval = int(
-                envs.get_global_env("epoch.save_inference_interval", -1))
+                envs.get_global_env(name + "save_inference_interval", -1))
             if not need_save(epoch_id, save_interval, False):
                 return
             feed_varnames = envs.get_global_env(
-                "epoch.save_inference_feed_varnames", None)
+                name + "save_inference_feed_varnames", None)
             fetch_varnames = envs.get_global_env(
-                "epoch.save_inference_fetch_varnames", None)
+                name + "save_inference_fetch_varnames", None)
             if feed_varnames is None or fetch_varnames is None or feed_varnames == "":
                 return
             fetch_vars = [
                 fluid.default_main_program().global_block().vars[varname]
                 for varname in fetch_varnames
             ]
-            dirname = envs.get_global_env("epoch.save_inference_path", None)
+            dirname = envs.get_global_env(name + "save_inference_path", None)
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
@@ -358,11 +333,12 @@ class SingleTrainer(TranspileTrainer):
                                               fetch_vars, self._exe)
 
         def save_persistables():
+            name = "runner." + self._runner_name + "."
             save_interval = int(
-                envs.get_global_env("epoch.save_checkpoint_interval", -1))
+                envs.get_global_env(name + "save_checkpoint_interval", -1))
             if not need_save(epoch_id, save_interval, False):
                 return
-            dirname = envs.get_global_env("epoch.save_checkpoint_path", None)
+            dirname = envs.get_global_env(name + "save_checkpoint_path", None)
             if dirname is None or dirname == "":
                 return
             dirname = os.path.join(dirname, str(epoch_id))

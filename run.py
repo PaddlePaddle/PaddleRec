@@ -18,7 +18,7 @@ import subprocess
 import argparse
 import tempfile
 import yaml
-
+import copy
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
 from paddlerec.core.utils import util
@@ -27,8 +27,8 @@ engines = {}
 device = ["CPU", "GPU"]
 clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 engine_choices = [
-    "SINGLE", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE", "TDM_LOCAL_CLUSTER",
-    "TDM_CLUSTER"
+    "SINGLE_TRAIN", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE",
+    "TDM_LOCAL_CLUSTER", "TDM_CLUSTER", "SINGLE_INFER"
 ]
 custom_model = ['TDM']
 model_name = ""
@@ -38,7 +38,8 @@ def engine_registry():
     engines["TRANSPILER"] = {}
     engines["PSLIB"] = {}
 
-    engines["TRANSPILER"]["SINGLE"] = single_engine
+    engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
+    engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
     engines["PSLIB"]["SINGLE"] = local_mpi_engine
@@ -51,7 +52,6 @@ def get_inters_from_yaml(file, filters):
         _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
 
     flattens = envs.flatten_environs(_envs)
-
     inters = {}
     for k, v in flattens.items():
         for f in filters:
@@ -60,15 +60,50 @@ def get_inters_from_yaml(file, filters):
     return inters
 
 
+def get_all_inters_from_yaml(file, filters):
+    with open(file, 'r') as rb:
+        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    all_flattens = {}
+
+    def fatten_env_namespace(namespace_nests, local_envs):
+        for k, v in local_envs.items():
+            if isinstance(v, dict):
+                nests = copy.deepcopy(namespace_nests)
+                nests.append(k)
+                fatten_env_namespace(nests, v)
+            elif (k == "dataset" or k == "phase" or
+                  k == "runner") and isinstance(v, list):
+                for i in v:
+                    if i.get("name") is None:
+                        raise ValueError("name must be in dataset list ", v)
+                    nests = copy.deepcopy(namespace_nests)
+                    nests.append(k)
+                    nests.append(i["name"])
+                    fatten_env_namespace(nests, i)
+            else:
+                global_k = ".".join(namespace_nests + [k])
+                all_flattens[global_k] = v
+
+    fatten_env_namespace([], _envs)
+    ret = {}
+    for k, v in all_flattens.items():
+        for f in filters:
+            if k.startswith(f):
+                ret[k] = v
+    return ret
+
+
 def get_engine(args):
     transpiler = get_transpiler()
-    run_extras = get_inters_from_yaml(args.model, ["train.", "epoch."])
+    with open(args.model, 'r') as rb:
+        envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
 
     engine = run_extras.get("train.engine", None)
     if engine is None:
-        engine = run_extras.get("epoch.trainer_class", None)
+        engine = run_extras.get("runner." + envs["mode"] + ".class", None)
     if engine is None:
-        engine = "single"
+        engine = "single_train"
     engine = engine.upper()
     if engine not in engine_choices:
         raise ValueError("train.engin can not be chosen in {}".format(
@@ -120,15 +155,27 @@ def get_trainer_prefix(args):
     return ""
 
 
-def single_engine(args):
+def single_train_engine(args):
     trainer = get_trainer_prefix(args) + "SingleTrainer"
     single_envs = {}
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single"
+    single_envs["train.trainer.engine"] = "single_train"
     single_envs["train.trainer.platform"] = envs.get_platform()
     print("use {} engine to run model: {}".format(trainer, args.model))
+    set_runtime_envs(single_envs, args.model)
+    trainer = TrainerFactory.create(args.model)
+    return trainer
 
+
+def single_infer_engine(args):
+    trainer = get_trainer_prefix(args) + "SingleInfer"
+    single_envs = {}
+    single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.threads"] = "2"
+    single_envs["train.trainer.engine"] = "single_infer"
+    single_envs["train.trainer.platform"] = envs.get_platform()
+    print("use {} engine to run model: {}".format(trainer, args.model))
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
