@@ -1,3 +1,4 @@
+```
 # 全局配置
 debug: false
 workspace: "."
@@ -62,3 +63,4 @@ phase:
   model: "{workspace}/model.py"
   dataset_name: sample_1
   thread_num: 1
+```
