@@ -62,7 +62,7 @@ runner:
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  fetch_period: 10
+  print_interval: 10
 - name: runner2
   class: single_infer
   # num of epochs
