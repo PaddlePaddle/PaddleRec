@@ -15,10 +15,8 @@
 from __future__ import print_function
 
 import abc
-import os
 
 import paddle.fluid.incubate.data_generator as dg
-import yaml
 
 from paddlerec.core.utils import envs
 
@@ -28,13 +26,7 @@ class Reader(dg.MultiSlotDataGenerator):
 
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
-
+        _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
         envs.update_workspace()
 
@@ -53,11 +45,7 @@ class SlotReader(dg.MultiSlotDataGenerator):
 
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
+        _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
         envs.update_workspace()
 
