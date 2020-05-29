@@ -37,6 +37,10 @@ class Model(object):
         self._fetch_interval = 20
         self._namespace = "train.model"
         self._platform = envs.get_platform()
+        self._init_hyper_parameters()
+
+    def _init_hyper_parameters(self):
+        pass
 
     def _init_slots(self):
         sparse_slots = envs.get_global_env("sparse_slots", None,
@@ -129,12 +133,65 @@ class Model(object):
         print(">>>>>>>>>>>.learnig rate: %s" % learning_rate)
         return self._build_optimizer(optimizer, learning_rate)
 
-    @abc.abstractmethod
-    def train_net(self):
-        """R
-        """
-        pass
+    def input_data(self, is_infer=False):
+        sparse_slots = envs.get_global_env("sparse_slots", None,
+                                           "train.reader")
+        dense_slots = envs.get_global_env("dense_slots", None, "train.reader")
+        if sparse_slots is not None or dense_slots is not None:
+            sparse_slots = sparse_slots.strip().split(" ")
+            dense_slots = dense_slots.strip().split(" ")
+            dense_slots_shape = [[
+                int(j) for j in i.split(":")[1].strip("[]").split(",")
+            ] for i in dense_slots]
+            dense_slots = [i.split(":")[0] for i in dense_slots]
+            self._dense_data_var = []
+            data_var_ = []
+            for i in range(len(dense_slots)):
+                l = fluid.layers.data(
+                    name=dense_slots[i],
+                    shape=dense_slots_shape[i],
+                    dtype="float32")
+                data_var_.append(l)
+                self._dense_data_var.append(l)
+            self._sparse_data_var = []
+            for name in sparse_slots:
+                l = fluid.layers.data(
+                    name=name, shape=[1], lod_level=1, dtype="int64")
+                data_var_.append(l)
+                self._sparse_data_var.append(l)
+            return data_var_
 
-    @abc.abstractmethod
+        else:
+            return None
+
+    def net(self, is_infer=False):
+        return None
+
+    def _construct_reader(self, is_infer=False):
+        if is_infer:
+            self._infer_data_loader = fluid.io.DataLoader.from_generator(
+                feed_list=self._infer_data_var,
+                capacity=64,
+                use_double_buffer=False,
+                iterable=False)
+        else:
+            dataset_class = envs.get_global_env("dataset_class", None,
+                                                "train.reader")
+            if dataset_class == "DataLoader":
+                self._data_loader = fluid.io.DataLoader.from_generator(
+                    feed_list=self._data_var,
+                    capacity=64,
+                    use_double_buffer=False,
+                    iterable=False)
+
+    def train_net(self):
+        input_data = self.input_data(is_infer=False)
+        self._data_var = input_data
+        self._construct_reader(is_infer=False)
+        self.net(input_data, is_infer=False)
+
     def infer_net(self):
-        pass
+        input_data = self.input_data(is_infer=True)
+        self._infer_data_var = input_data
+        self._construct_reader(is_infer=True)
+        self.net(input_data, is_infer=True)

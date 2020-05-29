@@ -177,6 +177,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
+|  重排序  |           [Listwise](models/rerank/listwise/model.py)           |      ✓      |      x      |       ✓       |
 
 
 
@@ -209,7 +210,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 <h2 align="center">社区</h2>
 
 ### 反馈
-如有意见、建议及使用中的BUG，欢迎在`GitHub Issue`提交
+如有意见、建议及使用中的BUG，欢迎在[GitHub Issue](https://github.com/PaddlePaddle/PaddleRec/issues)提交
 
 ### 版本历史
 - 2020.5.14 - PaddleRec v0.1
