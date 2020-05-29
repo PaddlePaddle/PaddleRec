@@ -12,60 +12,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# 轮数
-epochs: 4
-# 设备
-device: cpu
-# 工作目录
 workspace: "paddlerec.models.match.dssm"
 
-# dataset列表
 dataset:
-- name: dataset_train # 名字，用来区分不同的dataset
+- name: dataset_train
   batch_size: 4
   type: QueueDataset
-  data_path: "{workspace}/data/train" # 数据路径
+  data_path: "{workspace}/data/train" 
   data_converter: "{workspace}/synthetic_reader.py"
-#- name: dataset_infer # 名字，用来区分不同的dataset
-#  batch_size: 1
-#  type: QueueDataset
-#  data_path: "{workspace}/data/train" # 数据路径
-#  data_converter: "{workspace}/synthetic_evaluate_reader.py"
+- name: dataset_infer
+  batch_size: 1
+  type: QueueDataset
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/synthetic_evaluate_reader.py"
 
-# 超参数
 hyper_parameters:
-  #优化器
   optimizer:
     class: sgd
     learning_rate: 0.01
     strategy: async
-  # 用户自定义
   TRIGRAM_D: 1000
   NEG: 4
   fc_sizes: [300, 300, 128]
   fc_acts: ['tanh', 'tanh', 'tanh']
 
-# executor配置
-epoch:
-  name:
-  trainer_class: single
-  save_checkpoint_interval: 2 # 保存模型
-  save_inference_interval: 4 # 保存预测模型
-  save_checkpoint_path: "increment" # 保存模型路径
-  save_inference_path: "inference" # 保存预测模型路径
-  save_inference_feed_varnames: ["query", "doc_pos"] # 预测模型feed vars
-  save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # 预测模型 fetch vars
-  #init_model_path: "xxxx" # 加载模型
+mode: runner1
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: runner1
+  class: single_train
+  # num of epochs
+  epochs: 4
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
+  save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # fetch vars of save inference
+  init_model_path: "" # load model path
+  fetch_period: 10
+- name: runner2
+  class: single_infer
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  init_model_path: "increment/2" # load model path
 
-# 执行器，每轮要跑的所有模型
-executor:
- - name: train
-   model: "{workspace}/model.py" # 模型路径
-   dataset_name: dataset_train # 名字，用来区分不同的阶段
-   thread_num: 1 # 线程数
-   is_infer: False # 是否是infer
-# - name: infer
-#   model: "{workspace}/model.py" # 模型路径
-#   dataset_name: dataset_infer # 名字，用来区分不同的阶段
-#   thread_num: 1 # 线程数
-#   is_infer: True # 是否是infer 
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+#- name: phase2
+#  model: "{workspace}/model.py" # user-defined model
+#  dataset_name: dataset_infer # select dataset by name
+#  thread_num: 1
