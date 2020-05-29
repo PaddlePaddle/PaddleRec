@@ -11,13 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Training use fluid with DistributeTranspiler
 """
-import os
+from __future__ import print_function
+
 import time
 import logging
+
 import numpy as np
+
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
 from paddlerec.core.utils import envs
@@ -70,11 +74,10 @@ class TDMTrainer(GeneralTrainer):
         load_paddle_model = envs.get_global_env("single.load_paddle_model",
                                                 False, namespace)
         assert load_tree_from_numpy != load_paddle_model, "Please Don't use load_tree_from_numpy & load_paddle_model at the same time"
-
-        if load_paddle_model:
+        warmup_model_path = envs.get_global_env("warmup_model_path", None,
+                                                "train.trainer")
+        if warmup_model_path:
             # 从paddle二进制模型加载参数
-            warmup_model_path = envs.get_global_env("warmup_model_path", None,
-                                                    "train.trainer")
             assert warmup_model_path != None, "set train.trainer.warmup_model_path for loading model"
             fluid.io.load_persistables(
                 executor=self._exe,
