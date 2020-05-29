@@ -83,7 +83,7 @@ spec:
                 - name: PADDLE_PSERVERS_NUM
                   value: "<$ PSERVER_NUM $>"
                 - name: FLAGS_rpc_deadline
-                  value: "36000000"
+                  value: "100000"
                 - name: ENTRY
                   value: python -m paddlerec.run -m /usr/paddlerec/config.yaml -r WORKER
                 - name: PADDLE_PORT
