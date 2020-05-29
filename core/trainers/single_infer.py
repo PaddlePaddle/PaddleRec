@@ -32,10 +32,16 @@ logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
 
 
-class SingleTrainer(TranspileTrainer):
+class SingleInfer(TranspileTrainer):
     def __init__(self, config=None):
         super(TranspileTrainer, self).__init__(config)
         self._env = self._config
+        device = envs.get_global_env("device")
+        if device == 'gpu':
+            self._place = fluid.CUDAPlace(0)
+        elif device == 'cpu':
+            self._place = fluid.CPUPlace()
+        self._exe = fluid.Executor(self._place)
         self.processor_register()
         self._model = {}
         self._dataset = {}
@@ -93,19 +99,19 @@ class SingleTrainer(TranspileTrainer):
         for model_dict in self._env["phase"]:
             if model_dict["dataset_name"] == dataset_name:
                 model = self._model[model_dict["name"]][3]
-                inputs = model._data_var
+                inputs = model._infer_data_var
                 dataset.set_use_var(inputs)
                 break
         return dataset
 
     def _get_dataloader(self, dataset_name, dataloader):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
-        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         if sparse_slots == "" and dense_slots == "":
             reader = dataloader_instance.dataloader_by_name(
                 reader_class, dataset_name, self._config_yaml)
@@ -124,8 +130,8 @@ class SingleTrainer(TranspileTrainer):
 
     def _create_dataset(self, dataset_name):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
-        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        sparse_slots = envs.get_global_env(name + "sparse_slots")
+        dense_slots = envs.get_global_env(name + "dense_slots")
         thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         type_name = envs.get_global_env(name + "type")
@@ -160,17 +166,14 @@ class SingleTrainer(TranspileTrainer):
                             envs.path_adapter(self._env["workspace"]))
                         model = envs.lazy_instance_by_fliename(
                             model_path, "Model")(self._env)
-                        model._data_var = model.input_data(
+                        model._infer_data_var = model.input_data(
                             dataset_name=model_dict["dataset_name"])
                         if envs.get_global_env("dataset." + dataset_name +
                                                ".type") == "DataLoader":
-                            model._init_dataloader(is_infer=False)
+                            model._init_dataloader(is_infer=True)
                             self._get_dataloader(dataset_name,
                                                  model._data_loader)
-                        model.net(model._data_var, False)
-                        optimizer = model._build_optimizer(opt_name, opt_lr,
-                                                           opt_strategy)
-                        optimizer.minimize(model._cost)
+                        model.net(model._infer_data_var, True)
             self._model[model_dict["name"]][0] = train_program
             self._model[model_dict["name"]][1] = startup_program
             self._model[model_dict["name"]][2] = scope
@@ -227,7 +230,7 @@ class SingleTrainer(TranspileTrainer):
         fetch_period = int(
             envs.get_global_env("runner." + self._runner_name +
                                 ".print_interval", 20))
-        metrics = model_class.get_metrics()
+        metrics = model_class.get_infer_results()
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
@@ -235,7 +238,7 @@ class SingleTrainer(TranspileTrainer):
         program = self._model[model_name][0]
         reader = self._dataset[reader_name]
         with fluid.scope_guard(scope):
-            self._exe.train_from_dataset(
+            self._exe.infer_from_dataset(
                 program=program,
                 dataset=reader,
                 fetch_list=fetch_vars,
@@ -247,19 +250,17 @@ class SingleTrainer(TranspileTrainer):
         model_name = model_dict["name"]
         model_class = self._model[model_name][3]
         program = self._model[model_name][0].clone()
-        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-            loss_name=model_class.get_avg_cost().name)
         fetch_vars = []
         fetch_alias = []
-        fetch_period = int(
-            envs.get_global_env("runner." + self._runner_name +
-                                ".print_interval", 20))
-        metrics = model_class.get_metrics()
+        metrics = model_class.get_infer_results()
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
         metrics_varnames = []
         metrics_format = []
+        fetch_period = int(
+            envs.get_global_env("runner." + self._runner_name +
+                                ".print_interval", 20))
         metrics_format.append("{}: {{}}".format("batch"))
         for name, var in metrics.items():
             metrics_varnames.append(var.name)
@@ -288,11 +289,11 @@ class SingleTrainer(TranspileTrainer):
         context['is_exit'] = True
 
     def load(self, is_fleet=False):
-        dirname = envs.get_global_env(
-            "runner." + self._runner_name + ".init_model_path", None)
+        name = "runner." + self._runner_name + "."
+        dirname = envs.get_global_env(name + "init_model_path", None)
         if dirname is None or dirname == "":
             return
-        print("going to load ", dirname)
+        print("single_infer going to load ", dirname)
         if is_fleet:
             fleet.load_persistables(self._exe, dirname)
         else:
@@ -314,11 +315,10 @@ class SingleTrainer(TranspileTrainer):
             if not need_save(epoch_id, save_interval, False):
                 return
             feed_varnames = envs.get_global_env(
-                name + "save_inference_feed_varnames", [])
+                name + "save_inference_feed_varnames", None)
             fetch_varnames = envs.get_global_env(
-                name + "save_inference_fetch_varnames", [])
-            if feed_varnames is None or fetch_varnames is None or feed_varnames == "" or fetch_varnames == "" or \
-               len(feed_varnames) == 0 or len(fetch_varnames) == 0:
+                name + "save_inference_fetch_varnames", None)
+            if feed_varnames is None or fetch_varnames is None or feed_varnames == "":
                 return
             fetch_vars = [
                 fluid.default_main_program().global_block().vars[varname]
