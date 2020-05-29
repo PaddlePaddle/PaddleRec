@@ -78,14 +78,14 @@ class SingleInfer(TranspileTrainer):
             pipe_cmd = "python {} {} {} {}".format(reader, reader_class,
                                                    "TRAIN", self._config_yaml)
         else:
-            if sparse_slots is None:
-                sparse_slots = "#"
-            if dense_slots is None:
-                dense_slots = "#"
+            if sparse_slots == "":
+                sparse_slots = "?"
+            if dense_slots == "":
+                dense_slots = "?"
             padding = envs.get_global_env(name + "padding", 0)
             pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
                 reader, "slot", "slot", self._config_yaml, "fake", \
-                sparse_slots.replace(" ", "#"), dense_slots.replace(" ", "#"), str(padding))
+                sparse_slots.replace(" ", "?"), dense_slots.replace(" ", "?"), str(padding))
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_batch_size(envs.get_global_env(name + "batch_size"))
@@ -290,7 +290,7 @@ class SingleInfer(TranspileTrainer):
 
     def load(self, is_fleet=False):
         name = "runner." + self._runner_name + "."
-        dirname = envs.get_global_env("epoch.init_model_path", None)
+        dirname = envs.get_global_env(name + "init_model_path", None)
         if dirname is None or dirname == "":
             return
         print("single_infer going to load ", dirname)

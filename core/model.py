@@ -159,6 +159,8 @@ class Model(object):
         name = "dataset." + kwargs.get("dataset_name") + "."
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        self._sparse_data_var_map = {}
+        self._dense_data_var_map = {}
         if sparse_slots != "" or dense_slots != "":
             if sparse_slots == "":
                 sparse_slots = []
@@ -181,12 +183,14 @@ class Model(object):
                     dtype="float32")
                 data_var_.append(l)
                 self._dense_data_var.append(l)
+                self._dense_data_var_map[dense_slots[i]] = l
             self._sparse_data_var = []
             for name in sparse_slots:
                 l = fluid.layers.data(
                     name=name, shape=[1], lod_level=1, dtype="int64")
                 data_var_.append(l)
                 self._sparse_data_var.append(l)
+                self._sparse_data_var_map[name] = l
             return data_var_
 
         else:
