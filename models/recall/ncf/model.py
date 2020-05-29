@@ -24,7 +24,13 @@ class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
 
-    def input_data(self, is_infer=False):
+    def _init_hyper_parameters(self):
+        self.num_users = envs.get_global_env("hyper_parameters.num_users")
+        self.num_items = envs.get_global_env("hyper_parameters.num_items")
+        self.latent_dim = envs.get_global_env("hyper_parameters.latent_dim")
+        self.layers = envs.get_global_env("hyper_parameters.layers")
+
+    def input_data(self, is_infer=False, **kwargs):
         user_input = fluid.data(
             name="user_input", shape=[-1, 1], dtype="int64", lod_level=0)
         item_input = fluid.data(
@@ -35,45 +41,35 @@ class Model(ModelBase):
             inputs = [user_input] + [item_input]
         else:
             inputs = [user_input] + [item_input] + [label]
-            self._data_var = inputs
 
         return inputs
 
     def net(self, inputs, is_infer=False):
 
-        num_users = envs.get_global_env("hyper_parameters.num_users", None,
-                                        self._namespace)
-        num_items = envs.get_global_env("hyper_parameters.num_items", None,
-                                        self._namespace)
-        latent_dim = envs.get_global_env("hyper_parameters.latent_dim", None,
-                                         self._namespace)
-        layers = envs.get_global_env("hyper_parameters.layers", None,
-                                     self._namespace)
-
-        num_layer = len(layers)  #Number of layers in the MLP
+        num_layer = len(self.layers)  #Number of layers in the MLP
 
         MF_Embedding_User = fluid.embedding(
             input=inputs[0],
-            size=[num_users, latent_dim],
+            size=[self.num_users, self.latent_dim],
             param_attr=fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
         MF_Embedding_Item = fluid.embedding(
             input=inputs[1],
-            size=[num_items, latent_dim],
+            size=[self.num_items, self.latent_dim],
             param_attr=fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
 
         MLP_Embedding_User = fluid.embedding(
             input=inputs[0],
-            size=[num_users, int(layers[0] / 2)],
+            size=[self.num_users, int(self.layers[0] / 2)],
             param_attr=fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
         MLP_Embedding_Item = fluid.embedding(
             input=inputs[1],
-            size=[num_items, int(layers[0] / 2)],
+            size=[self.num_items, int(self.layers[0] / 2)],
             param_attr=fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
@@ -94,7 +90,7 @@ class Model(ModelBase):
         for i in range(1, num_layer):
             mlp_vector = fluid.layers.fc(
                 input=mlp_vector,
-                size=layers[i],
+                size=self.layers[i],
                 act='relu',
                 param_attr=fluid.ParamAttr(
                     initializer=fluid.initializer.TruncatedNormal(
@@ -126,16 +122,3 @@ class Model(ModelBase):
 
         self._cost = avg_cost
         self._metrics["cost"] = avg_cost
-
-    def train_net(self):
-        input_data = self.input_data()
-        self.net(input_data)
-
-    def infer_net(self):
-        self._infer_data_var = self.input_data(is_infer=True)
-        self._infer_data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._infer_data_var,
-            capacity=64,
-            use_double_buffer=False,
-            iterable=False)
-        self.net(self._infer_data_var, is_infer=True)
