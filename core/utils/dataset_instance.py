@@ -32,8 +32,8 @@ elif sys.argv[2].upper() == "EVALUATE":
 else:
     reader_name = "SlotReader"
     namespace = sys.argv[4]
-    sparse_slots = sys.argv[5].replace("#", " ")
-    dense_slots = sys.argv[6].replace("#", " ")
+    sparse_slots = sys.argv[5].replace("?", " ")
+    dense_slots = sys.argv[6].replace("?", " ")
     padding = int(sys.argv[7])
 
 yaml_abs_path = sys.argv[3]
