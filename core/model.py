@@ -38,18 +38,38 @@ class Model(object):
         self._namespace = "train.model"
         self._platform = envs.get_platform()
         self._init_hyper_parameters()
+        self._env = config
+        self._slot_inited = False
 
     def _init_hyper_parameters(self):
         pass
 
-    def _init_slots(self):
-        sparse_slots = envs.get_global_env("sparse_slots", None,
-                                           "train.reader")
-        dense_slots = envs.get_global_env("dense_slots", None, "train.reader")
-
-        if sparse_slots is not None or dense_slots is not None:
-            sparse_slots = sparse_slots.strip().split(" ")
-            dense_slots = dense_slots.strip().split(" ")
+    def _init_slots(self, **kargs):
+        if self._slot_inited:
+            return
+        self._slot_inited = True
+        dataset = {}
+        model_dict = {}
+        for i in self._env["executor"]:
+            if i["name"] == kargs["name"]:
+                model_dict = i
+                break
+        for i in self._env["dataset"]:
+            if i["name"] == model_dict["dataset_name"]:
+                dataset = i
+                break
+        name = "dataset." + dataset["name"] + "."
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        if sparse_slots != "" or dense_slots != "":
+            if sparse_slots == "":
+                sparse_slots = []
+            else:
+                sparse_slots = sparse_slots.strip().split(" ")
+            if dense_slots == "":
+                dense_slots = []
+            else:
+                dense_slots = dense_slots.strip().split(" ")
             dense_slots_shape = [[
                 int(j) for j in i.split(":")[1].strip("[]").split(",")
             ] for i in dense_slots]
@@ -69,14 +89,17 @@ class Model(object):
                 self._data_var.append(l)
                 self._sparse_data_var.append(l)
 
-        dataset_class = envs.get_global_env("dataset_class", None,
-                                            "train.reader")
+        dataset_class = dataset["type"]
         if dataset_class == "DataLoader":
             self._init_dataloader()
 
-    def _init_dataloader(self):
+    def _init_dataloader(self, is_infer=False):
+        if is_infer:
+            data = self._infer_data_var
+        else:
+            data = self._data_var
         self._data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._data_var,
+            feed_list=data,
             capacity=64,
             use_double_buffer=False,
             iterable=False)
@@ -103,7 +126,7 @@ class Model(object):
     def get_fetch_period(self):
         return self._fetch_interval
 
-    def _build_optimizer(self, name, lr):
+    def _build_optimizer(self, name, lr, strategy=None):
         name = name.upper()
         optimizers = ["SGD", "ADAM", "ADAGRAD"]
         if name not in optimizers:
@@ -130,16 +153,23 @@ class Model(object):
                                             None, self._namespace)
         optimizer = envs.get_global_env("hyper_parameters.optimizer", None,
                                         self._namespace)
-        print(">>>>>>>>>>>.learnig rate: %s" % learning_rate)
         return self._build_optimizer(optimizer, learning_rate)
 
-    def input_data(self, is_infer=False):
-        sparse_slots = envs.get_global_env("sparse_slots", None,
-                                           "train.reader")
-        dense_slots = envs.get_global_env("dense_slots", None, "train.reader")
-        if sparse_slots is not None or dense_slots is not None:
-            sparse_slots = sparse_slots.strip().split(" ")
-            dense_slots = dense_slots.strip().split(" ")
+    def input_data(self, is_infer=False, **kwargs):
+        name = "dataset." + kwargs.get("dataset_name") + "."
+        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
+        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
+        self._sparse_data_var_map = {}
+        self._dense_data_var_map = {}
+        if sparse_slots != "" or dense_slots != "":
+            if sparse_slots == "":
+                sparse_slots = []
+            else:
+                sparse_slots = sparse_slots.strip().split(" ")
+            if dense_slots == "":
+                dense_slots = []
+            else:
+                dense_slots = dense_slots.strip().split(" ")
             dense_slots_shape = [[
                 int(j) for j in i.split(":")[1].strip("[]").split(",")
             ] for i in dense_slots]
@@ -153,12 +183,14 @@ class Model(object):
                     dtype="float32")
                 data_var_.append(l)
                 self._dense_data_var.append(l)
+                self._dense_data_var_map[dense_slots[i]] = l
             self._sparse_data_var = []
             for name in sparse_slots:
                 l = fluid.layers.data(
                     name=name, shape=[1], lod_level=1, dtype="int64")
                 data_var_.append(l)
                 self._sparse_data_var.append(l)
+                self._sparse_data_var_map[name] = l
             return data_var_
 
         else:

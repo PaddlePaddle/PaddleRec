@@ -35,9 +35,6 @@ class Reader(dg.MultiSlotDataGenerator):
         else:
             raise ValueError("reader config only support yaml")
 
-        envs.set_global_envs(_config)
-        envs.update_workspace()
-
     @abc.abstractmethod
     def init(self):
         """init"""
@@ -58,13 +55,17 @@ class SlotReader(dg.MultiSlotDataGenerator):
                 _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
         else:
             raise ValueError("reader config only support yaml")
-        envs.set_global_envs(_config)
-        envs.update_workspace()
 
     def init(self, sparse_slots, dense_slots, padding=0):
         from operator import mul
-        self.sparse_slots = sparse_slots.strip().split(" ")
-        self.dense_slots = dense_slots.strip().split(" ")
+        self.sparse_slots = []
+        if sparse_slots.strip() != "#" and sparse_slots.strip(
+        ) != "?" and sparse_slots.strip() != "":
+            self.sparse_slots = sparse_slots.strip().split(" ")
+        self.dense_slots = []
+        if dense_slots.strip() != "#" and dense_slots.strip(
+        ) != "?" and dense_slots.strip() != "":
+            self.dense_slots = dense_slots.strip().split(" ")
         self.dense_slots_shape = [
             reduce(mul,
                    [int(j) for j in i.split(":")[1].strip("[]").split(",")])
