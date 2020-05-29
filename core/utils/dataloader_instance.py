@@ -68,8 +68,12 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file):
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
-    sparse = get_global_env(name + "sparse_slots")
-    dense = get_global_env(name + "dense_slots")
+    sparse = get_global_env(name + "sparse_slots", "#")
+    if sparse == "":
+        sparse = "#"
+    dense = get_global_env(name + "dense_slots", "#")
+    if dense == "":
+        dense = "#"
     padding = get_global_env(name + "padding", 0)
     reader = SlotReader(yaml_file)
     reader.init(sparse, dense, int(padding))
@@ -158,8 +162,12 @@ def slotdataloader(readerclass, train, yaml_file):
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
 
-    sparse = get_global_env("sparse_slots", None, namespace)
-    dense = get_global_env("dense_slots", None, namespace)
+    sparse = get_global_env("sparse_slots", "#", namespace)
+    if sparse == "":
+        sparse = "#"
+    dense = get_global_env("dense_slots", "#", namespace)
+    if dense == "":
+        dense = "#"
     padding = get_global_env("padding", 0, namespace)
     reader = SlotReader(yaml_file)
     reader.init(sparse, dense, int(padding))
