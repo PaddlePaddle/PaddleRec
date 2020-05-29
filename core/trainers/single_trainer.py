@@ -68,7 +68,7 @@ class SingleTrainer(TranspileTrainer):
         reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
-        if sparse_slots != "" and dense_slots != "":
+        if sparse_slots == "" and dense_slots == "":
             pipe_cmd = "python {} {} {} {}".format(reader, reader_class,
                                                    "TRAIN", self._config_yaml)
         else:
