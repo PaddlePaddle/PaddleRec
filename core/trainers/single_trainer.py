@@ -147,11 +147,6 @@ class SingleTrainer(TranspileTrainer):
             startup_program = fluid.Program()
             scope = fluid.Scope()
             dataset_name = model_dict["dataset_name"]
-            opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-            opt_lr = envs.get_global_env(
-                "hyper_parameters.optimizer.learning_rate")
-            opt_strategy = envs.get_global_env(
-                "hyper_parameters.optimizer.strategy")
             with fluid.program_guard(train_program, startup_program):
                 with fluid.unique_name.guard():
                     with fluid.scope_guard(scope):
@@ -168,8 +163,7 @@ class SingleTrainer(TranspileTrainer):
                             self._get_dataloader(dataset_name,
                                                  model._data_loader)
                         model.net(model._data_var, False)
-                        optimizer = model._build_optimizer(opt_name, opt_lr,
-                                                           opt_strategy)
+                        optimizer = model.optimizer()
                         optimizer.minimize(model._cost)
             self._model[model_dict["name"]][0] = train_program
             self._model[model_dict["name"]][1] = startup_program

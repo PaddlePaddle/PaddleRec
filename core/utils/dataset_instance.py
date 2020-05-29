@@ -14,7 +14,8 @@
 
 from __future__ import print_function
 import sys
-
+import yaml
+from paddlerec.core.utils import envs
 from paddlerec.core.utils.envs import lazy_instance_by_fliename
 from paddlerec.core.reader import SlotReader
 
@@ -37,6 +38,11 @@ else:
     padding = int(sys.argv[7])
 
 yaml_abs_path = sys.argv[3]
+
+with open(yaml_abs_path, 'r') as rb:
+    config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+envs.set_global_envs()
+envs.update_workspace()
 
 if reader_name != "SlotReader":
     reader_class = lazy_instance_by_fliename(reader_package, reader_name)
