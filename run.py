@@ -17,7 +17,6 @@ import subprocess
 
 import argparse
 import tempfile
-import yaml
 
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
@@ -48,9 +47,7 @@ def engine_registry():
 
 
 def get_inters_from_yaml(file, filter):
-    with open(file, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
+    _envs = envs.load_yaml(file)
     flattens = envs.flatten_environs(_envs)
 
     inters = {}
@@ -149,9 +146,7 @@ def cluster_engine(args):
     def master():
         role = "MASTER"
         from paddlerec.core.engine.cluster.cluster import ClusterEngine
-        with open(args.backend, 'r') as rb:
-            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
+        _envs = envs.load_yaml(args.backend)
         flattens = envs.flatten_environs(_envs, "_")
         flattens["engine_role"] = role
         flattens["engine_run_config"] = args.model

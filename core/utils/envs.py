@@ -18,6 +18,8 @@ import os
 import socket
 import sys
 
+import yaml
+
 global_envs = {}
 
 
@@ -195,3 +197,12 @@ def find_free_port():
 
     new_port = __free_port()
     return new_port
+
+
+def load_yaml(config):
+    if os.path.isfile(config):
+        with open(config, 'r') as rb:
+            _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+            return _config
+    else:
+        raise ValueError("config {} can not be supported".format(config))
