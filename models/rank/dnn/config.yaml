@@ -70,6 +70,20 @@ runner:
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
+- name: runner3
+  class: local_cluster
+  strategpy: async
+  epochs: 10
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 10
+
 
 # runner will run all the phase in each epoch
 phase:
