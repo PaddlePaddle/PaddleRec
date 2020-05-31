@@ -49,9 +49,7 @@ mode: runner_1
 # runner主要涉及模型的执行环境，如：单机/分布式，CPU/GPU，迭代轮次，模型加载与保存地址
 runner:
   - name: runner_1 # 配置一个runner，进行单机的训练
-    engine: single  # 运行引擎为单机，亦可指定为cluster/local_cluster运行分布式/本地模拟分布式
-    trainer_class: general # 默认为general，可不指定，若模型流程特殊，可以自行添加trainer的实现
-    is_infer: False # 是否仅进行infer，不更新参数
+    class: single_train # 配置运行模式的选择，还可以选择：single_infer/local_cluster_train/cluster_train
     epochs: 10
     device: cpu
     init_model_path: ""
@@ -62,9 +60,7 @@ runner:
     save_inference_path: "xxxx"
 
   - name: runner_2 # 配置一个runner，进行单机的预测
-    engine: single  # 运行引擎为单机
-    trainer_class: general # 默认为general，可不指定，若模型流程特殊，可以自行添加trainer的实现
-    is_infer: True # 是否仅进行infer，不更新参数
+    class: single_infer
     epochs: 1
     device: cpu
     init_model_path: "afs:/xxx/xxx"
