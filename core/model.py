@@ -19,7 +19,7 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
 
-class Model(object):
+class ModelBase(object):
     """Base Model
     """
     __metaclass__ = abc.ABCMeta
