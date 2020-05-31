@@ -28,15 +28,18 @@ class Model(ModelBase):
         self.hid_dim = 128
         self.class_dim = 2
 
-    def train_net(self):
-        """ network definition """
-
+    def input_data(self, is_infer=False, **kwargs):
         data = fluid.data(
             name="input", shape=[None, self.max_len], dtype='int64')
         label = fluid.data(name="label", shape=[None, 1], dtype='int64')
         seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
+        return [data, label, seq_len]
 
-        self._data_var = [data, label, seq_len]
+    def net(self, input, is_infer=False):
+        """ network definition """
+        data = input[0]
+        label = input[1]
+        seq_len = input[2]
 
         # embedding layer
         emb = fluid.embedding(input=data, size=[self.dict_dim, self.emb_dim])
@@ -59,19 +62,8 @@ class Model(ModelBase):
         avg_cost = fluid.layers.mean(x=cost)
         acc = fluid.layers.accuracy(input=prediction, label=label)
 
-        self.cost = avg_cost
-        self._metrics["acc"] = acc
-
-    def get_avg_cost(self):
-        return self.cost
-
-    def get_metrics(self):
-        return self._metrics
-
-    def optimizer(self):
-        learning_rate = 0.01
-        sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
-        return sgd_optimizer
-
-    def infer_net(self):
-        self.train_net()
+        self._cost = avg_cost
+        if is_infer:
+            self._infer_results["acc"] = acc
+        else:
+            self._metrics["acc"] = acc
