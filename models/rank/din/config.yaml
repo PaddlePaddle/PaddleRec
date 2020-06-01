@@ -36,7 +36,9 @@ hyper_parameters:
     item_emb_size: 64
     cat_emb_size: 64
     is_sparse: False
-    config_path: "{workspace}/data/config.txt"
+    item_count: 63001
+    cat_count: 801
+
     act: "sigmoid"
 
 
@@ -52,6 +54,7 @@ runner:
     save_inference_interval: 1
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
+    print_interval: 1
   - name: infer_runner
     trainer_class: single_infer
     epochs: 1

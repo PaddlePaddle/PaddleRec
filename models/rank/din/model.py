@@ -31,10 +31,11 @@ class Model(ModelBase):
         self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
                                              False)
         #significant for speeding up the training process
-        self.config_path = envs.get_global_env("hyper_parameters.config_path",
-                                               "data/config.txt")
         self.use_DataLoader = envs.get_global_env(
             "hyper_parameters.use_DataLoader", False)
+        self.item_count = envs.get_global_env("hyper_parameters.item_count",
+                                              63001)
+        self.cat_count = envs.get_global_env("hyper_parameters.cat_count", 801)
 
     def input_data(self, is_infer=False, **kwargs):
         seq_len = -1
@@ -73,13 +74,6 @@ class Model(ModelBase):
             target_cat
         ] + [label] + [mask] + [target_item_seq] + [target_cat_seq]
         return train_inputs
-
-    def config_read(self, config_path):
-        with open(config_path, "r") as fin:
-            user_count = int(fin.readline().strip())
-            item_count = int(fin.readline().strip())
-            cat_count = int(fin.readline().strip())
-        return user_count, item_count, cat_count
 
     def din_attention(self, hist, target_expand, mask):
         """activation weight"""
@@ -121,50 +115,48 @@ class Model(ModelBase):
         target_item_seq = inputs[6]
         target_cat_seq = inputs[7]
 
-        user_count, item_count, cat_count = self.config_read(self.config_path)
-
         item_emb_attr = fluid.ParamAttr(name="item_emb")
         cat_emb_attr = fluid.ParamAttr(name="cat_emb")
 
         hist_item_emb = fluid.embedding(
             input=hist_item_seq,
-            size=[item_count, self.item_emb_size],
+            size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
         hist_cat_emb = fluid.embedding(
             input=hist_cat_seq,
-            size=[cat_count, self.cat_emb_size],
+            size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
         target_item_emb = fluid.embedding(
             input=target_item,
-            size=[item_count, self.item_emb_size],
+            size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
         target_cat_emb = fluid.embedding(
             input=target_cat,
-            size=[cat_count, self.cat_emb_size],
+            size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
         target_item_seq_emb = fluid.embedding(
             input=target_item_seq,
-            size=[item_count, self.item_emb_size],
+            size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
         target_cat_seq_emb = fluid.embedding(
             input=target_cat_seq,
-            size=[cat_count, self.cat_emb_size],
+            size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
         item_b = fluid.embedding(
             input=target_item,
-            size=[item_count, 1],
+            size=[self.item_count, 1],
             param_attr=fluid.initializer.Constant(value=0.0))
 
         hist_seq_concat = fluid.layers.concat(
