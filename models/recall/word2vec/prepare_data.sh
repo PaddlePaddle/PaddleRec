@@ -29,7 +29,7 @@ mv raw_data/word_id_dict.txt data/dict/
 
 rm -rf data/train/*
 rm -rf data/test/*
-python preprocess.py --data_resplit --input_corpus_dir=raw_data/convert_text8 --output_corpus_dir=data/data
+python preprocess.py --data_resplit --input_corpus_dir=raw_data/convert_text8 --output_corpus_dir=data/train
 
 # download test data
 wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/test_dir.tar
