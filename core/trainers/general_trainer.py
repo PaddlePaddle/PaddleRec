@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Training use fluid with DistributeTranspiler
+General Trainer, applicable to many situations: Single/Cluster/Local_Cluster + PS/COLLECTIVE
 """
 from __future__ import print_function
 

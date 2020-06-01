@@ -87,7 +87,8 @@ class Trainer(object):
             "runner." + self._runner_name + ".device", default_value="CPU")
         if device.upper() == 'GPU':
             self.device = Device.GPU
-            self._place = fluid.CUDAPlace(0)
+            gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
+            self._place = fluid.CUDAPlace(gpu_id)
             self._exe = fluid.Executor(self._place)
         elif device.upper() == "CPU":
             self.device = Device.CPU
