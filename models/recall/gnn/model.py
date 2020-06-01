@@ -36,7 +36,7 @@ class Model(ModelBase):
         self.l2 = envs.get_global_env("hyper_parameters.optimizer.l2")
 
         self.dict_size = envs.get_global_env(
-            "hyper_parameters.sparse_feature_nums")
+            "hyper_parameters.sparse_feature_number")
         self.corpus_size = envs.get_global_env("hyper_parameters.corpus_size")
 
         self.train_batch_size = envs.get_global_env(

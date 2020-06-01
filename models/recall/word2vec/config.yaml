@@ -35,18 +35,18 @@ hyper_parameters:
     decay_rate: 0.999
     class: sgd
     strategy: async
-  sparse_feature_number: 85
+  sparse_feature_number: 354051
   sparse_feature_dim: 300
   with_shuffle_batch: False
   neg_num: 5
   window_size: 5
 
 # select runner by name
-mode: runner1
+mode: train_runner
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: runner1
+- name: train_runner
   class: single_train
   # num of epochs
   epochs: 2
@@ -60,7 +60,7 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   fetch_period: 10
-- name: runner2
+- name: infer_runner
   class: single_infer
   # num of epochs
   epochs: 1

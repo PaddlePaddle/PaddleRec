@@ -37,11 +37,11 @@ hyper_parameters:
   fc_sizes: [300, 300, 128]
   fc_acts: ['tanh', 'tanh', 'tanh']
 
-mode: runner1
+mode: train_runner
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: runner1
+- name: train_runner
   class: single_train
   # num of epochs
   epochs: 4
@@ -55,7 +55,7 @@ runner:
   save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # fetch vars of save inference
   init_model_path: "" # load model path
   fetch_period: 2
-- name: runner2
+- name: infer_runner
   class: single_infer
   # num of epochs
   epochs: 1
