@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Training use fluid with DistributeTranspiler
 """
@@ -31,6 +30,10 @@ from paddlerec.core.trainers.framework.startup import *
 
 
 class GeneralTrainer(Trainer):
+    """
+    Trainer for various situations
+    """
+
     def __init__(self, config=None):
         Trainer.__init__(self, config)
         self.processor_register()

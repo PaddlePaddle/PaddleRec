@@ -50,7 +50,8 @@ class Device:
 
 
 class Trainer(object):
-    """R
+    """
+    Trainer Base
     """
     __metaclass__ = abc.ABCMeta
 
@@ -82,8 +83,8 @@ class Trainer(object):
         self.legality_check()
 
     def which_device(self):
-        device = envs.get_global_env("runner." + self._runner_name + ".device",
-                                     default_value="CPU")
+        device = envs.get_global_env(
+            "runner." + self._runner_name + ".device", default_value="CPU")
         if device.upper() == 'GPU':
             self.device = Device.GPU
             self._place = fluid.CUDAPlace(0)
@@ -98,8 +99,8 @@ class Trainer(object):
         self._context["place"] = self._place
 
     def which_engine(self):
-        engine = envs.get_global_env("runner." + self._runner_name + ".engine",
-                                     default_value="SINGLE")
+        engine = envs.get_global_env(
+            "runner." + self._runner_name + ".engine", default_value="SINGLE")
         if engine.upper() == "SINGLE":
             self.engine = EngineMode.SINGLE
             self.is_fleet = False
@@ -114,8 +115,8 @@ class Trainer(object):
         self._context["is_fleet"] = self.is_fleet
 
     def which_fleet_mode(self):
-        fleet_mode = envs.get_global_env("runner." + self._runner_name + ".fleet_mode",
-                                         default_value="PS")
+        fleet_mode = envs.get_global_env(
+            "runner." + self._runner_name + ".fleet_mode", default_value="PS")
         if fleet_mode.upper() == "PS":
             self.fleet_mode = FleetMode.PS
         elif fleet_mode.upper() == "COLLECTIVE":
@@ -126,11 +127,12 @@ class Trainer(object):
             raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
 
     def which_executor_mode(self):
-        executor_mode = envs.get_global_env("runner." + self._runner_name + ".executor_mode",
-                                            default_value="train")
+        executor_mode = envs.get_global_env(
+            "runner." + self._runner_name + ".executor_mode",
+            default_value="train")
         if executor_mode.upper() not in ["TRAIN", "INFER"]:
-            raise ValueError(
-                "Not Support Executor Mode {}".format(executor_mode))
+            raise ValueError("Not Support Executor Mode {}".format(
+                executor_mode))
         if executor_mode.upper() == "TRAIN":
             self.is_infer = False
         else:

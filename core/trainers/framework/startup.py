@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from __future__ import print_function
 
 import warnings
@@ -24,6 +23,9 @@ __all__ = ["StartUpBase", "SingleStartup", "PSStartUp", "CollectiveStartUp"]
 
 
 class StartUpBase(object):
+    """R
+    """
+
     def __init__(self, context):
         pass
 

@@ -25,6 +25,9 @@ __all__ = ["NetWorkBase", "SingleNetWork", "PSNetwork", "CollectiveNetWork"]
 
 
 class NetWorkBase(object):
+    """R
+    """
+
     def __init__(self, context):
         pass
 
@@ -79,8 +82,8 @@ class SingleNetWork(NetWorkBase):
                                       context["is_infer"])
                         else:
                             model.net(model._data_var, context["is_infer"])
-                            optimizer = model._build_optimizer(opt_name, opt_lr,
-                                                               opt_strategy)
+                            optimizer = model._build_optimizer(
+                                opt_name, opt_lr, opt_strategy)
                             optimizer.minimize(model._cost)
             context["_model"][model_dict["name"]][0] = train_program
             context["_model"][model_dict["name"]][1] = startup_program
@@ -92,8 +95,9 @@ class SingleNetWork(NetWorkBase):
         for dataset in context["env"]["dataset"]:
             if dataset["type"] != "DataLoader":
                 dataset_class = QueueDataset(context)
-                context["dataset"][dataset["name"]] = dataset_class.create_dataset(dataset[
-                    "name"], context)
+                context["dataset"][dataset[
+                    "name"]] = dataset_class.create_dataset(dataset["name"],
+                                                            context)
 
         context["status"] = "startup_pass"
 
@@ -105,8 +109,10 @@ class PSNetwork(NetWorkBase):
     def build_network(self, context):
         context["_model"] = {}
         if len(context["env"]["phase"]) > 1:
-            warnings.warn("Cluster Train Only Support One Phase.",
-                          category=UserWarning, stacklevel=2)
+            warnings.warn(
+                "Cluster Train Only Support One Phase.",
+                category=UserWarning,
+                stacklevel=2)
         model_dict = context["env"]["phase"][0]
         context["_model"][model_dict["name"]] = [None] * 5
         dataset_name = model_dict["dataset_name"]
@@ -116,10 +122,9 @@ class PSNetwork(NetWorkBase):
         opt_strategy = envs.get_global_env(
             "hyper_parameters.optimizer.strategy")
         model_path = model_dict["model"].replace(
-            "{workspace}",
-            envs.path_adapter(context["env"]["workspace"]))
-        model = envs.lazy_instance_by_fliename(
-            model_path, "Model")(context["env"])
+            "{workspace}", envs.path_adapter(context["env"]["workspace"]))
+        model = envs.lazy_instance_by_fliename(model_path,
+                                               "Model")(context["env"])
         model._data_var = model.input_data(
             dataset_name=model_dict["dataset_name"])
         if envs.get_global_env("dataset." + dataset_name +
@@ -129,11 +134,9 @@ class PSNetwork(NetWorkBase):
             data_loader.get_dataloader(context, dataset_name,
                                        model._data_loader)
         model.net(model._data_var, False)
-        optimizer = model._build_optimizer(opt_name, opt_lr,
-                                           opt_strategy)
+        optimizer = model._build_optimizer(opt_name, opt_lr, opt_strategy)
         strategy = self._build_strategy(context)
-        optimizer = context["fleet"].distributed_optimizer(
-            optimizer,  strategy)
+        optimizer = context["fleet"].distributed_optimizer(optimizer, strategy)
         optimizer.minimize(model._cost)
 
         if opt_name.upper() == "SGD":
@@ -141,14 +144,14 @@ class PSNetwork(NetWorkBase):
         else:
             os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
 
-        context["_model"][model_dict["name"]
-                          ][0] = context["fleet"].main_program
-        context["_model"][model_dict["name"]
-                          ][1] = context["fleet"].startup_program
+        context["_model"][model_dict["name"]][0] = context[
+            "fleet"].main_program
+        context["_model"][model_dict["name"]][1] = context[
+            "fleet"].startup_program
         context["_model"][model_dict["name"]][2] = fluid.global_scope()
         context["_model"][model_dict["name"]][3] = model
-        context["_model"][model_dict["name"]
-                          ][4] = context["fleet"].main_program.clone()
+        context["_model"][model_dict["name"]][4] = context[
+            "fleet"].main_program.clone()
 
         if context["fleet"].is_server():
             self._server(context)
@@ -158,8 +161,9 @@ class PSNetwork(NetWorkBase):
             for dataset in context["env"]["dataset"]:
                 if dataset["type"] != "DataLoader":
                     dataset_class = QueueDataset(context)
-                    context["dataset"][dataset["name"]] = dataset_class.create_dataset(dataset[
-                        "name"], context)
+                    context["dataset"][dataset[
+                        "name"]] = dataset_class.create_dataset(
+                            dataset["name"], context)
             context["status"] = "startup_pass"
 
     def _build_strategy(self, context):
@@ -185,8 +189,9 @@ class PSNetwork(NetWorkBase):
         return strategy
 
     def _server(self, context):
-        init_model_path = envs.get_global_env("runner." + context["runner_name"] + ".init_model",
-                                              default_value="")
+        init_model_path = envs.get_global_env(
+            "runner." + context["runner_name"] + ".init_model",
+            default_value="")
         context["fleet"].init_server(init_model_path)
         context["fleet"].run_server()
         context['status'] = "terminal_pass"

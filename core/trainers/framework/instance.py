@@ -19,11 +19,15 @@ import warnings
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
-__all__ = ["InstanceBase", "SingleInstance",
-           "PSInstance", "CollectiveInstance"]
+__all__ = [
+    "InstanceBase", "SingleInstance", "PSInstance", "CollectiveInstance"
+]
 
 
 class InstanceBase(object):
+    """R
+    """
+
     def __init__(self, context):
         pass
 

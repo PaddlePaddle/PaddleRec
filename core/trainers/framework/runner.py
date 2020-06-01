@@ -25,6 +25,9 @@ __all__ = ["RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner"]
 
 
 class RunnerBase(object):
+    """R
+    """
+
     def __init__(self, context):
         pass
 

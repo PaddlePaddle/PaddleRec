@@ -22,11 +22,13 @@ from paddlerec.core.utils import envs
 from paddlerec.core.utils import dataloader_instance
 from paddlerec.core.reader import SlotReader
 
-
 __all__ = ["DatasetBase", "DataLoader", "QueueDataset"]
 
 
 class DatasetBase(object):
+    """R
+    """
+
     def __init__(self, context):
         pass
 
@@ -95,8 +97,8 @@ class QueueDataset(DatasetBase):
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         if sparse_slots == "" and dense_slots == "":
-            pipe_cmd = "python {} {} {} {}".format(reader, reader_class,
-                                                   "TRAIN", context["config_yaml"])
+            pipe_cmd = "python {} {} {} {}".format(
+                reader, reader_class, "TRAIN", context["config_yaml"])
         else:
             if sparse_slots == "":
                 sparse_slots = "?"
@@ -105,7 +107,8 @@ class QueueDataset(DatasetBase):
             padding = envs.get_global_env(name + "padding", 0)
             pipe_cmd = "python {} {} {} {} {} {} {} {}".format(
                 reader, "slot", "slot", context["config_yaml"], "fake",
-                sparse_slots.replace(" ", "?"), dense_slots.replace(" ", "?"), str(padding))
+                sparse_slots.replace(" ", "?"),
+                dense_slots.replace(" ", "?"), str(padding))
 
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_batch_size(envs.get_global_env(name + "batch_size"))
