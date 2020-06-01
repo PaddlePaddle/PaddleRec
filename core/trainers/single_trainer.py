@@ -220,7 +220,7 @@ class SingleTrainer(TranspileTrainer):
         fetch_alias = []
         fetch_period = int(
             envs.get_global_env("runner." + self._runner_name +
-                                ".fetch_period", 20))
+                                ".print_interval", 20))
         metrics = model_class.get_metrics()
         if metrics:
             fetch_vars = metrics.values()
@@ -247,7 +247,7 @@ class SingleTrainer(TranspileTrainer):
         fetch_alias = []
         fetch_period = int(
             envs.get_global_env("runner." + self._runner_name +
-                                ".fetch_period", 20))
+                                ".print_interval", 20))
         metrics = model_class.get_metrics()
         if metrics:
             fetch_vars = metrics.values()
