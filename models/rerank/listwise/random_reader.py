@@ -23,14 +23,10 @@ from collections import defaultdict
 
 class TrainReader(Reader):
     def init(self):
-        self.user_vocab = envs.get_global_env("hyper_parameters.user_vocab",
-                                              None, "train.model")
-        self.item_vocab = envs.get_global_env("hyper_parameters.item_vocab",
-                                              None, "train.model")
-        self.item_len = envs.get_global_env("hyper_parameters.item_len", None,
-                                            "train.model")
-        self.batch_size = envs.get_global_env("batch_size", None,
-                                              "train.reader")
+        self.user_vocab = envs.get_global_env("hyper_parameters.user_vocab")
+        self.item_vocab = envs.get_global_env("hyper_parameters.item_vocab")
+        self.item_len = envs.get_global_env("hyper_parameters.item_len")
+        self.batch_size = envs.get_global_env("hyper_parameters.batch_size")
 
     def reader_creator(self):
         def reader():
