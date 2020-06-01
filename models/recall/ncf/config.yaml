@@ -30,7 +30,7 @@ hyper_parameters:
   num_users: 6040
   num_items: 3706
   latent_dim: 8
-  layers: [64, 32, 16, 8]
+  fc_layers: [64, 32, 16, 8]
   optimizer: 
     class: adam
     learning_rate: 0.001

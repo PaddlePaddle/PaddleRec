@@ -28,7 +28,7 @@ class Model(ModelBase):
         self.num_users = envs.get_global_env("hyper_parameters.num_users")
         self.num_items = envs.get_global_env("hyper_parameters.num_items")
         self.latent_dim = envs.get_global_env("hyper_parameters.latent_dim")
-        self.layers = envs.get_global_env("hyper_parameters.layers")
+        self.layers = envs.get_global_env("hyper_parameters.fc_layers")
 
     def input_data(self, is_infer=False, **kwargs):
         user_input = fluid.data(
