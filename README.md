@@ -96,9 +96,10 @@ cd paddlerec
 
 修改dnn模型的[超参配置](./models/rank/dnn/config.yaml)，例如将迭代训练轮数从10轮修改为5轮:
 ```yaml
-train:
-  # epochs: 10
-  epochs: 5
+runner:
+- name: runner1
+  class: single_train
+  epochs: 5 # 10->5
 ```
 
 在Linux环境下，可以使用`vim`等文本编辑工具修改yaml文件：
@@ -126,9 +127,9 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml
 我们以dnn模型为例，在paddlerec代码目录下，修改dnn模型的`config.yaml`文件:
 
 ```yaml
-train:
-  #engine: single
-  engine: local_cluster
+runner:
+- name: runner1
+  class: local_cluster_train
 ```
 然后启动paddlerec训练：
 
@@ -142,9 +143,9 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml
 我们以dnn模型为例，在paddlerec代码目录下，首先修改dnn模型`config.yaml`文件:
 
 ```yaml
-train:
-  #engine: single
-  engine: cluster
+runner:
+- name: runner1
+  class: cluster_train
 ```
 再添加分布式启动配置文件`backend.yaml`，具体配置规则在[分布式训练](doc/distributed_train.md)教程中介绍。最后启动paddlerec训练：
 
@@ -177,7 +178,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
 |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
-|  重排序  |           [Listwise](models/rerank/listwise/model.py)           |      ✓      |      x      |       ✓       |
+|  重排序  |                [Listwise](models/rerank/listwise/model.py)                |      ✓      |      x      |       ✓       |
 
 
 
@@ -199,6 +200,13 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 
 ### 开发者教程
 * [PaddleRec设计文档](doc/design.md)
+
+### 关于PaddleRec性能
+* [Benchmark](doc/benchmark.md)
+
+### 开发者教程
+* [PaddleRec设计文档](doc/design.md)
+* [二次开发](doc/development.md)
 
 ### 关于PaddleRec性能
 * [Benchmark](doc/benchmark.md)
