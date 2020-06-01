@@ -46,6 +46,7 @@ class Model(ModelBase):
     def net(self, inputs, is_infer=False):
 
         emb = []
+        # input feature data
         for data in inputs[0:-2]:
             feat_emb = fluid.embedding(
                 input=data,
