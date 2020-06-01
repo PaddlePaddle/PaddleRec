@@ -69,7 +69,6 @@ sh run.sh
 ### 训练
 ```
 cd modles/multitask/mmoe # 进入选定好的排序模型的目录 以MMoE为例
-python -m paddlerec.run -m paddlerec.models.multitask.mmoe # 使用内置配置
 python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配置文件，使用自定义配置
 ```
 
