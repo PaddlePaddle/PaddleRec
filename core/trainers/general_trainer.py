@@ -24,7 +24,7 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer, EngineMode, FleetMode, Device
 from paddlerec.core.trainers.framework.dataset import *
-from paddlerec.core.trainers.framework.executor import *
+from paddlerec.core.trainers.framework.runner import *
 from paddlerec.core.trainers.framework.instance import *
 from paddlerec.core.trainers.framework.network import *
 from paddlerec.core.trainers.framework.startup import *
@@ -41,7 +41,7 @@ class GeneralTrainer(Trainer):
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('network_pass', self.network)
         self.regist_context_processor('startup_pass', self.startup)
-        self.regist_context_processor('train_pass', self.executor)
+        self.regist_context_processor('train_pass', self.runner)
         self.regist_context_processor('terminal_pass', self.terminal)
 
     def instance(self, context):
@@ -83,15 +83,15 @@ class GeneralTrainer(Trainer):
             raise ValueError("Startup Init Error")
         startup_class.startup(context)
 
-    def executor(self, context):
+    def runner(self, context):
         print("executor begin")
         executor_class = None
         if self.engine == EngineMode.SINGLE:
-            executor_class = SingleExecutor(context)
+            executor_class = SingleRunner(context)
         elif self.fleet_mode == FleetMode.PS:
-            executor_class = PSExecutor(context)
+            executor_class = PSRunner(context)
         elif self.fleet_mode == FleetMode.COLLECTIVE:
-            executor_class = CollectiveExecutor(context)
+            executor_class = CollectiveRunner(context)
         else:
             raise ValueError("Executor Init Error")
         executor_class.exuctor(context)

@@ -28,7 +28,8 @@ from paddlerec.core.utils import util
 
 engines = {}
 device = ["CPU", "GPU"]
-engine_choices = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
+engine_choices = ["SINGLE_TRAIN", "SINGLE_INFER",
+                  "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"]
 fleet_mode_choice = ["PS", "PSLIB", "COLLECTIVE"]
 
 
@@ -36,9 +37,10 @@ def engine_registry():
     engines["TRANSPILER"] = {}
     engines["PSLIB"] = {}
 
-    engines["TRANSPILER"]["SINGLE"] = single_engine
-    engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
-    engines["TRANSPILER"]["CLUSTER"] = cluster_engine
+    engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
+    engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
+    engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
+    engines["TRANSPILER"]["CLUSTER_TRAIN"] = cluster_engine
     engines["PSLIB"]["SINGLE"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
@@ -145,20 +147,42 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
-def single_engine(args):
-    with open(args.model, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+def single_train_engine(args):
+    _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
     trainer_class = run_extras.get(
-        "runner." + _envs["mode"] + ".trainer_class", None)
+        "runner." + _envs["mode"] + ".runner_class", None)
 
     if trainer_class:
         trainer = trainer_class
     else:
         trainer = "GeneralTrainer"
 
-    executor_mode = run_extras.get(
-        "runner." + _envs["mode"] + ".executor_mode", "train")
+    executor_mode = "train"
+
+    single_envs = {}
+    single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.executor_mode"] = executor_mode
+    single_envs["train.trainer.threads"] = "2"
+    single_envs["train.trainer.platform"] = envs.get_platform()
+
+    set_runtime_envs(single_envs, args.model)
+    trainer = TrainerFactory.create(args.model)
+    return trainer
+
+
+def single_infer_engine(args):
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".runner_class", None)
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
+    executor_mode = "infer"
 
     single_envs = {}
     single_envs["train.trainer.trainer"] = trainer
@@ -204,8 +228,7 @@ def cluster_engine(args):
     def worker():
         role = "WORKER"
 
-        with open(args.model, 'r') as rb:
-            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        _envs = envs.load_yaml(args.model)
         run_extras = get_all_inters_from_yaml(
             args.model, ["train.", "runner."])
         trainer_class = run_extras.get(
@@ -216,8 +239,7 @@ def cluster_engine(args):
         else:
             trainer = "GeneralTrainer"
 
-        executor_mode = run_extras.get(
-            "runner." + _envs["mode"] + ".executor_mode", "train")
+        executor_mode = "train"
         distributed_strategy = run_extras.get(
             "runner." + _envs["mode"] + ".distribute_strategy", "async")
 
@@ -261,8 +283,7 @@ def cluster_mpi_engine(args):
 def local_cluster_engine(args):
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
-    with open(args.model, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(
         args.model, ["train.", "runner."])
     trainer_class = run_extras.get(
@@ -273,8 +294,7 @@ def local_cluster_engine(args):
     else:
         trainer = "GeneralTrainer"
 
-    executor_mode = run_extras.get(
-        "runner." + _envs["mode"] + ".executor_mode", "train")
+    executor_mode = "train"
     distributed_strategy = run_extras.get(
         "runner." + _envs["mode"] + ".distribute_strategy", "async")
 

@@ -25,7 +25,7 @@ __all__ = ["ExecutorBase", "SingleExecutor",
            "PSExecutor", "CollectiveExecutor"]
 
 
-class ExecutorBase(object):
+class RunnerBase(object):
     def __init__(self, context):
         pass
 
@@ -185,7 +185,7 @@ class ExecutorBase(object):
         save_inference_model()
 
 
-class SingleExecutor(ExecutorBase):
+class SingleRunner(RunnerBase):
     def __init__(self, context):
         pass
 
@@ -218,7 +218,7 @@ class SingleExecutor(ExecutorBase):
         context["status"] = "terminal_pass"
 
 
-class PSExecutor(ExecutorBase):
+class PSRunner(RunnerBase):
     def __init__(self, context):
         pass
 
@@ -252,7 +252,7 @@ class PSExecutor(ExecutorBase):
         context["status"] = "terminal_pass"
 
 
-class CollectiveExecutor(ExecutorBase):
+class CollectiveRunner(RunnerBase):
     def __init__(self, context):
         pass
 

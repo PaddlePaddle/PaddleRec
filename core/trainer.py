@@ -64,8 +64,7 @@ class Trainer(object):
         self._config_yaml = config
         self._context["config_yaml"] = self._config_yaml
 
-        with open(config, 'r') as rb:
-            self._config = envs.load_yaml(config)
+        self._config = envs.load_yaml(config)
 
         self._context["env"] = self._config
         self._model = {}
