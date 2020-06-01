@@ -56,7 +56,19 @@
 <img align="center" src="../../doc/imgs/din.png">
 <p>
 
-## 使用教程
+## 使用教程(快速开始)
+使用样例数据快速开始，参考[训练](###训练) & [预测](###预测)
+## 使用教程(复现论文)
+### 注意
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据，并且调整了batch_size等超参以便在样例数据上更加友好的显示训练&测试日志。如果需要复现readme中的效果请按照如下表格调整batch_size等超参，并使用提供的脚本下载对应数据集以及数据预处理。
+|       模型       |       batch_size      |       thread_num      |       epoch_num      |
+| :------------------: | :--------------------: | :--------------------: | :--------------------: |
+|       DNN        |       1000       |        10       |        1       |
+|       DCN        |       512       |       20       |        2       |
+|       DeepFM     |       100       |       10       |        30       |
+|       DIN        |       32       |       10       |        100       |
+|       Wide&Deep  |       40       |       1       |        40       |
+|       xDeepFM        |       100       |       1       |        10       |
 ### 数据处理
 参考每个模型目录数据下载&预处理脚本
 
@@ -68,11 +80,19 @@ sh run.sh
 
 ### 训练
 ```
-python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
+cd modles/rank/dnn # 进入选定好的排序模型的目录 以DNN为例
+python -m paddlerec.run -m paddlerec.models.rank.dnn # 使用内置配置
+python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配置文件，使用自定义配置
 ```
 ### 预测
 ```
-python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
+# 修改对应模型的config.yaml，mode配置infer_runner
+# 示例: mode: runner1 -> mode: infer_runner
+# infer_runner中 class配置为 class: single_infer
+# 如果训练阶段和预测阶段的模型输入一直phase不需要改动，复用train的即可
+
+# 修改完config.yaml后 执行:
+python -m paddlerec.run -m ./config.yaml # 以DNN为例
 ```
 
 ## 效果对比
@@ -87,16 +107,6 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn # 以DNN为例
 |       Census-income Data        |       Wide&Deep       |       0.76195         |       0.90577          |       --          |       --          |
 |       Amazon Product        |       DIN       |       0.47005        |       0.86379         |       --          |       --          |
 
-### 注意
-为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据，并且调整了batch_size等超参以便在样例数据上更加友好的显示训练&测试日志。如果需要复现readme中的效果请按照如下表格调整batch_size等超参。
-|       模型       |       batch_size      |       thread_num      |       epoch_num      |
-| :------------------: | :--------------------: | :--------------------: | :--------------------: |
-|       DNN        |       1000       |        10       |        1       |
-|       DCN        |       512       |       20       |        2       |
-|       DeepFM     |       100       |       10       |        30       |
-|       DIN        |       32       |       10       |        100       |
-|       Wide&Deep  |       40       |       1       |        40       |
-|       xDeepFM        |       100       |       1       |        10       |
 
 ## 分布式
 ### 模型训练性能 (样本/s)
