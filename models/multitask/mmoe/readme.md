@@ -10,15 +10,23 @@ PaddleRec内置了demo小数据方便用户快速使用模型，训练命令如�
 python -m paddlerec.run -m paddlerec.models.multitask.mmoe
 ```
 
-## 模型效果
+## 模型效果复现
 
 根据原论文，我们在开源数据集Census-income Data上验证模型效果
 
+### 二次开发教程
+
+如果采用本地二次开发模式，需要修改config.yaml中的'workspace'为模型的绝对路径
+
+运行命令指定config.yaml的路径
+
+```shell
+python -m paddlerec.run -m /home/model/config.yaml # 需要指定config.yaml的路径
+```
+
 ### 数据下载及预处理
 
-数据地址： [Census-income Data](https://archive.ics.uci.edu/ml/machine-learning-databases/census-income-mld/census.tar.gz )
-
-数据解压后， 在data/run.sh脚本文件中添加文件的路径，并运行脚本。
+在data/run.sh脚本文件中添加文件的路径，并运行脚本。
 
 ```shell
 cd data
