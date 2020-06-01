@@ -45,18 +45,8 @@ def parse_args():
         default=5,
         help="If the word count is less then min_count, it will be removed from dict"
     )
-    parser.add_argument(
-        '--min_n',
-        type=int,
-        default=3,
-        help="min_n of ngrams"
-    )
-    parser.add_argument(
-        '--max_n',
-        type=int,
-        default=5,
-        help="max_n of ngrams"
-    )
+    parser.add_argument('--min_n', type=int, default=3, help="min_n of ngrams")
+    parser.add_argument('--max_n', type=int, default=5, help="max_n of ngrams")
     parser.add_argument(
         '--file_nums',
         type=int,
@@ -201,6 +191,7 @@ def computeSubwords(word, min_n, max_n):
             ngrams.add("".join(word[i:end]))
     return list(ngrams)
 
+
 def build_dict(args):
     """
     proprocess the data, generate dictionary and save into dict_path.
@@ -266,6 +257,7 @@ def build_dict(args):
             f.write(key + ":")
             f.write(" ".join(word_ngrams[key]))
             f.write(u'\n')
+
 
 def data_split(args):
     raw_data_dir = args.input_corpus_dir

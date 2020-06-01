@@ -101,12 +101,17 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.query_encoder = envs.get_global_env("hyper_parameters.query_encoder")
-        self.title_encoder = envs.get_global_env("hyper_parameters.title_encoder")
-        self.query_encode_dim = envs.get_global_env("hyper_parameters.query_encode_dim")
-        self.title_encode_dim = envs.get_global_env("hyper_parameters.title_encode_dim")
+        self.query_encoder = envs.get_global_env(
+            "hyper_parameters.query_encoder")
+        self.title_encoder = envs.get_global_env(
+            "hyper_parameters.title_encoder")
+        self.query_encode_dim = envs.get_global_env(
+            "hyper_parameters.query_encode_dim")
+        self.title_encode_dim = envs.get_global_env(
+            "hyper_parameters.title_encode_dim")
 
-        self.emb_size = envs.get_global_env("hyper_parameters.sparse_feature_dim")
+        self.emb_size = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim")
         self.emb_dim = envs.get_global_env("hyper_parameters.embedding_dim")
         self.emb_shape = [self.emb_size, self.emb_dim]
 
@@ -125,62 +130,61 @@ class Model(ModelBase):
                 input=query, size=self.emb_shape, param_attr="emb")
             for query in self.q_slots
         ]
-	# encode each embedding field with encoder
+        # encode each embedding field with encoder
         q_encodes = [
             self.query_encoders[i].forward(emb) for i, emb in enumerate(q_embs)
         ]
-	# concat multi view for query, pos_title, neg_title
-	q_concat = fluid.layers.concat(q_encodes)
+        # concat multi view for query, pos_title, neg_title
+        q_concat = fluid.layers.concat(q_encodes)
         # projection of hidden layer
-	q_hid = fluid.layers.fc(q_concat,
+        q_hid = fluid.layers.fc(q_concat,
                                 size=self.hidden_size,
                                 param_attr='q_fc.w',
                                 bias_attr='q_fc.b')
 
-	
         self.pt_slots = self._sparse_data_var[1:2]
         self.title_encoders = [
             factory.create(self.title_encoder, self.title_encode_dim)
         ]
-	pt_embs = [
+        pt_embs = [
             fluid.embedding(
                 input=title, size=self.emb_shape, param_attr="emb")
             for title in self.pt_slots
         ]
-	pt_encodes = [
+        pt_encodes = [
             self.title_encoders[i].forward(emb)
             for i, emb in enumerate(pt_embs)
         ]
-	pt_concat = fluid.layers.concat(pt_encodes)
-	pt_hid = fluid.layers.fc(pt_concat,
+        pt_concat = fluid.layers.concat(pt_encodes)
+        pt_hid = fluid.layers.fc(pt_concat,
                                  size=self.hidden_size,
                                  param_attr='t_fc.w',
                                  bias_attr='t_fc.b')
-	# cosine of hidden layers
-	cos_pos = fluid.layers.cos_sim(q_hid, pt_hid)
+        # cosine of hidden layers
+        cos_pos = fluid.layers.cos_sim(q_hid, pt_hid)
 
         if is_infer:
-	    self._infer_results['query_pt_sim'] = cos_pos
-	    return
+            self._infer_results['query_pt_sim'] = cos_pos
+            return
 
         self.nt_slots = self._sparse_data_var[2:3]
-	nt_embs = [
+        nt_embs = [
             fluid.embedding(
                 input=title, size=self.emb_shape, param_attr="emb")
             for title in self.nt_slots
         ]
-	nt_encodes = [
+        nt_encodes = [
             self.title_encoders[i].forward(emb)
             for i, emb in enumerate(nt_embs)
         ]
-	nt_concat = fluid.layers.concat(nt_encodes)
-	nt_hid = fluid.layers.fc(nt_concat,
+        nt_concat = fluid.layers.concat(nt_encodes)
+        nt_hid = fluid.layers.fc(nt_concat,
                                  size=self.hidden_size,
                                  param_attr='t_fc.w',
                                  bias_attr='t_fc.b')
-	cos_neg = fluid.layers.cos_sim(q_hid, nt_hid)
+        cos_neg = fluid.layers.cos_sim(q_hid, nt_hid)
 
-	# pairwise hinge_loss
+        # pairwise hinge_loss
         loss_part1 = fluid.layers.elementwise_sub(
             tensor.fill_constant_batch_size_like(
                 input=cos_pos,
@@ -198,7 +202,7 @@ class Model(ModelBase):
 
         self._cost = fluid.layers.mean(loss_part3)
         self.acc = self.get_acc(cos_neg, cos_pos)
-	self._metrics["loss"] = self._cost
+        self._metrics["loss"] = self._cost
         self._metrics["acc"] = self.acc
 
     def get_acc(self, x, y):

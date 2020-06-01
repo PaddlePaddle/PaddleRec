@@ -40,8 +40,10 @@ class NumpyRandomInt(object):
 
 class TrainReader(Reader):
     def init(self):
-        dict_path = envs.get_global_env("dataset.dataset_train.word_count_dict_path")
-        word_ngrams_path = envs.get_global_env("dataset.dataset_train.word_ngrams_path")
+        dict_path = envs.get_global_env(
+            "dataset.dataset_train.word_count_dict_path")
+        word_ngrams_path = envs.get_global_env(
+            "dataset.dataset_train.word_ngrams_path")
         self.window_size = envs.get_global_env("hyper_parameters.window_size")
         self.neg_num = envs.get_global_env("hyper_parameters.neg_num")
         self.with_shuffle_batch = envs.get_global_env(
@@ -53,7 +55,7 @@ class TrainReader(Reader):
             for line in f:
                 line = line.rstrip().split()
                 self.word_ngrams[str(line[0])] = map(int, line[1:])
-    
+
         self.cs = None
         if not self.with_shuffle_batch:
             id_counts = []

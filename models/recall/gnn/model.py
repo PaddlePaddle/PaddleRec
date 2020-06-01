@@ -27,19 +27,27 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.learning_rate = envs.get_global_env("hyper_parameters.optimizer.learning_rate")
-        self.decay_steps = envs.get_global_env("hyper_parameters.optimizer.decay_steps")
-        self.decay_rate = envs.get_global_env("hyper_parameters.optimizer.decay_rate")
-	self.l2 = envs.get_global_env("hyper_parameters.optimizer.l2")       
- 
-        self.dict_size = envs.get_global_env("hyper_parameters.sparse_feature_nums")
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.optimizer.learning_rate")
+        self.decay_steps = envs.get_global_env(
+            "hyper_parameters.optimizer.decay_steps")
+        self.decay_rate = envs.get_global_env(
+            "hyper_parameters.optimizer.decay_rate")
+        self.l2 = envs.get_global_env("hyper_parameters.optimizer.l2")
+
+        self.dict_size = envs.get_global_env(
+            "hyper_parameters.sparse_feature_nums")
         self.corpus_size = envs.get_global_env("hyper_parameters.corpus_size")
 
-        self.train_batch_size = envs.get_global_env("dataset.dataset_train.batch_size")
-        self.evaluate_batch_size = envs.get_global_env("dataset.dataset_infer.batch_size")
+        self.train_batch_size = envs.get_global_env(
+            "dataset.dataset_train.batch_size")
+        self.evaluate_batch_size = envs.get_global_env(
+            "dataset.dataset_infer.batch_size")
 
-        self.hidden_size = envs.get_global_env("hyper_parameters.sparse_feature_dim")
-        self.step = envs.get_global_env("hyper_parameters.gnn_propogation_steps")
+        self.hidden_size = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim")
+        self.step = envs.get_global_env(
+            "hyper_parameters.gnn_propogation_steps")
 
     def input_data(self, is_infer=False, **kwargs):
         if is_infer:
@@ -66,9 +74,7 @@ class Model(ModelBase):
         label = fluid.data(
             name="label", shape=[bs, 1], dtype="int64")  # [batch_size, 1]
 
-        res = [
-            items, seq_index, last_index, adj_in, adj_out, mask, label
-        ]
+        res = [items, seq_index, last_index, adj_in, adj_out, mask, label]
         return res
 
     def net(self, inputs, is_infer=False):
@@ -76,7 +82,7 @@ class Model(ModelBase):
             bs = self.evaluate_batch_size
         else:
             bs = self.train_batch_size
-	
+
         stdv = 1.0 / math.sqrt(self.hidden_size)
 
         def embedding_layer(input,
@@ -124,7 +130,8 @@ class Model(ModelBase):
 
             state_adj_in = layers.matmul(inputs[3],
                                          state_in)  # [batch_size, uniq_max, h]
-            state_adj_out = layers.matmul(inputs[4], state_out)  # [batch_size, uniq_max, h]
+            state_adj_out = layers.matmul(
+                inputs[4], state_out)  # [batch_size, uniq_max, h]
 
             gru_input = layers.concat([state_adj_in, state_adj_out], axis=2)
 
@@ -140,7 +147,8 @@ class Model(ModelBase):
                     x=pre_state, shape=[-1, self.hidden_size]),
                 size=3 * self.hidden_size)
 
-        final_state = layers.reshape(pre_state, shape=[bs, -1, self.hidden_size])
+        final_state = layers.reshape(
+            pre_state, shape=[bs, -1, self.hidden_size])
         seq = layers.gather_nd(final_state, inputs[1])
         last = layers.gather_nd(final_state, inputs[2])
 
@@ -231,13 +239,12 @@ class Model(ModelBase):
 
         self._cost = self.loss
         if is_infer:
-	    self._infer_results['acc'] = self.acc
+            self._infer_results['acc'] = self.acc
             self._infer_results['loss'] = self.loss
             return
 
-	self._metrics["LOSS"] = self.loss
+        self._metrics["LOSS"] = self.loss
         self._metrics["train_acc"] = self.acc
-
 
     def optimizer(self):
         step_per_epoch = self.corpus_size // self.train_batch_size
@@ -249,4 +256,3 @@ class Model(ModelBase):
             regularization=fluid.regularizer.L2DecayRegularizer(
                 regularization_coeff=self.l2))
         return optimizer
-
