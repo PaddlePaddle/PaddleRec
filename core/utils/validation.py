@@ -111,25 +111,26 @@ def le_value_handler(name, value, values):
     return True
 
 
-def register():
+def register(mode):
     validations = {}
-    validations["train.workspace"] = ValueFormat("str", None, eq_value_handler)
-    validations["train.device"] = ValueFormat("str", ["cpu", "gpu"],
-                                              in_value_handler)
-    validations["train.epochs"] = ValueFormat("int", 1, ge_value_handler)
-    validations["train.engine"] = ValueFormat(
-        "str", ["single", "local_cluster", "cluster"], in_value_handler)
+    validations["workspace"] = ValueFormat("str", None, eq_value_handler)
+    validations["runner.{}.device".format(mode)] = ValueFormat(
+        "str", ["cpu", "gpu"], in_value_handler)
+    validations["runner.{}.epochs".format(mode)] = ValueFormat(
+        "int", 1, ge_value_handler)
+    validations["runner.{}.class".format(mode)] = ValueFormat("str", [
+        "single_train", "local_cluster_train", "cluster_train", "single_infer"
+    ], in_value_handler)
 
-    requires = [
-        "train.namespace", "train.device", "train.epochs", "train.engine"
-    ]
+    requires = ["workspace"]
     return validations, requires
 
 
 def yaml_validation(config):
-    all_checkers, require_checkers = register()
 
     _config = envs.load_yaml(config)
+    mode = _config["mode"]
+    all_checkers, require_checkers = register(mode)
     flattens = envs.flatten_environs(_config)
 
     for required in require_checkers:

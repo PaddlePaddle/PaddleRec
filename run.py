@@ -28,8 +28,9 @@ from paddlerec.core.utils import util
 
 engines = {}
 device = ["CPU", "GPU"]
-engine_choices = ["SINGLE_TRAIN", "SINGLE_INFER",
-                  "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"]
+engine_choices = [
+    "SINGLE_TRAIN", "SINGLE_INFER", "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
+]
 fleet_mode_choice = ["PS", "PSLIB", "COLLECTIVE"]
 
 
@@ -58,8 +59,7 @@ def get_inters_from_yaml(file, filters):
 
 
 def get_all_inters_from_yaml(file, filters):
-    with open(file, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    _envs = envs.load_yaml(file)
     all_flattens = {}
 
     def fatten_env_namespace(namespace_nests, local_envs):
@@ -98,13 +98,13 @@ def get_engine(args):
 
     engine = run_extras.get("train.engine", None)
     if engine is None:
-        engine = run_extras.get("runner." + envs["mode"] + ".engine", None)
+        engine = run_extras.get("runner." + envs["mode"] + ".class", None)
     if engine is None:
-        engine = "single"
+        engine = "single_train"
 
     engine = engine.upper()
     if engine not in engine_choices:
-        raise ValueError("train.engin can not be chosen in {}".format(
+        raise ValueError("runner.class can not be chosen in {}".format(
             engine_choices))
 
     print("engines: \n{}".format(engines))
@@ -150,8 +150,8 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 def single_train_engine(args):
     _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get(
-        "runner." + _envs["mode"] + ".runner_class", None)
+    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
+                                   None)
 
     if trainer_class:
         trainer = trainer_class
@@ -174,8 +174,8 @@ def single_train_engine(args):
 def single_infer_engine(args):
     _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get(
-        "runner." + _envs["mode"] + ".runner_class", None)
+    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
+                                   None)
 
     if trainer_class:
         trainer = trainer_class
@@ -229,8 +229,8 @@ def cluster_engine(args):
         role = "WORKER"
 
         _envs = envs.load_yaml(args.model)
-        run_extras = get_all_inters_from_yaml(
-            args.model, ["train.", "runner."])
+        run_extras = get_all_inters_from_yaml(args.model,
+                                              ["train.", "runner."])
         trainer_class = run_extras.get(
             "runner." + _envs["mode"] + ".trainer_class", None)
 
@@ -284,8 +284,7 @@ def local_cluster_engine(args):
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
     _envs = envs.load_yaml(args.model)
-    run_extras = get_all_inters_from_yaml(
-        args.model, ["train.", "runner."])
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
     trainer_class = run_extras.get(
         "runner." + _envs["mode"] + ".trainer_class", None)
 
@@ -365,9 +364,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
-
-    if not validation.yaml_validation(args.model):
-        sys.exit(-1)
 
     engine_registry()
     which_engine = get_engine(args)

@@ -21,8 +21,7 @@ import warnings
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
-__all__ = ["ExecutorBase", "SingleExecutor",
-           "PSExecutor", "CollectiveExecutor"]
+__all__ = ["RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner"]
 
 
 class RunnerBase(object):
@@ -75,13 +74,15 @@ class RunnerBase(object):
         model_class = context["_model"][model_name][3]
         program = context["_model"][model_name][0].clone()
         if context["is_fleet"] and not context["is_infer"]:
-            program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-                loss_name=model_class.get_avg_cost().name,
-                build_strategy=context["strategy"].get_build_strategy(),
-                exec_strategy=context["strategy"].get_execute_strategy())
+            program = fluid.compiler.CompiledProgram(
+                program).with_data_parallel(
+                    loss_name=model_class.get_avg_cost().name,
+                    build_strategy=context["strategy"].get_build_strategy(),
+                    exec_strategy=context["strategy"].get_execute_strategy())
         elif not context["is_fleet"] and not context["is_infer"]:
-            program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-                loss_name=model_class.get_avg_cost().name)
+            program = fluid.compiler.CompiledProgram(
+                program).with_data_parallel(
+                    loss_name=model_class.get_avg_cost().name)
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -106,8 +107,8 @@ class RunnerBase(object):
         with fluid.scope_guard(scope):
             try:
                 while True:
-                    metrics_rets = context["exe"].run(program=program,
-                                                      fetch_list=metrics_varnames)
+                    metrics_rets = context["exe"].run(
+                        program=program, fetch_list=metrics_varnames)
                     metrics = [batch_id]
                     metrics.extend(metrics_rets)
 
@@ -160,8 +161,8 @@ class RunnerBase(object):
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                context["fleet"].save_inference_model(context["exe"], dirname, feed_varnames,
-                                                      fetch_vars)
+                context["fleet"].save_inference_model(
+                    context["exe"], dirname, feed_varnames, fetch_vars)
             else:
                 fluid.io.save_inference_model(dirname, feed_varnames,
                                               fetch_vars, context["exe"])
@@ -191,11 +192,13 @@ class SingleRunner(RunnerBase):
 
     def exuctor(self, context):
         epochs = int(
-            envs.get_global_env("runner." + context["runner_name"] + ".epochs"))
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["env"]["phase"]:
                 if epoch == 0:
-                    with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
+                    with fluid.scope_guard(context["_model"][model_dict[
+                            "name"]][2]):
                         train_prog = context["_model"][model_dict["name"]][0]
                         startup_prog = context["_model"][model_dict["name"]][1]
                         with fluid.program_guard(train_prog, startup_prog):
@@ -207,7 +210,8 @@ class SingleRunner(RunnerBase):
                     self._executor_dataloader_train(model_dict, context)
                 else:
                     self._executor_dataset_train(model_dict, context)
-                with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
+                with fluid.scope_guard(context["_model"][model_dict["name"]][
+                        2]):
                     train_prog = context["_model"][model_dict["name"]][4]
                     startup_prog = context["_model"][model_dict["name"]][1]
                     with fluid.program_guard(train_prog, startup_prog):
@@ -224,11 +228,13 @@ class PSRunner(RunnerBase):
 
     def exuctor(self, context):
         epochs = int(
-            envs.get_global_env("runner." + context["runner_name"] + ".epochs"))
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".epochs"))
         for epoch in range(epochs):
             model_dict = context["env"]["phase"][0]
             if epoch == 0:
-                with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
+                with fluid.scope_guard(context["_model"][model_dict["name"]][
+                        2]):
                     train_prog = context["_model"][model_dict["name"]][0]
                     startup_prog = context["_model"][model_dict["name"]][1]
                     with fluid.program_guard(train_prog, startup_prog):
