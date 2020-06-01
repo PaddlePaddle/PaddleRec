@@ -27,7 +27,8 @@ class Model(ModelBase):
         self.emb_dim = 8
         self.hid_dim = 128
         self.class_dim = 2
-        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse", False)
+        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
+                                             False)
 
     def input_data(self, is_infer=False, **kwargs):
         data = fluid.data(
@@ -43,7 +44,10 @@ class Model(ModelBase):
         seq_len = input[2]
 
         # embedding layer
-        emb = fluid.embedding(input=data, size=[self.dict_dim, self.emb_dim], is_sparse=self.is_sparse)
+        emb = fluid.embedding(
+            input=data,
+            size=[self.dict_dim, self.emb_dim],
+            is_sparse=self.is_sparse)
         emb = fluid.layers.sequence_unpad(emb, length=seq_len)
         # convolution layer
         conv = fluid.nets.sequence_conv_pool(
