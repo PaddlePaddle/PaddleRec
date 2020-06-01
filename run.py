@@ -25,21 +25,15 @@ from paddlerec.core.utils import util
 
 engines = {}
 device = ["CPU", "GPU"]
-clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
-engine_choices = [
-    "SINGLE_TRAIN", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE",
-    "TDM_LOCAL_CLUSTER", "TDM_CLUSTER", "SINGLE_INFER"
-]
-custom_model = ['TDM']
-model_name = ""
+engine_choices = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
+fleet_mode_choice = ["PS", "PSLIB", "COLLECTIVE"]
 
 
 def engine_registry():
     engines["TRANSPILER"] = {}
     engines["PSLIB"] = {}
 
-    engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
-    engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
+    engines["TRANSPILER"]["SINGLE"] = single_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
     engines["PSLIB"]["SINGLE"] = local_mpi_engine
@@ -101,9 +95,10 @@ def get_engine(args):
 
     engine = run_extras.get("train.engine", None)
     if engine is None:
-        engine = run_extras.get("runner." + envs["mode"] + ".class", None)
+        engine = run_extras.get("runner." + envs["mode"] + ".engine", None)
     if engine is None:
-        engine = "single_train"
+        engine = "single"
+
     engine = engine.upper()
     if engine not in engine_choices:
         raise ValueError("train.engin can not be chosen in {}".format(
@@ -149,31 +144,25 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
-def get_trainer_prefix(args):
-    if model_name in custom_model:
-        return model_name.upper()
-    return ""
+def single_engine(args):
+    with open(args.model, 'r') as rb:
+        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
 
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
 
-def single_train_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleTrainer"
+    executor_mode = run_extras.get(
+        "runner." + _envs["mode"] + ".executor_mode", "train")
+
     single_envs = {}
     single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single_train"
-    single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
-    set_runtime_envs(single_envs, args.model)
-    trainer = TrainerFactory.create(args.model)
-    return trainer
-
-
-def single_infer_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleInfer"
-    single_envs = {}
-    single_envs["train.trainer.trainer"] = trainer
-    single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single_infer"
     single_envs["train.trainer.platform"] = envs.get_platform()
     print("use {} engine to run model: {}".format(trainer, args.model))
     set_runtime_envs(single_envs, args.model)
@@ -215,10 +204,29 @@ def cluster_engine(args):
 
     def worker():
         role = "WORKER"
-        trainer = get_trainer_prefix(args) + "ClusterTrainer"
+
+        with open(args.model, 'r') as rb:
+            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        run_extras = get_all_inters_from_yaml(
+            args.model, ["train.", "runner."])
+        trainer_class = run_extras.get(
+            "runner." + _envs["mode"] + ".trainer_class", None)
+
+        if trainer_class:
+            trainer = trainer_class
+        else:
+            trainer = "GeneralTrainer"
+
+        executor_mode = run_extras.get(
+            "runner." + _envs["mode"] + ".executor_mode", "train")
+        distributed_strategy = run_extras.get(
+            "runner." + _envs["mode"] + ".distribute_strategy", "async")
+
         cluster_envs = {}
         cluster_envs["train.trainer.trainer"] = trainer
+        cluster_envs["train.trainer.executor_mode"] = executor_mode
         cluster_envs["train.trainer.engine"] = "cluster"
+        cluster_envs["train.trainer.strategy"] = distributed_strategy
         cluster_envs["train.trainer.threads"] = envs.get_runtime_environ(
             "CPU_NUM")
         cluster_envs["train.trainer.platform"] = envs.get_platform()
@@ -254,14 +262,31 @@ def cluster_mpi_engine(args):
 def local_cluster_engine(args):
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
-    trainer = get_trainer_prefix(args) + "ClusterTrainer"
+    with open(args.model, 'r') as rb:
+        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    run_extras = get_all_inters_from_yaml(
+        args.model, ["train.", "runner."])
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
+    executor_mode = run_extras.get(
+        "runner." + _envs["mode"] + ".executor_mode", "train")
+    distributed_strategy = run_extras.get(
+        "runner." + _envs["mode"] + ".distribute_strategy", "async")
+
     cluster_envs = {}
     cluster_envs["server_num"] = 1
     cluster_envs["worker_num"] = 1
     cluster_envs["start_port"] = envs.find_free_port()
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.trainer"] = trainer
-    cluster_envs["train.trainer.strategy"] = "async"
+    cluster_envs["train.trainer.executor_mode"] = executor_mode
+    cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()

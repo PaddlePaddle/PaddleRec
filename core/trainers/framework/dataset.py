@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 
+import os
 import warnings
 
 import paddle.fluid as fluid
@@ -118,7 +119,10 @@ class QueueDataset(DatasetBase):
         for model_dict in context["env"]["phase"]:
             if model_dict["dataset_name"] == dataset_name:
                 model = context["_model"][model_dict["name"]][3]
-                inputs = model._data_var
+                if context["is_infer"]:
+                    inputs = model._infer_data_var
+                else:
+                    inputs = model._data_var
                 dataset.set_use_var(inputs)
                 break
         return dataset

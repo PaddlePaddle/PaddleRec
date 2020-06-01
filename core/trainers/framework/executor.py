@@ -14,14 +14,15 @@
 
 from __future__ import print_function
 
+import os
 import time
 import warnings
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
-__all__ = ["ExecutorBase", "SingleTrainExecutor",
-           "SingleInferExecutor", "PSTrainExecutor", "CollectiveTrainExecutor"]
+__all__ = ["ExecutorBase", "SingleExecutor",
+           "PSExecutor", "CollectiveExecutor"]
 
 
 class ExecutorBase(object):
@@ -31,7 +32,7 @@ class ExecutorBase(object):
     def exuctor(self, context):
         pass
 
-    def executor_dataset_train(self, model_dict, context):
+    def _executor_dataset_train(self, model_dict, context):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["_model"][model_name][3]
@@ -40,28 +41,47 @@ class ExecutorBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
-        metrics = model_class.get_metrics()
-        if metrics:
-            fetch_vars = metrics.values()
-            fetch_alias = metrics.keys()
         scope = context["_model"][model_name][2]
         program = context["_model"][model_name][0]
         reader = context["dataset"][reader_name]
-        with fluid.scope_guard(scope):
-            context["exe"].train_from_dataset(
+
+        if context["is_infer"]:
+            metrics = model_class.get_infer_results()
+            if metrics:
+                fetch_vars = metrics.values()
+                fetch_alias = metrics.keys()
+            context["exe"].infer_from_dataset(
                 program=program,
                 dataset=reader,
                 fetch_list=fetch_vars,
                 fetch_info=fetch_alias,
                 print_period=fetch_period)
+        else:
+            metrics = model_class.get_metrics()
+            if metrics:
+                fetch_vars = metrics.values()
+                fetch_alias = metrics.keys()
+            with fluid.scope_guard(scope):
+                context["exe"].train_from_dataset(
+                    program=program,
+                    dataset=reader,
+                    fetch_list=fetch_vars,
+                    fetch_info=fetch_alias,
+                    print_period=fetch_period)
 
-    def executor_dataloader_train(self, model_dict, context):
+    def _executor_dataloader_train(self, model_dict, context):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["_model"][model_name][3]
         program = context["_model"][model_name][0].clone()
-        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-            loss_name=model_class.get_avg_cost().name)
+        if context["is_fleet"] and not context["is_infer"]:
+            program = program.with_data_parallel(
+                loss_name=model_class.get_cost_op().name,
+                build_strategy=context["strategy"].get_build_strategy(),
+                exec_strategy=context["strategy"].get_execute_strategy())
+        elif not context["is_fleet"] and not context["is_infer"]:
+            program = fluid.compiler.CompiledProgram(program).with_data_parallel(
+                loss_name=model_class.get_avg_cost().name)
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -165,7 +185,7 @@ class ExecutorBase(object):
         save_inference_model()
 
 
-class SingleTrainExecutor(ExecutorBase):
+class SingleExecutor(ExecutorBase):
     def __init__(self, context):
         pass
 
@@ -184,9 +204,9 @@ class SingleTrainExecutor(ExecutorBase):
                 name = "dataset." + reader_name + "."
                 begin_time = time.time()
                 if envs.get_global_env(name + "type") == "DataLoader":
-                    self.executor_dataloader_train(model_dict, context)
+                    self._executor_dataloader_train(model_dict, context)
                 else:
-                    self.executor_dataset_train(model_dict, context)
+                    self._executor_dataset_train(model_dict, context)
                 with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
                     train_prog = context["_model"][model_dict["name"]][4]
                     startup_prog = context["_model"][model_dict["name"]][1]
@@ -195,17 +215,10 @@ class SingleTrainExecutor(ExecutorBase):
                 end_time = time.time()
                 seconds = end_time - begin_time
             print("epoch {} done, time elasped: {}".format(epoch, seconds))
+        context["status"] = "terminal_pass"
 
 
-class SingleInferExecutor(ExecutorBase):
-    def __init__(self, context):
-        pass
-
-    def exuctor(self, context):
-        pass
-
-
-class PSTrainExecutor(ExecutorBase):
+class PSExecutor(ExecutorBase):
     def __init__(self, context):
         pass
 
@@ -215,18 +228,18 @@ class PSTrainExecutor(ExecutorBase):
         for epoch in range(epochs):
             model_dict = context["env"]["phase"]
             if epoch == 0:
-                with fluid.scope_guard(self._model[model_dict["name"]][2]):
-                    train_prog = self._model[model_dict["name"]][0]
-                    startup_prog = self._model[model_dict["name"]][1]
+                with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
+                    train_prog = context["_model"][model_dict["name"]][0]
+                    startup_prog = context["_model"][model_dict["name"]][1]
                     with fluid.program_guard(train_prog, startup_prog):
                         self.load(context, True)
             reader_name = model_dict["dataset_name"]
             name = "dataset." + reader_name + "."
             begin_time = time.time()
             if envs.get_global_env(name + "type") == "DataLoader":
-                self.executor_dataloader_train(model_dict, context)
+                self._executor_dataloader_train(model_dict, context)
             else:
-                self.executor_dataset_train(model_dict, context)
+                self._executor_dataset_train(model_dict, context)
             with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
                 train_prog = context["_model"][model_dict["name"]][4]
                 startup_prog = context["_model"][model_dict["name"]][1]
@@ -235,10 +248,11 @@ class PSTrainExecutor(ExecutorBase):
             end_time = time.time()
             seconds = end_time - begin_time
             print("epoch {} done, use time: {}".format(epoch, seconds))
-        config["fleet"].stop_worker()
+        context["fleet"].stop_worker()
+        context["status"] = "terminal_pass"
 
 
-class CollectiveTrainExecutor(ExecutorBase):
+class CollectiveExecutor(ExecutorBase):
     def __init__(self, context):
         pass
 

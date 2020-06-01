@@ -39,6 +39,7 @@ class SingleStartup(StartUpBase):
         for model_dict in context["env"]["phase"]:
             with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
                 context["exe"].run(context["_model"][model_dict["name"]][1])
+        context["status"] = "train_pass"
 
 
 class PSStartUp(StartUpBase):
@@ -48,6 +49,7 @@ class PSStartUp(StartUpBase):
     def startup(self, context):
         model_dict = context["env"]["phase"][0]
         context["exe"].run(context["_model"][model_dict["name"]][1])
+        context["status"] = "train_pass"
 
 
 class CollectiveStartUp(StartUpBase):

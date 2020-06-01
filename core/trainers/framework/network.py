@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 
+import os
 import warnings
 
 import paddle.fluid as fluid
@@ -56,18 +57,30 @@ class SingleNetWork(NetWorkBase):
                             envs.path_adapter(context["env"]["workspace"]))
                         model = envs.lazy_instance_by_fliename(
                             model_path, "Model")(context["env"])
-                        model._data_var = model.input_data(
-                            dataset_name=model_dict["dataset_name"])
+
+                        if context["is_infer"]:
+                            model._infer_data_var = model.input_data(
+                                dataset_name=model_dict["dataset_name"])
+                        else:
+                            model._data_var = model.input_data(
+                                dataset_name=model_dict["dataset_name"])
+
                         if envs.get_global_env("dataset." + dataset_name +
                                                ".type") == "DataLoader":
-                            model._init_dataloader(is_infer=False)
+                            model._init_dataloader(
+                                is_infer=context["is_infer"])
                             data_loader = DataLoader(context)
                             data_loader.get_dataloader(context, dataset_name,
                                                        model._data_loader)
-                        model.net(model._data_var, False)
-                        optimizer = model._build_optimizer(opt_name, opt_lr,
-                                                           opt_strategy)
-                        optimizer.minimize(model._cost)
+
+                        if context["is_infer"]:
+                            model.net(model._infer_data_var,
+                                      context["is_infer"])
+                        else:
+                            model.net(model._data_var, context["is_infer"])
+                            optimizer = model._build_optimizer(opt_name, opt_lr,
+                                                               opt_strategy)
+                            optimizer.minimize(model._cost)
             context["_model"][model_dict["name"]][0] = train_program
             context["_model"][model_dict["name"]][1] = startup_program
             context["_model"][model_dict["name"]][2] = scope

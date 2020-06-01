@@ -74,10 +74,13 @@ class Trainer(object):
         envs.set_global_envs(self._config)
         envs.update_workspace()
         self._runner_name = envs.get_global_env("mode")
-        self._context["runnner_name"] = self._runner_name
+        self._context["runner_name"] = self._runner_name
+
+        print("PaddleRec: Runner {} Begin".format(self._runner_name))
         self.which_device()
         self.which_engine()
         self.which_fleet_mode()
+        self.which_executor_mode()
         self.legality_check()
 
     def which_device(self):
@@ -110,6 +113,7 @@ class Trainer(object):
             self.is_fleet = True
         else:
             raise ValueError("Not Support Engine {}".format(engine))
+        self._context["is_fleet"] = self.is_fleet
 
     def which_fleet_mode(self):
         fleet_mode = envs.get_global_env("runner." + self._runner_name + ".fleet_mode",
@@ -123,9 +127,24 @@ class Trainer(object):
         else:
             raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
 
+    def which_executor_mode(self):
+        executor_mode = envs.get_global_env("runner." + self._runner_name + ".executor_mode",
+                                            default_value="train")
+        if executor_mode.upper() not in ["TRAIN", "INFER"]:
+            raise ValueError(
+                "Not Support Executor Mode {}".format(executor_mode))
+        if executor_mode.upper() == "TRAIN":
+            self.is_infer = False
+        else:
+            self.is_infer = True
+        self._context["is_infer"] = self.is_infer
+
     def legality_check(self):
         if self.device == Device.CPU:
             assert self.fleet_mode != FleetMode.COLLECTIVE, "Not Support CPU with Collective Mode"
+
+        if self.is_infer:
+            assert self.engine == EngineMode.SINGLE, "Not Support Distributed Infer "
 
     @abc.abstractmethod
     def processor_register(self):

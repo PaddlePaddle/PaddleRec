@@ -17,7 +17,7 @@ import math
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -36,7 +36,7 @@ class Model(ModelBase):
 
     def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]
-        self.dense_input = []  #self._dense_data_var[0]
+        self.dense_input = []  # self._dense_data_var[0]
         self.label_input = self._sparse_data_var[0]
 
         def embedding_layer(input):
@@ -53,7 +53,7 @@ class Model(ModelBase):
 
         sparse_embed_seq = list(map(embedding_layer, self.sparse_inputs))
         concated = fluid.layers.concat(sparse_embed_seq, axis=1)
-        #sparse_embed_seq + [self.dense_input], axis=1)
+        # sparse_embed_seq + [self.dense_input], axis=1)
 
         fcs = [concated]
         hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")

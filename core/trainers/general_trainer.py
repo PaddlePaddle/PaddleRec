@@ -23,12 +23,11 @@ import warnings
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer, EngineMode, FleetMode, Device
-
-from .framework import dataset
-from .framework import executor
-from .framework import instance
-from .framework import network
-from .framework import startup
+from paddlerec.core.trainers.framework.dataset import *
+from paddlerec.core.trainers.framework.executor import *
+from paddlerec.core.trainers.framework.instance import *
+from paddlerec.core.trainers.framework.network import *
+from paddlerec.core.trainers.framework.startup import *
 
 
 class GeneralTrainer(Trainer):
@@ -37,6 +36,7 @@ class GeneralTrainer(Trainer):
         self.processor_register()
 
     def processor_register(self):
+        print("processor_register begin")
         # single
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('network_pass', self.network)
@@ -45,49 +45,53 @@ class GeneralTrainer(Trainer):
         self.regist_context_processor('terminal_pass', self.terminal)
 
     def instance(self, context):
+        print("instance begin")
         instance_class = None
         if self.engine == EngineMode.SINGLE:
-            instance_class = instance.SingleInstance(context)
+            instance_class = SingleInstance(context)
         elif self.fleet_mode == FleetMode.PS:
-            instance_class = instance.PSInstance(context)
+            instance_class = PSInstance(context)
         elif self.fleet_mode == FleetMode.COLLECTIVE:
-            instance_class = instance.CollectiveInstance(context)
+            instance_class = CollectiveInstance(context)
         else:
             raise ValueError("Instance Init Error")
         instance_class.instance(context)
 
     def network(self, context):
+        print("network begin")
         network_class = None
         if self.engine == EngineMode.SINGLE:
-            network_class = network.SingleNetWork(context)
+            network_class = SingleNetWork(context)
         elif self.fleet_mode == FleetMode.PS:
-            network_class = network.PSNetwork(context)
+            network_class = PSNetwork(context)
         elif self.fleet_mode == FleetMode.COLLECTIVE:
-            network_class = network.CollectiveNetWork(context)
+            network_class = CollectiveNetWork(context)
         else:
             raise ValueError("NetWork Init Error")
         network_class.build_network(context)
 
     def startup(self, context):
+        print("startup begin")
         startup_class = None
         if self.engine == EngineMode.SINGLE:
-            startup_class = startup.SingleStartup(context)
+            startup_class = SingleStartup(context)
         elif self.fleet_mode == FleetMode.PS:
-            startup_class = startup.PSStartUp(context)
+            startup_class = PSStartUp(context)
         elif self.fleet_mode == FleetMode.COLLECTIVE:
-            startup_class = startup.CollectiveStartUp(context)
+            startup_class = CollectiveStartUp(context)
         else:
             raise ValueError("Startup Init Error")
         startup_class.startup(context)
 
     def executor(self, context):
+        print("executor begin")
         executor_class = None
         if self.engine == EngineMode.SINGLE:
-            executor_class = executor.SingleTrainExecutor(context)
+            executor_class = SingleExecutor(context)
         elif self.fleet_mode == FleetMode.PS:
-            executor_class = executor.PSTrainExecutor(context)
+            executor_class = PSExecutor(context)
         elif self.fleet_mode == FleetMode.COLLECTIVE:
-            executor_class = executor.CollectiveTrainExecutor(context)
+            executor_class = CollectiveExecutor(context)
         else:
             raise ValueError("Executor Init Error")
         executor_class.exuctor(context)

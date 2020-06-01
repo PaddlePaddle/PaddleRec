@@ -45,12 +45,14 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
-mode: runner1
+mode: runner3
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: runner1
-  class: single_train
+  engine: single
+  fleet_mode: ps
+  executor_mode: train
   # num of epochs
   epochs: 10
   # device to run training or infer
@@ -64,12 +66,23 @@ runner:
   init_model_path: "" # load model path
   print_interval: 10
 - name: runner2
-  class: single_infer
+  engine: single
+  fleet_mode: ps
+  executor_mode: infer
   # num of epochs
   epochs: 10
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
+- name: runner3
+  engine: local_cluster
+  fleet_mode: ps
+  epochs: 10
+  device: cpu
+  save_checkpoint_interval: 2
+  save_inference_interval: 4
+  print_interval: 10
+
 
 # runner will run all the phase in each epoch
 phase:
