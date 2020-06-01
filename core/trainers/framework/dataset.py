@@ -91,7 +91,7 @@ class QueueDataset(DatasetBase):
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
-        reader = os.path.join(abs_dir, '../utils', 'dataset_instance.py')
+        reader = os.path.join(abs_dir, '../../utils', 'dataset_instance.py')
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         if sparse_slots == "" and dense_slots == "":

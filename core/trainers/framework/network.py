@@ -60,6 +60,7 @@ class SingleNetWork(NetWorkBase):
 
                         if context["is_infer"]:
                             model._infer_data_var = model.input_data(
+                                is_infer=context["is_infer"],
                                 dataset_name=model_dict["dataset_name"])
                         else:
                             model._data_var = model.input_data(
@@ -152,6 +153,7 @@ class PSNetwork(NetWorkBase):
         if context["fleet"].is_server():
             self._server(context)
         else:
+            context["fleet"].init_worker()
             context["dataset"] = {}
             for dataset in context["env"]["dataset"]:
                 if dataset["type"] != "DataLoader":
@@ -187,7 +189,7 @@ class PSNetwork(NetWorkBase):
                                               default_value="")
         context["fleet"].init_server(init_model_path)
         context["fleet"].run_server()
-        context['is_exit'] = True
+        context['status'] = "terminal_pass"
 
 
 class CollectiveNetWork(NetWorkBase):

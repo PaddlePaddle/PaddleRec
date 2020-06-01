@@ -120,7 +120,7 @@ class Trainer(object):
                                          default_value="PS")
         if fleet_mode.upper() == "PS":
             self.fleet_mode = FleetMode.PS
-        elif fleet_mode.upper() == "Collective":
+        elif fleet_mode.upper() == "COLLECTIVE":
             self.fleet_mode = FleetMode.COLLECTIVE
         elif fleet_mode.upper() == "PSLIB":
             self.fleet_mode = FleetMode.PSLIB

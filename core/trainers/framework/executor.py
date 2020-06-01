@@ -75,8 +75,8 @@ class ExecutorBase(object):
         model_class = context["_model"][model_name][3]
         program = context["_model"][model_name][0].clone()
         if context["is_fleet"] and not context["is_infer"]:
-            program = program.with_data_parallel(
-                loss_name=model_class.get_cost_op().name,
+            program = fluid.compiler.CompiledProgram(program).with_data_parallel(
+                loss_name=model_class.get_avg_cost().name,
                 build_strategy=context["strategy"].get_build_strategy(),
                 exec_strategy=context["strategy"].get_execute_strategy())
         elif not context["is_fleet"] and not context["is_infer"]:
@@ -226,7 +226,7 @@ class PSExecutor(ExecutorBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] + ".epochs"))
         for epoch in range(epochs):
-            model_dict = context["env"]["phase"]
+            model_dict = context["env"]["phase"][0]
             if epoch == 0:
                 with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
                     train_prog = context["_model"][model_dict["name"]][0]

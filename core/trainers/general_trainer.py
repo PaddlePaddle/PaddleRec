@@ -97,4 +97,5 @@ class GeneralTrainer(Trainer):
         executor_class.exuctor(context)
 
     def terminal(self, context):
+        print("PaddleRec Stop")
         context['is_exit'] = True
