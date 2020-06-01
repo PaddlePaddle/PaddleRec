@@ -13,22 +13,22 @@
 # limitations under the License.
 from __future__ import print_function
 
+import numpy as np
+
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
 from collections import defaultdict
-import numpy as np
 
 
 class TrainReader(Reader):
     def init(self):
         self.watch_vec_size = envs.get_global_env(
-            "hyper_parameters.watch_vec_size", None, "train.model")
+            "hyper_parameters.watch_vec_size")
         self.search_vec_size = envs.get_global_env(
-            "hyper_parameters.search_vec_size", None, "train.model")
+            "hyper_parameters.search_vec_size")
         self.other_feat_size = envs.get_global_env(
-            "hyper_parameters.other_feat_size", None, "train.model")
-        self.output_size = envs.get_global_env("hyper_parameters.output_size",
-                                               None, "train.model")
+            "hyper_parameters.other_feat_size")
+        self.output_size = envs.get_global_env("hyper_parameters.output_size")
 
     def generate_sample(self, line):
         """
