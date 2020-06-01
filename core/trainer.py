@@ -23,6 +23,33 @@ from paddle import fluid
 from paddlerec.core.utils import envs
 
 
+class EngineMode:
+    """
+    There are various engine designed for different runing environment.
+    """
+    SINGLE = 1
+    CLUSTER = 2
+    LOCAL_CLUSTER = 3
+
+
+class FleetMode:
+    """
+    Paddle Distributed train support: ParameterServer/Collective/PSlib
+    """
+    PS = 1
+    COLLECTIVE = 2
+    PSLIB = 3
+
+
+class Device:
+    """
+    PaddleRec Support CPU/GPU, XPU will comming soon
+    """
+    CPU = 1
+    GPU = 2
+    # XPU =3
+
+
 class Trainer(object):
     """R
     """
@@ -30,16 +57,79 @@ class Trainer(object):
 
     def __init__(self, config=None):
         self._status_processor = {}
-
-        self._place = fluid.CPUPlace()
-        self._exe = fluid.Executor(self._place)
-
+        self.model = None
+        self.inference_models = []
+        self.increment_models = []
         self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
         self._config_yaml = config
+        self._context["config_yaml"] = self._config_yaml
 
         with open(config, 'r') as rb:
             self._config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+
+        self._context["env"] = self._config
+        self._model = {}
+        self._dataset = {}
+        envs.set_global_envs(self._config)
+        envs.update_workspace()
+        self._runner_name = envs.get_global_env("mode")
+        self._context["runnner_name"] = self._runner_name
+        self.which_device()
+        self.which_engine()
+        self.which_fleet_mode()
+        self.legality_check()
+
+    def which_device(self):
+        device = envs.get_global_env("runner." + self._runner_name + ".device",
+                                     default_value="CPU")
+        if device.upper() == 'GPU':
+            self.device = Device.GPU
+            self._place = fluid.CUDAPlace(0)
+            self._exe = fluid.Executor(self._place)
+        elif device.upper() == "CPU":
+            self.device = Device.CPU
+            self._place = fluid.CPUPlace()
+            self._exe = fluid.Executor(self._place)
+        else:
+            raise ValueError("Not Support device {}".format(device))
+        self._context["exe"] = self._exe
+        self._context["place"] = self._place
+
+    def which_engine(self):
+        engine = envs.get_global_env("runner." + self._runner_name + ".engine",
+                                     default_value="SINGLE")
+        if engine.upper() == "SINGLE":
+            self.engine = EngineMode.SINGLE
+            self.is_fleet = False
+        elif engine.upper() == "LOCAL_CLUSTER":
+            self.engine = EngineMode.LOCAL_CLUSTER
+            self.is_fleet = True
+        elif engine.upper() == "CLUSTER":
+            self.engine = EngineMode.CLUSTER
+            self.is_fleet = True
+        else:
+            raise ValueError("Not Support Engine {}".format(engine))
+
+    def which_fleet_mode(self):
+        fleet_mode = envs.get_global_env("runner." + self._runner_name + ".fleet_mode",
+                                         default_value="PS")
+        if fleet_mode.upper() == "PS":
+            self.fleet_mode = FleetMode.PS
+        elif fleet_mode.upper() == "Collective":
+            self.fleet_mode = FleetMode.COLLECTIVE
+        elif fleet_mode.upper() == "PSLIB":
+            self.fleet_mode = FleetMode.PSLIB
+        else:
+            raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
+
+    def legality_check(self):
+        if self.device == Device.CPU:
+            assert self.fleet_mode != FleetMode.COLLECTIVE, "Not Support CPU with Collective Mode"
+
+    @abc.abstractmethod
+    def processor_register(self):
+        pass
 
     def regist_context_processor(self, status_name, processor):
         """
