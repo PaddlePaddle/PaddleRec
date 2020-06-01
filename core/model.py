@@ -150,9 +150,11 @@ class Model(object):
 
     def optimizer(self):
         opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-        opt_lr = envs.get_global_env("hyper_parameters.optimizer.learning_rate")
-        opt_strategy = envs.get_global_env("hyper_parameters.optimizer.strategy")
- 
+        opt_lr = envs.get_global_env(
+            "hyper_parameters.optimizer.learning_rate")
+        opt_strategy = envs.get_global_env(
+            "hyper_parameters.optimizer.strategy")
+
         return self._build_optimizer(opt_name, opt_lr, opt_strategy)
 
     def input_data(self, is_infer=False, **kwargs):
