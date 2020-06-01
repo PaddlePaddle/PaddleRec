@@ -14,9 +14,13 @@ python -m paddlerec.run -m paddlerec.models.multitask.mmoe
 
 根据原论文，我们在开源数据集Census-income Data上验证模型效果
 
-参数见config.yaml中的hyper_parameters部分，batch_size:32 epochs:400
+### 参数
 
-两个任务的auc分别为：
+config.yaml中的hyper_parameters部分，batch_size:32, epochs:400
+
+### 效果
+
+两个任务的测试auc分别为：
 
 1.income
 
