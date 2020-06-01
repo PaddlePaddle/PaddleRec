@@ -16,7 +16,6 @@ import abc
 import os
 import time
 import sys
-import yaml
 
 from paddle import fluid
 
@@ -66,7 +65,7 @@ class Trainer(object):
         self._context["config_yaml"] = self._config_yaml
 
         with open(config, 'r') as rb:
-            self._config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+            self._config = envs.load_yaml(config)
 
         self._context["env"] = self._config
         self._model = {}
@@ -196,10 +195,7 @@ class Trainer(object):
 
 
 def user_define_engine(engine_yaml):
-    with open(engine_yaml, 'r') as rb:
-        _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-    assert _config is not None
-
+    _config = envs.load_yaml(engine_yaml)
     envs.set_runtime_environs(_config)
 
     train_location = envs.get_global_env("engine.file")

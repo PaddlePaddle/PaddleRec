@@ -12,24 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
-from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
 import paddle.fluid.incubate.data_generator as dg
 
 
 class TrainReader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
 
     def init(self):
         pass

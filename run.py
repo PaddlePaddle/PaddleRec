@@ -16,11 +16,14 @@ import os
 import subprocess
 
 import argparse
+import sys
 import tempfile
+
 import yaml
 import copy
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
+from paddlerec.core.utils import validation
 from paddlerec.core.utils import util
 
 engines = {}
@@ -42,9 +45,7 @@ def engine_registry():
 
 
 def get_inters_from_yaml(file, filters):
-    with open(file, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
+    _envs = envs.load_yaml(file)
     flattens = envs.flatten_environs(_envs)
     inters = {}
     for k, v in flattens.items():
@@ -164,7 +165,7 @@ def single_engine(args):
     single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
+
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
@@ -186,9 +187,7 @@ def cluster_engine(args):
     def master():
         role = "MASTER"
         from paddlerec.core.engine.cluster.cluster import ClusterEngine
-        with open(args.backend, 'r') as rb:
-            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
+        _envs = envs.load_yaml(args.backend)
         flattens = envs.flatten_environs(_envs, "_")
         flattens["engine_role"] = role
         flattens["engine_run_config"] = args.model
@@ -344,11 +343,13 @@ if __name__ == "__main__":
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
 
     args = parser.parse_args()
-
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
-    engine_registry()
 
+    if not validation.yaml_validation(args.model):
+        sys.exit(-1)
+
+    engine_registry()
     which_engine = get_engine(args)
     engine = which_engine(args)
     engine.run()
