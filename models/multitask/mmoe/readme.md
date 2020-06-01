@@ -14,6 +14,19 @@ python -m paddlerec.run -m paddlerec.models.multitask.mmoe
 
 根据原论文，我们在开源数据集Census-income Data上验证模型效果
 
+### 数据下载及预处理
+
+数据地址： [Census-income Data](https://archive.ics.uci.edu/ml/machine-learning-databases/census-income-mld/census.tar.gz )
+
+数据解压后， 在data/run.sh脚本文件中添加文件的路径，并运行脚本。
+
+```shell
+cd data
+sh run.sh
+```
+
+脚本运行后，在config.yaml中修改数据路径dataset.data_path
+
 ### 参数
 
 config.yaml中的hyper_parameters部分，batch_size:32, epochs:400
