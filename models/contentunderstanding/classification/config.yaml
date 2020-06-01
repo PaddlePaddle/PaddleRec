@@ -25,6 +25,7 @@ hyper_parameters:
   optimizer:
     class: Adagrad
     learning_rate: 0.001
+  is_sparse: False
 
 mode: runner1
 
