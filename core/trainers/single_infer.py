@@ -230,7 +230,7 @@ class SingleInfer(TranspileTrainer):
         fetch_alias = []
         fetch_period = int(
             envs.get_global_env("runner." + self._runner_name +
-                                ".fetch_period", 20))
+                                ".print_interval", 20))
         metrics = model_class.get_infer_results()
         if metrics:
             fetch_vars = metrics.values()
@@ -261,7 +261,7 @@ class SingleInfer(TranspileTrainer):
         metrics_format = []
         fetch_period = int(
             envs.get_global_env("runner." + self._runner_name +
-                                ".fetch_period", 20))
+                                ".print_interval", 20))
         metrics_format.append("{}: {{}}".format("batch"))
         for name, var in metrics.items():
             metrics_varnames.append(var.name)
