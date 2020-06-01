@@ -36,17 +36,17 @@ hyper_parameters:
     decay_steps: 3
     decay_rate: 0.1
     l2: 0.00001
-  sparse_feature_nums: 43098
+  sparse_feature_number: 43098
   sparse_feature_dim: 100
   corpus_size: 719470
   gnn_propogation_steps: 1
 
 # select runner by name
-mode: runner1
+mode: train_runner
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: runner1
+- name: train_runner
   class: single_train
   # num of epochs
   epochs: 2
@@ -60,7 +60,7 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   fetch_period: 10
-- name: runner2
+- name: infer_runner
   class: single_infer
   # num of epochs
   epochs: 1

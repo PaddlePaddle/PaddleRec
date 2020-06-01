@@ -70,13 +70,14 @@ class Model(ModelBase):
 
         def embedding_layer(input,
                             table_name,
+                            emb_dim,
                             initializer_instance=None,
                             squeeze=False):
             emb = fluid.embedding(
                 input=input,
                 is_sparse=True,
                 is_distributed=self.is_distributed,
-                size=[self.sparse_feature_number, self.sparse_feature_dim],
+                size=[self.sparse_feature_number, emb_dim],
                 param_attr=fluid.ParamAttr(
                     name=table_name, initializer=initializer_instance), )
             if squeeze:
@@ -84,12 +85,16 @@ class Model(ModelBase):
             else:
                 return emb
 
-        init_width = 1.0 / self.sparse_feature_dim
+        init_width = 0.5 / self.sparse_feature_dim
         emb_initializer = fluid.initializer.Uniform(-init_width, init_width)
         emb_w_initializer = fluid.initializer.Constant(value=0.0)
 
-        input_emb = embedding_layer(inputs[0], "emb", emb_initializer, True)
-        true_emb_w = embedding_layer(inputs[1], "emb_w", emb_w_initializer,
+        input_emb = embedding_layer(inputs[0], "emb", self.sparse_feature_dim,
+                                    emb_initializer, True)
+        true_emb_w = embedding_layer(inputs[1], "emb_w",
+                                     self.sparse_feature_dim,
+                                     emb_w_initializer, True)
+        true_emb_b = embedding_layer(inputs[1], "emb_b", 1, emb_w_initializer,
                                      True)
 
         if self.with_shuffle_batch:
@@ -102,34 +107,74 @@ class Model(ModelBase):
             neg_emb_w = fluid.layers.reshape(
                 neg_emb_w_concat,
                 shape=[-1, self.neg_num, self.sparse_feature_dim])
+
+            neg_emb_b_list = []
+            for i in range(self.neg_num):
+                neg_emb_b_list.append(
+                    fluid.contrib.layers.shuffle_batch(
+                        true_emb_b))  # shuffle true_word
+            neg_emb_b = fluid.layers.concat(neg_emb_b_list, axis=0)
+            neg_emb_b_vec = fluid.layers.reshape(
+                neg_emb_b, shape=[-1, self.neg_num])
         else:
-            neg_emb_w = embedding_layer(inputs[2], "emb_w", emb_w_initializer)
-        true_logits = fluid.layers.reduce_sum(
-            fluid.layers.elementwise_mul(input_emb, true_emb_w),
-            dim=1,
-            keep_dim=True)
+            neg_emb_w = embedding_layer(
+                inputs[2], "emb_w", self.sparse_feature_dim, emb_w_initializer)
+            neg_emb_b = embedding_layer(inputs[2], "emb_b", 1,
+                                        emb_w_initializer)
+            neg_emb_b_vec = fluid.layers.reshape(
+                neg_emb_b, shape=[-1, self.neg_num])
+
+        true_logits = fluid.layers.elementwise_add(
+            fluid.layers.reduce_sum(
+                fluid.layers.elementwise_mul(input_emb, true_emb_w),
+                dim=1,
+                keep_dim=True),
+            true_emb_b)
 
         input_emb_re = fluid.layers.reshape(
             input_emb, shape=[-1, 1, self.sparse_feature_dim])
         neg_matmul = fluid.layers.matmul(
             input_emb_re, neg_emb_w, transpose_y=True)
-        neg_logits = fluid.layers.reshape(neg_matmul, shape=[-1, 1])
+        neg_matmul_re = fluid.layers.reshape(
+            neg_matmul, shape=[-1, self.neg_num])
+        neg_logits = fluid.layers.elementwise_add(neg_matmul_re, neg_emb_b_vec)
+        #nce loss
 
-        logits = fluid.layers.concat([true_logits, neg_logits], axis=0)
         label_ones = fluid.layers.fill_constant(
             shape=[fluid.layers.shape(true_logits)[0], 1],
             value=1.0,
             dtype='float32')
         label_zeros = fluid.layers.fill_constant(
-            shape=[fluid.layers.shape(neg_logits)[0], 1],
+            shape=[fluid.layers.shape(true_logits)[0], self.neg_num],
             value=0.0,
             dtype='float32')
-        label = fluid.layers.concat([label_ones, label_zeros], axis=0)
 
-        loss = fluid.layers.log_loss(fluid.layers.sigmoid(logits), label)
-        avg_cost = fluid.layers.reduce_sum(loss)
+        true_xent = fluid.layers.sigmoid_cross_entropy_with_logits(true_logits,
+                                                                   label_ones)
+        neg_xent = fluid.layers.sigmoid_cross_entropy_with_logits(neg_logits,
+                                                                  label_zeros)
+        cost = fluid.layers.elementwise_add(
+            fluid.layers.reduce_sum(
+                true_xent, dim=1),
+            fluid.layers.reduce_sum(
+                neg_xent, dim=1))
+        avg_cost = fluid.layers.reduce_mean(cost)
 
         self._cost = avg_cost
+        global_right_cnt = fluid.layers.create_global_var(
+            name="global_right_cnt",
+            persistable=True,
+            dtype='float32',
+            shape=[1],
+            value=0)
+        global_total_cnt = fluid.layers.create_global_var(
+            name="global_total_cnt",
+            persistable=True,
+            dtype='float32',
+            shape=[1],
+            value=0)
+        global_right_cnt.stop_gradient = True
+        global_total_cnt.stop_gradient = True
         self._metrics["LOSS"] = avg_cost
 
     def optimizer(self):
@@ -195,27 +240,26 @@ class Model(ModelBase):
             fluid.layers.equal(pred_idx, label), dtype='float32'))
         total_cnt = fluid.layers.reduce_sum(label_ones)
 
-        # global_right_cnt = fluid.layers.create_global_var(
-        #     name="global_right_cnt",
-        #     persistable=True,
-        #     dtype='float32',
-        #     shape=[1],
-        #     value=0)
-        # global_total_cnt = fluid.layers.create_global_var(
-        #     name="global_total_cnt",
-        #     persistable=True,
-        #     dtype='float32',
-        #     shape=[1],
-        #     value=0)
-        # global_right_cnt.stop_gradient = True
-        # global_total_cnt.stop_gradient = True
+        global_right_cnt = fluid.layers.create_global_var(
+            name="global_right_cnt",
+            persistable=True,
+            dtype='float32',
+            shape=[1],
+            value=0)
+        global_total_cnt = fluid.layers.create_global_var(
+            name="global_total_cnt",
+            persistable=True,
+            dtype='float32',
+            shape=[1],
+            value=0)
+        global_right_cnt.stop_gradient = True
+        global_total_cnt.stop_gradient = True
 
-        # tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
-        # fluid.layers.assign(tmp1, global_right_cnt)
-        # tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
-        # fluid.layers.assign(tmp2, global_total_cnt)
+        tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
+        fluid.layers.assign(tmp1, global_right_cnt)
+        tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
+        fluid.layers.assign(tmp2, global_total_cnt)
 
-        # acc = fluid.layers.elementwise_div(
-        #     global_right_cnt, global_total_cnt, name="total_acc")
-        acc = fluid.layers.elementwise_div(right_cnt, total_cnt, name="acc")
+        acc = fluid.layers.elementwise_div(
+            global_right_cnt, global_total_cnt, name="total_acc")
         self._infer_results['acc'] = acc
