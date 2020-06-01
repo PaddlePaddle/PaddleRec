@@ -69,12 +69,6 @@ class Model(ModelBase):
             name="target_cat_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(target_cat_seq)
 
-        #if self.use_DataLoader:
-        #    self._data_loader = fluid.io.DataLoader.from_generator(
-        #        feed_list=self.data_var,
-        #        capacity=10000,
-        #        use_double_buffer=False,
-        #        iterable=False)
         train_inputs = [hist_item_seq] + [hist_cat_seq] + [target_item] + [
             target_cat
         ] + [label] + [mask] + [target_item_seq] + [target_cat_seq]

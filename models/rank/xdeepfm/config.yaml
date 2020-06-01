@@ -16,13 +16,13 @@ workspace: "paddlerec.models.rank.xdeepfm"
 
 dataset:
   - name: sample_1
-    type: QueueDataset #或者QueueDataset
+    type: QueueDataset #或者DataLoader
     batch_size: 5
     data_path: "{workspace}/data/sample_data/train"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
   - name: infer_sample
-    type: QueueDataset #或者QueueDataset
+    type: QueueDataset #或者DataLoader
     batch_size: 5
     data_path: "{workspace}/data/sample_data/train"
     sparse_slots: "label feat_idx"
