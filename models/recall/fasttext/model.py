@@ -24,27 +24,33 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
-        self.sparse_feature_number = envs.get_global_env("hyper_parameters.sparse_feature_number")
-        self.sparse_feature_dim = envs.get_global_env("hyper_parameters.sparse_feature_dim")
+        self.is_distributed = True if envs.get_trainer(
+        ) == "CtrTrainer" else False
+        self.sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number")
+        self.sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim")
         self.neg_num = envs.get_global_env("hyper_parameters.neg_num")
-        self.with_shuffle_batch = envs.get_global_env("hyper_parameters.with_shuffle_batch")
-	self.learning_rate = envs.get_global_env("hyper_parameters.optimizer.learning_rate")
-        self.decay_steps = envs.get_global_env("hyper_parameters.optimizer.decay_steps")
-        self.decay_rate = envs.get_global_env("hyper_parameters.optimizer.decay_rate")
-
+        self.with_shuffle_batch = envs.get_global_env(
+            "hyper_parameters.with_shuffle_batch")
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.optimizer.learning_rate")
+        self.decay_steps = envs.get_global_env(
+            "hyper_parameters.optimizer.decay_steps")
+        self.decay_rate = envs.get_global_env(
+            "hyper_parameters.optimizer.decay_rate")
 
     def input_data(self, is_infer=False, **kwargs):
         if is_infer:
             analogy_a = fluid.data(
-                name="analogy_a", shape=[None, 1], lod_level=1,  dtype='int64')
+                name="analogy_a", shape=[None, 1], lod_level=1, dtype='int64')
             analogy_b = fluid.data(
                 name="analogy_b", shape=[None, 1], lod_level=1, dtype='int64')
             analogy_c = fluid.data(
                 name="analogy_c", shape=[None, 1], lod_level=1, dtype='int64')
             analogy_d = fluid.data(
                 name="analogy_d", shape=[None, 1], dtype='int64')
- 	    return [analogy_a, analogy_b, analogy_c, analogy_d]
+            return [analogy_a, analogy_b, analogy_c, analogy_d]
 
         input_word = fluid.data(
             name="input_word", shape=[None, 1], lod_level=1, dtype='int64')
@@ -59,10 +65,10 @@ class Model(ModelBase):
 
     def net(self, inputs, is_infer=False):
         if is_infer:
-	    self.infer_net(inputs)
-	    return
+            self.infer_net(inputs)
+            return
 
-	def embedding_layer(input,
+        def embedding_layer(input,
                             table_name,
                             initializer_instance=None,
                             sequence_pool=False):
@@ -74,7 +80,8 @@ class Model(ModelBase):
                 param_attr=fluid.ParamAttr(
                     name=table_name, initializer=initializer_instance), )
             if sequence_pool:
-                emb = fluid.layers.sequence_pool(input=emb, pool_type='average')
+                emb = fluid.layers.sequence_pool(
+                    input=emb, pool_type='average')
             return emb
 
         init_width = 1.0 / self.sparse_feature_dim
@@ -83,10 +90,10 @@ class Model(ModelBase):
 
         input_emb = embedding_layer(inputs[0], "emb", emb_initializer, True)
         input_emb = fluid.layers.squeeze(input=input_emb, axes=[1])
-        true_emb_w = embedding_layer(inputs[1], "emb_w", emb_w_initializer, True)
+        true_emb_w = embedding_layer(inputs[1], "emb_w", emb_w_initializer,
+                                     True)
         true_emb_w = fluid.layers.squeeze(input=true_emb_w, axes=[1])
 
-        
         if self.with_shuffle_batch:
             neg_emb_w_list = []
             for i in range(self.neg_num):
@@ -95,7 +102,8 @@ class Model(ModelBase):
                         true_emb_w))  # shuffle true_word
             neg_emb_w_concat = fluid.layers.concat(neg_emb_w_list, axis=0)
             neg_emb_w = fluid.layers.reshape(
-                neg_emb_w_concat, shape=[-1, self.neg_num, self.sparse_feature_dim])
+                neg_emb_w_concat,
+                shape=[-1, self.neg_num, self.sparse_feature_dim])
         else:
             neg_emb_w = embedding_layer(inputs[2], "emb_w", emb_w_initializer)
         true_logits = fluid.layers.reduce_sum(
@@ -107,8 +115,7 @@ class Model(ModelBase):
             input_emb, shape=[-1, 1, self.sparse_feature_dim])
         neg_matmul = fluid.layers.matmul(
             input_emb_re, neg_emb_w, transpose_y=True)
-        neg_logits = fluid.layers.reshape(
-                neg_matmul, shape=[-1, 1])
+        neg_logits = fluid.layers.reshape(neg_matmul, shape=[-1, 1])
 
         logits = fluid.layers.concat([true_logits, neg_logits], axis=0)
         label_ones = fluid.layers.fill_constant(
@@ -120,12 +127,11 @@ class Model(ModelBase):
             value=0.0,
             dtype='float32')
         label = fluid.layers.concat([label_ones, label_zeros], axis=0)
-    
+
         loss = fluid.layers.log_loss(fluid.layers.sigmoid(logits), label)
         avg_cost = fluid.layers.reduce_sum(loss)
         self._cost = avg_cost
         self._metrics["LOSS"] = avg_cost
-
 
     def optimizer(self):
         optimizer = fluid.optimizer.SGD(
@@ -137,13 +143,17 @@ class Model(ModelBase):
         return optimizer
 
     def infer_net(self, inputs):
-        def embedding_layer(input, table_name, initializer_instance=None, sequence_pool=False):
+        def embedding_layer(input,
+                            table_name,
+                            initializer_instance=None,
+                            sequence_pool=False):
             emb = fluid.embedding(
                 input=input,
                 size=[self.sparse_feature_number, self.sparse_feature_dim],
                 param_attr=table_name)
             if sequence_pool:
-                emb = fluid.layers.sequence_pool(input=emb, pool_type='average')
+                emb = fluid.layers.sequence_pool(
+                    input=emb, pool_type='average')
             return emb
 
         all_label = np.arange(self.sparse_feature_number).reshape(
@@ -166,36 +176,34 @@ class Model(ModelBase):
         dist = fluid.layers.matmul(
             x=target, y=emb_all_label_l2, transpose_y=True)
         values, pred_idx = fluid.layers.topk(input=dist, k=4)
-        label = fluid.layers.expand(
-            inputs[3],
-            expand_times=[1, 4])
+        label = fluid.layers.expand(inputs[3], expand_times=[1, 4])
         label_ones = fluid.layers.fill_constant_batch_size_like(
             label, shape=[-1, 1], value=1.0, dtype='float32')
         right_cnt = fluid.layers.reduce_sum(input=fluid.layers.cast(
             fluid.layers.equal(pred_idx, label), dtype='float32'))
         total_cnt = fluid.layers.reduce_sum(label_ones)
 
-       # global_right_cnt = fluid.layers.create_global_var(
-       #     name="global_right_cnt",
-       #     persistable=True,
-       #     dtype='float32',
-       #     shape=[1],
-       #     value=0)
-       # global_total_cnt = fluid.layers.create_global_var(
-       #     name="global_total_cnt",
-       #     persistable=True,
-       #     dtype='float32',
-       #     shape=[1],
-       #     value=0)
-       # global_right_cnt.stop_gradient = True
-       # global_total_cnt.stop_gradient = True
+        # global_right_cnt = fluid.layers.create_global_var(
+        #     name="global_right_cnt",
+        #     persistable=True,
+        #     dtype='float32',
+        #     shape=[1],
+        #     value=0)
+        # global_total_cnt = fluid.layers.create_global_var(
+        #     name="global_total_cnt",
+        #     persistable=True,
+        #     dtype='float32',
+        #     shape=[1],
+        #     value=0)
+        # global_right_cnt.stop_gradient = True
+        # global_total_cnt.stop_gradient = True
 
-       # tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
-       # fluid.layers.assign(tmp1, global_right_cnt)
-       # tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
-       # fluid.layers.assign(tmp2, global_total_cnt)
+        # tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
+        # fluid.layers.assign(tmp1, global_right_cnt)
+        # tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
+        # fluid.layers.assign(tmp2, global_total_cnt)
 
-       # acc = fluid.layers.elementwise_div(
-       #     global_right_cnt, global_total_cnt, name="total_acc")
+        # acc = fluid.layers.elementwise_div(
+        #     global_right_cnt, global_total_cnt, name="total_acc")
         acc = fluid.layers.elementwise_div(right_cnt, total_cnt, name="acc")
         self._infer_results['acc'] = acc

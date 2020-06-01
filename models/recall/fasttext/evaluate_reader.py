@@ -22,9 +22,10 @@ from paddlerec.core.utils import envs
 
 class TrainReader(Reader):
     def init(self):
-        dict_path = envs.get_global_env("dataset.dataset_infer.word_id_dict_path")
-	self.min_n = envs.get_global_env("hyper_parameters.min_n")
-	self.max_n = envs.get_global_env("hyper_parameters.max_n")
+        dict_path = envs.get_global_env(
+            "dataset.dataset_infer.word_id_dict_path")
+        self.min_n = envs.get_global_env("hyper_parameters.min_n")
+        self.max_n = envs.get_global_env("hyper_parameters.max_n")
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:
@@ -78,7 +79,8 @@ class TrainReader(Reader):
         a unicode string - a space-delimited sequence of words.
       """
         return u" ".join([
-            "<" + word + ">" if "<" + word + ">" in original_vocab else u"<UNK>"
+            "<" + word + ">"
+            if "<" + word + ">" in original_vocab else u"<UNK>"
             for word in line.split()
         ])
 
@@ -99,9 +101,7 @@ class TrainReader(Reader):
                         res.append(self.word_to_id[_])
                     inputs.append(res)
             print(inputs)
-            yield [('analogy_a', inputs[0]),
-                   ('analogy_b', inputs[1]),
-                   ('analogy_c', inputs[2]),
-                   ('analogy_d', inputs[3][0:1])]
+            yield [('analogy_a', inputs[0]), ('analogy_b', inputs[1]),
+                   ('analogy_c', inputs[2]), ('analogy_d', inputs[3][0:1])]
 
         return reader

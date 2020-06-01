@@ -27,17 +27,21 @@ class Model(ModelBase):
         self.Neg = envs.get_global_env("hyper_parameters.NEG")
         self.hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
         self.hidden_acts = envs.get_global_env("hyper_parameters.fc_acts")
-        self.learning_rate = envs.get_global_env("hyper_parameters.learning_rate")
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.learning_rate")
 
     def input_data(self, is_infer=False, **kwargs):
         query = fluid.data(
-            name="query", shape=[-1, self.TRIGRAM_D], dtype='float32', lod_level=0)
+            name="query",
+            shape=[-1, self.TRIGRAM_D],
+            dtype='float32',
+            lod_level=0)
         doc_pos = fluid.data(
             name="doc_pos",
             shape=[-1, self.TRIGRAM_D],
             dtype='float32',
             lod_level=0)
-        
+
         if is_infer:
             return [query, doc_pos]
 
@@ -78,14 +82,14 @@ class Model(ModelBase):
             return
 
         R_Q_D_ns = []
-        for i in range(len(inputs)-2):
-            doc_neg_fc_i = fc(inputs[i+2], self.hidden_layers, self.hidden_acts, [
-                'doc_neg_l1_' + str(i), 'doc_neg_l2_' + str(i),
-                'doc_neg_l3_' + str(i)
-            ])
+        for i in range(len(inputs) - 2):
+            doc_neg_fc_i = fc(
+                inputs[i + 2], self.hidden_layers, self.hidden_acts, [
+                    'doc_neg_l1_' + str(i), 'doc_neg_l2_' + str(i),
+                    'doc_neg_l3_' + str(i)
+                ])
             R_Q_D_ns.append(fluid.layers.cos_sim(query_fc, doc_neg_fc_i))
-        concat_Rs = fluid.layers.concat(
-            input=[R_Q_D_p] + R_Q_D_ns, axis=-1)
+        concat_Rs = fluid.layers.concat(input=[R_Q_D_p] + R_Q_D_ns, axis=-1)
         prob = fluid.layers.softmax(concat_Rs, axis=1)
 
         hit_prob = fluid.layers.slice(
@@ -94,4 +98,3 @@ class Model(ModelBase):
         avg_cost = fluid.layers.mean(x=loss)
         self._cost = avg_cost
         self._metrics["LOSS"] = avg_cost
-
