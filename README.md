@@ -129,7 +129,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml
 ```yaml
 runner:
 - name: runner1
-  class: local_cluster_train
+  class: local_cluster_train # single_train -> local_cluster_train
 ```
 然后启动paddlerec训练：
 
@@ -145,7 +145,7 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml
 ```yaml
 runner:
 - name: runner1
-  class: cluster_train
+  class: cluster_train # single_train -> cluster_train
 ```
 再添加分布式启动配置文件`backend.yaml`，具体配置规则在[分布式训练](doc/distributed_train.md)教程中介绍。最后启动paddlerec训练：
 
