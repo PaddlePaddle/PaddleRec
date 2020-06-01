@@ -9,7 +9,9 @@
 * [整体介绍](#整体介绍)
     * [多任务模型列表](#多任务模型列表)
 * [使用教程](#使用教程)
-    * [训练&预测](#训练&预测)
+    * [数据处理](#数据处理)
+    * [训练](#训练)
+    * [预测](#预测)
 * [效果对比](#效果对比)
     * [模型效果列表](#模型效果列表)
 
@@ -40,13 +42,49 @@
 <img align="center" src="../../doc/imgs/mmoe.png">
 <p>
 
-## 使用教程
-### 训练&预测
+## 使用教程(快速开始)
 ```shell
 python -m paddlerec.run -m paddlerec.models.multitask.mmoe # mmoe
 python -m paddlerec.run -m paddlerec.models.multitask.share-bottom # share-bottom
 python -m paddlerec.run -m paddlerec.models.multitask.esmm # esmm
 ```
+
+## 使用教程（复现论文）
+### 注意
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据，并且调整了batch_size等超参以便在样例数据上更加友好的显示训练&测试日志。如果需要复现readme中的效果请按照如下表格调整batch_size等超参，并使用提供的脚本下载对应数据集以及数据预处理。
+
+|       模型       |       batch_size      |       thread_num      |       epoch_num      |
+| :------------------: | :--------------------: | :--------------------: | :--------------------: |
+|       Share-Bottom        |       32       |        1       |        400       |
+|       MMoE        |       32       |       1       |        400       |
+|       ESMM     |       64       |       2       |        100       |
+
+### 数据处理
+参考每个模型目录数据下载&预处理脚本
+
+```
+sh run.sh
+```
+
+### 训练
+```
+cd modles/multitask/mmoe # 进入选定好的排序模型的目录 以MMoE为例
+python -m paddlerec.run -m paddlerec.models.multitask.mmoe # 使用内置配置
+python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配置文件，使用自定义配置
+```
+
+### 预测
+```
+# 修改对应模型的config.yaml, workspace配置为当前目录的绝对路径
+# 修改对应模型的config.yaml，mode配置infer_runner
+# 示例: mode: train_runner -> mode: infer_runner
+# infer_runner中 class配置为 class: single_infer
+# 修改phase阶段为infer的配置，参照config注释
+
+# 修改完config.yaml后 执行:
+python -m paddlerec.run -m ./config.yaml # 以MMoE为例
+```
+
 
 ## 效果对比
 ### 模型效果列表
