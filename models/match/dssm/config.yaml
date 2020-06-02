@@ -32,8 +32,8 @@ hyper_parameters:
     class: sgd
     learning_rate: 0.01
     strategy: async
-  TRIGRAM_D: 1000
-  NEG: 4
+  trigram_d: 1000
+  neg_num: 4
   fc_sizes: [300, 300, 128]
   fc_acts: ['tanh', 'tanh', 'tanh']
 
