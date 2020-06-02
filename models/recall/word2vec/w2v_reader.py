@@ -40,14 +40,12 @@ class NumpyRandomInt(object):
 
 class TrainReader(Reader):
     def init(self):
-        dict_path = envs.get_global_env("word_count_dict_path", None,
-                                        "train.reader")
-        self.window_size = envs.get_global_env("hyper_parameters.window_size",
-                                               None, "train.model")
-        self.neg_num = envs.get_global_env("hyper_parameters.neg_num", None,
-                                           "train.model")
+        dict_path = envs.get_global_env(
+            "dataset.dataset_train.word_count_dict_path")
+        self.window_size = envs.get_global_env("hyper_parameters.window_size")
+        self.neg_num = envs.get_global_env("hyper_parameters.neg_num")
         self.with_shuffle_batch = envs.get_global_env(
-            "hyper_parameters.with_shuffle_batch", None, "train.model")
+            "hyper_parameters.with_shuffle_batch")
         self.random_generator = NumpyRandomInt(1, self.window_size + 1)
 
         self.cs = None

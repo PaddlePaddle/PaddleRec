@@ -11,44 +11,66 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-evaluate:
-  reader:
-    batch_size: 1
-    class: "{workspace}/synthetic_evaluate_reader.py"
-    test_data_path: "{workspace}/data/train"
- 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
 
+
+workspace: "paddlerec.models.match.dssm"
+
+dataset:
+- name: dataset_train
+  batch_size: 4
+  type: QueueDataset
+  data_path: "{workspace}/data/train" 
+  data_converter: "{workspace}/synthetic_reader.py"
+- name: dataset_infer
+  batch_size: 1
+  type: QueueDataset
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/synthetic_evaluate_reader.py"
+
+hyper_parameters:
+  optimizer:
+    class: sgd
+    learning_rate: 0.01
+    strategy: async
+  trigram_d: 1000
+  neg_num: 4
+  fc_sizes: [300, 300, 128]
+  fc_acts: ['tanh', 'tanh', 'tanh']
+
+mode: train_runner
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: train_runner
+  class: single_train
+  # num of epochs
   epochs: 4
-  workspace: "paddlerec.models.match.dssm"
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
+  save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # fetch vars of save inference
+  init_model_path: "" # load model path
+  fetch_period: 2
+- name: infer_runner
+  class: single_infer
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  fetch_period: 1
+  init_model_path: "increment/2" # load model path
 
-  reader:
-    batch_size: 4
-    class: "{workspace}/synthetic_reader.py"
-    train_data_path: "{workspace}/data/train"
-
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      TRIGRAM_D: 1000
-      NEG: 4
-      fc_sizes: [300, 300, 128]
-      fc_acts: ['tanh', 'tanh', 'tanh']
-      learning_rate: 0.01
-      optimizer: sgd
-
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 2
-      save_last: True
-
-    inference:
-      dirname: "inference"
-      epoch_interval: 4
-      feed_varnames: ["query", "doc_pos"]
-      fetch_varnames: ["cos_sim_0.tmp_0"]
-      save_last: True
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+#- name: phase2
+#  model: "{workspace}/model.py" # user-defined model
+#  dataset_name: dataset_infer # select dataset by name
+#  thread_num: 1

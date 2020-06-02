@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
+import yaml, os
+
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
+import paddle.fluid.incubate.data_generator as dg
 try:
     import cPickle as pickle
 except ImportError:
@@ -44,7 +46,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         self.continuous_range_ = range(1, 14)
         self.categorical_range_ = range(14, 40)
         # load preprocessed feature dict 
-        self.feat_dict_name = "aid_data/feat_dict_10.pkl2"
+        self.feat_dict_name = "sample_data/feat_dict_10.pkl2"
         self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
     def _process_line(self, line):
