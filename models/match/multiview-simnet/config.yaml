@@ -11,49 +11,73 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-evaluate:
-  workspace: "paddlerec.models.match.multiview-simnet"
-  reader:
-    batch_size: 2
-    class: "{workspace}/evaluate_reader.py"
-    test_data_path: "{workspace}/data/test"
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+# workspace
+workspace: "paddlerec.models.match.multiview-simnet"
 
+# list of dataset
+dataset:
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 2
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/train"
+  sparse_slots: "1 2 3"
+- name: dataset_infer # name
+  batch_size: 2
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/test"
+  sparse_slots: "1 2"
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  optimizer:
+    class: Adam
+    learning_rate: 0.0001
+    strategy: async
+  query_encoder: "bow"
+  title_encoder: "bow"
+  query_encode_dim: 128
+  title_encode_dim: 128
+  sparse_feature_dim: 1000001
+  embedding_dim: 128
+  hidden_size: 128
+  margin: 0.1
+
+# select runner by name
+mode: train_runner
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: train_runner
+  class: single_train
+  # num of epochs
   epochs: 2
-  workspace: "paddlerec.models.match.multiview-simnet"
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 1 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  fetch_period: 1
+- name: infer_runner
+  class: single_infer
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  fetch_period: 1
+  init_model_path: "increment/0" # load model path
 
-  reader:
-    batch_size: 2
-    class: "{workspace}/reader.py"
-    train_data_path: "{workspace}/data/train"
-    dataset_class: "DataLoader"
-
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      use_DataLoader: True
-      query_encoder: "bow"
-      title_encoder: "bow"
-      query_encode_dim: 128
-      title_encode_dim: 128
-      query_slots: 1
-      title_slots: 1
-      sparse_feature_dim: 1000001
-      embedding_dim: 128
-      hidden_size: 128
-      learning_rate: 0.0001
-      optimizer: adam
-
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 1
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 1
-      save_last: True
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+#- name: phase2
+#  model: "{workspace}/model.py" # user-defined model
+#  dataset_name: dataset_infer # select dataset by name
+#  thread_num: 1

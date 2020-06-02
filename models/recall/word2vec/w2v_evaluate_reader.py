@@ -20,10 +20,10 @@ from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(Reader):
+class TrainReader(Reader):
     def init(self):
-        dict_path = envs.get_global_env("word_id_dict_path", None,
-                                        "evaluate.reader")
+        dict_path = envs.get_global_env(
+            "dataset.dataset_infer.word_id_dict_path")
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:
@@ -75,6 +75,8 @@ class EvaluateReader(Reader):
 
     def generate_sample(self, line):
         def reader():
+            if ':' in line:
+                pass
             features = self.strip_lines(line.lower(), self.word_to_id)
             features = features.split()
             yield [('analogy_a', [self.word_to_id[features[0]]]),
