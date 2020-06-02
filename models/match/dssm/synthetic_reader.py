@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import print_function
 
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from paddlerec.core.reader import Reader
 
 
 class TrainReader(Reader):
@@ -37,7 +37,7 @@ class TrainReader(Reader):
             neg_docs = []
             for i in range(len(features) - 2):
                 feature_names.append('doc_neg_' + str(i))
-                neg_docs.append(map(float, features[i+2].split(',')))
+                neg_docs.append(map(float, features[i + 2].split(',')))
 
             yield zip(feature_names, [query] + [pos_doc] + neg_docs)
 

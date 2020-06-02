@@ -13,8 +13,7 @@
 # limitations under the License.
 from __future__ import print_function
 
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
+from paddlerec.core.reader import Reader
 
 
 class EvaluateReader(Reader):

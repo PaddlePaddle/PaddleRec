@@ -12,40 +12,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+# global settings 
+debug: false
+workspace: "paddlerec.models.rank.din"
 
-  epochs: 10
-  workspace: "fleetrec.models.rank.din"
+dataset:
+  - name: sample_1
+    type: DataLoader
+    batch_size: 5
+    data_path: "{workspace}/data/train_data"
+    data_converter: "{workspace}/reader.py"
+  - name: infer_sample
+    type: DataLoader
+    batch_size: 5
+    data_path: "{workspace}/data/train_data"
+    data_converter: "{workspace}/reader.py"
 
-  reader:
-    batch_size: 2
-    class: "{workspace}/reader.py"
-    train_data_path: "{workspace}/data/train_data"
-    dataset_class: "DataLoader"
+hyper_parameters:
+    optimizer:
+        class: SGD
+        learning_rate: 0.0001
+    use_DataLoader: True
+    item_emb_size: 64
+    cat_emb_size: 64
+    is_sparse: False
+    item_count: 63001
+    cat_count: 801
 
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      use_DataLoader: True
-      item_emb_size: 64
-      cat_emb_size: 64
-      is_sparse: False
-      config_path: "data/config.txt"
-      fc_sizes: [400, 400, 400]
-      learning_rate: 0.0001
-      reg: 0.001
-      act: "sigmoid"
-      optimizer: SGD
+    act: "sigmoid"
 
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 2
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 4
-      save_last: True
+
+mode: train_runner
+
+runner:
+  - name: train_runner
+    trainer_class: single_train
+    epochs: 1
+    device: cpu
+    init_model_path: ""
+    save_checkpoint_interval: 1
+    save_inference_interval: 1
+    save_checkpoint_path: "increment"
+    save_inference_path: "inference"
+    print_interval: 1
+  - name: infer_runner
+    trainer_class: single_infer
+    epochs: 1
+    device: cpu
+    init_model_path: "increment/0"
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: sample_1
+  thread_num: 1
+#- name: infer_phase
+#  model: "{workspace}/model.py"
+#  dataset_name: infer_sample
+#  thread_num: 1

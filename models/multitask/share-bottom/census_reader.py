@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import print_function
 
-from fleetrec.core.reader import Reader
-from fleetrec.core.utils import envs
-import numpy as np
+from paddlerec.core.reader import Reader
 
 
 class TrainReader(Reader):
@@ -44,8 +43,8 @@ class TrainReader(Reader):
                 label_marital = [1, 0]
             elif int(l[0]) == 1:
                 label_marital = [0, 1]
-            #label_income = np.array(label_income)
-            #label_marital = np.array(label_marital)
+            # label_income = np.array(label_income)
+            # label_marital = np.array(label_marital)
             feature_name = ["input", "label_income", "label_marital"]
             yield zip(feature_name, [data] + [label_income] + [label_marital])
 

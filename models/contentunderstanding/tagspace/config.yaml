@@ -1,0 +1,55 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+workspace: "paddlerec.models.contentunderstanding.tagspace"
+
+dataset:
+- name: sample_1
+  type: QueueDataset
+  batch_size: 5
+  data_path: "{workspace}/data/train_data"
+  data_converter: "{workspace}/reader.py"
+
+hyper_parameters:
+  optimizer:
+    class: Adagrad
+    learning_rate: 0.001
+  vocab_text_size: 11447
+  vocab_tag_size: 4
+  emb_dim: 10
+  hid_dim: 1000
+  win_size: 5
+  margin: 0.1
+  neg_size: 3
+  num_devices: 1
+
+mode: runner1
+
+runner:
+- name: runner1
+  class: single_train
+  epochs: 10
+  device: cpu
+  save_checkpoint_interval: 2
+  save_inference_interval: 4
+  save_checkpoint_path: "increment"
+  save_inference_path: "inference"
+  save_inference_feed_varnames: []
+  save_inference_fetch_varnames: []
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: sample_1
+  thread_num: 1
