@@ -66,7 +66,6 @@ def get_feat_dict():
     categorical_range_ = range(14, 40)
 
     if not os.path.exists(dir_feat_dict_):
-        # print('generate a feature dict')
         # Count the number of occurrences of discrete features
         feat_cnt = Counter()
         with open('train.txt', 'r') as fin:
