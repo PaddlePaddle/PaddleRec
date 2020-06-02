@@ -1,8 +1,6 @@
 *.o
 output
 .idea/
-build/
-dist/
-fleetrec.egg-info/
+paddlerec.egg-info/
 *~
 *.pyc

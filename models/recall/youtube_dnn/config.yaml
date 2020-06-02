@@ -1,0 +1,54 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+workspace: "paddlerec.models.recall.youtube_dnn"
+
+dataset:
+- name: dataset_train
+  batch_size: 5
+  type: DataLoader
+  #type: QueueDataset
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/random_reader.py"
+
+hyper_parameters:
+  watch_vec_size: 64
+  search_vec_size: 64
+  other_feat_size: 64
+  output_size: 100
+  layers: [128, 64, 32]
+  optimizer: 
+    class: adam
+    learning_rate: 0.001
+    strategy: async
+
+mode: train_runner
+
+runner:
+- name: train_runner
+  class: single_train
+  device: cpu
+  epochs: 3
+  save_checkpoint_interval: 2
+  save_inference_interval: 4
+  save_checkpoint_path: "increment"
+  save_inference_path: "inference"
+  print_interval: 10
+
+phase:
+- name: train
+  model: "{workspace}/model.py"
+  dataset_name: dataset_train
+  thread_num: 1

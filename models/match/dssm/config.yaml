@@ -23,7 +23,7 @@ train:
     strategy: "async"
 
   epochs: 4
-  workspace: "fleetrec.models.match.dssm"
+  workspace: "paddlerec.models.match.dssm"
 
   reader:
     batch_size: 4
