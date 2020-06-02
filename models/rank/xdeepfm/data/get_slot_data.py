@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
+import yaml, os
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
 try:
