@@ -22,12 +22,58 @@ class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
 
-    def config_read(self, config_path):
-        with open(config_path, "r") as fin:
-            user_count = int(fin.readline().strip())
-            item_count = int(fin.readline().strip())
-            cat_count = int(fin.readline().strip())
-        return user_count, item_count, cat_count
+    def _init_hyper_parameters(self):
+        self.item_emb_size = envs.get_global_env(
+            "hyper_parameters.item_emb_size", 64)
+        self.cat_emb_size = envs.get_global_env(
+            "hyper_parameters.cat_emb_size", 64)
+        self.act = envs.get_global_env("hyper_parameters.act", "sigmoid")
+        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
+                                             False)
+        #significant for speeding up the training process
+        self.use_DataLoader = envs.get_global_env(
+            "hyper_parameters.use_DataLoader", False)
+        self.item_count = envs.get_global_env("hyper_parameters.item_count",
+                                              63001)
+        self.cat_count = envs.get_global_env("hyper_parameters.cat_count", 801)
+
+    def input_data(self, is_infer=False, **kwargs):
+        seq_len = -1
+        self.data_var = []
+        hist_item_seq = fluid.data(
+            name="hist_item_seq", shape=[None, seq_len], dtype="int64")
+        self.data_var.append(hist_item_seq)
+
+        hist_cat_seq = fluid.data(
+            name="hist_cat_seq", shape=[None, seq_len], dtype="int64")
+        self.data_var.append(hist_cat_seq)
+
+        target_item = fluid.data(
+            name="target_item", shape=[None], dtype="int64")
+        self.data_var.append(target_item)
+
+        target_cat = fluid.data(name="target_cat", shape=[None], dtype="int64")
+        self.data_var.append(target_cat)
+
+        label = fluid.data(name="label", shape=[None, 1], dtype="float32")
+        self.data_var.append(label)
+
+        mask = fluid.data(
+            name="mask", shape=[None, seq_len, 1], dtype="float32")
+        self.data_var.append(mask)
+
+        target_item_seq = fluid.data(
+            name="target_item_seq", shape=[None, seq_len], dtype="int64")
+        self.data_var.append(target_item_seq)
+
+        target_cat_seq = fluid.data(
+            name="target_cat_seq", shape=[None, seq_len], dtype="int64")
+        self.data_var.append(target_cat_seq)
+
+        train_inputs = [hist_item_seq] + [hist_cat_seq] + [target_item] + [
+            target_cat
+        ] + [label] + [mask] + [target_item_seq] + [target_cat_seq]
+        return train_inputs
 
     def din_attention(self, hist, target_expand, mask):
         """activation weight"""
@@ -59,104 +105,58 @@ class Model(ModelBase):
         out = fluid.layers.reshape(x=out, shape=[0, hidden_size])
         return out
 
-    def train_net(self):
-        seq_len = -1
-        self.item_emb_size = envs.get_global_env(
-            "hyper_parameters.item_emb_size", 64, self._namespace)
-        self.cat_emb_size = envs.get_global_env(
-            "hyper_parameters.cat_emb_size", 64, self._namespace)
-        self.act = envs.get_global_env("hyper_parameters.act", "sigmoid",
-                                       self._namespace)
-        #item_emb_size = 64
-        #cat_emb_size = 64
-        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
-                                             False, self._namespace)
-        #significant for speeding up the training process
-        self.config_path = envs.get_global_env(
-            "hyper_parameters.config_path", "data/config.txt", self._namespace)
-        self.use_DataLoader = envs.get_global_env(
-            "hyper_parameters.use_DataLoader", False, self._namespace)
-        user_count, item_count, cat_count = self.config_read(self.config_path)
+    def net(self, inputs, is_infer=False):
+        hist_item_seq = inputs[0]
+        hist_cat_seq = inputs[1]
+        target_item = inputs[2]
+        target_cat = inputs[3]
+        label = inputs[4]
+        mask = inputs[5]
+        target_item_seq = inputs[6]
+        target_cat_seq = inputs[7]
 
         item_emb_attr = fluid.ParamAttr(name="item_emb")
         cat_emb_attr = fluid.ParamAttr(name="cat_emb")
 
-        hist_item_seq = fluid.data(
-            name="hist_item_seq", shape=[None, seq_len], dtype="int64")
-        self._data_var.append(hist_item_seq)
-
-        hist_cat_seq = fluid.data(
-            name="hist_cat_seq", shape=[None, seq_len], dtype="int64")
-        self._data_var.append(hist_cat_seq)
-
-        target_item = fluid.data(
-            name="target_item", shape=[None], dtype="int64")
-        self._data_var.append(target_item)
-
-        target_cat = fluid.data(name="target_cat", shape=[None], dtype="int64")
-        self._data_var.append(target_cat)
-
-        label = fluid.data(name="label", shape=[None, 1], dtype="float32")
-        self._data_var.append(label)
-
-        mask = fluid.data(
-            name="mask", shape=[None, seq_len, 1], dtype="float32")
-        self._data_var.append(mask)
-
-        target_item_seq = fluid.data(
-            name="target_item_seq", shape=[None, seq_len], dtype="int64")
-        self._data_var.append(target_item_seq)
-
-        target_cat_seq = fluid.data(
-            name="target_cat_seq", shape=[None, seq_len], dtype="int64")
-        self._data_var.append(target_cat_seq)
-
-        if self.use_DataLoader:
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var,
-                capacity=10000,
-                use_double_buffer=False,
-                iterable=False)
-
         hist_item_emb = fluid.embedding(
             input=hist_item_seq,
-            size=[item_count, self.item_emb_size],
+            size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
         hist_cat_emb = fluid.embedding(
             input=hist_cat_seq,
-            size=[cat_count, self.cat_emb_size],
+            size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
         target_item_emb = fluid.embedding(
             input=target_item,
-            size=[item_count, self.item_emb_size],
+            size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
         target_cat_emb = fluid.embedding(
             input=target_cat,
-            size=[cat_count, self.cat_emb_size],
+            size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
         target_item_seq_emb = fluid.embedding(
             input=target_item_seq,
-            size=[item_count, self.item_emb_size],
+            size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
         target_cat_seq_emb = fluid.embedding(
             input=target_cat_seq,
-            size=[cat_count, self.cat_emb_size],
+            size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
         item_b = fluid.embedding(
             input=target_item,
-            size=[item_count, 1],
+            size=[self.item_count, 1],
             param_attr=fluid.initializer.Constant(value=0.0))
 
         hist_seq_concat = fluid.layers.concat(
@@ -195,12 +195,5 @@ class Model(ModelBase):
                                                      slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
-
-    def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
-                                            None, self._namespace)
-        optimizer = fluid.optimizer.Adam(learning_rate, lazy_mode=True)
-        return optimizer
-
-    def infer_net(self, parameter_list):
-        self.deepfm_net()
+        if is_infer:
+            self._infer_results["AUC"] = auc_var
