@@ -26,26 +26,30 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
         self.cost = None
         self.metrics = {}
-        self.vocab_text_size = envs.get_global_env("vocab_text_size", None,
-                                                   self._namespace)
-        self.vocab_tag_size = envs.get_global_env("vocab_tag_size", None,
-                                                  self._namespace)
-        self.emb_dim = envs.get_global_env("emb_dim", None, self._namespace)
-        self.hid_dim = envs.get_global_env("hid_dim", None, self._namespace)
-        self.win_size = envs.get_global_env("win_size", None, self._namespace)
-        self.margin = envs.get_global_env("margin", None, self._namespace)
-        self.neg_size = envs.get_global_env("neg_size", None, self._namespace)
+        self.vocab_text_size = envs.get_global_env(
+            "hyper_parameters.vocab_text_size")
+        self.vocab_tag_size = envs.get_global_env(
+            "hyper_parameters.vocab_tag_size")
+        self.emb_dim = envs.get_global_env("hyper_parameters.emb_dim")
+        self.hid_dim = envs.get_global_env("hyper_parameters.hid_dim")
+        self.win_size = envs.get_global_env("hyper_parameters.win_size")
+        self.margin = envs.get_global_env("hyper_parameters.margin")
+        self.neg_size = envs.get_global_env("hyper_parameters.neg_size")
 
-    def train_net(self):
-        """ network"""
+    def input_data(self, is_infer=False, **kwargs):
         text = fluid.data(
             name="text", shape=[None, 1], lod_level=1, dtype='int64')
         pos_tag = fluid.data(
             name="pos_tag", shape=[None, 1], lod_level=1, dtype='int64')
         neg_tag = fluid.data(
             name="neg_tag", shape=[None, 1], lod_level=1, dtype='int64')
+        return [text, pos_tag, neg_tag]
 
-        self._data_var = [text, pos_tag, neg_tag]
+    def net(self, input, is_infer=False):
+        """ network"""
+        text = input[0]
+        pos_tag = input[1]
+        neg_tag = input[2]
 
         text_emb = fluid.embedding(
             input=text,
@@ -97,22 +101,11 @@ class Model(ModelBase):
         avg_cost = nn.mean(loss_part3)
         less = tensor.cast(cf.less_than(cos_neg, cos_pos), dtype='float32')
         correct = nn.reduce_sum(less)
-        self.cost = avg_cost
+        self._cost = avg_cost
 
-        self.metrics["correct"] = correct
-        self.metrics["cos_pos"] = cos_pos
-
-    def get_avg_cost(self):
-        return self.cost
-
-    def get_metrics(self):
-        return self.metrics
-
-    def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.base_lr", None,
-                                            self._namespace)
-        sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=learning_rate)
-        return sgd_optimizer
-
-    def infer_net(self, parameter_list):
-        self.train_net()
+        if is_infer:
+            self._infer_results["correct"] = correct
+            self._infer_results["cos_pos"] = cos_pos
+        else:
+            self._metrics["correct"] = correct
+            self._metrics["cos_pos"] = cos_pos
