@@ -25,18 +25,13 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.item_len = envs.get_global_env("hyper_parameters.self.item_len",
-                                            None, self._namespace)
-        self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size",
-                                               None, self._namespace)
-        self.user_vocab = envs.get_global_env("hyper_parameters.user_vocab",
-                                              None, self._namespace)
-        self.item_vocab = envs.get_global_env("hyper_parameters.item_vocab",
-                                              None, self._namespace)
-        self.embed_size = envs.get_global_env("hyper_parameters.embed_size",
-                                              None, self._namespace)
+        self.item_len = envs.get_global_env("hyper_parameters.self.item_len")
+        self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size")
+        self.user_vocab = envs.get_global_env("hyper_parameters.user_vocab")
+        self.item_vocab = envs.get_global_env("hyper_parameters.item_vocab")
+        self.embed_size = envs.get_global_env("hyper_parameters.embed_size")
 
-    def input_data(self, is_infer=False):
+    def input_data(self, is_infer=False, **kwargs):
         user_slot_names = fluid.data(
             name='user_slot_names',
             shape=[None, 1],

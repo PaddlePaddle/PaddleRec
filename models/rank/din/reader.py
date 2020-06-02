@@ -29,8 +29,8 @@ from paddlerec.core.utils import envs
 
 class TrainReader(Reader):
     def init(self):
-        self.train_data_path = envs.get_global_env("train_data_path", None,
-                                                   "train.reader")
+        self.train_data_path = envs.get_global_env(
+            "dataset.sample_1.data_path", None)
         self.res = []
         self.max_len = 0
 
@@ -46,7 +46,8 @@ class TrainReader(Reader):
         fo = open("tmp.txt", "w")
         fo.write(str(self.max_len))
         fo.close()
-        self.batch_size = envs.get_global_env("batch_size", 32, "train.reader")
+        self.batch_size = envs.get_global_env("dataset.sample_1.batch_size",
+                                              32, "train.reader")
         self.group_size = self.batch_size * 20
 
     def _process_line(self, line):

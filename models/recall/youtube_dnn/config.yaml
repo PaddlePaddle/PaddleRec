@@ -13,37 +13,42 @@
 # limitations under the License.
 
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+workspace: "paddlerec.models.recall.youtube_dnn"
 
-  epochs: 3
-  workspace: "paddlerec.models.recall.youtube_dnn"
+dataset:
+- name: dataset_train
+  batch_size: 5
+  type: DataLoader
+  #type: QueueDataset
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/random_reader.py"
+
+hyper_parameters:
+  watch_vec_size: 64
+  search_vec_size: 64
+  other_feat_size: 64
+  output_size: 100
+  layers: [128, 64, 32]
+  optimizer: 
+    class: adam
+    learning_rate: 0.001
+    strategy: async
+
+mode: train_runner
+
+runner:
+- name: train_runner
+  class: single_train
   device: cpu
+  epochs: 3
+  save_checkpoint_interval: 2
+  save_inference_interval: 4
+  save_checkpoint_path: "increment"
+  save_inference_path: "inference"
+  print_interval: 10
 
-  reader:
-    batch_size: 2
-    class: "{workspace}/random_reader.py"
-    train_data_path: "{workspace}/data/train"
-
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      watch_vec_size: 64
-      search_vec_size: 64
-      other_feat_size: 64
-      output_size: 100
-      layers: [128, 64, 32]
-      learning_rate: 0.01
-      optimizer: sgd
-
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 2
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 4
-      save_last: True
+phase:
+- name: train
+  model: "{workspace}/model.py"
+  dataset_name: dataset_train
+  thread_num: 1
