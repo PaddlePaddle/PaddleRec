@@ -167,6 +167,7 @@ class SingleInfer(TranspileTrainer):
                         model = envs.lazy_instance_by_fliename(
                             model_path, "Model")(self._env)
                         model._infer_data_var = model.input_data(
+                            is_infer=True,
                             dataset_name=model_dict["dataset_name"])
                         if envs.get_global_env("dataset." + dataset_name +
                                                ".type") == "DataLoader":
