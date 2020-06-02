@@ -12,38 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+workspace: "paddlerec.models.contentunderstanding.tagspace"
 
+dataset:
+- name: sample_1
+  type: QueueDataset
+  batch_size: 5
+  data_path: "{workspace}/data/train_data"
+  data_converter: "{workspace}/reader.py"
+
+hyper_parameters:
+  optimizer:
+    class: Adagrad
+    learning_rate: 0.001
+  vocab_text_size: 11447
+  vocab_tag_size: 4
+  emb_dim: 10
+  hid_dim: 1000
+  win_size: 5
+  margin: 0.1
+  neg_size: 3
+  num_devices: 1
+
+mode: runner1
+
+runner:
+- name: runner1
+  class: single_train
   epochs: 10
-  workspace: "paddlerec.models.contentunderstanding.tagspace"
+  device: cpu
+  save_checkpoint_interval: 2
+  save_inference_interval: 4
+  save_checkpoint_path: "increment"
+  save_inference_path: "inference"
+  save_inference_feed_varnames: []
+  save_inference_fetch_varnames: []
 
-  reader:
-    batch_size: 5
-    class: "{workspace}/reader.py"
-    train_data_path: "{workspace}/train_data"
-
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-        vocab_text_size: 11447
-        vocab_tag_size: 4
-        emb_dim: 10
-        hid_dim: 1000
-        win_size: 5
-        margin: 0.1
-        neg_size: 3
-        num_devices: 1
-
-
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 1
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 100
-      save_last: True
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: sample_1
+  thread_num: 1
