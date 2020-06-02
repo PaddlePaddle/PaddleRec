@@ -57,8 +57,8 @@
 <img align="center" src="../../doc/imgs/gnn.png">
 <p>
 
-## 使用教程
-### 训练 预测
+## 使用教程(快速开始)
+### 
 ```shell
 python -m paddlerec.run -m paddlerec.models.recall.word2vec # word2vec
 python -m paddlerec.run -m paddlerec.models.recall.ssr # ssr
@@ -67,6 +67,40 @@ python -m paddlerec.run -m paddlerec.models.recall.gnn # gnn
 python -m paddlerec.run -m paddlerec.models.recall.ncf # ncf
 python -m paddlerec.run -m paddlerec.models.recall.youtube_dnn # youtube_dnn
 ```
+
+## 使用教程（复现论文）
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据，并且调整了batch_size等超参以便在样例数据上更加友好的显示训练&测试日志。如果需要复现readme中的效果请按照如下表格调整batch_size等超参，并使用提供的脚本下载对应数据集以及数据预处理。
+
+| 模型	| batch_size | thread_num | epoch_num |
+| :---: | :---: | :---: | :---: |
+| Word2Vec | 100 | 5 | 5 |
+| GNN | 100 | 1 | 30 |
+| GRU4REC | 500	| 1	| 10 |
+
+### 数据处理
+参考每个模型目录数据下载&预处理脚本。
+```bash
+sh data_prepare.sh
+```
+
+### 训练
+```bash
+cd modles/recall/gnn # 进入选定好的召回模型的目录 以gnn为例
+python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配置文件，使用自定义配置
+```
+
+### 预测
+```
+# 修改对应模型的config.yaml, workspace配置为当前目录的绝对路径
+# 修改对应模型的config.yaml，mode配置infer_runner
+# 示例: mode: train_runner -> mode: infer_runner
+# infer_runner中 class配置为 class: single_infer
+# 修改phase阶段为infer的配置，参照config注释
+
+# 修改完config.yaml后 执行:
+python -m paddlerec.run -m ./config.yaml # 以gnn为例
+```
+
 ## 效果对比
 ### 模型效果列表
 
