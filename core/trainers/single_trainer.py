@@ -253,6 +253,9 @@ class SingleTrainer(TranspileTrainer):
         _build_strategy = fluid.BuildStrategy()
         _exe_strategy = fluid.ExecutionStrategy()
 
+        # 0: kCoeffNumDevice; 1: One; 2: Customized
+        _build_strategy.gradient_scale_strategy = model_dict.get(
+            "gradient_scale_strategy", 0)
         if "thread_num" in model_dict and model_dict["thread_num"] > 1:
             _build_strategy.reduce_strategy = fluid.BuildStrategy.ReduceStrategy.Reduce
             _exe_strategy.num_threads = model_dict["thread_num"]
