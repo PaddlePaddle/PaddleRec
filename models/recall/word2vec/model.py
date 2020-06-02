@@ -186,27 +186,6 @@ class Model(ModelBase):
                 staircase=True))
         return optimizer
 
-    def analogy_input(self):
-        sparse_feature_number = envs.get_global_env(
-            "hyper_parameters.sparse_feature_number", None, self._namespace)
-        self.analogy_a = fluid.data(
-            name="analogy_a", shape=[None], dtype='int64')
-        self.analogy_b = fluid.data(
-            name="analogy_b", shape=[None], dtype='int64')
-        self.analogy_c = fluid.data(
-            name="analogy_c", shape=[None], dtype='int64')
-        self.analogy_d = fluid.data(
-            name="analogy_d", shape=[None], dtype='int64')
-        self._infer_data_var = [
-            self.analogy_a, self.analogy_b, self.analogy_c, self.analogy_d
-        ]
-
-        self._infer_data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._infer_data_var,
-            capacity=64,
-            use_double_buffer=False,
-            iterable=False)
-
     def infer_net(self, inputs):
         def embedding_layer(input, table_name, initializer_instance=None):
             emb = fluid.embedding(
