@@ -191,7 +191,7 @@ def filter_corpus(args):
                         if r_value > keep_prob:
                             continue
                         write_line += str(idx)
-                        write_line += ","
+                        write_line += " "
                         signal = True
                     if signal:
                         write_line = write_line[:-1] + "\n"

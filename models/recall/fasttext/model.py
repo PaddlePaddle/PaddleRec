@@ -209,17 +209,11 @@ class Model(ModelBase):
         global_right_cnt.stop_gradient = True
         global_total_cnt.stop_gradient = True
 
-        global_total_cnt = fluid.layers.Print(global_total_cnt)
-
         tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
         fluid.layers.assign(tmp1, global_right_cnt)
         
-        total_cnt = fluid.layers.Print(total_cnt)
         tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
         fluid.layers.assign(tmp2, global_total_cnt)
-
-        global_right_cnt = fluid.layers.Print(global_right_cnt)
-        global_total_cnt = fluid.layers.Print(global_total_cnt)
 
         acc = fluid.layers.elementwise_div(
             global_right_cnt, global_total_cnt, name="total_acc")
