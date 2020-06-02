@@ -59,7 +59,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         self.cat_feat_idx_dict_list = [{} for _ in range(26)]
 
         # TODO: set vocabulary dictionary
-        vocab_dir = "./vocab/"
+        vocab_dir = "./sample_data/vocab/"
         for i in range(26):
             lookup_idx = 1  # remain 0 for default value
             for line in open(
