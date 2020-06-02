@@ -200,12 +200,6 @@ python -m paddlerec.run -m ./models/rank/dnn/config.yaml -b backend.yaml
 
 ### 开发者教程
 * [PaddleRec设计文档](doc/design.md)
-
-### 关于PaddleRec性能
-* [Benchmark](doc/benchmark.md)
-
-### 开发者教程
-* [PaddleRec设计文档](doc/design.md)
 * [二次开发](doc/development.md)
 
 ### 关于PaddleRec性能
