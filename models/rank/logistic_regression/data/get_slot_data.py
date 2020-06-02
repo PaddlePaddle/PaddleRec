@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml, os
+import yaml
+import os
 
 from paddlerec.core.reader import Reader
 from paddlerec.core.utils import envs
 import paddle.fluid.incubate.data_generator as dg
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -92,6 +94,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         return data_iter
 
 
-reader = TrainReader("../config.yaml")
+reader = TrainReader(
+    "../config.yaml")  # run this file in original folder to find config.yaml
 reader.init()
 reader.run_from_stdin()
