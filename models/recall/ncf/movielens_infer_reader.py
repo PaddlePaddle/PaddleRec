@@ -19,7 +19,7 @@ from collections import defaultdict
 import numpy as np
 
 
-class EvaluateReader(Reader):
+class TrainReader(Reader):
     def init(self):
         pass
 
