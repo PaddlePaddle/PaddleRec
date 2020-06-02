@@ -77,6 +77,7 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
+  gradient_scale_strategy: 1
 #- name: phase2
 #  model: "{workspace}/model.py" # user-defined model
 #  dataset_name: dataset_infer # select dataset by name
