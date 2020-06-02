@@ -34,5 +34,5 @@ python preprocess.py --data_resplit --input_corpus_dir=raw_data/convert_text8 --
 # download test data
 wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/test_dir.tar
 tar xzvf test_dir.tar -C raw_data
-mv raw_data/data/test_dir data/test/
+mv raw_data/data/test_dir/* data/test/
 rm -rf raw_data
