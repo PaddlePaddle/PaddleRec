@@ -50,8 +50,8 @@ def parse_args():
         default='./word_ngrams',
         help="The path of word_ngrams ")
     parser.add_argument(
-	'--ngrams_id_path',
-	type=str,
+        '--ngrams_id_path',
+        type=str,
         default='./word_ngrams_id',
         help="The path of word_ngrams_id ")
     parser.add_argument(
@@ -157,8 +157,7 @@ def filter_corpus(args):
 
     # write word2id file
     print("write word2id file to : " + args.dict_path + "_word_to_id_")
-    with io.open(
-            args.word_id_path, 'w+', encoding='utf-8') as fid:
+    with io.open(args.word_id_path, 'w+', encoding='utf-8') as fid:
         for k, v in word_to_id_.items():
             fid.write(k + " " + str(v) + '\n')
     # filter corpus and convert id

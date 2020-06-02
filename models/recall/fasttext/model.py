@@ -130,8 +130,8 @@ class Model(ModelBase):
 
         loss = fluid.layers.log_loss(fluid.layers.sigmoid(logits), label)
         avg_cost = fluid.layers.reduce_sum(loss)
-        
-	global_right_cnt = fluid.layers.create_global_var(
+
+        global_right_cnt = fluid.layers.create_global_var(
             name="global_right_cnt",
             persistable=True,
             dtype='float32',
@@ -144,7 +144,7 @@ class Model(ModelBase):
             shape=[1],
             value=0)
         global_right_cnt.stop_gradient = True
-        global_total_cnt.stop_gradient = True 
+        global_total_cnt.stop_gradient = True
         self._cost = avg_cost
         self._metrics["LOSS"] = avg_cost
 
@@ -211,7 +211,7 @@ class Model(ModelBase):
 
         tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
         fluid.layers.assign(tmp1, global_right_cnt)
-        
+
         tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
         fluid.layers.assign(tmp2, global_total_cnt)
 
