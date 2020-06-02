@@ -11,51 +11,70 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-evaluate:
-  workspace: "paddlerec.models.recall.word2vec" 
+workspace: "paddlerec.models.recall.word2vec" 
 
-  evaluate_only: False
-  evaluate_model_path: ""
-  
-  reader:
-    batch_size: 50
-    class: "{workspace}/w2v_evaluate_reader.py"
-    test_data_path: "{workspace}/data/test"
-    word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
+# list of dataset
+dataset:
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 100
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/train"
+  word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
+  data_converter: "{workspace}/w2v_reader.py"
+- name: dataset_infer # name
+  batch_size: 50
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/test"
+  word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
+  data_converter: "{workspace}/w2v_evaluate_reader.py"
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+hyper_parameters:
+  optimizer:
+    learning_rate: 1.0
+    decay_steps: 100000
+    decay_rate: 0.999
+    class: sgd
+    strategy: async
+  sparse_feature_number: 354051
+  sparse_feature_dim: 300
+  with_shuffle_batch: False
+  neg_num: 5
+  window_size: 5
 
+# select runner by name
+mode: train_runner
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: train_runner
+  class: single_train
+  # num of epochs
   epochs: 2
-  workspace: "paddlerec.models.recall.word2vec"
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 1 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  fetch_period: 10
+- name: infer_runner
+  class: single_infer
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  init_model_path: "increment/0" # load model path
 
-  reader:
-    batch_size: 100
-    class: "{workspace}/w2v_reader.py"
-    train_data_path: "{workspace}/data/train"
-    word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
-
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      sparse_feature_number: 85
-      sparse_feature_dim: 300
-      with_shuffle_batch: False
-      neg_num: 5
-      window_size: 5
-      learning_rate: 1.0
-      decay_steps: 100000
-      decay_rate: 0.999
-      optimizer: sgd
-
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 1
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 1
-      save_last: True
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+#- name: phase2
+#  model: "{workspace}/model.py" # user-defined model
+#  dataset_name: dataset_infer # select dataset by name
+#  thread_num: 1

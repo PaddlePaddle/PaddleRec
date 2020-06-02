@@ -31,9 +31,21 @@
 <img align="center" src="../../doc/imgs/multiview-simnet.png">
 <p>
 
-## 使用教程
-### 训练&预测
+## 使用教程(快速开始)
+### 训练
 ```shell
 python -m paddlerec.run -m paddlerec.models.match.dssm # dssm
 python -m paddlerec.run -m paddlerec.models.match.multiview-simnet # multiview-simnet
+```
+
+### 预测
+```shell
+# 修改对应模型的config.yaml, workspace配置为当前目录的绝对路径
+# 修改对应模型的config.yaml，mode配置infer_runner
+# 示例: mode: train_runner -> mode: infer_runner
+# infer_runner中 class配置为 class: single_infer
+# 修改phase阶段为infer的配置，参照config注释
+
+# 修改完config.yaml后 执行:
+python -m paddlerec.run -m ./config.yaml # 以dssm为例
 ```
