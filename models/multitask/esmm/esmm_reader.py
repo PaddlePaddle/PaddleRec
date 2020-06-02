@@ -40,8 +40,6 @@ class TrainReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = line.strip().split(',')
-            # ctr = list(map(int, features[1]))
-            # cvr = list(map(int, features[2]))
             ctr = int(features[1])
             cvr = int(features[2])
 
@@ -54,7 +52,6 @@ class TrainReader(Reader):
                     continue
                 self.all_field_id_dict[field_id][0] = True
                 index = self.all_field_id_dict[field_id][1]
-                # feat_id = list(map(int, feat_id))
                 output[index][1].append(int(feat_id))
 
             for field_id in self.all_field_id_dict:
