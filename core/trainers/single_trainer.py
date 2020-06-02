@@ -234,10 +234,12 @@ class SingleTrainer(TranspileTrainer):
         scope = self._model[model_name][2]
         program = self._model[model_name][0]
         reader = self._dataset[reader_name]
+        threads = model_dict.get("thread_num", 1)
         with fluid.scope_guard(scope):
             self._exe.train_from_dataset(
                 program=program,
                 dataset=reader,
+                thread=threads,
                 fetch_list=fetch_vars,
                 fetch_info=fetch_alias,
                 print_period=fetch_period)
@@ -247,8 +249,20 @@ class SingleTrainer(TranspileTrainer):
         model_name = model_dict["name"]
         model_class = self._model[model_name][3]
         program = self._model[model_name][0].clone()
+
+        _build_strategy = fluid.BuildStrategy()
+        _exe_strategy = fluid.ExecutionStrategy()
+
+        if "thread_num" in model_dict and model_dict["thread_num"] > 1:
+            _build_strategy.reduce_strategy = fluid.BuildStrategy.ReduceStrategy.Reduce
+            _exe_strategy.num_threads = model_dict["thread_num"]
+            os.environ['CPU_NUM'] = str(_exe_strategy.num_threads)
+
         program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-            loss_name=model_class.get_avg_cost().name)
+            loss_name=model_class.get_avg_cost().name,
+            build_strategy=_build_strategy,
+            exec_strategy=_exe_strategy)
+
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
