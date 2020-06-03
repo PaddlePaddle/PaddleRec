@@ -32,6 +32,17 @@ class StartupBase(object):
     def startup(self, context):
         pass
 
+    def load(self, context, is_fleet=False):
+        dirname = envs.get_global_env(
+            "runner." + context["runner_name"] + ".init_model_path", None)
+        if dirname is None or dirname == "":
+            return
+        print("going to load ", dirname)
+        if is_fleet:
+            context["fleet"].load_persistables(context["exe"], dirname)
+        else:
+            fluid.io.load_persistables(context["exe"], dirname)
+
 
 class SingleStartup(StartupBase):
     def __init__(self, context):
@@ -41,6 +52,10 @@ class SingleStartup(StartupBase):
         for model_dict in context["env"]["phase"]:
             with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
                 context["exe"].run(context["_model"][model_dict["name"]][1])
+                train_prog = context["_model"][model_dict["name"]][0]
+                startup_prog = context["_model"][model_dict["name"]][1]
+                with fluid.program_guard(train_prog, startup_prog):
+                    self.load(context)
         context["status"] = "train_pass"
 
 
@@ -50,7 +65,12 @@ class PSStartup(StartupBase):
 
     def startup(self, context):
         model_dict = context["env"]["phase"][0]
-        context["exe"].run(context["_model"][model_dict["name"]][1])
+        with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
+            context["exe"].run(context["_model"][model_dict["name"]][1])
+            train_prog = context["_model"][model_dict["name"]][0]
+            startup_prog = context["_model"][model_dict["name"]][1]
+            with fluid.program_guard(train_prog, startup_prog):
+                self.load(context, True)
         context["status"] = "train_pass"
 
 

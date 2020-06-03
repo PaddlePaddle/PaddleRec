@@ -125,17 +125,6 @@ class RunnerBase(object):
             except fluid.core.EOFException:
                 reader.reset()
 
-    def load(self, context, is_fleet=False):
-        dirname = envs.get_global_env(
-            "runner." + context["runner_name"] + ".init_model_path", None)
-        if dirname is None or dirname == "":
-            return
-        print("going to load ", dirname)
-        if is_fleet:
-            context["fleet"].load_persistables(context["exe"], dirname)
-        else:
-            fluid.io.load_persistables(context["exe"], dirname)
-
     def save(self, epoch_id, context, is_fleet=False):
         def need_save(epoch_id, epoch_interval, is_last=False):
             if is_last:
@@ -203,13 +192,6 @@ class SingleRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["env"]["phase"]:
-                if epoch == 0:
-                    with fluid.scope_guard(context["_model"][model_dict[
-                            "name"]][2]):
-                        train_prog = context["_model"][model_dict["name"]][0]
-                        startup_prog = context["_model"][model_dict["name"]][1]
-                        with fluid.program_guard(train_prog, startup_prog):
-                            self.load(context)
                 reader_name = model_dict["dataset_name"]
                 name = "dataset." + reader_name + "."
                 begin_time = time.time()
@@ -239,13 +221,6 @@ class PSRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             model_dict = context["env"]["phase"][0]
-            if epoch == 0:
-                with fluid.scope_guard(context["_model"][model_dict["name"]][
-                        2]):
-                    train_prog = context["_model"][model_dict["name"]][0]
-                    startup_prog = context["_model"][model_dict["name"]][1]
-                    with fluid.program_guard(train_prog, startup_prog):
-                        self.load(context, True)
             reader_name = model_dict["dataset_name"]
             name = "dataset." + reader_name + "."
             begin_time = time.time()
