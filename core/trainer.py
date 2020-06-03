@@ -128,9 +128,7 @@ class Trainer(object):
             raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
 
     def which_executor_mode(self):
-        executor_mode = envs.get_global_env(
-            "runner." + self._runner_name + ".executor_mode",
-            default_value="train")
+        executor_mode = envs.get_runtime_environ("train.trainer.executor_mode")
         if executor_mode.upper() not in ["TRAIN", "INFER"]:
             raise ValueError("Not Support Executor Mode {}".format(
                 executor_mode))
@@ -138,6 +136,7 @@ class Trainer(object):
             self.is_infer = False
         else:
             self.is_infer = True
+
         self._context["is_infer"] = self.is_infer
 
     def legality_check(self):

@@ -91,7 +91,11 @@ class RunnerBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
-        metrics = model_class.get_metrics()
+        if context["is_infer"]:
+            metrics = model_class.get_infer_results()
+        else:
+            metrics = model_class.get_metrics()
+
         if metrics:
             fetch_vars = metrics.values()
             fetch_alias = metrics.keys()
