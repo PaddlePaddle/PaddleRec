@@ -63,7 +63,8 @@ def build(dirname):
     models_copy = [
         'data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy',
         'tree/*.txt', 'data/sample_data/*', 'data/sample_data/train/*',
-        'data/sample_data/infer/*', 'data/*/*.csv'
+        'data/sample_data/infer/*', 'data/*/*.csv', 'Criteo_data/*',
+        'Criteo_data/sample_data/train/*'
     ]
 
     engine_copy = ['*/*.sh']
