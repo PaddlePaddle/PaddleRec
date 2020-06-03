@@ -248,12 +248,17 @@ class SingleTrainer(TranspileTrainer):
         _exe_strategy = fluid.ExecutionStrategy()
 
         # 0: kCoeffNumDevice; 1: One; 2: Customized
-        gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.CoeffNumDevice
         _gradient_scale_strategy = model_dict.get("gradient_scale_strategy", 0)
-        if _gradient_scale_strategy == 1:
+        if _gradient_scale_strategy == 0:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.CoeffNumDevice
+        elif _gradient_scale_strategy == 1:
             gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.One
         elif _gradient_scale_strategy == 2:
             gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
+        else:
+            raise ValueError(
+                "Unsurpported config. gradient_scale_strategy must be one of [0, 1, 2]."
+            )
         _build_strategy.gradient_scale_strategy = gradient_scale_strategy
 
         if "thread_num" in model_dict and model_dict["thread_num"] > 1:
