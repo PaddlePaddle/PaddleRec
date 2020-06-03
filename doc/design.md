@@ -197,13 +197,7 @@ class Reader(dg.MultiSlotDataGenerator):
 
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
-
+        _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
         envs.update_workspace()
 

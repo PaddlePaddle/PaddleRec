@@ -30,16 +30,12 @@ class Trainer(object):
 
     def __init__(self, config=None):
         self._status_processor = {}
-
         self._place = fluid.CPUPlace()
         self._exe = fluid.Executor(self._place)
-
         self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
         self._config_yaml = config
-
-        with open(config, 'r') as rb:
-            self._config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        self._config = envs.load_yaml(config)
 
     def regist_context_processor(self, status_name, processor):
         """
@@ -87,12 +83,8 @@ class Trainer(object):
 
 
 def user_define_engine(engine_yaml):
-    with open(engine_yaml, 'r') as rb:
-        _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-    assert _config is not None
-
+    _config = envs.load_yaml(engine_yaml)
     envs.set_runtime_environs(_config)
-
     train_location = envs.get_global_env("engine.file")
     train_dirname = os.path.dirname(train_location)
     base_name = os.path.splitext(os.path.basename(train_location))[0]
