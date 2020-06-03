@@ -150,8 +150,8 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 def single_train_engine(args):
     _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
-                                   None)
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
 
     if trainer_class:
         trainer = trainer_class
@@ -174,8 +174,8 @@ def single_train_engine(args):
 def single_infer_engine(args):
     _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
-                                   None)
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
 
     if trainer_class:
         trainer = trainer_class
@@ -232,7 +232,7 @@ def cluster_engine(args):
         run_extras = get_all_inters_from_yaml(args.model,
                                               ["train.", "runner."])
         trainer_class = run_extras.get(
-            "runner." + _envs["mode"] + ".runner_class", None)
+            "runner." + _envs["mode"] + ".trainer_class", None)
 
         if trainer_class:
             trainer = trainer_class

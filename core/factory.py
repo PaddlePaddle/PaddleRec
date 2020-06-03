@@ -26,7 +26,6 @@ def trainer_registry():
     # Definition of procedure execution process
     trainers["GeneralTrainer"] = os.path.join(trainer_abs,
                                               "general_trainer.py")
-    trainers["TDMTrainer"] = os.path.join(trainer_abs, "tdm_trainer.py")
 
 
 trainer_registry()

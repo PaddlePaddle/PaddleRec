@@ -21,10 +21,10 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.trainers.framework.dataset import DataLoader, QueueDataset
 
-__all__ = ["NetWorkBase", "SingleNetWork", "PSNetwork", "CollectiveNetWork"]
+__all__ = ["NetworkBase", "SingleNetwork", "PSNetwork", "CollectiveNetwork"]
 
 
-class NetWorkBase(object):
+class NetworkBase(object):
     """R
     """
 
@@ -35,7 +35,7 @@ class NetWorkBase(object):
         pass
 
 
-class SingleNetWork(NetWorkBase):
+class SingleNetwork(NetworkBase):
     def __init__(self, context):
         pass
 
@@ -102,7 +102,7 @@ class SingleNetWork(NetWorkBase):
         context["status"] = "startup_pass"
 
 
-class PSNetwork(NetWorkBase):
+class PSNetwork(NetworkBase):
     def __init__(self, context):
         pass
 
@@ -197,7 +197,7 @@ class PSNetwork(NetWorkBase):
         context['status'] = "terminal_pass"
 
 
-class CollectiveNetWork(NetWorkBase):
+class CollectiveNetwork(NetworkBase):
     def __init__(self, context):
         pass
 

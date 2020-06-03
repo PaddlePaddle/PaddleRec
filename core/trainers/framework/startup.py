@@ -19,10 +19,10 @@ import warnings
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
-__all__ = ["StartUpBase", "SingleStartup", "PSStartUp", "CollectiveStartUp"]
+__all__ = ["StartupBase", "SingleStartup", "PSStartup", "CollectiveStartup"]
 
 
-class StartUpBase(object):
+class StartupBase(object):
     """R
     """
 
@@ -33,7 +33,7 @@ class StartUpBase(object):
         pass
 
 
-class SingleStartup(StartUpBase):
+class SingleStartup(StartupBase):
     def __init__(self, context):
         pass
 
@@ -44,7 +44,7 @@ class SingleStartup(StartUpBase):
         context["status"] = "train_pass"
 
 
-class PSStartUp(StartUpBase):
+class PSStartup(StartupBase):
     def __init__(self, context):
         pass
 
@@ -54,7 +54,7 @@ class PSStartUp(StartUpBase):
         context["status"] = "train_pass"
 
 
-class CollectiveStartUp(StartUpBase):
+class CollectiveStartup(StartupBase):
     def __init__(self, context):
         pass
 

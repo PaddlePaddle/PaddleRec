@@ -114,6 +114,7 @@ class Trainer(object):
         else:
             raise ValueError("Not Support Engine {}".format(engine))
         self._context["is_fleet"] = self.is_fleet
+        self._context["engine"] = self.engine
 
     def which_fleet_mode(self):
         fleet_mode = envs.get_global_env(
@@ -126,6 +127,7 @@ class Trainer(object):
             self.fleet_mode = FleetMode.PSLIB
         else:
             raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
+        self._context["fleet_mode"] = self.fleet_mode
 
     def which_executor_mode(self):
         executor_mode = envs.get_runtime_environ("train.trainer.executor_mode")

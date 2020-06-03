@@ -51,11 +51,11 @@ class GeneralTrainer(Trainer):
 
     def instance(self, context):
         print("instance begin")
-        instance_class_name = envs.get_global_env(
-            self.runner_env_name + ".instance_class", default_value=None)
-        if instance_class_name:
+        instance_class_path = envs.get_global_env(
+            self.runner_env_name + ".instance_class_path", default_value=None)
+        if instance_class_path:
             instance_class = envs.lazy_instance_by_fliename(
-                context["env"]["workspace"], instance_class_name)(context)
+                instance_class_path, "Instance")(context)
         else:
             if self.engine == EngineMode.SINGLE:
                 instance_class_name = "SingleInstance"
@@ -74,18 +74,18 @@ class GeneralTrainer(Trainer):
 
     def network(self, context):
         print("network begin")
-        network_class_name = envs.get_global_env(
-            self.runner_env_name + ".network_class", default_value=None)
-        if network_class_name:
-            network_class = envs.lazy_instance_by_fliename(
-                context["env"]["workspace"], network_class_name)(context)
+        network_class_path = envs.get_global_env(
+            self.runner_env_name + ".network_class_path", default_value=None)
+        if network_class_path:
+            network_class = envs.lazy_instance_by_fliename(network_class_path,
+                                                           "Network")(context)
         else:
             if self.engine == EngineMode.SINGLE:
-                network_class_name = "SingleNetWork"
+                network_class_name = "SingleNetwork"
             elif self.fleet_mode == FleetMode.PS:
                 network_class_name = "PSNetwork"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
-                network_class_name = "CollectiveNetWork"
+                network_class_name = "CollectiveNetwork"
             else:
                 raise ValueError("NetWork Init Error")
             network_path = os.path.join(self.abs_dir, "framework",
@@ -97,18 +97,18 @@ class GeneralTrainer(Trainer):
 
     def startup(self, context):
         print("startup begin")
-        startup_class_name = envs.get_global_env(
+        startup_class_path = envs.get_global_env(
             self.runner_env_name + ".startup_class", default_value=None)
-        if startup_class_name:
-            startup_class = envs.lazy_instance_by_fliename(
-                context["env"]["workspace"], startup_class_name)(context)
+        if startup_class_path:
+            startup_class = envs.lazy_instance_by_fliename(startup_class_path,
+                                                           "Startup")(context)
         else:
             if self.engine == EngineMode.SINGLE:
                 startup_class_name = "SingleStartup"
             elif self.fleet_mode == FleetMode.PS:
-                startup_class_name = "PSStartUp"
+                startup_class_name = "PSStartup"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
-                startup_class_name = "CollectiveStartUp"
+                startup_class_name = "CollectiveStartup"
             else:
                 raise ValueError("Startup Init Error")
             startup_path = os.path.join(self.abs_dir, "framework",
@@ -119,11 +119,11 @@ class GeneralTrainer(Trainer):
 
     def runner(self, context):
         print("executor begin")
-        runner_class_name = envs.get_global_env(
+        runner_class_path = envs.get_global_env(
             self.runner_env_name + ".runner_class", default_value=None)
-        if runner_class_name:
-            runner_class = envs.lazy_instance_by_fliename(
-                context["env"]["workspace"], runner_class_name)(context)
+        if runner_class_path:
+            runner_class = envs.lazy_instance_by_fliename(runner_class_path,
+                                                          "Runner")(context)
         else:
             if self.engine == EngineMode.SINGLE:
                 runner_class_name = "SingleRunner"
@@ -139,11 +139,11 @@ class GeneralTrainer(Trainer):
         runner_class.run(context)
 
     def terminal(self, context):
-        terminal_class_name = envs.get_global_env(
+        terminal_class_path = envs.get_global_env(
             self.runner_env_name + ".terminal_class", default_value=None)
-        if terminal_class_name:
+        if terminal_class_path:
             terminal_class = envs.lazy_instance_by_fliename(
-                context["env"]["workspace"], terminal_class_name)(context)
+                terminal_class_path, "Terminal")(context)
             terminal_class.terminal(context)
         else:
             print("PaddleRec Stop")
