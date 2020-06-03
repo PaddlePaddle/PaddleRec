@@ -32,7 +32,7 @@ class Model(ModelBase):
         self.sparse_feature_dim = envs.get_global_env(
             "hyper_parameters.sparse_feature_dim")
         self.learning_rate = envs.get_global_env(
-            "hyper_parameters.learning_rate")
+            "hyper_parameters.optimizer.learning_rate")
 
     def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]

@@ -14,7 +14,7 @@
 
 import os
 import subprocess
-
+import sys
 import argparse
 import tempfile
 import yaml
@@ -22,6 +22,7 @@ import copy
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
 from paddlerec.core.utils import util
+from paddlerec.core.utils import validation
 
 engines = {}
 device = ["CPU", "GPU"]
@@ -48,9 +49,7 @@ def engine_registry():
 
 
 def get_inters_from_yaml(file, filters):
-    with open(file, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
+    _envs = envs.load_yaml(file)
     flattens = envs.flatten_environs(_envs)
     inters = {}
     for k, v in flattens.items():
@@ -197,9 +196,7 @@ def cluster_engine(args):
     def master():
         role = "MASTER"
         from paddlerec.core.engine.cluster.cluster import ClusterEngine
-        with open(args.backend, 'r') as rb:
-            _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-
+        _envs = envs.load_yaml(args.backend)
         flattens = envs.flatten_environs(_envs, "_")
         flattens["engine_role"] = role
         flattens["engine_run_config"] = args.model
@@ -322,8 +319,9 @@ if __name__ == "__main__":
 
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
+    if not validation.yaml_validation(args.model):
+        sys.exit(-1)
     engine_registry()
-
     which_engine = get_engine(args)
     engine = which_engine(args)
     engine.run()
