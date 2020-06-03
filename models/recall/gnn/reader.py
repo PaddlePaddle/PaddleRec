@@ -17,11 +17,11 @@ import random
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class TrainReader(Reader):
+class TrainReader(ReaderBase):
     def init(self):
         self.batch_size = envs.get_global_env("batch_size", None,
                                               "train.reader")

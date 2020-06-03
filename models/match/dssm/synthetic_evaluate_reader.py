@@ -13,10 +13,10 @@
 # limitations under the License.
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class EvaluateReader(Reader):
+class EvaluateReader(ReaderBase):
     def init(self):
         pass
 

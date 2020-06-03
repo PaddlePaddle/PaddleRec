@@ -17,7 +17,7 @@ from collections import OrderedDict
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -157,7 +157,7 @@ class Model(ModelBase):
         self.loss = self.avg_logloss + l2_reg_cross_loss
         self._cost = self.loss
 
-    #def optimizer(self):
-    #    
+    # def optimizer(self):
+    #
     #    optimizer = fluid.optimizer.Adam(self.learning_rate, lazy_mode=True)
     #    return optimizer

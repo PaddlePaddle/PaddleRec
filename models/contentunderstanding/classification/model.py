@@ -14,7 +14,7 @@
 
 import paddle.fluid as fluid
 
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):

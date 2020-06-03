@@ -16,11 +16,11 @@ import io
 
 import six
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(Reader):
+class EvaluateReader(ReaderBase):
     def init(self):
         dict_path = envs.get_global_env("word_id_dict_path", None,
                                         "evaluate.reader")

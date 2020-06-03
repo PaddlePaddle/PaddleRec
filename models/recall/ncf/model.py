@@ -16,7 +16,7 @@ import math
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 import numpy as np
 
 
@@ -46,7 +46,7 @@ class Model(ModelBase):
 
     def net(self, inputs, is_infer=False):
 
-        num_layer = len(self.layers)  #Number of layers in the MLP
+        num_layer = len(self.layers)  # Number of layers in the MLP
 
         MF_Embedding_User = fluid.embedding(
             input=inputs[0],
@@ -80,7 +80,7 @@ class Model(ModelBase):
         mf_vector = fluid.layers.elementwise_mul(mf_user_latent,
                                                  mf_item_latent)
 
-        # MLP part 
+        # MLP part
         # The 0-th layer is the concatenation of embedding layers
         mlp_user_latent = fluid.layers.flatten(x=MLP_Embedding_User, axis=1)
         mlp_item_latent = fluid.layers.flatten(x=MLP_Embedding_Item, axis=1)

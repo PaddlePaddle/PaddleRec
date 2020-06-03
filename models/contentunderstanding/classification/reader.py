@@ -14,10 +14,10 @@
 
 import sys
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(Reader):
+class TrainReader(ReaderBase):
     def init(self):
         pass
 
