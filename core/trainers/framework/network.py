@@ -19,7 +19,7 @@ import warnings
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
-from .dataset import DataLoader, QueueDataset
+from paddlerec.core.trainers.framework.dataset import DataLoader, QueueDataset
 
 __all__ = ["NetWorkBase", "SingleNetWork", "PSNetwork", "CollectiveNetWork"]
 

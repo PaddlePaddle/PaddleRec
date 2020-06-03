@@ -16,6 +16,7 @@ General Trainer, applicable to many situations: Single/Cluster/Local_Cluster + P
 """
 from __future__ import print_function
 
+import os
 import time
 import warnings
 
@@ -37,10 +38,11 @@ class GeneralTrainer(Trainer):
     def __init__(self, config=None):
         Trainer.__init__(self, config)
         self.processor_register()
+        self.abs_dir = os.path.dirname(os.path.abspath(__file__))
+        self.runner_env_name = "runner." + self._context["runner_name"]
 
     def processor_register(self):
         print("processor_register begin")
-        # single
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('network_pass', self.network)
         self.regist_context_processor('startup_pass', self.startup)
@@ -49,56 +51,100 @@ class GeneralTrainer(Trainer):
 
     def instance(self, context):
         print("instance begin")
-        instance_class = None
-        if self.engine == EngineMode.SINGLE:
-            instance_class = SingleInstance(context)
-        elif self.fleet_mode == FleetMode.PS:
-            instance_class = PSInstance(context)
-        elif self.fleet_mode == FleetMode.COLLECTIVE:
-            instance_class = CollectiveInstance(context)
+        instance_class_name = envs.get_global_env(
+            self.runner_env_name + ".instance_class", default_value=None)
+        if instance_class_name:
+            instance_class = envs.lazy_instance_by_fliename(
+                context["env"]["workspace"], instance_class_name)(context)
         else:
-            raise ValueError("Instance Init Error")
+            if self.engine == EngineMode.SINGLE:
+                instance_class_name = "SingleInstance"
+            elif self.fleet_mode == FleetMode.PS:
+                instance_class_name = "PSInstance"
+            elif self.fleet_mode == FleetMode.COLLECTIVE:
+                instance_class_name = "CollectiveInstance"
+            else:
+                raise ValueError("Instance Init Error")
+            instance_path = os.path.join(self.abs_dir, "framework",
+                                         "instance.py")
+            instance_class = envs.lazy_instance_by_fliename(
+                instance_path, instance_class_name)(context)
+
         instance_class.instance(context)
 
     def network(self, context):
         print("network begin")
-        network_class = None
-        if self.engine == EngineMode.SINGLE:
-            network_class = SingleNetWork(context)
-        elif self.fleet_mode == FleetMode.PS:
-            network_class = PSNetwork(context)
-        elif self.fleet_mode == FleetMode.COLLECTIVE:
-            network_class = CollectiveNetWork(context)
+        network_class_name = envs.get_global_env(
+            self.runner_env_name + ".network_class", default_value=None)
+        if network_class_name:
+            network_class = envs.lazy_instance_by_fliename(
+                context["env"]["workspace"], network_class_name)(context)
         else:
-            raise ValueError("NetWork Init Error")
+            if self.engine == EngineMode.SINGLE:
+                network_class_name = "SingleNetWork"
+            elif self.fleet_mode == FleetMode.PS:
+                network_class_name = "PSNetwork"
+            elif self.fleet_mode == FleetMode.COLLECTIVE:
+                network_class_name = "CollectiveNetWork"
+            else:
+                raise ValueError("NetWork Init Error")
+            network_path = os.path.join(self.abs_dir, "framework",
+                                        "network.py")
+            network_class = envs.lazy_instance_by_fliename(
+                network_path, network_class_name)(context)
+
         network_class.build_network(context)
 
     def startup(self, context):
         print("startup begin")
-        startup_class = None
-        if self.engine == EngineMode.SINGLE:
-            startup_class = SingleStartup(context)
-        elif self.fleet_mode == FleetMode.PS:
-            startup_class = PSStartUp(context)
-        elif self.fleet_mode == FleetMode.COLLECTIVE:
-            startup_class = CollectiveStartUp(context)
+        startup_class_name = envs.get_global_env(
+            self.runner_env_name + ".startup_class", default_value=None)
+        if startup_class_name:
+            startup_class = envs.lazy_instance_by_fliename(
+                context["env"]["workspace"], startup_class_name)(context)
         else:
-            raise ValueError("Startup Init Error")
+            if self.engine == EngineMode.SINGLE:
+                startup_class_name = "SingleStartup"
+            elif self.fleet_mode == FleetMode.PS:
+                startup_class_name = "PSStartUp"
+            elif self.fleet_mode == FleetMode.COLLECTIVE:
+                startup_class_name = "CollectiveStartUp"
+            else:
+                raise ValueError("Startup Init Error")
+            startup_path = os.path.join(self.abs_dir, "framework",
+                                        "startup.py")
+            startup_class = envs.lazy_instance_by_fliename(
+                startup_path, startup_class_name)(context)
         startup_class.startup(context)
 
     def runner(self, context):
         print("executor begin")
-        executor_class = None
-        if self.engine == EngineMode.SINGLE:
-            executor_class = SingleRunner(context)
-        elif self.fleet_mode == FleetMode.PS:
-            executor_class = PSRunner(context)
-        elif self.fleet_mode == FleetMode.COLLECTIVE:
-            executor_class = CollectiveRunner(context)
+        runner_class_name = envs.get_global_env(
+            self.runner_env_name + ".runner_class", default_value=None)
+        if runner_class_name:
+            runner_class = envs.lazy_instance_by_fliename(
+                context["env"]["workspace"], runner_class_name)(context)
         else:
-            raise ValueError("Executor Init Error")
-        executor_class.exuctor(context)
+            if self.engine == EngineMode.SINGLE:
+                runner_class_name = "SingleRunner"
+            elif self.fleet_mode == FleetMode.PS:
+                runner_class_name = "PSRunner"
+            elif self.fleet_mode == FleetMode.COLLECTIVE:
+                runner_class_name = "CollectiveRunner"
+            else:
+                raise ValueError("Runner Init Error")
+            runner_path = os.path.join(self.abs_dir, "framework", "runner.py")
+            runner_class = envs.lazy_instance_by_fliename(
+                runner_path, runner_class_name)(context)
+        runner_class.run(context)
 
     def terminal(self, context):
-        print("PaddleRec Stop")
+        terminal_class_name = envs.get_global_env(
+            self.runner_env_name + ".terminal_class", default_value=None)
+        if terminal_class_name:
+            terminal_class = envs.lazy_instance_by_fliename(
+                context["env"]["workspace"], terminal_class_name)(context)
+            terminal_class.terminal(context)
+        else:
+            print("PaddleRec Stop")
         context['is_exit'] = True

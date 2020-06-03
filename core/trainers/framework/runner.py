@@ -193,7 +193,7 @@ class SingleRunner(RunnerBase):
     def __init__(self, context):
         pass
 
-    def exuctor(self, context):
+    def run(self, context):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
@@ -229,7 +229,7 @@ class PSRunner(RunnerBase):
     def __init__(self, context):
         pass
 
-    def exuctor(self, context):
+    def run(self, context):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
