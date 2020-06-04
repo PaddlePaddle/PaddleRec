@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     print("download and extract starting...")
     download_file_and_uncompress(url)
-    download_file(url2, "./aid_data/feat_dict_10.pkl2", True)
+    download_file(url2, "./sample_data/feat_dict_10.pkl2", True)
     print("download and extract finished")
 
     print("preprocessing...")
