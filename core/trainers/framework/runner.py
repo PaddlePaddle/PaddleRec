@@ -34,6 +34,18 @@ class RunnerBase(object):
     def exuctor(self, context):
         pass
 
+    def _run(self, context, model_dict):
+        reader_name = model_dict["dataset_name"]
+        name = "dataset." + reader_name + "."
+        begin_time = time.time()
+        if envs.get_global_env(name + "type") == "DataLoader":
+            self._executor_dataloader_train(model_dict, context)
+        else:
+            self._executor_dataset_train(model_dict, context)
+        end_time = time.time()
+        seconds = end_time - begin_time
+        print("epoch {} done, use time: {}".format(epoch, seconds))
+
     def _executor_dataset_train(self, model_dict, context):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
@@ -192,22 +204,13 @@ class SingleRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["env"]["phase"]:
-                reader_name = model_dict["dataset_name"]
-                name = "dataset." + reader_name + "."
-                begin_time = time.time()
-                if envs.get_global_env(name + "type") == "DataLoader":
-                    self._executor_dataloader_train(model_dict, context)
-                else:
-                    self._executor_dataset_train(model_dict, context)
+                self._run(context, model_dict)
                 with fluid.scope_guard(context["_model"][model_dict["name"]][
                         2]):
                     train_prog = context["_model"][model_dict["name"]][4]
                     startup_prog = context["_model"][model_dict["name"]][1]
                     with fluid.program_guard(train_prog, startup_prog):
                         self.save(epoch, context)
-                end_time = time.time()
-                seconds = end_time - begin_time
-            print("epoch {} done, time elasped: {}".format(epoch, seconds))
         context["status"] = "terminal_pass"
 
 
@@ -219,23 +222,14 @@ class PSRunner(RunnerBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
+        model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
-            model_dict = context["env"]["phase"][0]
-            reader_name = model_dict["dataset_name"]
-            name = "dataset." + reader_name + "."
-            begin_time = time.time()
-            if envs.get_global_env(name + "type") == "DataLoader":
-                self._executor_dataloader_train(model_dict, context)
-            else:
-                self._executor_dataset_train(model_dict, context)
+            self._run(context)
             with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
                 train_prog = context["_model"][model_dict["name"]][4]
                 startup_prog = context["_model"][model_dict["name"]][1]
                 with fluid.program_guard(train_prog, startup_prog):
                     self.save(epoch, context, True)
-            end_time = time.time()
-            seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
         context["fleet"].stop_worker()
         context["status"] = "terminal_pass"
 
@@ -245,4 +239,15 @@ class CollectiveRunner(RunnerBase):
         pass
 
     def exuctor(self, context):
-        pass
+        epochs = int(
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".epochs"))
+        model_dict = context["env"]["phase"][0]
+        for epoch in range(epochs):
+            self._run(context)
+            with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
+                train_prog = context["_model"][model_dict["name"]][4]
+                startup_prog = context["_model"][model_dict["name"]][1]
+                with fluid.program_guard(train_prog, startup_prog):
+                    self.save(epoch, context, True)
+        context["status"] = "terminal_pass"

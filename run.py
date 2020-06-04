@@ -159,8 +159,14 @@ def single_train_engine(args):
         trainer = "GeneralTrainer"
 
     executor_mode = "train"
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
+
+    selected_gpus_num = selected_gpus.split(",")
+    assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
 
     single_envs = {}
+    single_envs["selsected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
@@ -184,7 +190,14 @@ def single_infer_engine(args):
 
     executor_mode = "infer"
 
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
+
+    selected_gpus_num = selected_gpus.split(",")
+    assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+
     single_envs = {}
+    single_envs["selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
@@ -240,10 +253,17 @@ def cluster_engine(args):
             trainer = "GeneralTrainer"
 
         executor_mode = "train"
+
         distributed_strategy = run_extras.get(
             "runner." + _envs["mode"] + ".distribute_strategy", "async")
+        selected_gpus = run_extras.get(
+            "runner." + _envs["mode"] + ".selected_gpus", "0")
+        fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                    "ps")
 
         cluster_envs = {}
+        cluster_envs["selected_gpus"] = selected_gpus
+        cluster_envs["fleet_mode"] = fleet_mode
         cluster_envs["train.trainer.trainer"] = trainer
         cluster_envs["train.trainer.executor_mode"] = executor_mode
         cluster_envs["train.trainer.engine"] = "cluster"
@@ -296,11 +316,19 @@ def local_cluster_engine(args):
     executor_mode = "train"
     distributed_strategy = run_extras.get(
         "runner." + _envs["mode"] + ".distribute_strategy", "async")
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
+    worker_num = run_extras.get("runner." + _envs["mode"] + ".worker_num", 1)
+    server_num = run_extras.get("runner." + _envs["mode"] + ".server_num", 1)
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
 
     cluster_envs = {}
-    cluster_envs["server_num"] = 1
-    cluster_envs["worker_num"] = 1
+    cluster_envs["server_num"] = server_num
+    cluster_envs["worker_num"] = worker_num
+    cluster_envs["selected_gpus"] = selected_gpus
     cluster_envs["start_port"] = envs.find_free_port()
+    cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["train.trainer.executor_mode"] = executor_mode

@@ -63,7 +63,7 @@ class CollectiveInstance(InstanceBase):
     def instance(self, context):
         from paddle.fluid.incubate.fleet.collective import fleet
         from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
-        role = PaddleCloudRoleMaker()
+        role = PaddleCloudRoleMaker(is_collective=True)
         fleet.init(role)
         context['fleet'] = fleet
         context['status'] = 'network_pass'

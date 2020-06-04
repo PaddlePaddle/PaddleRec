@@ -76,8 +76,8 @@ class Trainer(object):
         self._context["runner_name"] = self._runner_name
 
         print("PaddleRec: Runner {} Begin".format(self._runner_name))
-        self.which_device()
         self.which_engine()
+        self.which_device()
         self.which_fleet_mode()
         self.which_executor_mode()
         self.legality_check()
@@ -86,6 +86,7 @@ class Trainer(object):
         device = envs.get_global_env(
             "runner." + self._runner_name + ".device", default_value="CPU")
         if device.upper() == 'GPU':
+            self.check_gpu()
             self.device = Device.GPU
             gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
             self._place = fluid.CUDAPlace(gpu_id)
@@ -98,6 +99,24 @@ class Trainer(object):
             raise ValueError("Not Support device {}".format(device))
         self._context["exe"] = self._exe
         self._context["place"] = self._place
+
+    def check_gpu(self):
+        """
+        Log error and exit when set use_gpu=true in paddlepaddle
+        cpu version.
+        """
+        err = "GPU cannot be set as true while you are " \
+            "using paddlepaddle cpu version ! \nPlease try: \n" \
+            "\t1. Install paddlepaddle-gpu to run model on GPU \n" \
+            "\t2. Set device as cpu in config file to run " \
+            "model on CPU"
+
+        try:
+            if not fluid.is_compiled_with_cuda():
+                raise RuntimeError(err)
+                sys.exit(1)
+        except Exception as e:
+            pass
 
     def which_engine(self):
         engine = envs.get_global_env(
