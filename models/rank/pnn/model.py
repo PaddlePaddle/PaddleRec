@@ -46,8 +46,6 @@ class Model(ModelBase):
             "hyper_parameters.sparse_feature_number", None)
         self.sparse_feature_dim = envs.get_global_env(
             "hyper_parameters.sparse_feature_dim", None)
-        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
-                                             False)
         self.deep_input_size = envs.get_global_env(
             "hyper_parameters.deep_input_size", 50)
         self.use_inner_product = envs.get_global_env(
@@ -75,7 +73,7 @@ class Model(ModelBase):
 
         first_weights_re = fluid.embedding(
             input=feat_idx,
-            is_sparse=self.is_sparse,
+            is_sparse=True,
             is_distributed=self.is_distributed,
             dtype='float32',
             size=[self.sparse_feature_number + 1, 1],
@@ -94,7 +92,7 @@ class Model(ModelBase):
 
         feat_embeddings_re = fluid.embedding(
             input=feat_idx,
-            is_sparse=self.is_sparse,
+            is_sparse=True,
             is_distributed=self.is_distributed,
             dtype='float32',
             size=[self.sparse_feature_number + 1, self.sparse_feature_dim],

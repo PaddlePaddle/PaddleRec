@@ -38,7 +38,6 @@ hyper_parameters:
         learning_rate: 0.0001
     sparse_feature_number: 1086460
     sparse_feature_dim: 9
-    is_sparse: False
     deep_input_size: 50
     use_inner_product: True
     num_field: 39
