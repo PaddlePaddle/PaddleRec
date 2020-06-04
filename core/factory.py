@@ -14,9 +14,7 @@
 
 import os
 import sys
-
 import yaml
-
 from paddlerec.core.utils import envs
 
 trainer_abs = os.path.join(
@@ -66,16 +64,9 @@ class TrainerFactory(object):
 
     @staticmethod
     def create(config):
-        _config = None
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("paddlerec's config only support yaml")
-
+        _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
         envs.update_workspace()
-
         trainer = TrainerFactory._build_trainer(config)
         return trainer
 
