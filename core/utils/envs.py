@@ -203,3 +203,26 @@ def find_free_port():
 
     new_port = __free_port()
     return new_port
+
+
+def load_yaml(config):
+    vs = [int(i) for i in yaml.__version__.split(".")]
+    if vs[0] < 5:
+        use_full_loader = False
+    elif vs[0] > 5:
+        use_full_loader = True
+    else:
+        if vs[1] >= 1:
+            use_full_loader = True
+        else:
+            use_full_loader = False
+
+    if os.path.isfile(config):
+        with open(config, 'r') as rb:
+            if use_full_loader:
+                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+            else:
+                _config = yaml.load(rb.read())
+            return _config
+    else:
+        raise ValueError("config {} can not be supported".format(config))
