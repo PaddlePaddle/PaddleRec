@@ -120,9 +120,7 @@ def register():
     validations["train.engine"] = ValueFormat(
         "str", ["single", "local_cluster", "cluster"], in_value_handler)
 
-    requires = [
-        "train.namespace", "train.device", "train.epochs", "train.engine"
-    ]
+    requires = ["workspace", "dataset", "mode", "runner", "phase"]
     return validations, requires
 
 
