@@ -20,6 +20,8 @@ from __future__ import print_function
 import time
 import logging
 import os
+import json
+import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.trainers.transpiler_trainer import TranspileTrainer
@@ -263,8 +265,10 @@ class SingleInfer(TranspileTrainer):
             envs.get_global_env("runner." + self._runner_name +
                                 ".print_interval", 20))
         metrics_format.append("{}: {{}}".format("batch"))
+        metrics_indexes = dict()
         for name, var in metrics.items():
             metrics_varnames.append(var.name)
+            metrics_indexes[var.name] = len(metrics_varnames) - 1
             metrics_format.append("{}: {{}}".format(name))
         metrics_format = ", ".join(metrics_format)
 
@@ -272,19 +276,30 @@ class SingleInfer(TranspileTrainer):
         reader.start()
         batch_id = 0
         scope = self._model[model_name][2]
+
+        infer_results = []
         with fluid.scope_guard(scope):
             try:
                 while True:
                     metrics_rets = self._exe.run(program=program,
-                                                 fetch_list=metrics_varnames)
+                                                 fetch_list=metrics_varnames,
+                                                 return_numpy=False)
                     metrics = [batch_id]
                     metrics.extend(metrics_rets)
+
+                    batch_infer_result = {}
+                    for k, v in metrics_indexes.items():
+                        batch_infer_result[k] = np.array(metrics_rets[
+                            v]).tolist()
+                    infer_results.append(batch_infer_result)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
                         print(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+        with open(model_dict['save_path'], 'w') as fout:
+            json.dump(infer_results, fout)
 
     def terminal(self, context):
         context['is_exit'] = True
