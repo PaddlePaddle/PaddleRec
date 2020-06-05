@@ -23,9 +23,14 @@
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
 | DNN | 多层神经网络 | -- |
+| Logistic Regression | 逻辑回归 | -- |
+| FM | 因子分解机 | [Factorization Machine](https://ieeexplore.ieee.org/abstract/document/5694074)(2010) |
+| PNN | Product Network | [Product-based Neural Networks for User Response Prediction](https://arxiv.org/pdf/1611.00144.pdf)(2016) |
 | wide&deep | Deep + wide(LR) | [Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)(2016) |
 | DeepFM | DeepFM | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)(2017) |
 | DCN | Deep Cross Network | [Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754)(2017) |
+| NFM | Neural Factorization Machines | [Neural Factorization Machines for Sparse Predictive Analytics](https://dl.acm.org/doi/pdf/10.1145/3077136.3080777)(2017) |
+| AFM | Attentional Factorization Machines | [Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks](https://arxiv.org/pdf/1708.04617.pdf)(2017) |
 | xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
 | DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
 
