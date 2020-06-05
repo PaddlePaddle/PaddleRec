@@ -1,6 +1,6 @@
 # PaddleRec 推荐数据集格式
 
-当你的数据集格式为[slot:feasign]*这种模式，或者可以预处理为这种格式时，可以直接使用PaddleRec内置的Reader。
+当你的数据集格式为`slot:feasign`这种模式，或者可以预处理为这种格式时，可以直接使用PaddleRec内置的Reader。
 
 > Slot : Feasign 是什么？
 >

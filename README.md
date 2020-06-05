@@ -113,7 +113,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 * [分布式深度学习介绍](doc/ps_background.md)
 
 ### 快速开始
-* [十分钟上手PaddleRec](#启动内置模型的默认配置)
+* [十分钟上手PaddleRec](doc/quick_start.md)
 
 ### 入门教程
 * [数据准备](doc/slot_reader.md)
@@ -125,8 +125,8 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 ### 进阶教程
 * [自定义Reader](doc/custom_reader.md)
-* [自定义模型](doc/development.md)
-* [自定义流程](doc/development.md)
+* [自定义模型](doc/model_development.md)
+* [自定义流程](doc/model_development.md)
 * [yaml配置说明](doc/yaml.md)
 * [PaddleRec设计文档](doc/design.md)
 
@@ -153,4 +153,4 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 亦可通过以下方式与我们沟通交流：
 
 <p align="center"><img width="200" height="200"  src="doc/imgs/wechet.png"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./doc/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="doc/imgs/weixin_supporter.png"/></p>
-<p align="center">  &#8194;&#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;Paddle沟通交流QQ群&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec微信小助手</p>
+<p align="center">  &#8194;&#8194;&#8194;&#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;Paddle沟通交流QQ群&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec微信小助手</p>
