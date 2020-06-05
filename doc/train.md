@@ -101,6 +101,3 @@ dataset:
   dense_slots: "dense_var:13"  # dense参数的维度定义
 
 ```
-
-
-

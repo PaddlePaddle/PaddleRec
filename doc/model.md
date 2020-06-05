@@ -75,4 +75,3 @@ for size in hidden_layers:
                 scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
     fcs.append(output)
 ```
-

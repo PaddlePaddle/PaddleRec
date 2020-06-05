@@ -57,4 +57,3 @@
 | optimizer.learning_rate | float  |       > 0        |    否    |         指定学习率          |
 |           reg           | float  |       > 0        |    否    | L2正则化参数，只在SGD下生效 |
 |         others          |   /    |        /         |    /     |   由各个模型组网独立指定    |
-

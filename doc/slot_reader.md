@@ -74,4 +74,3 @@ self._sparse_data_var
 
 self._dense_data_var
 ```
-
