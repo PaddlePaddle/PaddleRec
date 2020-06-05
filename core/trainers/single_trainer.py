@@ -328,7 +328,7 @@ class SingleTrainer(TranspileTrainer):
         if is_fleet:
             fleet.load_persistables(self._exe, dirname)
         else:
-            if load_vars is None or dirname == "":
+            if load_vars is None or len(load_vars) == 0:
                 fluid.io.load_persistables(self._exe, dirname)
             else:
                 fluid.io.load_vars(
