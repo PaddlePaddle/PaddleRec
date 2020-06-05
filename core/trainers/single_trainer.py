@@ -310,10 +310,6 @@ class SingleTrainer(TranspileTrainer):
         context['is_exit'] = True
 
     def load(self, is_fleet=False):
-        def name_has_embedding(var):
-            res = "embedding_1.w_0" == var.name
-            return res
-
         dirname = envs.get_global_env(
             "runner." + self._runner_name + ".init_model_path", None)
         load_vars = envs.get_global_env(
