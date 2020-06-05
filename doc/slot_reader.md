@@ -63,9 +63,9 @@ reader中需要配置```sparse_slots```与```dense_slots```，例如
     xxxxx
 ```
 
-sparse_slots表示稀疏特征的列表，以空格分开。
+sparse_slots表示稀疏特征的列表，以空格分开，支持lod_level=1的变长数据，变长数据的相关概念可以参考[LodTensor](https://www.paddlepaddle.org.cn/documentation/docs/zh/beginners_guide/basic_concept/lod_tensor.html#lodtensor)
 
-dense_slots表示稠密特征的列表，以空格分开。每个字段的格式是```[dense_slot_name]:[dim1,dim2,dim3...]```，其中```dim1,dim2,dim3...```表示shape
+dense_slots表示稠密特征的列表，以空格分开。每个字段的格式是```[dense_slot_name]:[dim1,dim2,dim3...]```，其中```dim1,dim2,dim3...```表示shape，多维的Dense参数shape为一个list。
 
 
 配置好了之后，这些slot对应的variable在model中可以使用如下方式调用：
