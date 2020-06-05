@@ -118,8 +118,8 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 ### 进阶教程
 * [自定义Reader](doc/custom_reader.md)
-* [自定义模型](doc/model_development.md)
-* [自定义流程](doc/model_development.md)
+* [自定义模型](doc/development.md)
+* [自定义流程](doc/development.md)
 * [yaml配置说明](doc/yaml.md)
 * [PaddleRec设计文档](doc/design.md)
 
