@@ -156,8 +156,3 @@ class Model(ModelBase):
         l2_reg_cross_loss = self.l2_reg_cross * l2_reg_cross_loss
         self.loss = self.avg_logloss + l2_reg_cross_loss
         self._cost = self.loss
-
-    #def optimizer(self):
-    #    
-    #    optimizer = fluid.optimizer.Adam(self.learning_rate, lazy_mode=True)
-    #    return optimizer
