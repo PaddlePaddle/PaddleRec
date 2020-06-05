@@ -1,77 +1,60 @@
-```yaml
-# 全局配置
-# Debug 模式开关，Debug模式下，会打印OP的耗时及IO占比
-debug: false
+# PaddleRec yaml配置说明
 
-# 工作区目录
-# 使用文件夹路径，则会在该目录下寻找超参配置，组网，数据等必须文件
-workspace: "/home/demo_model/"
-# 若 workspace: paddlerec.models.rank.dnn
-# 则会使用官方默认配置与组网
+## 全局变量
 
-
-# 用户可以指定多个dataset(数据读取配置)
-# 运行的不同阶段可以使用不同的dataset
-dataset:
-  # dataloader 示例
-  - name: dataset_1
-    type: DataLoader 
-    batch_size: 5
-    data_path: "{workspace}/data/train"
-    # 指定自定义的reader.py所在路径
-    data_converter: "{workspace}/rsc15_reader.py"
-
-  # QueueDataset 示例
-  - name: dataset_2
-    type: QueueDataset 
-    batch_size: 5
-    data_path: "{workspace}/data/train"
-    # 用户可以配置sparse_slots和dense_slots，无需再定义data_converter，使用默认reader
-    sparse_slots: "click ins_weight 6001 6002 6003 6005 6006 6007 6008 6009"
-    dense_slots: "readlist:9"
+ |   名称    |  类型  |                 取值                  | 是否必须 |                      作用描述                      |
+ | :-------: | :----: | :-----------------------------------: | :------: | :------------------------------------------------: |
+ | workspace | string | 路径 / paddlerec.models.{方向}.{模型} |    是    |           指定model/reader/data所在位置            |
+ |   mode    | string |              runner名称               |    是    |             指定当次运行使用哪个runner             |
+ |   debug   |  bool  |             True / False              |    否    | 当dataset.mode=QueueDataset时，开启op耗时debug功能 |
 
 
-# 自定义超参数，主要涉及网络中的模型超参及优化器
-hyper_parameters:
-    #优化器
-    optimizer:
-      class: Adam # 直接配置Optimizer，目前支持sgd/Adam/AdaGrad
-      learning_rate: 0.001
-      strategy: "{workspace}/conf/config_fleet.py" # 使用大规模稀疏pslib模式的特有配置
-    # 模型超参
-    vocab_size: 1000
-    hid_size: 100
+
+## runner变量
+
+|             名称              |     类型     |               取值                | 是否必须 |                    作用描述                     |
+| :---------------------------: | :----------: | :-------------------------------: | :------: | :---------------------------------------------: |
+|             name              |    string    |               任意                |    是    |                 指定runner名称                  |
+|             class             |    string    | single_train(默认) / single_infer |    是    | 指定运行runner的类别（单机/分布式， 训练/预测） |
+|            device             |    string    |          cpu(默认) / gpu          |    否    |                  程序执行设备                   |
+|            epochs             |     int      |               >= 1                |    否    |                模型训练迭代轮数                 |
+|        init_model_path        |    string    |               路径                |    否    |                 初始化模型地址                  |
+|   save_checkpoint_interval    |     int      |               >= 1                |    否    |               Save参数的轮数间隔                |
+|     save_checkpoint_path      |    string    |               路径                |    否    |                 Save参数的地址                  |
+|    save_inference_interval    |     int      |               >= 1                |    否    |             Save预测模型的轮数间隔              |
+|      save_inference_path      |    string    |               路径                |    否    |               Save预测模型的地址                |
+| save_inference_feed_varnames  | list[string] |     组网中指定Variable的name      |    否    |             预测模型的入口变量name              |
+| save_inference_fetch_varnames | list[string] |     组网中指定Variable的name      |    否    |             预测模型的出口变量name              |
+|        print_interval         |     int      |               >= 1                |    否    |              训练指标打印batch间隔              |
 
 
-# 通过全局参数mode指定当前运行的runner
-mode: runner_1
 
-# runner主要涉及模型的执行环境，如：单机/分布式，CPU/GPU，迭代轮次，模型加载与保存地址
-runner:
-  - name: runner_1 # 配置一个runner，进行单机的训练
-    class: single_train # 配置运行模式的选择，还可以选择：single_infer/local_cluster_train/cluster_train
-    epochs: 10
-    device: cpu
-    init_model_path: ""
-    save_checkpoint_interval: 2
-    save_inference_interval: 4
-    # 下面是保存模型路径配置
-    save_checkpoint_path: "xxxx"
-    save_inference_path: "xxxx"
+## phase变量
 
-  - name: runner_2 # 配置一个runner，进行单机的预测
-    class: single_infer
-    epochs: 1
-    device: cpu
-    init_model_path: "afs:/xxx/xxx"
+|     名称     |  类型  |     取值     | 是否必须 |            作用描述             |
+| :----------: | :----: | :----------: | :------: | :-----------------------------: |
+|     name     | string |     任意     |    是    |          指定phase名称          |
+|    model     | string | model.py路径 |    是    | 指定Model()所在的python文件地址 |
+| dataset_name | string | dataset名称  |    是    |       指定使用哪个Reader        |
+|  thread_num  |  int   |     >= 1     |    否    |         模型训练线程数          |
 
+## dataset变量
 
-# 模型在训练时，可能存在多个阶段，每个阶段的组网与数据读取都可能不尽相同
-# 每个runner都会完整的运行所有阶段
-# phase指定运行时加载的模型及reader
-phase:
-- name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: sample_1
-  thread_num: 1
-```
+|      名称      |  类型  |           取值            | 是否必须 |            作用描述            |
+| :------------: | :----: | :-----------------------: | :------: | :----------------------------: |
+|      name      | string |           任意            |    是    |        指定dataset名称         |
+|      type      | string | DataLoader / QueueDataset |    是    |        指定数据读取方式        |
+|   batch_size   |  int   |           >= 1            |    否    |       指定批训练样本数量       |
+|   data_path    | string |           路径            |    是    |        指定数据来源地址        |
+| data_converter | string |       reader.py路径       |    是    | 指定Reader()所在python文件地址 |
+|  sparse_slots  | string |          string           |    是    |        指定稀疏参数选项        |
+|  dense_slots   | string |          string           |    是    |        指定稠密参数选项        |
+
+## hyper_parameters变量
+|          名称           |  类型  |       取值       | 是否必须 |          作用描述           |
+| :---------------------: | :----: | :--------------: | :------: | :-------------------------: |
+|     optimizer.class     | string | SGD/Adam/Adagrad |    是    |       指定优化器类型        |
+| optimizer.learning_rate | float  |       > 0        |    否    |         指定学习率          |
+|           reg           | float  |       > 0        |    否    | L2正则化参数，只在SGD下生效 |
+|         others          |   /    |        /         |    /     |   由各个模型组网独立指定    |
+
