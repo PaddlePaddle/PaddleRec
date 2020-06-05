@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from contextlib import closing
+import yaml
 import copy
 import os
 import socket
