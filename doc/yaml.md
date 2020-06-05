@@ -47,8 +47,8 @@
 |   batch_size   |  int   |           >= 1            |    否    |       指定批训练样本数量       |
 |   data_path    | string |           路径            |    是    |        指定数据来源地址        |
 | data_converter | string |       reader.py路径       |    是    | 指定Reader()所在python文件地址 |
-|  sparse_slots  | string |          string           |    是    |        指定稀疏参数选项        |
-|  dense_slots   | string |          string           |    是    |        指定稠密参数选项        |
+|  sparse_slots  | string |          string           |    否    |        指定稀疏参数选项        |
+|  dense_slots   | string |          string           |    否    |        指定稠密参数选项        |
 
 ## hyper_parameters变量
 |          名称           |  类型  |       取值       | 是否必须 |          作用描述           |
