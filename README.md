@@ -4,7 +4,9 @@
 <p align="center">
 <img align="center" src="doc/imgs/structure.png">
 <p>
-
+<p align="center">
+<img align="center" src="doc/imgs/overview.png">
+<p>
 
 
 <h2 align="center">什么是推荐系统?</h2>
@@ -26,7 +28,7 @@
 
 - 源于飞桨生态的搜索推荐模型 **一站式开箱即用工具** 
 - 适合初学者，开发者，研究者的推荐系统全流程解决方案
-- 包含语义理解、召回、粗排、精排、多任务学习、融合等多个任务的完整推荐搜索算法库
+- 包含内容理解、匹配、召回、排序、 多任务、重排序等多个任务的完整推荐搜索算法库
 
 
     |   方向   |                                   模型                                    | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
@@ -62,7 +64,7 @@
 * PaddlePaddle  >= 1.7.2
 * 操作系统: Windows/Mac/Linux
 
-  > Windows下目前仅提供单机训练，建议使用Linux
+  > Windows下目前仅提供单机训练，建议分布式使用Linux
   
 ### 安装命令
 
@@ -74,7 +76,7 @@
 - 安装方法二
 
   源码编译安装
-  1. 安装飞桨  **注：需要用户安装版本 >1.7.2 的飞桨**
+  1. 安装飞桨  **注：需要用户安装版本 >=1.7.2 的飞桨**
 
     ```shell
     python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
