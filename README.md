@@ -5,13 +5,7 @@
 <img align="center" src="doc/imgs/structure.png">
 <p>
 
-<p align="center">
-    <br>
-    <img alt="Release" src="https://img.shields.io/badge/Release-0.1.0-yellowgreen">
-    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/Serving">
-    <img alt="Slack" src="https://img.shields.io/badge/Join-Slack-green">
-    <br>
-<p>
+
 
 <h2 align="center">什么是推荐系统?</h2>
 <p align="center">
@@ -138,6 +132,13 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 <h2 align="center">社区</h2>
 
+<p align="center">
+    <br>
+    <img alt="Release" src="https://img.shields.io/badge/Release-0.1.0-yellowgreen">
+    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/Serving">
+    <img alt="Slack" src="https://img.shields.io/badge/Join-Slack-green">
+    <br>
+<p>
 
 ### 版本历史
 - 2020.5.14 - PaddleRec v0.1
