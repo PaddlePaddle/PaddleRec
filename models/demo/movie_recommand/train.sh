@@ -1,8 +1,5 @@
 cd recall
-python -m paddlerec.run -m ./config.yaml
+python -m paddlerec.run -m ./config.yaml &> log &
 cd ../rank
-python -m paddlerec.run -m ./config.yaml &> train_log &
+python -m paddlerec.run -m ./config.yaml &> log &
 cd ..
-
-echo "recall offline test: "
-python infer_analys
