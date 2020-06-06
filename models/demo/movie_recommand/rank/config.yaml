@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "demo/movie_recommand"
+workspace: "paddlerec.models.demo.movie_recommand"
 
 # list of dataset
 dataset:
@@ -29,7 +29,7 @@ dataset:
   sparse_slots: "logid time userid gender age occupation movieid title genres label"
   dense_slots: ""
 - name: dataset_online_infer # name
-  batch_size: 128
+  batch_size: 10
   type: DataLoader
   data_path: "{workspace}/data/online_user/test"
   sparse_slots: "logid time userid gender age occupation movieid title genres label"
