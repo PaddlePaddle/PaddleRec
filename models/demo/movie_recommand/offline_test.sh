@@ -9,4 +9,4 @@ cd ..
 echo "recall offline test result:"
 python parse.py recall_offline recall/infer_result
 echo "rank offline test result:"
-python parse.py recall_offline rank/infer_result
+python parse.py rank_offline rank/infer_result
