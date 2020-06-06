@@ -61,7 +61,7 @@ runner:
     epochs: 1
     device: cpu
     init_model_path: "increment/0"
-    load_vars: "embedding_1.w_0, embedding_0.w_0"
+    load_vars: ["embedding_1.w_0", "embedding_0.w_0"]
     save_checkpoint_interval: 1
     save_inference_interval: 1
     save_checkpoint_path: "increment_fnn"
