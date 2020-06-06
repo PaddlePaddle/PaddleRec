@@ -112,6 +112,13 @@ def le_value_handler(name, value, values):
 
 def register():
     validations = {}
+    validations["train.workspace"] = ValueFormat("str", None, eq_value_handler)
+    validations["train.device"] = ValueFormat("str", ["cpu", "gpu"],
+                                              in_value_handler)
+    validations["train.epochs"] = ValueFormat("int", 1, ge_value_handler)
+    validations["train.engine"] = ValueFormat(
+        "str", ["single", "local_cluster", "cluster"], in_value_handler)
+
     requires = ["workspace", "dataset", "mode", "runner", "phase"]
     return validations, requires
 
