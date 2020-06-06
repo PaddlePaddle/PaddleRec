@@ -1,7 +1,7 @@
 # 排序模型库
 
 ## 简介
-我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [多层神经网络](dnn)、[Deep Cross Network](dcn)、[DeepFM](deepfm)、 [xDeepFM](xdeepfm)、[Deep Interest Network](din)、[Wide&Deep](wide_deep)。
+我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [logistic regression](logistic_regression)、[多层神经网络](dnn)、[FM](fm)、[FFM](ffm)、[PNN](pnn)、[多层神经网络](dnn)、[Deep Cross Network](dcn)、[DeepFM](deepfm)、 [xDeepFM](xdeepfm)、[NFM](nfm)、[AFM](afm)、[Deep Interest Network](din)、[Wide&Deep](wide_deep)。
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -25,6 +25,7 @@
 | DNN | 多层神经网络 | -- |
 | Logistic Regression | 逻辑回归 | -- |
 | FM | 因子分解机 | [Factorization Machine](https://ieeexplore.ieee.org/abstract/document/5694074)(2010) |
+| FFM | Field-Aware FM | [Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/pdf/10.1145/2959100.2959134)(2016) |
 | PNN | Product Network | [Product-based Neural Networks for User Response Prediction](https://arxiv.org/pdf/1611.00144.pdf)(2016) |
 | wide&deep | Deep + wide(LR) | [Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)(2016) |
 | DeepFM | DeepFM | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)(2017) |
