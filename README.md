@@ -43,7 +43,14 @@
     |   召回   |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |      ✓      |      ✓      |       ✓       |
     |   召回   |             [Youtube_dnn](models/recall/youtube_dnn/model.py)             |      ✓      |      ✓      |       ✓       |
     |   召回   |                     [NCF](models/recall/ncf/model.py)                     |      ✓      |      ✓      |       ✓       |
+    |   排序   |                      [Logistic Regression](models/rank/logistic_regression/model.py)                      |      ✓      |      x      |       ✓       |
     |   排序   |                      [Dnn](models/rank/dnn/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                      [FM](models/rank/fm/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                      [FFM](models/rank/ffm/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                      [Pnn](models/rank/pnn/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                      [DCN](models/rank/dcn/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                      [NFM](models/rank/nfm/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                      [AFM](models/rank/afm/model.py)                      |      ✓      |      x      |       ✓       |
     |   排序   |                   [DeepFM](models/rank/deepfm/model.py)                   |      ✓      |      x      |       ✓       |
     |   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |      ✓      |      x      |       ✓       |
     |   排序   |                      [DIN](models/rank/din/model.py)                      |      ✓      |      x      |       ✓       |
