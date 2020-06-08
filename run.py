@@ -42,9 +42,9 @@ def engine_registry():
     engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER_TRAIN"] = cluster_engine
-    engines["PSLIB"]["SINGLE"] = local_mpi_engine
-    engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
-    engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
+    engines["PSLIB"]["SINGLE_TRAIN"] = local_mpi_engine
+    engines["PSLIB"]["LOCAL_CLUSTER_TRAIN"] = local_mpi_engine
+    engines["PSLIB"]["CLUSTER_TRAIN"] = cluster_mpi_engine
 
 
 def get_inters_from_yaml(file, filters):
