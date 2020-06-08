@@ -43,7 +43,7 @@ hyper_parameters:
     act: "relu"
 
 
-mode: infer_runner
+mode: train_runner
 # if infer, change mode to "infer_runner" and change phase to "infer_phase"
 
 runner:
