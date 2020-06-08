@@ -122,7 +122,7 @@ def get_transpiler():
     ]
     proc = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL, cwd=os.getcwd())
     ret = proc.wait()
-    if ret == 1:
+    if ret == -11:
         return "PSLIB"
     else:
         return "TRANSPILER"

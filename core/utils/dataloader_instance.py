@@ -36,6 +36,7 @@ def dataloader_by_name(readerclass, dataset_name, yaml_file, context):
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = context["fleet"].split_files(files)
+        print("file_list: {}".format(files))
 
     reader = reader_class(yaml_file)
     reader.init()
@@ -76,6 +77,7 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = context["fleet"].split_files(files)
+        print("file_list: {}".format(files))
 
     sparse = get_global_env(name + "sparse_slots", "#")
     if sparse == "":
@@ -174,6 +176,7 @@ def slotdataloader(readerclass, train, yaml_file, context):
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = context["fleet"].split_files(files)
+        print("file_list: {}".format(files))
 
     sparse = get_global_env("sparse_slots", "#", namespace)
     if sparse == "":
