@@ -157,8 +157,9 @@ class TimeSplitDatasetHolder(DatasetHolder):
                 if postfix.isdigit():
                     if int(postfix) % node_num == node_idx:
                         data_file_list.append(sub_file)
-                elif hash(sub_file_name) % node_num == node_idx:
-                    data_file_list.append(sub_file)
+                else:
+                    if hash(sub_file_name) % node_num == node_idx:
+                        data_file_list.append(sub_file)
             time_window_mins = time_window_mins - self._split_interval
             data_time = data_time + datetime.timedelta(
                 minutes=self._split_interval)
