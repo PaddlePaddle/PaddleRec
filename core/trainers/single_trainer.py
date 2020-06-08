@@ -312,13 +312,27 @@ class SingleTrainer(TranspileTrainer):
     def load(self, is_fleet=False):
         dirname = envs.get_global_env(
             "runner." + self._runner_name + ".init_model_path", None)
+        load_vars = envs.get_global_env(
+            "runner." + self._runner_name + ".load_vars", None)
+
+        def name_has_embedding(var):
+            res = False
+            for var_name in load_vars:
+                if var_name == var.name:
+                    return True
+            return res
+
         if dirname is None or dirname == "":
             return
         print("going to load ", dirname)
         if is_fleet:
             fleet.load_persistables(self._exe, dirname)
         else:
-            fluid.io.load_persistables(self._exe, dirname)
+            if load_vars is None or len(load_vars) == 0:
+                fluid.io.load_persistables(self._exe, dirname)
+            else:
+                fluid.io.load_vars(
+                    self._exe, dirname, predicate=name_has_embedding)
 
     def save(self, epoch_id, is_fleet=False):
         def need_save(epoch_id, epoch_interval, is_last=False):
