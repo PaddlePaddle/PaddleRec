@@ -3,7 +3,7 @@
 
 本文代码目录在[book/recommender_system](https://github.com/PaddlePaddle/book/tree/develop/05.recommender_system),初次使用请您参考[Book文档使用说明](https://github.com/PaddlePaddle/book/blob/develop/README.cn.md#运行这本书)。
 
-更多教程及背景知识可以查阅[深度学习实践应用：个性化推荐](https://www.paddlepaddle.org.cn/tutorials/projectdetail/443958)
+更多教程及背景知识可以查阅[深度学习实践应用：个性化推荐](https://www.paddlepaddle.org.cn/tutorials/projectdetail/460300)
 
 ## 背景介绍
 
