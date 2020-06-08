@@ -122,7 +122,7 @@ def get_transpiler():
     ]
     proc = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL, cwd=os.getcwd())
     ret = proc.wait()
-    if ret == -11:
+    if ret == 1:
         return "PSLIB"
     else:
         return "TRANSPILER"
@@ -363,12 +363,31 @@ def local_mpi_engine(args):
     mpi = util.run_which("mpirun")
     if not mpi:
         raise RuntimeError("can not find mpirun, please check environment")
+
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
+                                   None)
+    executor_mode = "train"
+    distributed_strategy = run_extras.get(
+        "runner." + _envs["mode"] + ".distribute_strategy", "async")
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
     cluster_envs = {}
     cluster_envs["mpirun"] = mpi
-    cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
+    cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.engine"] = "local_cluster"
-
+    cluster_envs["train.trainer.executor_mode"] = executor_mode
+    cluster_envs["train.trainer.strategy"] = distributed_strategy
+    cluster_envs["train.trainer.threads"] = "2"
+    cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
