@@ -66,8 +66,6 @@ class PslibInstance(InstanceBase):
 
     def instance(self, context):
         from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
-        from paddle.fluid.incubate.fleet.base.role_maker import MPIRoleMaker
-        role = MPIRoleMaker()
         fleet.init()
         context['fleet'] = fleet
         context['status'] = 'network_pass'

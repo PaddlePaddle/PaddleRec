@@ -207,35 +207,44 @@ class PslibNetwork(NetworkBase):
                 category=UserWarning,
                 stacklevel=2)
         model_dict = context["env"]["phase"][0]
-        context["model"][model_dict["name"]] = {}
+        train_program = fluid.Program()
+        startup_program = fluid.Program()
+        scope = fluid.Scope()
         dataset_name = model_dict["dataset_name"]
 
-        model_path = model_dict["model"].replace(
-            "{workspace}", envs.path_adapter(context["env"]["workspace"]))
-        model = envs.lazy_instance_by_fliename(model_path,
-                                               "Model")(context["env"])
-        model._data_var = model.input_data(
-            dataset_name=model_dict["dataset_name"])
-        if envs.get_global_env("dataset." + dataset_name +
-                               ".type") == "DataLoader":
-            model._init_dataloader(is_infer=False)
-            data_loader = DataLoader(context)
-            data_loader.get_dataloader(context, dataset_name,
-                                       model._data_loader)
-        model.net(model._data_var, False)
-        optimizer = model.optimizer()
+        with fluid.program_guard(train_program, startup_program):
+            with fluid.unique_name.guard():
+                with fluid.scope_guard(scope):
+                    context["model"][model_dict["name"]] = {}
 
-        optimizer = context["fleet"].distributed_optimizer(optimizer)
-        optimizer.minimize([model._cost], [fluid.global_scope()])
+                    model_path = model_dict["model"].replace(
+                        "{workspace}",
+                        envs.path_adapter(context["env"]["workspace"]))
+                    model = envs.lazy_instance_by_fliename(
+                        model_path, "Model")(context["env"])
+                    model._data_var = model.input_data(
+                        dataset_name=model_dict["dataset_name"])
+                    if envs.get_global_env("dataset." + dataset_name +
+                                           ".type") == "DataLoader":
+                        model._init_dataloader(is_infer=False)
+                        data_loader = DataLoader(context)
+                        data_loader.get_dataloader(context, dataset_name,
+                                                   model._data_loader)
+                    model.net(model._data_var, False)
+                    optimizer = model.optimizer()
 
-        context["model"][model_dict["name"]]["main_program"] = context[
-            "fleet"].main_program
-        context["model"][model_dict["name"]]["startup_program"] = context[
-            "fleet"].startup_program
-        context["model"][model_dict["name"]]["scope"] = fluid.global_scope()
-        context["model"][model_dict["name"]]["model"] = model
-        context["model"][model_dict["name"]]["default_main_program"] = context[
-            "fleet"].main_program.clone()
+                    optimizer = context["fleet"].distributed_optimizer(
+                        optimizer)
+                    optimizer.minimize([model._cost], [fluid.global_scope()])
+
+                    context["model"][model_dict["name"]][
+                        "main_program"] = train_program
+                    context["model"][model_dict["name"]][
+                        "startup_program"] = startup_program
+                    context["model"][model_dict["name"]]["scope"] = scope
+                    context["model"][model_dict["name"]]["model"] = model
+                    context["model"][model_dict["name"]][
+                        "default_main_program"] = train_program.clone()
 
         if context["fleet"].is_server():
             self._server(context)
