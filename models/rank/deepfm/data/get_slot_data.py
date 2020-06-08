@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import paddle.fluid.incubate.data_generator as dg
 try:
     import cPickle as pickle
 except ImportError:
@@ -20,7 +22,7 @@ except ImportError:
 import paddle.fluid.incubate.data_generator as dg
 
 
-class TrainReader(dg.MultiSlotDataGenerator):
+class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
 
@@ -36,8 +38,8 @@ class TrainReader(dg.MultiSlotDataGenerator):
         ]
         self.continuous_range_ = range(1, 14)
         self.categorical_range_ = range(14, 40)
-        # load preprocessed feature dict 
-        self.feat_dict_name = "aid_data/feat_dict_10.pkl2"
+        # load preprocessed feature dict
+        self.feat_dict_name = "sample_data/feat_dict_10.pkl2"
         self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
     def _process_line(self, line):
@@ -83,6 +85,6 @@ class TrainReader(dg.MultiSlotDataGenerator):
         return data_iter
 
 
-reader = TrainReader("../config.yaml")
+reader = Reader("../config.yaml")
 reader.init()
 reader.run_from_stdin()

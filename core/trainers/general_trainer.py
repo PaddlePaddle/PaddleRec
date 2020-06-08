@@ -50,7 +50,6 @@ class GeneralTrainer(Trainer):
         self.regist_context_processor('terminal_pass', self.terminal)
 
     def instance(self, context):
-        print("instance begin")
         instance_class_path = envs.get_global_env(
             self.runner_env_name + ".instance_class_path", default_value=None)
         if instance_class_path:
@@ -73,7 +72,6 @@ class GeneralTrainer(Trainer):
         instance_class.instance(context)
 
     def network(self, context):
-        print("network begin")
         network_class_path = envs.get_global_env(
             self.runner_env_name + ".network_class_path", default_value=None)
         if network_class_path:
@@ -96,9 +94,8 @@ class GeneralTrainer(Trainer):
         network_class.build_network(context)
 
     def startup(self, context):
-        print("startup begin")
         startup_class_path = envs.get_global_env(
-            self.runner_env_name + ".startup_class", default_value=None)
+            self.runner_env_name + ".startup_class_path", default_value=None)
         if startup_class_path:
             startup_class = envs.lazy_instance_by_fliename(startup_class_path,
                                                            "Startup")(context)
@@ -118,9 +115,8 @@ class GeneralTrainer(Trainer):
         startup_class.startup(context)
 
     def runner(self, context):
-        print("executor begin")
         runner_class_path = envs.get_global_env(
-            self.runner_env_name + ".runner_class", default_value=None)
+            self.runner_env_name + ".runner_class_paht", default_value=None)
         if runner_class_path:
             runner_class = envs.lazy_instance_by_fliename(runner_class_path,
                                                           "Runner")(context)
@@ -140,11 +136,19 @@ class GeneralTrainer(Trainer):
 
     def terminal(self, context):
         terminal_class_path = envs.get_global_env(
-            self.runner_env_name + ".terminal_class", default_value=None)
+            self.runner_env_name + ".terminal_class_path", default_value=None)
         if terminal_class_path:
             terminal_class = envs.lazy_instance_by_fliename(
                 terminal_class_path, "Terminal")(context)
             terminal_class.terminal(context)
         else:
-            print("PaddleRec Stop")
+            terminal_class_name = "TerminalBase"
+            if self.engine != EngineMode.SINGLE and self.fleet_mode == FleetMode.PS:
+                terminal_class_name = "PSTerminal"
+
+            terminal_path = os.path.join(
+                self.abs_dir, "framework", "terminal.py")
+            terminal_class = envs.lazy_instance_by_fliename(
+                terminal_path, terminal_class_name)(context)
+        terminal_class.terminal(context)
         context['is_exit'] = True

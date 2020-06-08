@@ -17,12 +17,13 @@ import sys
 from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(ReaderBase):
+class Reader(ReaderBase):
+
     def init(self):
         pass
 
     def _process_line(self, l):
-        l = l.strip().split(" ")
+        l = l.strip().split()
         data = l[0:10]
         seq_len = l[10:11]
         label = l[11:]
@@ -37,8 +38,6 @@ class TrainReader(ReaderBase):
             data = [int(i) for i in data]
             label = [int(i) for i in label]
             seq_len = [int(i) for i in seq_len]
-            print >> sys.stderr, str(
-                [('data', data), ('label', label), ('seq_len', seq_len)])
             yield [('data', data), ('label', label), ('seq_len', seq_len)]
 
         return data_iter

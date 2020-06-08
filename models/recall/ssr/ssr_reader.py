@@ -19,7 +19,8 @@ import random
 from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(ReaderBase):
+class Reader(ReaderBase):
+
     def init(self):
         pass
 

@@ -14,9 +14,8 @@
 
 import os
 import subprocess
-
-import argparse
 import sys
+import argparse
 import tempfile
 
 import yaml
@@ -159,18 +158,23 @@ def single_train_engine(args):
         trainer = "GeneralTrainer"
 
     executor_mode = "train"
+
+    device = run_extras.get(
+        "runner." + _envs["mode"] + ".device", "cpu")
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
-
-    selected_gpus_num = selected_gpus.split(",")
-    assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+    selected_gpus_num = len(selected_gpus.split(","))
+    if device.upper() == "GPU":
+        assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
 
     single_envs = {}
     single_envs["selsected_gpus"] = selected_gpus
+    single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.platform"] = envs.get_platform()
+    single_envs["train.trainer.engine"] = "single"
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
@@ -190,18 +194,22 @@ def single_infer_engine(args):
 
     executor_mode = "infer"
 
+    device = run_extras.get(
+        "runner." + _envs["mode"] + ".device", "cpu")
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
-
-    selected_gpus_num = selected_gpus.split(",")
-    assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+    selected_gpus_num = len(selected_gpus.split(","))
+    if device.upper() == "GPU":
+        assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
 
     single_envs = {}
     single_envs["selected_gpus"] = selected_gpus
+    single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.platform"] = envs.get_platform()
+    single_envs["train.trainer.engine"] = "single"
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
@@ -392,7 +400,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
-
     engine_registry()
     which_engine = get_engine(args)
     engine = which_engine(args)

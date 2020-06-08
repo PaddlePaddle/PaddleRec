@@ -26,9 +26,9 @@ if len(sys.argv) < 4:
 reader_package = sys.argv[1]
 
 if sys.argv[2].upper() == "TRAIN":
-    reader_name = "TrainReader"
+    reader_name = "Reader"
 elif sys.argv[2].upper() == "EVALUATE":
-    reader_name = "EvaluateReader"
+    reader_name = "Reader"
 else:
     reader_name = "SlotReader"
     namespace = sys.argv[4]

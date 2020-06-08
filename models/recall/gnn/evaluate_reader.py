@@ -21,10 +21,10 @@ from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(ReaderBase):
+class Reader(ReaderBase):
     def init(self):
-        self.batch_size = envs.get_global_env("batch_size", None,
-                                              "evaluate.reader")
+        self.batch_size = envs.get_global_env(
+            "dataset.dataset_infer.batch_size")
 
         self.input = []
         self.length = None

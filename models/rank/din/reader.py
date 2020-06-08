@@ -27,7 +27,8 @@ from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class TrainReader(ReaderBase):
+class Reader(ReaderBase):
+
     def init(self):
         self.train_data_path = envs.get_global_env(
             "dataset.sample_1.data_path", None)

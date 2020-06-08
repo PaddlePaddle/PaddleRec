@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import paddle.fluid.incubate.data_generator as dg
 import math
 import os
 
@@ -20,10 +20,8 @@ try:
 except ImportError:
     import pickle
 
-import paddle.fluid.incubate.data_generator as dg
 
-
-class TrainReader(dg.MultiSlotDataGenerator):
+class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
 
@@ -49,7 +47,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         self.cat_feat_idx_dict_list = [{} for _ in range(26)]
 
         # TODO: set vocabulary dictionary
-        vocab_dir = "./vocab/"
+        vocab_dir = "./sample_data/vocab/"
         for i in range(26):
             lookup_idx = 1  # remain 0 for default value
             for line in open(
@@ -100,6 +98,6 @@ class TrainReader(dg.MultiSlotDataGenerator):
         return data_iter
 
 
-reader = TrainReader("../config.yaml")
+reader = Reader("../config.yaml")
 reader.init()
 reader.run_from_stdin()

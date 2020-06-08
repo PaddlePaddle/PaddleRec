@@ -20,7 +20,7 @@ from __future__ import print_function
 from paddlerec.core.reader import ReaderBase
 
 
-class EvaluateReader(ReaderBase):
+class Reader(ReaderBase):
     def init(self):
         pass
 

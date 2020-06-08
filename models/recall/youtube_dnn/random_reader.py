@@ -20,7 +20,8 @@ from paddlerec.core.utils import envs
 from collections import defaultdict
 
 
-class TrainReader(ReaderBase):
+class Reader(ReaderBase):
+
     def init(self):
         self.watch_vec_size = envs.get_global_env(
             "hyper_parameters.watch_vec_size")

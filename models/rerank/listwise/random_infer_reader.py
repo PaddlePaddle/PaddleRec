@@ -21,7 +21,7 @@ from paddlerec.core.utils import envs
 from collections import defaultdict
 
 
-class EvaluateReader(ReaderBase):
+class Reader(ReaderBase):
     def init(self):
         self.user_vocab = envs.get_global_env("hyper_parameters.user_vocab",
                                               None, "train.model")

@@ -17,6 +17,7 @@ from __future__ import print_function
 import os
 import time
 import warnings
+import datetime
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
@@ -37,67 +38,67 @@ class RunnerBase(object):
     def _run(self, context, model_dict):
         reader_name = model_dict["dataset_name"]
         name = "dataset." + reader_name + "."
-        begin_time = time.time()
         if envs.get_global_env(name + "type") == "DataLoader":
             self._executor_dataloader_train(model_dict, context)
         else:
             self._executor_dataset_train(model_dict, context)
-        end_time = time.time()
-        seconds = end_time - begin_time
-        print("epoch {} done, use time: {}".format(epoch, seconds))
 
     def _executor_dataset_train(self, model_dict, context):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
-        model_class = context["_model"][model_name][3]
+        model_class = context["model"][model_dict["name"]]["model"]
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
-        scope = context["_model"][model_name][2]
-        program = context["_model"][model_name][0]
+        scope = context["model"][model_name]["scope"]
+        program = context["model"][model_name]["main_program"]
         reader = context["dataset"][reader_name]
 
-        if context["is_infer"]:
-            metrics = model_class.get_infer_results()
-            if metrics:
-                fetch_vars = metrics.values()
-                fetch_alias = metrics.keys()
-            context["exe"].infer_from_dataset(
-                program=program,
-                dataset=reader,
-                fetch_list=fetch_vars,
-                fetch_info=fetch_alias,
-                print_period=fetch_period)
-        else:
-            metrics = model_class.get_metrics()
-            if metrics:
-                fetch_vars = metrics.values()
-                fetch_alias = metrics.keys()
-            with fluid.scope_guard(scope):
-                context["exe"].train_from_dataset(
+        with fluid.scope_guard(scope):
+            if context["is_infer"]:
+                metrics = model_class.get_infer_results()
+                if metrics:
+                    fetch_vars = metrics.values()
+                    fetch_alias = metrics.keys()
+                context["exe"].infer_from_dataset(
                     program=program,
                     dataset=reader,
                     fetch_list=fetch_vars,
                     fetch_info=fetch_alias,
                     print_period=fetch_period)
+            else:
+                metrics = model_class.get_metrics()
+                if metrics:
+                    fetch_vars = metrics.values()
+                    fetch_alias = metrics.keys()
+                with fluid.scope_guard(scope):
+                    context["exe"].train_from_dataset(
+                        program=program,
+                        dataset=reader,
+                        fetch_list=fetch_vars,
+                        fetch_info=fetch_alias,
+                        print_period=fetch_period)
 
     def _executor_dataloader_train(self, model_dict, context):
-        reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
-        model_class = context["_model"][model_name][3]
-        program = context["_model"][model_name][0].clone()
-        if context["is_fleet"] and not context["is_infer"]:
-            program = fluid.compiler.CompiledProgram(
-                program).with_data_parallel(
-                    loss_name=model_class.get_avg_cost().name,
-                    build_strategy=context["strategy"].get_build_strategy(),
-                    exec_strategy=context["strategy"].get_execute_strategy())
-        elif not context["is_fleet"] and not context["is_infer"]:
-            program = fluid.compiler.CompiledProgram(
-                program).with_data_parallel(
-                    loss_name=model_class.get_avg_cost().name)
+        model_class = context["model"][model_dict["name"]]["model"]
+
+        if context["is_infer"]:
+            program = context["model"][model_name]["main_program"]
+        elif context["is_fleet"]:
+            if context["fleet_mode"].upper() == "PS":
+                program = self._get_ps_program(model_dict, context)
+            elif context["fleet_mode"].upper() == "COLLECTIVE":
+                program = context["model"][model_name]["main_program"]
+        elif not context["is_fleet"]:
+            if context["device"].upper() == "CPU":
+                program = self._get_single_cpu_program(model_dict, context)
+            elif context["device"].upper() == "GPU":
+                program = self._get_single_gpu_program(model_dict, context)
+
+        reader_name = model_dict["dataset_name"]
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -119,10 +120,10 @@ class RunnerBase(object):
             metrics_format.append("{}: {{}}".format(name))
         metrics_format = ", ".join(metrics_format)
 
-        reader = context["_model"][model_name][3]._data_loader
+        reader = context["model"][model_dict["name"]]["model"]._data_loader
         reader.start()
         batch_id = 0
-        scope = context["_model"][model_name][2]
+        scope = context["model"][model_name]["scope"]
         with fluid.scope_guard(scope):
             try:
                 while True:
@@ -136,6 +137,81 @@ class RunnerBase(object):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+
+    def _get_strategy(self, model_dict, context):
+        _build_strategy = fluid.BuildStrategy()
+        _exe_strategy = fluid.ExecutionStrategy()
+
+        # 0: kCoeffNumDevice; 1: One; 2: Customized
+        _gradient_scale_strategy = model_dict.get("gradient_scale_strategy", 0)
+        if _gradient_scale_strategy == 0:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.CoeffNumDevice
+        elif _gradient_scale_strategy == 1:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.One
+        elif _gradient_scale_strategy == 2:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
+        else:
+            raise ValueError(
+                "Unsurpported config. gradient_scale_strategy must be one of [0, 1, 2]."
+            )
+        _build_strategy.gradient_scale_strategy = gradient_scale_strategy
+
+        if "thread_num" in model_dict and model_dict["thread_num"] > 1:
+            _build_strategy.reduce_strategy = fluid.BuildStrategy.ReduceStrategy.Reduce
+            _exe_strategy.num_threads = model_dict["thread_num"]
+            os.environ['CPU_NUM'] = str(_exe_strategy.num_threads)
+
+        return _exe_strategy, _build_strategy
+
+    def _get_single_gpu_program(self, model_dict, context):
+        model_name = model_dict["name"]
+        return context["model"][model_name]["main_program"].clone()
+
+    def _get_single_cpu_program(self, model_dict, context):
+        model_name = model_dict["name"]
+        model_class = context["model"][model_dict["name"]]["model"]
+        program = context["model"][model_name]["main_program"].clone()
+        _exe_strategy, _build_strategy = self._get_strategy(
+            model_dict, context)
+        program = fluid.compiler.CompiledProgram(
+            program).with_data_parallel(
+            loss_name=model_class.get_avg_cost().name,
+            build_strategy=_build_strategy,
+            exec_strategy=_exe_strategy)
+        return program
+
+    def _get_ps_program(self, model_dict, context):
+        model_name = model_dict["name"]
+        model_class = context["model"][model_dict["name"]]["model"]
+        program = context["model"][model_name]["main_program"].clone()
+
+        _build_strategy = context["strategy"].get_build_strategy()
+        _exe_strategy = context["strategy"].get_execute_strategy()
+
+        if "thread_num" in model_dict and model_dict["thread_num"] > 1:
+            _build_strategy.reduce_strategy = fluid.BuildStrategy.ReduceStrategy.Reduce
+            _exe_strategy.num_threads = model_dict["thread_num"]
+            os.environ['CPU_NUM'] = str(_exe_strategy.num_threads)
+
+        _gradient_scale_strategy = model_dict.get("gradient_scale_strategy", 0)
+        if _gradient_scale_strategy == 0:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.CoeffNumDevice
+        elif _gradient_scale_strategy == 1:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.One
+        elif _gradient_scale_strategy == 2:
+            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
+        else:
+            raise ValueError(
+                "Unsurpported config. gradient_scale_strategy must be one of [0, 1, 2]."
+            )
+        _build_strategy.gradient_scale_strategy = gradient_scale_strategy
+
+        program = fluid.compiler.CompiledProgram(
+            program).with_data_parallel(
+            loss_name=model_class.get_avg_cost().name,
+            build_strategy=_build_strategy,
+            exec_strategy=_exe_strategy)
+        return program
 
     def save(self, epoch_id, context, is_fleet=False):
         def need_save(epoch_id, epoch_interval, is_last=False):
@@ -196,6 +272,7 @@ class RunnerBase(object):
 
 class SingleRunner(RunnerBase):
     def __init__(self, context):
+        print("Running SingleRunner.")
         pass
 
     def run(self, context):
@@ -204,11 +281,17 @@ class SingleRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["env"]["phase"]:
+                begin_time = time.time()
                 self._run(context, model_dict)
-                with fluid.scope_guard(context["_model"][model_dict["name"]][
-                        2]):
-                    train_prog = context["_model"][model_dict["name"]][4]
-                    startup_prog = context["_model"][model_dict["name"]][1]
+                end_time = time.time()
+                seconds = end_time - begin_time
+                print("epoch {} done, use time: {}".format(epoch, seconds))
+                with fluid.scope_guard(context["model"][model_dict["name"]][
+                        "scope"]):
+                    train_prog = context["model"][model_dict["name"]
+                                                  ]["default_main_program"]
+                    startup_prog = context["model"][model_dict["name"]
+                                                    ]["startup_program"]
                     with fluid.program_guard(train_prog, startup_prog):
                         self.save(epoch, context)
         context["status"] = "terminal_pass"
@@ -216,6 +299,7 @@ class SingleRunner(RunnerBase):
 
 class PSRunner(RunnerBase):
     def __init__(self, context):
+        print("Running PSRunner.")
         pass
 
     def run(self, context):
@@ -224,30 +308,92 @@ class PSRunner(RunnerBase):
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
-            self._run(context)
-            with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
-                train_prog = context["_model"][model_dict["name"]][4]
-                startup_prog = context["_model"][model_dict["name"]][1]
+            begin_time = time.time()
+            self._run(context, model_dict)
+            end_time = time.time()
+            seconds = end_time - begin_time
+            print("epoch {} done, use time: {}".format(epoch, seconds))
+            with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+                train_prog = context["model"][model_dict["name"]
+                                              ]["main_program"]
+                startup_prog = context["model"][model_dict["name"]
+                                                ]["startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
                     self.save(epoch, context, True)
-        context["fleet"].stop_worker()
         context["status"] = "terminal_pass"
 
 
 class CollectiveRunner(RunnerBase):
     def __init__(self, context):
+        print("Running CollectiveRunner.")
         pass
 
-    def exuctor(self, context):
+    def run(self, context):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
-            self._run(context)
-            with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
-                train_prog = context["_model"][model_dict["name"]][4]
-                startup_prog = context["_model"][model_dict["name"]][1]
+            begin_time = time.time()
+            self._run(context, model_dict)
+            end_time = time.time()
+            seconds = end_time - begin_time
+            print("epoch {} done, use time: {}".format(epoch, seconds))
+            with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+                train_prog = context["model"][model_dict["name"]
+                                              ]["default_main_program"]
+                startup_prog = context["model"][model_dict["name"]
+                                                ]["startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
                     self.save(epoch, context, True)
+        context["status"] = "terminal_pass"
+
+
+class OnlineLearningRunner(RunnerBase):
+    def __init__(self, context):
+        print("Running PSRunner.")
+        pass
+
+    def run(self, context):
+        model_dict = context["env"]["phase"][0]
+        begin_day = datetime.datetime.strptime("begin_day_d", '%Y%m%d')
+        days = int(
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".days"))
+        epochs = int(
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".epochs"))
+
+        for day in range(days):
+            for hour in range(24):
+                day = begin_day + datetime.timedelta(days=day, hours=hour)
+                day_s = day.strftime('%Y%m%d/%H')
+
+                for dataset in context["env"]["dataset"]:
+                    if dataset["type"] != "DataLoader":
+                        name = dataset["name"]
+                        train_data_path = envs.get_global_env(
+                            name + "data_path")
+                        train_data_path = os.path.join(train_data_path, day_s)
+
+                        file_list = [
+                            os.path.join(train_data_path, x)
+                            for x in os.listdir(train_data_path)
+                        ]
+                        context["dataset"][name].set_filelist(file_list)
+
+                for epoch in range(epochs):
+                    begin_time = time.time()
+                    self._run(context, model_dict)
+                    end_time = time.time()
+                    seconds = end_time - begin_time
+                    print("epoch {} done, use time: {}".format(epoch, seconds))
+                    with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+                        train_prog = context["model"][model_dict["name"]
+                                                      ]["default_main_program"]
+                        startup_prog = context["model"][model_dict["name"]
+                                                        ]["startup_program"]
+                        with fluid.program_guard(train_prog, startup_prog):
+                            self.save(epoch, context, True)
+
         context["status"] = "terminal_pass"

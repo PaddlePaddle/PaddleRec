@@ -32,7 +32,7 @@ class StartupBase(object):
     def startup(self, context):
         pass
 
-    def load(self, context, is_fleet=False):
+    def load(self, context, is_fleet=False, main_program=None):
         dirname = envs.get_global_env(
             "runner." + context["runner_name"] + ".init_model_path", None)
         if dirname is None or dirname == "":
@@ -41,42 +41,59 @@ class StartupBase(object):
         if is_fleet:
             context["fleet"].load_persistables(context["exe"], dirname)
         else:
-            fluid.io.load_persistables(context["exe"], dirname)
+            fluid.io.load_persistables(
+                context["exe"], dirname, main_program=main_program)
 
 
 class SingleStartup(StartupBase):
     def __init__(self, context):
+        print("Running SingleStartup.")
         pass
 
     def startup(self, context):
         for model_dict in context["env"]["phase"]:
-            with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
-                context["exe"].run(context["_model"][model_dict["name"]][1])
-                train_prog = context["_model"][model_dict["name"]][0]
-                startup_prog = context["_model"][model_dict["name"]][1]
+            with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+                train_prog = context["model"][model_dict["name"]
+                                              ]["main_program"]
+                startup_prog = context["model"][model_dict["name"]
+                                                ]["startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.load(context)
+                    context["exe"].run(startup_prog)
+                    self.load(context, main_program=train_prog)
         context["status"] = "train_pass"
 
 
 class PSStartup(StartupBase):
     def __init__(self, context):
+        print("Running PSStartup.")
         pass
 
     def startup(self, context):
         model_dict = context["env"]["phase"][0]
-        with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
-            context["exe"].run(context["_model"][model_dict["name"]][1])
-            train_prog = context["_model"][model_dict["name"]][0]
-            startup_prog = context["_model"][model_dict["name"]][1]
+        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+
+            train_prog = context["model"][model_dict["name"]]["main_program"]
+            startup_prog = context["model"][model_dict["name"]
+                                            ]["startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
+                context["exe"].run(startup_prog)
                 self.load(context, True)
         context["status"] = "train_pass"
 
 
 class CollectiveStartup(StartupBase):
     def __init__(self, context):
+        print("Running CollectiveStartup.")
         pass
 
     def startup(self, context):
-        pass
+        model_dict = context["env"]["phase"][0]
+        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+            train_prog = context["model"][model_dict["name"]
+                                          ]["default_main_program"]
+            startup_prog = context["model"][model_dict["name"]
+                                            ]["startup_program"]
+            with fluid.program_guard(train_prog, startup_prog):
+                context["exe"].run(startup_prog)
+                self.load(context, True)
+        context["status"] = "train_pass"

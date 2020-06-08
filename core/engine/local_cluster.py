@@ -129,7 +129,7 @@ class LocalClusterEngine(Engine):
             factory = "paddlerec.core.factory"
             cmd = [sys.executable, "-u", "-m", factory, self.trainer]
 
-            for i in range(worker_num):
+            for i in range(selected_gpus_num):
                 current_env.update({
                     "PADDLE_TRAINER_ENDPOINTS": user_endpoints,
                     "PADDLE_CURRENT_ENDPOINTS": user_endpoints[i],

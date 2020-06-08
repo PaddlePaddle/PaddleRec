@@ -21,11 +21,11 @@ from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class TrainReader(ReaderBase):
-    def init(self):
-        self.batch_size = envs.get_global_env("batch_size", None,
-                                              "train.reader")
+class Reader(ReaderBase):
 
+    def init(self):
+        self.batch_size = envs.get_global_env(
+            "dataset.dataset_train.batch_size")
         self.input = []
         self.length = None
 
