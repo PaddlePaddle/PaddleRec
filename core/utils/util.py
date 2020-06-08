@@ -101,6 +101,7 @@ def make_datetime(date_str, fmt=None):
             return datetime.datetime.strptime(date_str, '%Y%m%d%H%M')
     return datetime.datetime.strptime(date_str, fmt)
 
+
 def wroker_numric_opt(fleet, value, env, opt):
     """
     numric count opt for workers
@@ -115,6 +116,7 @@ def wroker_numric_opt(fleet, value, env, opt):
     global_value = np.copy(local_value) * 0
     fleet._role_maker.all_reduce_worker(local_value, global_value, opt)
     return global_value[0]
+
 
 def worker_numric_sum(fleet, value, env="mpi"):
     """R
@@ -139,6 +141,7 @@ def worker_numric_max(fleet, value, env="mpi"):
     """
     return wroker_numric_opt(fleet, value, env, "max")
 
+
 def print_log(log_str, params):
     """R
     """
@@ -152,6 +155,7 @@ def print_log(log_str, params):
     sys.stdout.flush()
     if 'stdout' in params:
         params['stdout'] += log_str + '\n'
+
 
 def rank0_print(log_str, fleet):
     """R
@@ -171,7 +175,6 @@ class CostPrinter(object):
     """
     For count cost time && print cost log
     """
-
     def __init__(self, callback, callback_params):
         """R
         """
@@ -207,7 +210,6 @@ class PathGenerator(object):
     """
     generate path with template & runtime variables
     """
-
     def __init__(self, config):
         """R
         """
@@ -228,8 +230,8 @@ class PathGenerator(object):
         """
         if template_name in self._templates:
             if 'time_format' in param:
-                str = param['time_format'].strftime(self._templates[
-                    template_name])
+                str = param['time_format'].strftime(
+                    self._templates[template_name])
                 return str.format(**param)
             return self._templates[template_name].format(**param)
         else:

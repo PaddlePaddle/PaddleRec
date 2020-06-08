@@ -70,8 +70,8 @@ def set_global_envs(envs):
                 nests = copy.deepcopy(namespace_nests)
                 nests.append(k)
                 fatten_env_namespace(nests, v)
-            elif (k == "dataset" or k == "phase" or
-                  k == "runner") and isinstance(v, list):
+            elif (k == "dataset" or k == "phase"
+                  or k == "runner") and isinstance(v, list):
                 for i in v:
                     if i.get("name") is None:
                         raise ValueError("name must be in dataset list ", v)
@@ -169,15 +169,14 @@ def pretty_print_envs(envs, header=None):
 
 def lazy_instance_by_package(package, class_name):
     try:
-        model_package = __import__(package,
-                               globals(), locals(), package.split("."))
+        model_package = __import__(package, globals(), locals(),
+                                   package.split("."))
         instance = getattr(model_package, class_name)
         return instance
     except Exception, err:
         traceback.print_exc()
         print('Catch Exception:%s' % str(err))
         return None
-    
 
 
 def lazy_instance_by_fliename(abs, class_name):
@@ -186,8 +185,8 @@ def lazy_instance_by_fliename(abs, class_name):
         sys.path.append(dirname)
         package = os.path.splitext(os.path.basename(abs))[0]
 
-        model_package = __import__(package,
-                               globals(), locals(), package.split("."))
+        model_package = __import__(package, globals(), locals(),
+                                   package.split("."))
         instance = getattr(model_package, class_name)
         return instance
     except Exception, err:
