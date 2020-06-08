@@ -34,7 +34,8 @@ def create(config):
 
     if config['mode'] == 'fluid':
         if config['layer_file'].endswith(".py"):
-            model_class = envs.lazy_instance_by_fliename(config['layer_file'], "Model")
+            model_class = envs.lazy_instance_by_fliename(config['layer_file'],
+                                                         "Model")
             model = model_class(config)
         else:
             model = YamlModel(config)
