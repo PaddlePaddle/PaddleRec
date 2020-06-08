@@ -159,7 +159,8 @@ def single_train_engine(args):
         trainer = "GeneralTrainer"
 
     executor_mode = "train"
-
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
     device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
@@ -171,6 +172,7 @@ def single_train_engine(args):
     single_envs["selsected_gpus"] = selected_gpus
     single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
+    single_envs["fleet_mode"] = fleet_mode
     single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.platform"] = envs.get_platform()
@@ -193,6 +195,8 @@ def single_infer_engine(args):
         trainer = "GeneralTrainer"
 
     executor_mode = "infer"
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
 
     device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
     selected_gpus = run_extras.get(
@@ -206,6 +210,7 @@ def single_infer_engine(args):
     single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.executor_mode"] = executor_mode
+    single_envs["fleet_mode"] = fleet_mode
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.platform"] = envs.get_platform()
     single_envs["train.trainer.engine"] = "single"
@@ -385,6 +390,7 @@ def local_mpi_engine(args):
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.executor_mode"] = executor_mode
+    cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"

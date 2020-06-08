@@ -62,6 +62,11 @@ def get_trainer():
     return train_mode
 
 
+def get_fleet_mode():
+    fleet_mode = get_runtime_environ("fleet_mode")
+    return fleet_mode
+
+
 def set_global_envs(envs):
     assert isinstance(envs, dict)
 

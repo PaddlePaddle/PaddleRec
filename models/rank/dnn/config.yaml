@@ -93,7 +93,7 @@ runner:
   init_model_path: "increment/0" # load model path
 - name: runner3
   class: local_cluster_train
-  fleet_mode: ps
+  fleet_mode: ps # pslib/collective
   epochs: 4
   device: cpu
   server_num: 1
