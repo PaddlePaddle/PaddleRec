@@ -22,7 +22,7 @@ from paddlerec.core.model import Model
 from paddlerec.core.utils import table
 
 
-def create_model(config):
+def create(config):
     """
     Create a model instance by config
     Args:
