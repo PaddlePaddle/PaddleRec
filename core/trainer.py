@@ -148,6 +148,9 @@ class Trainer(object):
             self.fleet_mode = FleetMode.PSLIB
         else:
             raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
+        ps_mode = envs.get_global_env("ps_mode", default_value="TRANSPILER")
+        self.is_pslib = (ps_mode == "PSLIB")
+        self._context["is_pslib"] = self.is_pslib
         self._context["fleet_mode"] = fleet_mode
 
     def which_executor_mode(self):

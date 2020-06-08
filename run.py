@@ -298,6 +298,7 @@ def cluster_mpi_engine(args):
 
     cluster_envs = {}
     cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
+    cluster_envs["ps_mode"] = "PSLIB"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
@@ -383,6 +384,7 @@ def local_mpi_engine(args):
     cluster_envs["mpirun"] = mpi
     cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["log_dir"] = "logs"
+    cluster_envs["ps_mode"] = "PSLIB"
     cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy

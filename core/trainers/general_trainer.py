@@ -59,7 +59,10 @@ class GeneralTrainer(Trainer):
             if self.engine == EngineMode.SINGLE:
                 instance_class_name = "SingleInstance"
             elif self.fleet_mode == FleetMode.PS:
-                instance_class_name = "PSInstance"
+                if self.is_pslib:
+                    instance_class_name = "PslibInstance"
+                else:
+                    instance_class_name = "PSInstance"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
                 instance_class_name = "CollectiveInstance"
             else:

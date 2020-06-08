@@ -20,7 +20,8 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
 __all__ = [
-    "InstanceBase", "SingleInstance", "PSInstance", "CollectiveInstance"
+    "InstanceBase", "SingleInstance", "PSInstance", "PslibInstance",
+    "CollectiveInstance"
 ]
 
 
@@ -53,6 +54,20 @@ class PSInstance(InstanceBase):
         from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
         from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
         role = PaddleCloudRoleMaker()
+        fleet.init(role)
+        context['fleet'] = fleet
+        context['status'] = 'network_pass'
+
+
+class PslibInstance(InstanceBase):
+    def __init__(self, context):
+        print("Running PslibInstance.")
+        pass
+
+    def instance(self, context):
+        from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
+        from paddle.fluid.incubate.fleet.base.role_maker import MPIRoleMaker
+        role = MPIRoleMaker()
         fleet.init(role)
         context['fleet'] = fleet
         context['status'] = 'network_pass'
