@@ -84,7 +84,10 @@ class GeneralTrainer(Trainer):
             if self.engine == EngineMode.SINGLE:
                 network_class_name = "SingleNetwork"
             elif self.fleet_mode == FleetMode.PS:
-                network_class_name = "PSNetwork"
+                if self.is_pslib:
+                    network_class_name = "PslibNetwork"
+                else:
+                    network_class_name = "PSNetwork"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
                 network_class_name = "CollectiveNetwork"
             else:

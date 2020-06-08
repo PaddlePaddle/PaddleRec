@@ -21,7 +21,10 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.trainers.framework.dataset import DataLoader, QueueDataset
 
-__all__ = ["NetworkBase", "SingleNetwork", "PSNetwork", "CollectiveNetwork"]
+__all__ = [
+    "NetworkBase", "SingleNetwork", "PSNetwork", "PslibNetwork",
+    "CollectiveNetwork"
+]
 
 
 class NetworkBase(object):
@@ -187,6 +190,67 @@ class PSNetwork(NetworkBase):
             "runner." + context["runner_name"] + ".init_model_path",
             default_value="")
         context["fleet"].init_server(init_model_path)
+        context["fleet"].run_server()
+        context['status'] = "terminal_pass"
+
+
+class PslibNetwork(NetworkBase):
+    def __init__(self, context):
+        print("Running PslibNetwork.")
+        pass
+
+    def build_network(self, context):
+        context["model"] = {}
+        if len(context["env"]["phase"]) > 1:
+            warnings.warn(
+                "Cluster Train Only Support One Phase.",
+                category=UserWarning,
+                stacklevel=2)
+        model_dict = context["env"]["phase"][0]
+        context["model"][model_dict["name"]] = {}
+        dataset_name = model_dict["dataset_name"]
+
+        model_path = model_dict["model"].replace(
+            "{workspace}", envs.path_adapter(context["env"]["workspace"]))
+        model = envs.lazy_instance_by_fliename(model_path,
+                                               "Model")(context["env"])
+        model._data_var = model.input_data(
+            dataset_name=model_dict["dataset_name"])
+        if envs.get_global_env("dataset." + dataset_name +
+                               ".type") == "DataLoader":
+            model._init_dataloader(is_infer=False)
+            data_loader = DataLoader(context)
+            data_loader.get_dataloader(context, dataset_name,
+                                       model._data_loader)
+        model.net(model._data_var, False)
+        optimizer = model.optimizer()
+
+        optimizer = context["fleet"].distributed_optimizer(optimizer)
+        optimizer.minimize([model._cost], [fluid.global_scope()])
+
+        context["model"][model_dict["name"]]["main_program"] = context[
+            "fleet"].main_program
+        context["model"][model_dict["name"]]["startup_program"] = context[
+            "fleet"].startup_program
+        context["model"][model_dict["name"]]["scope"] = fluid.global_scope()
+        context["model"][model_dict["name"]]["model"] = model
+        context["model"][model_dict["name"]]["default_main_program"] = context[
+            "fleet"].main_program.clone()
+
+        if context["fleet"].is_server():
+            self._server(context)
+        else:
+            context["fleet"].init_worker()
+            context["dataset"] = {}
+            for dataset in context["env"]["dataset"]:
+                if dataset["type"] != "DataLoader":
+                    dataset_class = QueueDataset(context)
+                    context["dataset"][dataset[
+                        "name"]] = dataset_class.create_dataset(
+                            dataset["name"], context)
+            context["status"] = "startup_pass"
+
+    def _server(self, context):
         context["fleet"].run_server()
         context['status'] = "terminal_pass"
 
