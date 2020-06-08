@@ -1,0 +1,75 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# global settings 
+debug: false
+workspace: "paddlerec.models.rank.deep_crossing"
+
+dataset:
+  - name: train_sample
+    type: QueueDataset
+    batch_size: 5
+    data_path: "{workspace}/../dataset/Criteo_data/sample_data/train"
+    sparse_slots: "label feat_idx"
+    dense_slots: "feat_value:39"
+  - name: infer_sample
+    type: QueueDataset
+    batch_size: 5
+    data_path: "{workspace}/../dataset/Criteo_data/sample_data/train"
+    sparse_slots: "label feat_idx"
+    dense_slots: "feat_value:39"
+
+hyper_parameters:
+    # 用户自定义配置
+    optimizer:
+        class: SGD
+        learning_rate: 0.0001
+    sparse_feature_number: 1086460
+    sparse_feature_dim: 8
+    reg: 0.001
+    num_field: 39
+    residual_unit_num: 4
+    residual_w_dim: 128
+
+mode: train_runner
+# if infer, change mode to "infer_runner" and change phase to "infer_phase"
+
+runner:
+  - name: train_runner
+    trainer_class: single_train
+    epochs: 1
+    device: cpu
+    init_model_path: ""
+    save_checkpoint_interval: 1
+    save_inference_interval: 1
+    save_checkpoint_path: "increment"
+    save_inference_path: "inference"
+    print_interval: 1
+  - name: infer_runner
+    trainer_class: single_infer
+    epochs: 1
+    device: cpu
+    init_model_path: "increment/0"
+    print_interval: 1
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: train_sample
+  thread_num: 1
+#- name: infer_phase
+#  model: "{workspace}/model.py"
+#  dataset_name: infer_sample
+#  thread_num: 1
