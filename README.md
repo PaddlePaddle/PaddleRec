@@ -35,9 +35,10 @@
     | :------: | :-----------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
     | 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |      ✓      |      x      |       ✓       |
     | 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |      ✓      |      x      |       ✓       |
-    |   召回   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
-    |   召回   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
+    |   匹配   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
+    |   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
     |   召回   |                   [TDM](models/treebased/tdm/model.py)                    |      ✓      |      x      |       ✓       |
+    |   召回   |                   [fasttext](models/recall/fasttext/model.py)                    |      ✓      |      x      |       x       |
     |   召回   |                [Word2Vec](models/recall/word2vec/model.py)                |      ✓      |      x      |       ✓       |
     |   召回   |                     [SSR](models/recall/ssr/model.py)                     |      ✓      |      ✓      |       ✓       |
     |   召回   |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |      ✓      |      ✓      |       ✓       |
