@@ -62,7 +62,8 @@ class Trainer(object):
             traceback.print_exc()
             print('Catch Exception:%s' % str(err))
             sys.stdout.flush()
-            self._context['is_exit'] = self.handle_processor_exception(status, context, err)
+            self._context['is_exit'] = self.handle_processor_exception(
+                status, context, err)
 
     def other_status_processor(self, context):
         """
@@ -72,7 +73,7 @@ class Trainer(object):
         """
         print('unknow context_status:%s, do nothing' % context['status'])
         time.sleep(60)
-    
+
     def handle_processor_exception(self, status, context, exception):
         """
         when exception throwed from processor, will call this func to handle it 
@@ -82,7 +83,6 @@ class Trainer(object):
         print('Exit app. catch exception in precoss status:%s, except:%s' \
                 % (context['status'], str(exception)))
         return True
-        
 
     def reload_train_context(self):
         """
