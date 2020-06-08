@@ -381,7 +381,7 @@ class Model(ModelBase):
 
             # 过滤掉padding产生的无效节点（node_id=0）
             node_zero_mask = fluid.layers.cast(current_layer_node, 'bool')
-            node_zero_mask = fluid.layers.cast(node_zero_mask, 'float')
+            node_zero_mask = fluid.layers.cast(node_zero_mask, 'float32')
             prob_re = prob_re * node_zero_mask
 
             # 在当前层的分类结果中取topK，并将对应的score及node_id保存下来

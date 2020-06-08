@@ -37,6 +37,7 @@ class InstanceBase(object):
 
 class SingleInstance(InstanceBase):
     def __init__(self, context):
+        print("Running SingleInstance.")
         pass
 
     def instance(self, context):
@@ -45,6 +46,7 @@ class SingleInstance(InstanceBase):
 
 class PSInstance(InstanceBase):
     def __init__(self, context):
+        print("Running PSInstance.")
         pass
 
     def instance(self, context):
@@ -58,6 +60,7 @@ class PSInstance(InstanceBase):
 
 class CollectiveInstance(InstanceBase):
     def __init__(self, context):
+        print("Running CollectiveInstance.")
         pass
 
     def instance(self, context):

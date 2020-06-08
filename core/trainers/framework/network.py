@@ -37,21 +37,18 @@ class NetworkBase(object):
 
 class SingleNetwork(NetworkBase):
     def __init__(self, context):
+        print("Running SingleNetwork.")
         pass
 
     def build_network(self, context):
-        context["_model"] = {}
+        context["model"] = {}
         for model_dict in context["env"]["phase"]:
-            context["_model"][model_dict["name"]] = [None] * 5
+            context["model"][model_dict["name"]] = {}
             train_program = fluid.Program()
             startup_program = fluid.Program()
             scope = fluid.Scope()
             dataset_name = model_dict["dataset_name"]
-            opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-            opt_lr = envs.get_global_env(
-                "hyper_parameters.optimizer.learning_rate")
-            opt_strategy = envs.get_global_env(
-                "hyper_parameters.optimizer.strategy")
+
             with fluid.program_guard(train_program, startup_program):
                 with fluid.unique_name.guard():
                     with fluid.scope_guard(scope):
@@ -82,14 +79,16 @@ class SingleNetwork(NetworkBase):
                                       context["is_infer"])
                         else:
                             model.net(model._data_var, context["is_infer"])
-                            optimizer = model._build_optimizer(
-                                opt_name, opt_lr, opt_strategy)
+                            optimizer = model.optimizer()
                             optimizer.minimize(model._cost)
-            context["_model"][model_dict["name"]][0] = train_program
-            context["_model"][model_dict["name"]][1] = startup_program
-            context["_model"][model_dict["name"]][2] = scope
-            context["_model"][model_dict["name"]][3] = model
-            context["_model"][model_dict["name"]][4] = train_program.clone()
+            context["model"][model_dict["name"]
+                             ]["main_program"] = train_program
+            context["model"][model_dict["name"]
+                             ]["startup_program"] = startup_program
+            context["model"][model_dict["name"]]["scope"] = scope
+            context["model"][model_dict["name"]]["model"] = model
+            context["model"][model_dict["name"]
+                             ]["default_main_program"] = train_program.clone()
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
@@ -104,23 +103,20 @@ class SingleNetwork(NetworkBase):
 
 class PSNetwork(NetworkBase):
     def __init__(self, context):
+        print("Running PSNetwork.")
         pass
 
     def build_network(self, context):
-        context["_model"] = {}
+        context["model"] = {}
         if len(context["env"]["phase"]) > 1:
             warnings.warn(
                 "Cluster Train Only Support One Phase.",
                 category=UserWarning,
                 stacklevel=2)
         model_dict = context["env"]["phase"][0]
-        context["_model"][model_dict["name"]] = [None] * 5
+        context["model"][model_dict["name"]] = {}
         dataset_name = model_dict["dataset_name"]
-        opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-        opt_lr = envs.get_global_env(
-            "hyper_parameters.optimizer.learning_rate")
-        opt_strategy = envs.get_global_env(
-            "hyper_parameters.optimizer.strategy")
+
         model_path = model_dict["model"].replace(
             "{workspace}", envs.path_adapter(context["env"]["workspace"]))
         model = envs.lazy_instance_by_fliename(model_path,
@@ -134,23 +130,18 @@ class PSNetwork(NetworkBase):
             data_loader.get_dataloader(context, dataset_name,
                                        model._data_loader)
         model.net(model._data_var, False)
-        optimizer = model._build_optimizer(opt_name, opt_lr, opt_strategy)
+        optimizer = model.optimizer()
         strategy = self._build_strategy(context)
         optimizer = context["fleet"].distributed_optimizer(optimizer, strategy)
         optimizer.minimize(model._cost)
 
-        if opt_name.upper() == "SGD":
-            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '1'
-        else:
-            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
-
-        context["_model"][model_dict["name"]][0] = context[
+        context["model"][model_dict["name"]]["main_program"] = context[
             "fleet"].main_program
-        context["_model"][model_dict["name"]][1] = context[
+        context["model"][model_dict["name"]]["startup_program"] = context[
             "fleet"].startup_program
-        context["_model"][model_dict["name"]][2] = fluid.global_scope()
-        context["_model"][model_dict["name"]][3] = model
-        context["_model"][model_dict["name"]][4] = context[
+        context["model"][model_dict["name"]]["scope"] = fluid.global_scope()
+        context["model"][model_dict["name"]]["model"] = model
+        context["model"][model_dict["name"]]["default_main_program"] = context[
             "fleet"].main_program.clone()
 
         if context["fleet"].is_server():
@@ -190,7 +181,7 @@ class PSNetwork(NetworkBase):
 
     def _server(self, context):
         init_model_path = envs.get_global_env(
-            "runner." + context["runner_name"] + ".init_model",
+            "runner." + context["runner_name"] + ".init_model_path",
             default_value="")
         context["fleet"].init_server(init_model_path)
         context["fleet"].run_server()
@@ -199,56 +190,66 @@ class PSNetwork(NetworkBase):
 
 class CollectiveNetwork(NetworkBase):
     def __init__(self, context):
+        print("Running CollectiveNetwork.")
         pass
 
     def build_network(self, context):
-        context["_model"] = {}
+        context["model"] = {}
         if len(context["env"]["phase"]) > 1:
             warnings.warn(
                 "Cluster Train Only Support One Phase.",
                 category=UserWarning,
                 stacklevel=2)
         model_dict = context["env"]["phase"][0]
-        context["_model"][model_dict["name"]] = [None] * 5
+        context["model"][model_dict["name"]] = {}
         dataset_name = model_dict["dataset_name"]
-        opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-        opt_lr = envs.get_global_env(
-            "hyper_parameters.optimizer.learning_rate")
-        opt_strategy = envs.get_global_env(
-            "hyper_parameters.optimizer.strategy")
-        model_path = model_dict["model"].replace(
-            "{workspace}", envs.path_adapter(context["env"]["workspace"]))
-        model = envs.lazy_instance_by_fliename(model_path,
-                                               "Model")(context["env"])
-        model._data_var = model.input_data(
-            dataset_name=model_dict["dataset_name"])
-        if envs.get_global_env("dataset." + dataset_name +
-                               ".type") == "DataLoader":
-            model._init_dataloader(is_infer=False)
-            data_loader = DataLoader(context)
-            data_loader.get_dataloader(context, dataset_name,
-                                       model._data_loader)
-        model.net(model._data_var, False)
-        optimizer = model._build_optimizer(opt_name, opt_lr, opt_strategy)
-        strategy = self._build_strategy(context)
-        optimizer = context["fleet"].distributed_optimizer(optimizer, strategy)
-        optimizer.minimize(model._cost)
 
-        context["_model"][model_dict["name"]][0] = context[
-            "fleet"].main_program
-        context["_model"][model_dict["name"]][1] = context[
-            "fleet"].startup_program
-        context["_model"][model_dict["name"]][2] = fluid.global_scope()
-        context["_model"][model_dict["name"]][3] = model
-        context["_model"][model_dict["name"]][4] = context[
-            "fleet"].main_program.clone()
+        train_program = fluid.Program()
+        startup_program = fluid.Program()
+        scope = fluid.Scope()
+        with fluid.program_guard(train_program, startup_program):
+            with fluid.scope_guard(scope):
+                model_path = model_dict["model"].replace(
+                    "{workspace}", envs.path_adapter(context["env"]["workspace"]))
+                model = envs.lazy_instance_by_fliename(model_path,
+                                                       "Model")(context["env"])
+                model._data_var = model.input_data(
+                    dataset_name=model_dict["dataset_name"])
+                if envs.get_global_env("dataset." + dataset_name +
+                                       ".type") == "DataLoader":
+                    model._init_dataloader(is_infer=False)
+                    data_loader = DataLoader(context)
+                    data_loader.get_dataloader(context, dataset_name,
+                                               model._data_loader)
+                model.net(model._data_var, False)
+                optimizer = model.optimizer()
+                strategy = self._build_strategy(context)
+                optimizer = context["fleet"].distributed_optimizer(
+                    optimizer, strategy)
+                optimizer.minimize(model._cost)
+
+                context["model"][model_dict["name"]]["main_program"] = context[
+                    "fleet"].main_program
+                context["model"][model_dict["name"]
+                                 ]["startup_program"] = startup_program
+                context["model"][model_dict["name"]]["scope"] = scope
+                context["model"][model_dict["name"]]["model"] = model
+                context["model"][model_dict["name"]
+                                 ]["default_main_program"] = train_program
+
+        context["dataset"] = {}
+        for dataset in context["env"]["dataset"]:
+            if dataset["type"] != "DataLoader":
+                dataset_class = QueueDataset(context)
+                context["dataset"][dataset[
+                    "name"]] = dataset_class.create_dataset(
+                        dataset["name"], context)
+        context["status"] = "startup_pass"
 
     def _build_strategy(self, context):
         from paddle.fluid.incubate.fleet.collective import DistributedStrategy
         exec_strategy = fluid.ExecutionStrategy()
         strategy = DistributedStrategy()
         strategy.exec_strategy = exec_strategy
-        # dist_strategy.nccl_comm_num = args.nccl_comm_num
-        # dist_strategy.use_local_sgd = args.use_local_sgd
         context["strategy"] = strategy
         return strategy

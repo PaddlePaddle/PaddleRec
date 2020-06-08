@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import abc
-
+import os
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -134,6 +134,11 @@ class ModelBase(object):
                 "configured optimizer can only supported SGD/Adam/Adagrad")
 
         if name == "SGD":
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '1'
+        else:
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
+
+        if name == "SGD":
             reg = envs.get_global_env("hyper_parameters.reg", 0.0001,
                                       self._namespace)
             optimizer_i = fluid.optimizer.SGD(
@@ -149,11 +154,14 @@ class ModelBase(object):
         return optimizer_i
 
     def optimizer(self):
-        learning_rate = envs.get_global_env("hyper_parameters.learning_rate",
-                                            None, self._namespace)
-        optimizer = envs.get_global_env("hyper_parameters.optimizer", None,
-                                        self._namespace)
-        return self._build_optimizer(optimizer, learning_rate)
+        opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
+
+        opt_lr = envs.get_global_env(
+            "hyper_parameters.optimizer.learning_rate")
+        opt_strategy = envs.get_global_env(
+            "hyper_parameters.optimizer.strategy")
+
+        return self._build_optimizer(opt_name, opt_lr, opt_strategy)
 
     def input_data(self, is_infer=False, **kwargs):
         name = "dataset." + kwargs.get("dataset_name") + "."

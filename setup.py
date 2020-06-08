@@ -21,7 +21,7 @@ from setuptools import setup, find_packages
 import shutil
 import tempfile
 
-requires = ["paddlepaddle == 1.7.2", "PyYAML >= 5.1.1"]
+requires = ["paddlepaddle >= 1.7.2", "PyYAML >= 5.1.1"]
 
 about = {}
 about["__title__"] = "paddle-rec"
@@ -63,7 +63,8 @@ def build(dirname):
     models_copy = [
         'data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy',
         'tree/*.txt', 'data/sample_data/*', 'data/sample_data/train/*',
-        'data/sample_data/infer/*'
+        'data/sample_data/infer/*', 'data/*/*.csv', 'Criteo_data/*',
+        'Criteo_data/sample_data/train/*'
     ]
 
     engine_copy = ['*/*.sh']

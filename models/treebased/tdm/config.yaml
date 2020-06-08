@@ -23,7 +23,6 @@ dataset:
   data_converter: "{workspace}/tdm_reader.py"
 - name: dataset_infer # name
   batch_size: 1
-  type: DataLoader # or QueueDataset
   type: DataLoader # or QueueDataset 
   data_path: "{workspace}/data/test"
   data_converter: "{workspace}/tdm_evaluate_reader.py"
@@ -51,8 +50,9 @@ hyper_parameters:
   tree:
     # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
     # 分布式训练trainer需要独立load 
-    load_tree_from_numpy: False # only once
-    load_paddle_model: True # train & infer need
+    # 预测时也改为从paddle模型加载
+    load_tree_from_numpy: True # only once
+    load_paddle_model: False # train & infer need
     tree_layer_path: "{workspace}/tree/layer_list.txt"
     tree_travel_path: "{workspace}/tree/travel_list.npy"
     tree_info_path: "{workspace}/tree/tree_info.npy"
@@ -76,7 +76,7 @@ runner:
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
-  init_model_path: "init_model" # load model path
+  init_model_path: "" # load model path
   print_interval: 10
 - name: runner2
   class: single_infer

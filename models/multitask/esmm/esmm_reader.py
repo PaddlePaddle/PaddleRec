@@ -19,7 +19,8 @@ from collections import defaultdict
 from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(ReaderBase):
+class Reader(ReaderBase):
+
     def init(self):
         all_field_id = [
             '101', '109_14', '110_14', '127_14', '150_14', '121', '122', '124',

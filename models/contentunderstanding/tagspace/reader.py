@@ -19,7 +19,8 @@ import numpy as np
 from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(ReaderBase):
+class Reader(ReaderBase):
+
     def init(self):
         pass
 

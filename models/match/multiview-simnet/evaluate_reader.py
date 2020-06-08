@@ -16,7 +16,7 @@ from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(ReaderBase):
+class Reader(ReaderBase):
     def init(self):
         self.query_slots = envs.get_global_env("hyper_parameters.query_slots",
                                                None, "train.model")

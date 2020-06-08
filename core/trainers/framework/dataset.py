@@ -21,6 +21,7 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.utils import dataloader_instance
 from paddlerec.core.reader import SlotReader
+from paddlerec.core.trainer import EngineMode
 
 __all__ = ["DatasetBase", "DataLoader", "QueueDataset"]
 
@@ -44,19 +45,18 @@ class DataLoader(DatasetBase):
         name = "dataset." + dataset_name + "."
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
-        thread_num = envs.get_global_env(name + "thread_num")
         batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
-        abs_dir = os.path.dirname(os.path.abspath(__file__))
         if sparse_slots == "" and dense_slots == "":
             reader = dataloader_instance.dataloader_by_name(
-                reader_class, dataset_name, context["config_yaml"])
+                reader_class, dataset_name, context["config_yaml"], context)
+
             reader_class = envs.lazy_instance_by_fliename(reader_class,
-                                                          "TrainReader")
+                                                          "Reader")
             reader_ins = reader_class(context["config_yaml"])
         else:
             reader = dataloader_instance.slotdataloader_by_name(
-                "", dataset_name, context["config_yaml"])
+                "", dataset_name, context["config_yaml"], context)
             reader_ins = SlotReader(context["config_yaml"])
         if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
             dataloader.set_sample_list_generator(reader)
@@ -71,16 +71,11 @@ class QueueDataset(DatasetBase):
 
     def create_dataset(self, dataset_name, context):
         name = "dataset." + dataset_name + "."
-        sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
-        dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
-        thread_num = envs.get_global_env(name + "thread_num")
-        batch_size = envs.get_global_env(name + "batch_size")
         type_name = envs.get_global_env(name + "type")
         if envs.get_platform() != "LINUX":
             print("platform ", envs.get_platform(),
                   " change reader to DataLoader")
             type_name = "DataLoader"
-        padding = 0
 
         if type_name == "DataLoader":
             return None
@@ -89,8 +84,6 @@ class QueueDataset(DatasetBase):
 
     def _get_dataset(self, dataset_name, context):
         name = "dataset." + dataset_name + "."
-        thread_num = envs.get_global_env(name + "thread_num")
-        batch_size = envs.get_global_env(name + "batch_size")
         reader_class = envs.get_global_env(name + "data_converter")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../../utils', 'dataset_instance.py')
@@ -110,18 +103,24 @@ class QueueDataset(DatasetBase):
                 sparse_slots.replace(" ", "?"),
                 dense_slots.replace(" ", "?"), str(padding))
 
+        batch_size = envs.get_global_env(name + "batch_size")
         dataset = fluid.DatasetFactory().create_dataset()
-        dataset.set_batch_size(envs.get_global_env(name + "batch_size"))
+        dataset.set_batch_size(batch_size)
         dataset.set_pipe_command(pipe_cmd)
         train_data_path = envs.get_global_env(name + "data_path")
         file_list = [
             os.path.join(train_data_path, x)
             for x in os.listdir(train_data_path)
         ]
+        if context["engine"] == EngineMode.LOCAL_CLUSTER:
+            file_list = context["fleet"].split_files(file_list)
+
         dataset.set_filelist(file_list)
         for model_dict in context["env"]["phase"]:
             if model_dict["dataset_name"] == dataset_name:
-                model = context["_model"][model_dict["name"]][3]
+                model = context["model"][model_dict["name"]]["model"]
+                thread_num = int(model_dict["thread_num"])
+                dataset.set_thread(thread_num)
                 if context["is_infer"]:
                     inputs = model._infer_data_var
                 else:

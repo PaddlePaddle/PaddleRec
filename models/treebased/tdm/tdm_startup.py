@@ -48,8 +48,9 @@ class Startup(StartupBase):
         load_tree_from_numpy = envs.get_global_env(
             "hyper_parameters.tree.load_tree_from_numpy", False)
         model_dict = context["env"]["phase"][0]
-        with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
-            context["exe"].run(context["_model"][model_dict["name"]][1])
+        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+            context["exe"].run(
+                context["model"][model_dict["name"]]["startup_program"])
             if load_tree_from_numpy:
                 logger.info("load tree from numpy")
 
@@ -80,7 +81,8 @@ class Startup(StartupBase):
                 logger.info("Begin Save Init model.")
                 fluid.io.save_persistables(
                     executor=context["exe"],
-                    main_program=context["_model"][model_dict["name"]][0],
+                    main_program=context["model"][model_dict["name"]
+                                                  ]["main_program"],
                     dirname="./init_model")
                 logger.info("End Save Init model.")
 
@@ -95,7 +97,7 @@ class Startup(StartupBase):
                 fluid.io.load_persistables(
                     executor=context["exe"],
                     dirname=warmup_model_path,
-                    main_program=context["_model"][model_dict["name"]][0])
+                    main_program=context["model"][model_dict["name"]]["main_program"])
                 logger.info("Load persistables from \"{}\"".format(
                     warmup_model_path))
 
@@ -104,8 +106,9 @@ class Startup(StartupBase):
             "runner." + context["runner_name"] + ".init_model_path", None)
         assert warmup_model_path != None, "set runner.init_model_path for loading model"
         model_dict = context["env"]["phase"][0]
-        with fluid.scope_guard(context["_model"][model_dict["name"]][2]):
-            context["exe"].run(context["_model"][model_dict["name"]][1])
+        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+            context["exe"].run(
+                context["model"][model_dict["name"]]["startup_program"])
 
             def is_tdm_tree_var(var):
                 res = var.name in special_param
@@ -114,7 +117,8 @@ class Startup(StartupBase):
             fluid.io.load_vars(
                 context["exe"],
                 dirname=warmup_model_path,
-                main_program=context["_model"][model_dict["name"]][0],
+                main_program=context["model"][model_dict["name"]
+                                              ]["main_program"],
                 predicate=is_tdm_tree_var)
 
     """ --------  tree file load detail  --------- """
