@@ -44,16 +44,7 @@ class Model(ModelBase):
             "hyper_parameters.pooling_size", [2, 2, 2, 2])
         self.new_filters = envs.get_global_env("hyper_parameters.new_filters",
                                                [3, 3, 3, 3])
-
-        self.use_dropout = envs.get_global_env("hyper_parameters.use_dropout",
-                                               False)
-        self.dropout_prob = envs.get_global_env(
-            "hyper_parameters.dropout_prob", None)
-        self.layer_sizes = envs.get_global_env("hyper_parameters.fc_sizes",
-                                               None)
-        self.loss_type = envs.get_global_env("hyper_parameters.loss_type",
-                                             'logloss')
-        self.reg = envs.get_global_env("hyper_parameters.reg", 1e-4)
+        self.hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
         self.num_field = envs.get_global_env("hyper_parameters.num_field",
                                              None)
         self.act = envs.get_global_env("hyper_parameters.act", None)
@@ -95,6 +86,9 @@ class Model(ModelBase):
             shape=[0, 1, self.num_field, self.sparse_feature_dim])
         new_feature_list = []
         new_feature_field_num = 0
+
+        # ------------------------- Feature Generation --------------------------
+
         for i in range(len(self.filters)):
             conv_out = fluid.layers.conv2d(
                 featuer_generation_input,
@@ -109,7 +103,6 @@ class Model(ModelBase):
                 pool_stride=[self.pooling_size[i], 1])
             pool_out_shape = pool_out.shape[2]
             new_feature_field_num += self.new_filters[i] * pool_out_shape
-            print("SHAPE>> {}".format(pool_out_shape))
             flat_pool_out = fluid.layers.flatten(pool_out)
             recombination_out = fluid.layers.fc(input=flat_pool_out,
                                                 size=self.new_filters[i] *
@@ -122,102 +115,50 @@ class Model(ModelBase):
         new_features_map = fluid.layers.reshape(
             new_featues,
             shape=[0, new_feature_field_num, self.sparse_feature_dim])
-        print("new_feature shape: {}".format(new_features_map.shape))
-        #fluid.layers.Print(new_features_map)
         all_features = fluid.layers.concat(
             [feat_embeddings, new_features_map], axis=1)
-        #fluid.layers.Print(all_features)
-        print("all_feature shape: {}".format(all_features.shape))
         interaction_list = []
-        fluid.layers.Print(all_features[:, 0, :])
         for i in range(all_features.shape[1]):
             for j in range(i + 1, all_features.shape[1]):
-
                 interaction_list.append(
                     fluid.layers.reduce_sum(
                         all_features[:, i, :] * all_features[:, j, :],
                         dim=1,
                         keep_dim=True))
-
-        # sum_square part
-        summed_features_emb = fluid.layers.reduce_sum(
-            feat_embeddings, 1)  # batch_size * embedding_size
-        summed_features_emb_square = fluid.layers.square(
-            summed_features_emb)  # batch_size * embedding_size
-
-        # square_sum part
-        squared_features_emb = fluid.layers.square(
-            feat_embeddings)  # batch_size * num_field * embedding_size
-        squared_sum_features_emb = fluid.layers.reduce_sum(
-            squared_features_emb, 1)  # batch_size * embedding_size
-
-        y_FM = 0.5 * (summed_features_emb_square - squared_sum_features_emb
-                      )  # batch_size * embedding_size
-
-        if self.use_batchnorm:
-            y_FM = fluid.layers.batch_norm(input=y_FM, is_test=is_infer)
-        if self.use_dropout:
-            y_FM = fluid.layers.dropout(
-                x=y_FM, dropout_prob=self.dropout_prob, is_test=is_infer)
+        new_feature_dnn_input = fluid.layers.concat(interaction_list, axis=1)
+        feat_embeddings_dnn_input = fluid.layers.reshape(
+            feat_embeddings,
+            shape=[0, self.num_field * self.sparse_feature_dim])
+        dnn_input = fluid.layers.concat(
+            [feat_embeddings_dnn_input, new_feature_dnn_input], axis=1)
 
         # ------------------------- DNN --------------------------
 
-        y_dnn = y_FM
-        for s in self.layer_sizes:
-            if self.use_batchnorm:
-                y_dnn = fluid.layers.fc(
-                    input=y_dnn,
-                    size=s,
-                    act=self.act,
-                    param_attr=fluid.ParamAttr(initializer=fluid.initializer.
-                                               TruncatedNormalInitializer(
-                                                   loc=0.0,
-                                                   scale=init_value_ /
-                                                   math.sqrt(float(10)))),
-                    bias_attr=fluid.ParamAttr(initializer=fluid.initializer.
-                                              TruncatedNormalInitializer(
-                                                  loc=0.0, scale=init_value_)))
-                y_dnn = fluid.layers.batch_norm(
-                    input=y_dnn, act=self.act, is_test=is_infer)
-            else:
-                y_dnn = fluid.layers.fc(
-                    input=y_dnn,
-                    size=s,
-                    act=self.act,
-                    param_attr=fluid.ParamAttr(initializer=fluid.initializer.
-                                               TruncatedNormalInitializer(
-                                                   loc=0.0,
-                                                   scale=init_value_ /
-                                                   math.sqrt(float(10)))),
-                    bias_attr=fluid.ParamAttr(initializer=fluid.initializer.
-                                              TruncatedNormalInitializer(
-                                                  loc=0.0, scale=init_value_)))
-            if self.use_dropout:
-                y_dnn = fluid.layers.dropout(
-                    x=y_dnn, dropout_prob=self.dropout_prob, is_test=is_infer)
-        y_dnn = fluid.layers.fc(
-            input=y_dnn,
+        fcs = [dnn_input]
+
+        for size in self.hidden_layers:
+            output = fluid.layers.fc(
+                input=fcs[-1],
+                size=size,
+                act=self.act,
+                param_attr=fluid.ParamAttr(
+                    initializer=fluid.initializer.Normal(
+                        scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
+            fcs.append(output)
+
+        predict = fluid.layers.fc(
+            input=fcs[-1],
             size=1,
-            act=None,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_)),
-            bias_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_)))
+            act="sigmoid",
+            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
+                scale=1 / math.sqrt(fcs[-1].shape[1]))))
 
         # ------------------------- Predict --------------------------
 
-        self.predict = fluid.layers.sigmoid(y_dnn)
-        if self.loss_type == "squqre_loss":
-            cost = fluid.layers.mse_loss(
-                input=self.predict,
-                label=fluid.layers.cast(self.label, "float32"))
-        else:
-            cost = fluid.layers.log_loss(
-                input=self.predict,
-                label=fluid.layers.cast(self.label,
-                                        "float32"))  # default log_loss
+        self.predict = predict
+
+        cost = fluid.layers.log_loss(
+            input=self.predict, label=fluid.layers.cast(self.label, "float32"))
         avg_cost = fluid.layers.reduce_sum(cost)
 
         self._cost = avg_cost
