@@ -71,7 +71,7 @@ class TimeSplitDatasetHolder(DatasetHolder):
         """
         init data root_path, time_split_interval, data_path_format
         """
-        Dataset.__init__(self, config)
+        DatasetHolder.__init__(self, config)
         if 'data_donefile' not in config or config['data_donefile'] is None:
             config['data_donefile'] = config['data_path'] + "/to.hadoop.done"
         self._path_generator = util.PathGenerator({
@@ -153,8 +153,14 @@ class TimeSplitDatasetHolder(DatasetHolder):
                 if not sub_file_name.startswith(self._config[
                         'filename_prefix']):
                     continue
-                if hash(sub_file_name) % node_num == node_idx:
-                    data_file_list.append(sub_file)
+                postfix = sub_file_name.split(self._config['filename_prefix'])[
+                    1]
+                if postfix.isdigit():
+                    if int(postfix) % node_num == node_idx:
+                        data_file_list.append(sub_file)
+                else:
+                    if hash(sub_file_name) % node_num == node_idx:
+                        data_file_list.append(sub_file)
             time_window_mins = time_window_mins - self._split_interval
             data_time = data_time + datetime.timedelta(
                 minutes=self._split_interval)
