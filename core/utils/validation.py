@@ -16,11 +16,10 @@ from paddlerec.core.utils import envs
 
 
 class ValueFormat:
-    def __init__(self, type, value, value_handler):
-        self.type = type
+    def __init__(self, value_type, value, value_handler):
+        self.value_type = value_type
         self.value = value
         self.value_handler = value_handler
-        self.help = help
 
     def is_valid(self, name, value):
         ret = self.is_type_valid(name, value)
@@ -31,24 +30,24 @@ class ValueFormat:
         return ret
 
     def is_type_valid(self, name, value):
-        if self.type == "int":
+        if self.value_type == "int":
             if not isinstance(value, int):
                 print("\nattr {} should be int, but {} now\n".format(
-                    name, self.type))
+                    name, self.value_type))
                 return False
             return True
 
-        elif self.type == "str":
+        elif self.value_type == "str":
             if not isinstance(value, str):
                 print("\nattr {} should be str, but {} now\n".format(
-                    name, self.type))
+                    name, self.value_type))
                 return False
             return True
 
-        elif self.type == "strs":
+        elif self.value_type == "strs":
             if not isinstance(value, list):
                 print("\nattr {} should be list(str), but {} now\n".format(
-                    name, self.type))
+                    name, self.value_type))
                 return False
             for v in value:
                 if not isinstance(v, str):
@@ -57,10 +56,10 @@ class ValueFormat:
                     return False
             return True
 
-        elif self.type == "ints":
+        elif self.value_type == "ints":
             if not isinstance(value, list):
                 print("\nattr {} should be list(int), but {} now\n".format(
-                    name, self.type))
+                    name, self.value_type))
                 return False
             for v in value:
                 if not isinstance(v, int):
