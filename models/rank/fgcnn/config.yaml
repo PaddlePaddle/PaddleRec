@@ -43,11 +43,7 @@ hyper_parameters:
     filters: [38,40,42,44]
     new_filters: [3,3,3,3]
     pooling_size: [2,2,2,2]
-    use_dropout: False
-    dropout_prob: 0.9
-    fc_sizes: [400, 400, 400]
-    loss_type: "log_loss" # log_loss or square_loss
-    reg: 0.001
+    fc_sizes: [4096, 2048]
     num_field: 39
     act: "relu"
 
