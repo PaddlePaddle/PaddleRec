@@ -15,7 +15,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.pnn"
+workspace: "paddlerec.models.rank.fgcnn"
 
 dataset:
   - name: train_sample
@@ -38,11 +38,13 @@ hyper_parameters:
         learning_rate: 0.0001
     sparse_feature_number: 1086460
     sparse_feature_dim: 9
-    deep_input_size: 50
-    use_inner_product: True
+    is_sparse: False
+    use_batchnorm: False
+    filters: [38,40,42,44]
+    new_filters: [3,3,3,3]
+    pooling_size: [2,2,2,2]
+    fc_sizes: [4096, 2048]
     num_field: 39
-    fc_sizes: [32, 32]
-    reg: 0.001
     act: "relu"
 
 mode: train_runner
