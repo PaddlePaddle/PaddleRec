@@ -21,7 +21,6 @@ from paddlerec.core.utils import envs
 
 
 class Reader(ReaderBase):
-
     def init(self):
         dict_path = envs.get_global_env(
             "dataset.dataset_infer.word_id_dict_path")

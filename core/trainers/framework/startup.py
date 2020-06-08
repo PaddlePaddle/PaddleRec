@@ -46,17 +46,21 @@ class StartupBase(object):
 
 
 class SingleStartup(StartupBase):
+    """R
+    """
+
     def __init__(self, context):
         print("Running SingleStartup.")
         pass
 
     def startup(self, context):
         for model_dict in context["env"]["phase"]:
-            with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
-                train_prog = context["model"][model_dict["name"]
-                                              ]["main_program"]
-                startup_prog = context["model"][model_dict["name"]
-                                                ]["startup_program"]
+            with fluid.scope_guard(context["model"][model_dict["name"]][
+                    "scope"]):
+                train_prog = context["model"][model_dict["name"]][
+                    "main_program"]
+                startup_prog = context["model"][model_dict["name"]][
+                    "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
                     context["exe"].run(startup_prog)
                     self.load(context, main_program=train_prog)
@@ -73,8 +77,8 @@ class PSStartup(StartupBase):
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
 
             train_prog = context["model"][model_dict["name"]]["main_program"]
-            startup_prog = context["model"][model_dict["name"]
-                                            ]["startup_program"]
+            startup_prog = context["model"][model_dict["name"]][
+                "startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
                 context["exe"].run(startup_prog)
                 self.load(context, True)
@@ -89,10 +93,10 @@ class CollectiveStartup(StartupBase):
     def startup(self, context):
         model_dict = context["env"]["phase"][0]
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
-            train_prog = context["model"][model_dict["name"]
-                                          ]["default_main_program"]
-            startup_prog = context["model"][model_dict["name"]
-                                            ]["startup_program"]
+            train_prog = context["model"][model_dict["name"]][
+                "default_main_program"]
+            startup_prog = context["model"][model_dict["name"]][
+                "startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
                 context["exe"].run(startup_prog)
                 self.load(context, True)

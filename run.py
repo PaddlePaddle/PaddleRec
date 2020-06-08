@@ -72,7 +72,7 @@ def get_all_inters_from_yaml(file, filters):
                   k == "runner") and isinstance(v, list):
                 for i in v:
                     if i.get("name") is None:
-                        raise ValueError("name must be in dataset list ", v)
+                        raise ValueError("name must be in dataset list. ", v)
                     nests = copy.deepcopy(namespace_nests)
                     nests.append(k)
                     nests.append(i["name"])
@@ -160,8 +160,7 @@ def single_train_engine(args):
 
     executor_mode = "train"
 
-    device = run_extras.get(
-        "runner." + _envs["mode"] + ".device", "cpu")
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
     selected_gpus_num = len(selected_gpus.split(","))
@@ -195,8 +194,7 @@ def single_infer_engine(args):
 
     executor_mode = "infer"
 
-    device = run_extras.get(
-        "runner." + _envs["mode"] + ".device", "cpu")
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
     selected_gpus_num = len(selected_gpus.split(","))
@@ -241,8 +239,8 @@ def cluster_engine(args):
         update_workspace(flattens)
 
         envs.set_runtime_environs(flattens)
-        print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value"
-                                                )))
+        print(
+            envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value")))
 
         launch = ClusterEngine(None, args.model)
         return launch

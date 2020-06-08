@@ -32,7 +32,7 @@ from paddlerec.core.trainers.framework.startup import *
 
 class GeneralTrainer(Trainer):
     """
-    Trainer for various situations
+    Trainer for various situations.
     """
 
     def __init__(self, config=None):
@@ -146,8 +146,8 @@ class GeneralTrainer(Trainer):
             if self.engine != EngineMode.SINGLE and self.fleet_mode == FleetMode.PS:
                 terminal_class_name = "PSTerminal"
 
-            terminal_path = os.path.join(
-                self.abs_dir, "framework", "terminal.py")
+            terminal_path = os.path.join(self.abs_dir, "framework",
+                                         "terminal.py")
             terminal_class = envs.lazy_instance_by_fliename(
                 terminal_path, terminal_class_name)(context)
         terminal_class.terminal(context)

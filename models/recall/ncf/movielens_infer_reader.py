@@ -20,7 +20,6 @@ import numpy as np
 
 
 class Reader(ReaderBase):
-
     def init(self):
         pass
 

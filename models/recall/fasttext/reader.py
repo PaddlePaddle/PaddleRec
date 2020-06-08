@@ -39,7 +39,6 @@ class NumpyRandomInt(object):
 
 
 class Reader(ReaderBase):
-
     def init(self):
         dict_path = envs.get_global_env(
             "dataset.dataset_train.word_count_dict_path")

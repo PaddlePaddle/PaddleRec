@@ -171,10 +171,9 @@ class RunnerBase(object):
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
         program = context["model"][model_name]["main_program"].clone()
-        _exe_strategy, _build_strategy = self._get_strategy(
-            model_dict, context)
-        program = fluid.compiler.CompiledProgram(
-            program).with_data_parallel(
+        _exe_strategy, _build_strategy = self._get_strategy(model_dict,
+                                                            context)
+        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
             loss_name=model_class.get_avg_cost().name,
             build_strategy=_build_strategy,
             exec_strategy=_exe_strategy)
@@ -206,8 +205,7 @@ class RunnerBase(object):
             )
         _build_strategy.gradient_scale_strategy = gradient_scale_strategy
 
-        program = fluid.compiler.CompiledProgram(
-            program).with_data_parallel(
+        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
             loss_name=model_class.get_avg_cost().name,
             build_strategy=_build_strategy,
             exec_strategy=_exe_strategy)
@@ -271,6 +269,9 @@ class RunnerBase(object):
 
 
 class SingleRunner(RunnerBase):
+    """R
+    """
+
     def __init__(self, context):
         print("Running SingleRunner.")
         pass
@@ -288,10 +289,10 @@ class SingleRunner(RunnerBase):
                 print("epoch {} done, use time: {}".format(epoch, seconds))
                 with fluid.scope_guard(context["model"][model_dict["name"]][
                         "scope"]):
-                    train_prog = context["model"][model_dict["name"]
-                                                  ]["default_main_program"]
-                    startup_prog = context["model"][model_dict["name"]
-                                                    ]["startup_program"]
+                    train_prog = context["model"][model_dict["name"]][
+                        "default_main_program"]
+                    startup_prog = context["model"][model_dict["name"]][
+                        "startup_program"]
                     with fluid.program_guard(train_prog, startup_prog):
                         self.save(epoch, context)
         context["status"] = "terminal_pass"
@@ -313,11 +314,12 @@ class PSRunner(RunnerBase):
             end_time = time.time()
             seconds = end_time - begin_time
             print("epoch {} done, use time: {}".format(epoch, seconds))
-            with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
-                train_prog = context["model"][model_dict["name"]
-                                              ]["main_program"]
-                startup_prog = context["model"][model_dict["name"]
-                                                ]["startup_program"]
+            with fluid.scope_guard(context["model"][model_dict["name"]][
+                    "scope"]):
+                train_prog = context["model"][model_dict["name"]][
+                    "main_program"]
+                startup_prog = context["model"][model_dict["name"]][
+                    "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
                     self.save(epoch, context, True)
         context["status"] = "terminal_pass"
@@ -339,11 +341,12 @@ class CollectiveRunner(RunnerBase):
             end_time = time.time()
             seconds = end_time - begin_time
             print("epoch {} done, use time: {}".format(epoch, seconds))
-            with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
-                train_prog = context["model"][model_dict["name"]
-                                              ]["default_main_program"]
-                startup_prog = context["model"][model_dict["name"]
-                                                ]["startup_program"]
+            with fluid.scope_guard(context["model"][model_dict["name"]][
+                    "scope"]):
+                train_prog = context["model"][model_dict["name"]][
+                    "default_main_program"]
+                startup_prog = context["model"][model_dict["name"]][
+                    "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
                     self.save(epoch, context, True)
         context["status"] = "terminal_pass"
@@ -358,8 +361,7 @@ class OnlineLearningRunner(RunnerBase):
         model_dict = context["env"]["phase"][0]
         begin_day = datetime.datetime.strptime("begin_day_d", '%Y%m%d')
         days = int(
-            envs.get_global_env("runner." + context["runner_name"] +
-                                ".days"))
+            envs.get_global_env("runner." + context["runner_name"] + ".days"))
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
@@ -372,8 +374,8 @@ class OnlineLearningRunner(RunnerBase):
                 for dataset in context["env"]["dataset"]:
                     if dataset["type"] != "DataLoader":
                         name = dataset["name"]
-                        train_data_path = envs.get_global_env(
-                            name + "data_path")
+                        train_data_path = envs.get_global_env(name +
+                                                              "data_path")
                         train_data_path = os.path.join(train_data_path, day_s)
 
                         file_list = [
@@ -388,11 +390,12 @@ class OnlineLearningRunner(RunnerBase):
                     end_time = time.time()
                     seconds = end_time - begin_time
                     print("epoch {} done, use time: {}".format(epoch, seconds))
-                    with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
-                        train_prog = context["model"][model_dict["name"]
-                                                      ]["default_main_program"]
-                        startup_prog = context["model"][model_dict["name"]
-                                                        ]["startup_program"]
+                    with fluid.scope_guard(context["model"][model_dict["name"]]
+                                           ["scope"]):
+                        train_prog = context["model"][model_dict["name"]][
+                            "default_main_program"]
+                        startup_prog = context["model"][model_dict["name"]][
+                            "startup_program"]
                         with fluid.program_guard(train_prog, startup_prog):
                             self.save(epoch, context, True)
 

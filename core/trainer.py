@@ -83,6 +83,8 @@ class Trainer(object):
         self.legality_check()
 
     def which_device(self):
+        """R
+        """
         device = envs.get_global_env(
             "runner." + self._runner_name + ".device", default_value="CPU")
         if device.upper() == 'GPU':

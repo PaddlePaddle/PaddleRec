@@ -36,6 +36,9 @@ class NetworkBase(object):
 
 
 class SingleNetwork(NetworkBase):
+    """R
+    """
+
     def __init__(self, context):
         print("Running SingleNetwork.")
         pass
@@ -81,14 +84,14 @@ class SingleNetwork(NetworkBase):
                             model.net(model._data_var, context["is_infer"])
                             optimizer = model.optimizer()
                             optimizer.minimize(model._cost)
-            context["model"][model_dict["name"]
-                             ]["main_program"] = train_program
-            context["model"][model_dict["name"]
-                             ]["startup_program"] = startup_program
+            context["model"][model_dict["name"]][
+                "main_program"] = train_program
+            context["model"][model_dict["name"]][
+                "startup_program"] = startup_program
             context["model"][model_dict["name"]]["scope"] = scope
             context["model"][model_dict["name"]]["model"] = model
-            context["model"][model_dict["name"]
-                             ]["default_main_program"] = train_program.clone()
+            context["model"][model_dict["name"]][
+                "default_main_program"] = train_program.clone()
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
@@ -210,7 +213,8 @@ class CollectiveNetwork(NetworkBase):
         with fluid.program_guard(train_program, startup_program):
             with fluid.scope_guard(scope):
                 model_path = model_dict["model"].replace(
-                    "{workspace}", envs.path_adapter(context["env"]["workspace"]))
+                    "{workspace}",
+                    envs.path_adapter(context["env"]["workspace"]))
                 model = envs.lazy_instance_by_fliename(model_path,
                                                        "Model")(context["env"])
                 model._data_var = model.input_data(
@@ -224,26 +228,26 @@ class CollectiveNetwork(NetworkBase):
                 model.net(model._data_var, False)
                 optimizer = model.optimizer()
                 strategy = self._build_strategy(context)
-                optimizer = context["fleet"].distributed_optimizer(
-                    optimizer, strategy)
+                optimizer = context["fleet"].distributed_optimizer(optimizer,
+                                                                   strategy)
                 optimizer.minimize(model._cost)
 
                 context["model"][model_dict["name"]]["main_program"] = context[
                     "fleet"].main_program
-                context["model"][model_dict["name"]
-                                 ]["startup_program"] = startup_program
+                context["model"][model_dict["name"]][
+                    "startup_program"] = startup_program
                 context["model"][model_dict["name"]]["scope"] = scope
                 context["model"][model_dict["name"]]["model"] = model
-                context["model"][model_dict["name"]
-                                 ]["default_main_program"] = train_program
+                context["model"][model_dict["name"]][
+                    "default_main_program"] = train_program
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
             if dataset["type"] != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
-                    "name"]] = dataset_class.create_dataset(
-                        dataset["name"], context)
+                    "name"]] = dataset_class.create_dataset(dataset["name"],
+                                                            context)
         context["status"] = "startup_pass"
 
     def _build_strategy(self, context):

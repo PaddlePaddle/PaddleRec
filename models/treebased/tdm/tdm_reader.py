@@ -21,7 +21,6 @@ from paddlerec.core.reader import ReaderBase
 
 
 class Reader(ReaderBase):
-
     def init(self):
         pass
 

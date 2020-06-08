@@ -22,7 +22,6 @@ from paddlerec.core.utils import envs
 
 
 class Reader(ReaderBase):
-
     def init(self):
         self.batch_size = envs.get_global_env(
             "dataset.dataset_train.batch_size")
