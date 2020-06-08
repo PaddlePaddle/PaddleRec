@@ -175,6 +175,7 @@ class CostPrinter(object):
     """
     For count cost time && print cost log
     """
+
     def __init__(self, callback, callback_params):
         """R
         """
@@ -210,6 +211,7 @@ class PathGenerator(object):
     """
     generate path with template & runtime variables
     """
+
     def __init__(self, config):
         """R
         """
@@ -230,8 +232,8 @@ class PathGenerator(object):
         """
         if template_name in self._templates:
             if 'time_format' in param:
-                str = param['time_format'].strftime(
-                    self._templates[template_name])
+                str = param['time_format'].strftime(self._templates[
+                    template_name])
                 return str.format(**param)
             return self._templates[template_name].format(**param)
         else:
