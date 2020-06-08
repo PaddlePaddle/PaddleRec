@@ -155,7 +155,6 @@ class ModelBase(object):
 
     def optimizer(self):
         opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
-
         opt_lr = envs.get_global_env(
             "hyper_parameters.optimizer.learning_rate")
         opt_strategy = envs.get_global_env(

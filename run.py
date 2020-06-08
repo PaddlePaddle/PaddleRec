@@ -24,6 +24,7 @@ from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
 from paddlerec.core.utils import validation
 from paddlerec.core.utils import util
+from paddlerec.core.utils import validation
 
 engines = {}
 device = ["CPU", "GPU"]
@@ -400,6 +401,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
+    if not validation.yaml_validation(args.model):
+        sys.exit(-1)
     engine_registry()
     which_engine = get_engine(args)
     engine = which_engine(args)
