@@ -249,7 +249,6 @@ class PslibNetwork(NetworkBase):
         if context["fleet"].is_server():
             self._server(context)
         else:
-            context["fleet"].init_worker()
             context["dataset"] = {}
             for dataset in context["env"]["dataset"]:
                 if dataset["type"] != "DataLoader":

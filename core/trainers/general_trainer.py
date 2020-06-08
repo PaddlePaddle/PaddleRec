@@ -58,11 +58,10 @@ class GeneralTrainer(Trainer):
         else:
             if self.engine == EngineMode.SINGLE:
                 instance_class_name = "SingleInstance"
+            elif self.fleet_mode == FleetMode.PSLIB:
+                instance_class_name = "PslibInstance"
             elif self.fleet_mode == FleetMode.PS:
-                if self.is_pslib:
-                    instance_class_name = "PslibInstance"
-                else:
-                    instance_class_name = "PSInstance"
+                instance_class_name = "PSInstance"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
                 instance_class_name = "CollectiveInstance"
             else:
@@ -83,11 +82,10 @@ class GeneralTrainer(Trainer):
         else:
             if self.engine == EngineMode.SINGLE:
                 network_class_name = "SingleNetwork"
+            elif self.fleet_mode == FleetMode.PSLIB:
+                network_class_name = "PslibNetwork"
             elif self.fleet_mode == FleetMode.PS:
-                if self.is_pslib:
-                    network_class_name = "PslibNetwork"
-                else:
-                    network_class_name = "PSNetwork"
+                network_class_name = "PSNetwork"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
                 network_class_name = "CollectiveNetwork"
             else:
@@ -108,7 +106,7 @@ class GeneralTrainer(Trainer):
         else:
             if self.engine == EngineMode.SINGLE:
                 startup_class_name = "SingleStartup"
-            elif self.fleet_mode == FleetMode.PS:
+            elif self.fleet_mode == FleetMode.PS or self.fleet_mode == FleetMode.PSLIB:
                 startup_class_name = "PSStartup"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
                 startup_class_name = "CollectiveStartup"
@@ -129,6 +127,8 @@ class GeneralTrainer(Trainer):
         else:
             if self.engine == EngineMode.SINGLE:
                 runner_class_name = "SingleRunner"
+            elif self.fleet_mode == FleetMode.PSLIB:
+                runner_class_name = "PslibRunner"
             elif self.fleet_mode == FleetMode.PS:
                 runner_class_name = "PSRunner"
             elif self.fleet_mode == FleetMode.COLLECTIVE:
@@ -149,7 +149,7 @@ class GeneralTrainer(Trainer):
             terminal_class.terminal(context)
         else:
             terminal_class_name = "TerminalBase"
-            if self.engine != EngineMode.SINGLE and self.fleet_mode == FleetMode.PS:
+            if self.engine != EngineMode.SINGLE and self.fleet_mode != FleetMode.COLLECTIVE:
                 terminal_class_name = "PSTerminal"
 
             terminal_path = os.path.join(self.abs_dir, "framework",

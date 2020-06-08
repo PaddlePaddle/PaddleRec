@@ -22,7 +22,9 @@ import datetime
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
-__all__ = ["RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner"]
+__all__ = [
+    "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
+]
 
 
 class RunnerBase(object):
@@ -352,12 +354,13 @@ class CollectiveRunner(RunnerBase):
         context["status"] = "terminal_pass"
 
 
-class OnlineLearningRunner(RunnerBase):
+class PslibRunner(RunnerBase):
     def __init__(self, context):
         print("Running PSRunner.")
         pass
 
     def run(self, context):
+        context["fleet"].init_worker()
         model_dict = context["env"]["phase"][0]
         begin_day = datetime.datetime.strptime("begin_day_d", '%Y%m%d')
         days = int(
@@ -365,38 +368,44 @@ class OnlineLearningRunner(RunnerBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
+        for epoch in range(epochs):
+            begin_time = time.time()
+            self._run(context, model_dict)
+            end_time = time.time()
+            seconds = end_time - begin_time
+            print("epoch {} done, use time: {}".format(epoch, seconds))
 
-        for day in range(days):
-            for hour in range(24):
-                day = begin_day + datetime.timedelta(days=day, hours=hour)
-                day_s = day.strftime('%Y%m%d/%H')
+        # for day in range(days):
+        #     for hour in range(24):
+        #         day = begin_day + datetime.timedelta(days=day, hours=hour)
+        #         day_s = day.strftime('%Y%m%d/%H')
 
-                for dataset in context["env"]["dataset"]:
-                    if dataset["type"] != "DataLoader":
-                        name = dataset["name"]
-                        train_data_path = envs.get_global_env(name +
-                                                              "data_path")
-                        train_data_path = os.path.join(train_data_path, day_s)
+        #         for dataset in context["env"]["dataset"]:
+        #             if dataset["type"] != "DataLoader":
+        #                 name = dataset["name"]
+        #                 train_data_path = envs.get_global_env(name +
+        #                                                       "data_path")
+        #                 train_data_path = os.path.join(train_data_path, day_s)
 
-                        file_list = [
-                            os.path.join(train_data_path, x)
-                            for x in os.listdir(train_data_path)
-                        ]
-                        context["dataset"][name].set_filelist(file_list)
+        #                 file_list = [
+        #                     os.path.join(train_data_path, x)
+        #                     for x in os.listdir(train_data_path)
+        #                 ]
+        #                 context["dataset"][name].set_filelist(file_list)
 
-                for epoch in range(epochs):
-                    begin_time = time.time()
-                    self._run(context, model_dict)
-                    end_time = time.time()
-                    seconds = end_time - begin_time
-                    print("epoch {} done, use time: {}".format(epoch, seconds))
-                    with fluid.scope_guard(context["model"][model_dict["name"]]
-                                           ["scope"]):
-                        train_prog = context["model"][model_dict["name"]][
-                            "default_main_program"]
-                        startup_prog = context["model"][model_dict["name"]][
-                            "startup_program"]
-                        with fluid.program_guard(train_prog, startup_prog):
-                            self.save(epoch, context, True)
+        #         for epoch in range(epochs):
+        #             begin_time = time.time()
+        #             self._run(context, model_dict)
+        #             end_time = time.time()
+        #             seconds = end_time - begin_time
+        #             print("epoch {} done, use time: {}".format(epoch, seconds))
+        #             with fluid.scope_guard(context["model"][model_dict["name"]]
+        #                                    ["scope"]):
+        #                 train_prog = context["model"][model_dict["name"]][
+        #                     "default_main_program"]
+        #                 startup_prog = context["model"][model_dict["name"]][
+        #                     "startup_program"]
+        #                 with fluid.program_guard(train_prog, startup_prog):
+        #                     self.save(epoch, context, True)
 
         context["status"] = "terminal_pass"
