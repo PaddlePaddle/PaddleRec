@@ -66,7 +66,7 @@ class AUCMetric(Metric):
         old_metric_shape = np.array(metric.shape)
         metric = metric.reshape(-1)
         global_metric = np.copy(metric) * 0
-        self.fleet._role_maker._node_type_comm.Allreduce(metric, global_metric)
+        self.fleet._role_maker.all_reduce_worker(metric, global_metric)
         global_metric = global_metric.reshape(old_metric_shape)
         return global_metric[0]
 

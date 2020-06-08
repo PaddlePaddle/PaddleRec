@@ -17,6 +17,7 @@ import os
 import time
 import sys
 import yaml
+import traceback
 
 from paddle import fluid
 
@@ -51,10 +52,18 @@ class Trainer(object):
         Return:
             None : run a processor for this status
         """
-        if context['status'] in self._status_processor:
-            self._status_processor[context['status']](context)
-        else:
-            self.other_status_processor(context)
+        status = context['status']
+        try:
+            if status in self._status_processor:
+                self._status_processor[context['status']](context)
+            else:
+                self.other_status_processor(context)
+        except Exception, err:
+            traceback.print_exc()
+            print('Catch Exception:%s' % str(err))
+            sys.stdout.flush()
+            self._context['is_exit'] = self.handle_processor_exception(
+                status, context, err)
 
     def other_status_processor(self, context):
         """
@@ -64,6 +73,16 @@ class Trainer(object):
         """
         print('unknow context_status:%s, do nothing' % context['status'])
         time.sleep(60)
+
+    def handle_processor_exception(self, status, context, exception):
+        """
+        when exception throwed from processor, will call this func to handle it 
+        Return:
+            bool exit_app or not
+        """
+        print('Exit app. catch exception in precoss status:%s, except:%s' \
+                % (context['status'], str(exception)))
+        return True
 
     def reload_train_context(self):
         """
