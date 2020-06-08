@@ -239,8 +239,7 @@ def cluster_engine(args):
         update_workspace(flattens)
 
         envs.set_runtime_environs(flattens)
-        print(
-            envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value")))
+        print(envs.pretty_print_envs(flattens, ("Submit Envs", "Value")))
 
         launch = ClusterEngine(None, args.model)
         return launch
