@@ -24,6 +24,10 @@ trainers = {}
 
 def trainer_registry():
     # Definition of procedure execution process
+    trainers["CtrCodingTrainer"] = os.path.join(trainer_abs,
+                                                "ctr_coding_trainer.py")
+    trainers["CtrModulTrainer"] = os.path.join(trainer_abs,
+                                               "ctr_modul_trainer.py")
     trainers["GeneralTrainer"] = os.path.join(trainer_abs,
                                               "general_trainer.py")
 

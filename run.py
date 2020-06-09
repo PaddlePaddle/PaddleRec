@@ -29,7 +29,7 @@ from paddlerec.core.utils import validation
 engines = {}
 device = ["CPU", "GPU"]
 engine_choices = [
-    "SINGLE_TRAIN", "SINGLE_INFER", "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
+    "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER", "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
 ]
 fleet_mode_choice = ["PS", "PSLIB", "COLLECTIVE"]
 
@@ -38,13 +38,19 @@ def engine_registry():
     engines["TRANSPILER"] = {}
     engines["PSLIB"] = {}
 
+    engines["TRANSPILER"]["TRAIN"] = single_train_engine
     engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
+    engines["TRANSPILER"]["INFER"] = single_infer_engine
     engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
+    engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
-    engines["TRANSPILER"]["CLUSTER_TRAIN"] = cluster_engine
+    engines["TRANSPILER"]["CLUSTER"] = cluster_engine
     engines["PSLIB"]["SINGLE_TRAIN"] = local_mpi_engine
+    engines["PSLIB"]["TRAIN"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER_TRAIN"] = local_mpi_engine
+    engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER_TRAIN"] = cluster_mpi_engine
+    engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
 
 
 def get_inters_from_yaml(file, filters):
@@ -93,14 +99,22 @@ def get_all_inters_from_yaml(file, filters):
 def get_engine(args):
     transpiler = get_transpiler()
     with open(args.model, 'r') as rb:
-        envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
 
     engine = run_extras.get("train.engine", None)
     if engine is None:
-        engine = run_extras.get("runner." + envs["mode"] + ".class", None)
+        engine = run_extras.get("runner." + _envs["mode"] + ".class", None)
     if engine is None:
-        engine = "single_train"
+        engine = "train"
+
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "CPU")
+    if device.upper() == "GPU":
+        selected_gpus = run_extras.get(
+            "runner." + _envs["mode"] + ".selected_gpus", "0")
+        selected_gpus_num = len(selected_gpus.split(","))
+        if selected_gpus_num > 1:
+            engine = "LOCAL_CLUSTER"
 
     engine = engine.upper()
     if engine not in engine_choices:
@@ -327,12 +341,20 @@ def local_cluster_engine(args):
     executor_mode = "train"
     distributed_strategy = run_extras.get(
         "runner." + _envs["mode"] + ".distribute_strategy", "async")
-    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
-                                "ps")
+
     worker_num = run_extras.get("runner." + _envs["mode"] + ".worker_num", 1)
     server_num = run_extras.get("runner." + _envs["mode"] + ".server_num", 1)
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
+
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "")
+    if fleet_mode == "":
+        device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
+        if len(selected_gpus.split(",")) > 1 and device.upper() == "GPU":
+            fleet_mode = "COLLECTIVE"
+        else:
+            fleet_mode = "PS"
 
     cluster_envs = {}
     cluster_envs["server_num"] = server_num

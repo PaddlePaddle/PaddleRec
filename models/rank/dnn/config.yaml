@@ -51,12 +51,12 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
-mode: runner0
+mode: single_cpu_train
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: runner0
-  class: single_train
+- name: single_cpu_train
+  class: train
   # num of epochs
   epochs: 4
   # device to run training or infer
@@ -69,8 +69,8 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
-- name: runner1
-  class: single_train
+- name: single_gpu_train
+  class: train
   # num of epochs
   epochs: 4
   # device to run training or infer
@@ -84,21 +84,17 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
-- name: runner2
-  class: single_infer
+- name: single_cpu_infer
+  class: infer
   # num of epochs
   epochs: 1
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
-- name: runner3
-  class: local_cluster_train
-  fleet_mode: ps # pslib/collective
+- name: local_cluster_cpu_ps_train
+  class: local_cluster
   epochs: 4
   device: cpu
-  server_num: 1
-  worker_num: 1
-  distribute_strategy: async
   save_checkpoint_interval: 2 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment" # save checkpoint path
@@ -107,13 +103,11 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 1
-- name: runner4
-  class: local_cluster_train
-  fleet_mode: collective
+- name: multi_gpu_train
+  class: train
   epochs: 4
   device: gpu
-  selected_gpus: 2,3
-  distribute_strategy: async
+  selected_gpus: "2,3"
   save_checkpoint_interval: 2 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment" # save checkpoint path
