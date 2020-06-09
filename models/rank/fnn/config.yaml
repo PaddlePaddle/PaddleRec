@@ -15,7 +15,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.pnn"
+workspace: "paddlerec.models.rank.fnn"
 
 dataset:
   - name: train_sample
@@ -34,30 +34,38 @@ dataset:
 hyper_parameters:
     # 用户自定义配置
     optimizer:
-        class: Adam
+        class: SGD
         learning_rate: 0.0001
     sparse_feature_number: 1086460
     sparse_feature_dim: 9
-    deep_input_size: 50
-    use_inner_product: True
-    num_field: 39
-    fc_sizes: [32, 32]
     reg: 0.001
-    act: "relu"
+    num_field: 39
+    fc_sizes: [512, 256, 128, 32]
 
-mode: train_runner
+mode: train_FM_runner #for FM phase: train_FM_runner for dnn phase: train_DNN_runner
 # if infer, change mode to "infer_runner" and change phase to "infer_phase"
 
 runner:
-  - name: train_runner
+  - name: train_FM_runner
     trainer_class: single_train
     epochs: 1
     device: cpu
-    init_model_path: ""
+    init_model_path: ""   
     save_checkpoint_interval: 1
     save_inference_interval: 1
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
+    print_interval: 1
+  - name: train_DNN_runner
+    trainer_class: single_train
+    epochs: 1
+    device: cpu
+    init_model_path: "increment/0"
+    load_vars: ["embedding_1.w_0", "embedding_0.w_0"]
+    save_checkpoint_interval: 1
+    save_inference_interval: 1
+    save_checkpoint_path: "increment_fnn"
+    save_inference_path: "inference_fnn"
     print_interval: 1
   - name: infer_runner
     trainer_class: single_infer
@@ -68,7 +76,7 @@ runner:
 
 phase:
 - name: phase1
-  model: "{workspace}/model.py"
+  model: "{workspace}/fm_model.py" # for FM phase: fm_model.py for dnn phase model.py
   dataset_name: train_sample
   thread_num: 1
 #- name: infer_phase
