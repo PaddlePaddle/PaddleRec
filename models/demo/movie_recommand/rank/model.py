@@ -69,14 +69,11 @@ class Model(ModelBase):
             map(embedding_layer, self.user_sparse_inputs))
         mov_sparse_embed_seq = list(
             map(embedding_layer, self.mov_sparse_inputs))
-        concated_user = fluid.layers.concat(user_sparse_embed_seq, axis=1)
-        concated_mov = fluid.layers.concat(mov_sparse_embed_seq, axis=1)
+        concated = fluid.layers.concat(
+            user_sparse_embed_seq + mov_sparse_embed_seq, axis=1)
 
-        usr_combined_features = fc(concated_user)
-        mov_combined_features = fc(concated_mov)
+        fc_input = fc(concated)
 
-        fc_input = fluid.layers.concat(
-            [usr_combined_features, mov_combined_features], axis=1)
         sim = fluid.layers.fc(
             input=fc_input,
             size=1,
@@ -92,8 +89,6 @@ class Model(ModelBase):
         #                                     slide_steps=20)
 
         if is_infer:
-            self._infer_results["user_feature"] = usr_combined_features
-            self._infer_results["movie_feature"] = mov_combined_features
             self._infer_results["uid"] = self._sparse_data_var[2]
             self._infer_results["movieid"] = self._sparse_data_var[6]
             self._infer_results["label"] = self._sparse_data_var[-1]
