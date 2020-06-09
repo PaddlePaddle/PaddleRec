@@ -15,7 +15,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.fm"
+workspace: "paddlerec.models.rank.ffm"
 
 dataset:
   - name: train_sample
