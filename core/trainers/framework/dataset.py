@@ -81,8 +81,7 @@ class QueueDataset(DatasetBase):
         name = "dataset." + dataset_name + "."
         type_name = envs.get_global_env(name + "type")
         if envs.get_platform() != "LINUX":
-            print("platform ",
-                  envs.get_platform(), " change reader to DataLoader")
+            print("platform ", envs.get_platform(), "Reader To Dataloader")
             type_name = "DataLoader"
 
         if type_name == "DataLoader":
