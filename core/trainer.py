@@ -140,8 +140,7 @@ class Trainer(object):
         self._context["engine"] = self.engine
 
     def which_fleet_mode(self):
-        fleet_mode = envs.get_global_env(
-            "runner." + self._runner_name + ".fleet_mode", default_value="PS")
+        fleet_mode = envs.get_runtime_environ("fleet_mode")
         if fleet_mode.upper() == "PS":
             self.fleet_mode = FleetMode.PS
         elif fleet_mode.upper() == "COLLECTIVE":

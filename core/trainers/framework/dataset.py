@@ -46,13 +46,17 @@ class DataLoader(DatasetBase):
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         batch_size = envs.get_global_env(name + "batch_size")
+
         reader_class = envs.get_global_env(name + "data_converter")
+        reader_class_name = envs.get_global_env(
+            name + "reader_class_name", "Reader")
+
         if sparse_slots == "" and dense_slots == "":
             reader = dataloader_instance.dataloader_by_name(
-                reader_class, dataset_name, context["config_yaml"], context)
+                reader_class, dataset_name, context["config_yaml"], context, reader_class_name=reader_class_name)
 
             reader_class = envs.lazy_instance_by_fliename(reader_class,
-                                                          "Reader")
+                                                          reader_class_name)
             reader_ins = reader_class(context["config_yaml"])
         else:
             reader = dataloader_instance.slotdataloader_by_name(
@@ -85,13 +89,15 @@ class QueueDataset(DatasetBase):
     def _get_dataset(self, dataset_name, context):
         name = "dataset." + dataset_name + "."
         reader_class = envs.get_global_env(name + "data_converter")
+        reader_class_name = envs.get_global_env(
+            name + "reader_class_name", "Reader")
         abs_dir = os.path.dirname(os.path.abspath(__file__))
         reader = os.path.join(abs_dir, '../../utils', 'dataset_instance.py')
         sparse_slots = envs.get_global_env(name + "sparse_slots", "").strip()
         dense_slots = envs.get_global_env(name + "dense_slots", "").strip()
         if sparse_slots == "" and dense_slots == "":
             pipe_cmd = "python {} {} {} {}".format(
-                reader, reader_class, "TRAIN", context["config_yaml"])
+                reader, reader_class, reader_class_name, context["config_yaml"])
         else:
             if sparse_slots == "":
                 sparse_slots = "?"
