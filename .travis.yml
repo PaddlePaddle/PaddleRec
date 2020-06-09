@@ -14,7 +14,7 @@ env:
 
 before_install:
   # For pylint dockstring checker
-  - sudo apt-get update && apt-get install -y python-pipl libpython-dev
+  - sudo apt-get update && apt-get install -y python-pip libpython-dev
   - sudo pip install pylint pytest astroid isort pre-commit
   - sudo python setup.py install
   - |
