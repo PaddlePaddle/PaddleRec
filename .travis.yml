@@ -16,7 +16,7 @@ before_install:
   # For pylint dockstring checker
   - sudo apt-get update 
   - sudo apt-get install -y python-pip libpython-dev
-  - sudo pip install awscli
+  - sudo pip install awscli PyYAML
   - sudo pip install pylint pytest astroid isort pre-commit
   - sudo python setup.py install
   - |
