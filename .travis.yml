@@ -20,7 +20,8 @@ before_install:
   - sudo pip install pillow
   - sudo pip install PyYAML
   - sudo pip install pylint pytest astroid isort pre-commit
-  - sudo pip install -U six
+  - sudo pip install -U six==1.9.0
+  - sudo pip install paddlepaddle==1.7.2
   - sudo python setup.py install
   - |
     function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
