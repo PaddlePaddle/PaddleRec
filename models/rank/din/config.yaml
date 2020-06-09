@@ -42,7 +42,7 @@ hyper_parameters:
     act: "sigmoid"
 
 
-mode: infer_runner
+mode: train_runner
 
 runner:
   - name: train_runner
