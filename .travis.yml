@@ -22,7 +22,7 @@ before_install:
   - sudo pip install PyYAML
   - sudo pip install pylint pytest astroid isort pre-commit
   - sudo pip install kiwisolver
-  - sudo pip install paddlepaddle==1.7.2
+  - sudo pip install paddlepaddle==1.7.2 --ignore-installed urllib3
   - sudo python setup.py install
   - |
     function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
