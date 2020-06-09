@@ -15,7 +15,7 @@ env:
 before_install:
   # For pylint dockstring checker
   - sudo pip install pylint pytest astroid isort pre-commit
-  - python setup.py install
+  - sudo python setup.py install
   - |
     function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 
