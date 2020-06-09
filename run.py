@@ -29,9 +29,9 @@ from paddlerec.core.utils import validation
 engines = {}
 device = ["CPU", "GPU"]
 engine_choices = [
-    "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER", "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
+    "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER",
+    "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
 ]
-fleet_mode_choice = ["PS", "PSLIB", "COLLECTIVE"]
 
 
 def engine_registry():
@@ -347,8 +347,7 @@ def local_cluster_engine(args):
     selected_gpus = run_extras.get(
         "runner." + _envs["mode"] + ".selected_gpus", "0")
 
-    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
-                                "")
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode", "")
     if fleet_mode == "":
         device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
         if len(selected_gpus.split(",")) > 1 and device.upper() == "GPU":

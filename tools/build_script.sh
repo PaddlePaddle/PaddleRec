@@ -46,13 +46,9 @@ function check_style() {
 function model_test() {
   set -e
   export PATH=/usr/bin:$PATH
-  python setup.py install
   
   root_dir=`pwd`
   all_model=$(find ${root_dir} -name config.yaml)
-  demo="demo"
-  pnn="pnn"
-  fgcnn="fgcnn"
   special_models=("demo" "pnn" "fgcnn" "esmm")
 
   for model in ${all_model}

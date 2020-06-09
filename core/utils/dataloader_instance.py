@@ -21,7 +21,11 @@ from paddlerec.core.reader import SlotReader
 from paddlerec.core.trainer import EngineMode
 
 
-def dataloader_by_name(readerclass, dataset_name, yaml_file, context, reader_class_name="Reader"):
+def dataloader_by_name(readerclass,
+                       dataset_name,
+                       yaml_file,
+                       context,
+                       reader_class_name="Reader"):
 
     reader_class = lazy_instance_by_fliename(readerclass, reader_class_name)
 
@@ -36,7 +40,7 @@ def dataloader_by_name(readerclass, dataset_name, yaml_file, context, reader_cla
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = context["fleet"].split_files(files)
-        print("file_list: {}".format(files))
+        print("file_list : {}".format(files))
 
     reader = reader_class(yaml_file)
     reader.init()
