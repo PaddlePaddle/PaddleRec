@@ -76,7 +76,9 @@ function model_test() {
         echo "Test Failed! "$model  
         exit 1  
     fi
+    echo "Model Passed "$model
   done
+  echo "All Model Test Passed!"
   exit 0
 }
 
