@@ -18,6 +18,7 @@ import copy
 import os
 import socket
 import sys
+import traceback
 
 global_envs = {}
 
@@ -167,22 +168,31 @@ def pretty_print_envs(envs, header=None):
 
 
 def lazy_instance_by_package(package, class_name):
-    models = get_global_env("train.model.models")
-    model_package = __import__(package,
-                               globals(), locals(), package.split("."))
-    instance = getattr(model_package, class_name)
-    return instance
+    try:
+        model_package = __import__(package,
+                                   globals(), locals(), package.split("."))
+        instance = getattr(model_package, class_name)
+        return instance
+    except Exception, err:
+        traceback.print_exc()
+        print('Catch Exception:%s' % str(err))
+        return None
 
 
 def lazy_instance_by_fliename(abs, class_name):
-    dirname = os.path.dirname(abs)
-    sys.path.append(dirname)
-    package = os.path.splitext(os.path.basename(abs))[0]
+    try:
+        dirname = os.path.dirname(abs)
+        sys.path.append(dirname)
+        package = os.path.splitext(os.path.basename(abs))[0]
 
-    model_package = __import__(package,
-                               globals(), locals(), package.split("."))
-    instance = getattr(model_package, class_name)
-    return instance
+        model_package = __import__(package,
+                                   globals(), locals(), package.split("."))
+        instance = getattr(model_package, class_name)
+        return instance
+    except Exception, err:
+        traceback.print_exc()
+        print('Catch Exception:%s' % str(err))
+        return None
 
 
 def get_platform():
