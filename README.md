@@ -38,15 +38,15 @@
     |   匹配   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
     |   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
     |   召回   |                   [TDM](models/treebased/tdm/model.py)                    |      ✓      |      x      |       ✓       |
-    |   召回   |                   [fasttext](models/recall/fasttext/model.py)                    |      ✓      |      x      |       x       |
+    |   召回   |                [fasttext](models/recall/fasttext/model.py)                |      ✓      |      x      |       x       |
     |   召回   |                [Word2Vec](models/recall/word2vec/model.py)                |      ✓      |      x      |       ✓       |
     |   召回   |                     [SSR](models/recall/ssr/model.py)                     |      ✓      |      ✓      |       ✓       |
     |   召回   |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |      ✓      |      ✓      |       ✓       |
     |   召回   |             [Youtube_dnn](models/recall/youtube_dnn/model.py)             |      ✓      |      ✓      |       ✓       |
     |   召回   |                     [NCF](models/recall/ncf/model.py)                     |      ✓      |      ✓      |       ✓       |
-    |   排序   |                      [Logistic Regression](models/rank/logistic_regression/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |      [Logistic Regression](models/rank/logistic_regression/model.py)      |      ✓      |      x      |       ✓       |
     |   排序   |                      [Dnn](models/rank/dnn/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                      [FM](models/rank/fm/model.py)                      |      ✓      |      x      |       ✓       |
+    |   排序   |                       [FM](models/rank/fm/model.py)                       |      ✓      |      x      |       ✓       |
     |   排序   |                      [FFM](models/rank/ffm/model.py)                      |      ✓      |      x      |       ✓       |
     |   排序   |                      [Pnn](models/rank/pnn/model.py)                      |      ✓      |      x      |       ✓       |
     |   排序   |                      [DCN](models/rank/dcn/model.py)                      |      ✓      |      x      |       ✓       |
@@ -128,8 +128,8 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 ### 进阶教程
 * [自定义Reader](doc/custom_reader.md)
-* [自定义模型](doc/development.md)
-* [自定义流程](doc/development.md)
+* [自定义模型](doc/model_develop.md)
+* [自定义流程](doc/trainer_develop.md)
 * [yaml配置说明](doc/yaml.md)
 * [PaddleRec设计文档](doc/design.md)
 
