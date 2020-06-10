@@ -68,7 +68,7 @@ def get_fleet_mode():
     return fleet_mode
 
 
-def set_global_envs(envs):
+def set_global_envs(envs, adapter):
     assert isinstance(envs, dict)
 
     def fatten_env_namespace(namespace_nests, local_envs):
@@ -92,6 +92,10 @@ def set_global_envs(envs):
 
     fatten_env_namespace([], envs)
 
+    if adapter:
+        workspace_adapter()
+        os_path_adapter()
+
 
 def get_global_env(env_name, default_value=None, namespace=None):
     """
@@ -106,7 +110,7 @@ def get_global_envs():
     return global_envs
 
 
-def path_adapter(path):
+def paddlerec_adapter(path):
     if path.startswith("paddlerec."):
         package = get_runtime_environ("PACKAGE_BASE")
         l_p = path.split("paddlerec.")[1].replace(".", "/")
@@ -115,23 +119,25 @@ def path_adapter(path):
         return path
 
 
-def windows_path_converter(path):
-    if get_platform() == "WINDOWS":
-        return path.replace("/", "\\")
-    else:
-        return path.replace("\\", "/")
+def os_path_adapter():
+    for name, value in global_envs.items():
+        if isinstance(value, str):
+            if get_platform() == "WINDOWS":
+                value = value.replace("/", "\\")
+            else:
+                value = value.replace("\\", "/")
+            global_envs[name] = value
 
 
-def update_workspace():
+def workspace_adapter():
     workspace = global_envs.get("workspace")
     if not workspace:
         return
-    workspace = path_adapter(workspace)
+    workspace = paddlerec_adapter(workspace)
 
     for name, value in global_envs.items():
         if isinstance(value, str):
             value = value.replace("{workspace}", workspace)
-            value = windows_path_converter(value)
             global_envs[name] = value
 
 

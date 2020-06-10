@@ -260,18 +260,6 @@ def single_infer_engine(args):
 
 
 def cluster_engine(args):
-    def update_workspace(cluster_envs):
-        workspace = cluster_envs.get("engine_workspace", None)
-
-        if not workspace:
-            return
-        path = envs.path_adapter(workspace)
-        for name, value in cluster_envs.items():
-            if isinstance(value, str):
-                value = value.replace("{workspace}", path)
-                value = envs.windows_path_converter(value)
-                cluster_envs[name] = value
-
     def master():
         role = "MASTER"
         from paddlerec.core.engine.cluster.cluster import ClusterEngine
@@ -280,8 +268,6 @@ def cluster_engine(args):
         flattens["engine_role"] = role
         flattens["engine_run_config"] = args.model
         flattens["engine_temp_path"] = tempfile.mkdtemp()
-        update_workspace(flattens)
-
         envs.set_runtime_environs(flattens)
         print(envs.pretty_print_envs(flattens, ("Submit Envs", "Value")))
 
