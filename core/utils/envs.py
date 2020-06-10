@@ -91,9 +91,10 @@ def set_global_envs(envs):
 
     fatten_env_namespace([], envs)
 
-    workspace_adapter()
-    os_path_adapter()
-    reader_adapter()
+    for name, value in global_envs.items():
+        if isinstance(value, str):
+            value = os_path_adapter(workspace_adapter(value))
+            global_envs[name] = value
 
 
 def get_global_env(env_name, default_value=None, namespace=None):
@@ -118,27 +119,19 @@ def paddlerec_adapter(path):
         return path
 
 
-def os_path_adapter():
-    for name, value in global_envs.items():
-        if isinstance(value, str):
-            if get_platform() == "WINDOWS":
-                value = value.replace("/", "\\")
-            else:
-                value = value.replace("\\", "/")
-            global_envs[name] = value
+def os_path_adapter(value):
+    if get_platform() == "WINDOWS":
+        value = value.replace("/", "\\")
+    else:
+        value = value.replace("\\", "/")
+    return value
 
 
-def workspace_adapter():
+def workspace_adapter(value):
     workspace = global_envs.get("workspace")
-    if not workspace:
-        return
-
     workspace = paddlerec_adapter(workspace)
-
-    for name, value in global_envs.items():
-        if isinstance(value, str):
-            value = value.replace("{workspace}", workspace)
-            global_envs[name] = value
+    value = value.replace("{workspace}", workspace)
+    return value
 
 
 def reader_adapter():
