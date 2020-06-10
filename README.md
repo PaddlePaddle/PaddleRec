@@ -56,6 +56,7 @@
     |   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |      ✓      |      x      |       ✓       |
     |   排序   |                      [DIN](models/rank/din/model.py)                      |      ✓      |      x      |       ✓       |
     |   排序   |                [Wide&Deep](models/rank/wide_deep/model.py)                |      ✓      |      x      |       ✓       |
+    |   排序   |                [FGCNN](models/rank/fgcnn/model.py)                |      ✓      |      x      |       ✓       |
     |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
     |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
     |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
