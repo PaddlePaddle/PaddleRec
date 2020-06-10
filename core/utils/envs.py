@@ -180,7 +180,7 @@ def lazy_instance_by_package(package, class_name):
                                    globals(), locals(), package.split("."))
         instance = getattr(model_package, class_name)
         return instance
-    except Exception, err:
+    except Exception as err:
         traceback.print_exc()
         print('Catch Exception:%s' % str(err))
         return None
@@ -196,7 +196,7 @@ def lazy_instance_by_fliename(abs, class_name):
                                    globals(), locals(), package.split("."))
         instance = getattr(model_package, class_name)
         return instance
-    except Exception, err:
+    except Exception as err:
         traceback.print_exc()
         print('Catch Exception:%s' % str(err))
         return None
