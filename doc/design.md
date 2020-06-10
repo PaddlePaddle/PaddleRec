@@ -139,7 +139,6 @@ class Model(object):
         self._data_loader = None
         self._infer_data_loader = None
         self._fetch_interval = 20
-        self._namespace = "train.model"
         self._platform = envs.get_platform()
 
     def get_inputs(self):

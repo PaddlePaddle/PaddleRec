@@ -40,6 +40,7 @@ class RunnerBase(object):
     def _run(self, context, model_dict):
         reader_name = model_dict["dataset_name"]
         name = "dataset." + reader_name + "."
+
         if envs.get_global_env(name + "type") == "DataLoader":
             self._executor_dataloader_train(model_dict, context)
         else:
@@ -309,7 +310,7 @@ class PSRunner(RunnerBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
-        model_dict = context["env"]["phase"][0]
+        model_dict = envs.get_global_env("phase")[0]
         for epoch in range(epochs):
             begin_time = time.time()
             self._run(context, model_dict)
@@ -336,7 +337,7 @@ class CollectiveRunner(RunnerBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
-        model_dict = context["env"]["phase"][0]
+        model_dict = envs.get_global_env("phase")[0]
         for epoch in range(epochs):
             begin_time = time.time()
             self._run(context, model_dict)
@@ -361,7 +362,7 @@ class PslibRunner(RunnerBase):
 
     def run(self, context):
         context["fleet"].init_worker()
-        model_dict = context["env"]["phase"][0]
+        model_dict = envs.get_global_env("phase")[0]
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
@@ -382,7 +383,7 @@ class PslibRunner(RunnerBase):
                 day = begin_day + datetime.timedelta(days=day, hours=hour)
                 day_s = day.strftime('%Y%m%d/%H')
 
-                for dataset in context["env"]["dataset"]:
+                for dataset in envs.get_global_env("dataset"):
                     if dataset["type"] != "DataLoader":
                         name = dataset["name"]
                         train_data_path = envs.get_global_env(name +
