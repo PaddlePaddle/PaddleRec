@@ -116,7 +116,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 * [分布式深度学习介绍](doc/ps_background.md)
 
 ### 快速开始
-* [十分钟上手PaddleRec](doc/quick_start.md)
+* [十分钟上手PaddleRec](https://aistudio.baidu.com/aistudio/projectdetail/523965)
 
 ### 入门教程
 * [数据准备](doc/slot_reader.md)
