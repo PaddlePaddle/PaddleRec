@@ -49,11 +49,11 @@ class ModelBase(object):
         self._slot_inited = True
         dataset = {}
         model_dict = {}
-        for i in envs.get_global_env("phase"):
+        for i in self._env("phase"):
             if i["name"] == kargs["name"]:
                 model_dict = i
                 break
-        for i in envs.get_global_env("dataset"):
+        for i in self._env("dataset"):
             if i["name"] == model_dict["dataset_name"]:
                 dataset = i
                 break
