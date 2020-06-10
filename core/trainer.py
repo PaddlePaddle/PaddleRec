@@ -76,6 +76,7 @@ class Trainer(object):
 
         _config = envs.load_yaml(config)
 
+        self._context["env"] = _config
         self._context["dataset"] = _config.get("dataset")
 
         phases = []
