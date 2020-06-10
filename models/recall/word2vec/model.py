@@ -16,7 +16,7 @@ import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -24,8 +24,8 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.is_distributed = True if envs.get_trainer(
-        ) == "CtrTrainer" else False
+        self.is_distributed = True if envs.get_fleet_mode().upper(
+        ) == "PSLIB" else False
         self.sparse_feature_number = envs.get_global_env(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = envs.get_global_env(
@@ -138,7 +138,7 @@ class Model(ModelBase):
         neg_matmul_re = fluid.layers.reshape(
             neg_matmul, shape=[-1, self.neg_num])
         neg_logits = fluid.layers.elementwise_add(neg_matmul_re, neg_emb_b_vec)
-        #nce loss
+        # nce loss
 
         label_ones = fluid.layers.fill_constant(
             shape=[fluid.layers.shape(true_logits)[0], 1],

@@ -16,11 +16,11 @@ from __future__ import print_function
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         self.vocab_size = envs.get_global_env("vocab_size", 10,
                                               "train.model.hyper_parameters")

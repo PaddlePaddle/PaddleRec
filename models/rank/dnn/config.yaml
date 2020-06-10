@@ -17,9 +17,15 @@ workspace: "paddlerec.models.rank.dnn"
 
 # list of dataset
 dataset:
-- name: dataset_train # name of dataset to distinguish different datasets
+- name: dataloader_train # name of dataset to distinguish different datasets
   batch_size: 2
   type: DataLoader # or QueueDataset 
+  data_path: "{workspace}/data/sample_data/train"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 2
+  type: QueueDataset # or DataLoader 
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
@@ -45,14 +51,14 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
-mode: runner1
+mode: single_cpu_train
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: runner1
-  class: single_train
+- name: single_cpu_train
+  class: train
   # num of epochs
-  epochs: 10
+  epochs: 4
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 2 # save model interval of epochs
@@ -63,19 +69,59 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
-- name: runner2
-  class: single_infer
+- name: single_gpu_train
+  class: train
   # num of epochs
-  epochs: 10
+  epochs: 4
+  # device to run training or infer
+  device: gpu
+  selected_gpus: "2"
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 10
+- name: single_cpu_infer
+  class: infer
+  # num of epochs
+  epochs: 1
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
+- name: local_cluster_cpu_ps_train
+  class: local_cluster
+  epochs: 4
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 1
+- name: multi_gpu_train
+  class: train
+  epochs: 4
+  device: gpu
+  selected_gpus: "2,3"
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 10
 
 # runner will run all the phase in each epoch
 phase:
 - name: phase1
   model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
+  dataset_name: dataloader_train # select dataset by name
   thread_num: 1
 #- name: phase2
 #  model: "{workspace}/model.py" # user-defined model

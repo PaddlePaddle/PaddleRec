@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import paddle.fluid.incubate.data_generator as dg
 import math
 import os
+
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-import paddle.fluid.incubate.data_generator as dg
 
 
-class TrainReader(dg.MultiSlotDataGenerator):
+class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
 
@@ -97,6 +98,6 @@ class TrainReader(dg.MultiSlotDataGenerator):
         return data_iter
 
 
-reader = TrainReader("../config.yaml")
+reader = Reader("../config.yaml")
 reader.init()
 reader.run_from_stdin()

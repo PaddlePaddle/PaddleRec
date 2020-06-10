@@ -13,13 +13,13 @@
 # limitations under the License.
 
 import abc
-
+import os
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 
 
-class Model(object):
+class ModelBase(object):
     """Base Model
     """
     __metaclass__ = abc.ABCMeta
@@ -132,6 +132,11 @@ class Model(object):
         if name not in optimizers:
             raise ValueError(
                 "configured optimizer can only supported SGD/Adam/Adagrad")
+
+        if name == "SGD":
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '1'
+        else:
+            os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
 
         if name == "SGD":
             reg = envs.get_global_env("hyper_parameters.reg", 0.0001,

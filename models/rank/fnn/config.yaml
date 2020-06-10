@@ -47,7 +47,7 @@ mode: train_FM_runner #for FM phase: train_FM_runner for dnn phase: train_DNN_ru
 
 runner:
   - name: train_FM_runner
-    trainer_class: single_train
+    class: single_train
     epochs: 1
     device: cpu
     init_model_path: ""   
@@ -57,7 +57,7 @@ runner:
     save_inference_path: "inference"
     print_interval: 1
   - name: train_DNN_runner
-    trainer_class: single_train
+    class: single_train
     epochs: 1
     device: cpu
     init_model_path: "increment/0"
