@@ -95,6 +95,7 @@ def set_global_envs(envs, adapter):
     if adapter:
         workspace_adapter()
         os_path_adapter()
+        reader_adapter()
 
 
 def get_global_env(env_name, default_value=None, namespace=None):
@@ -139,6 +140,15 @@ def workspace_adapter():
         if isinstance(value, str):
             value = value.replace("{workspace}", workspace)
             global_envs[name] = value
+
+
+def reader_adapter():
+    if get_platform() != "WINDOWS":
+        return
+
+    datasets = global_envs.get("dataset")
+    for dataset in datasets:
+        dataset["type"] = "DataLoader"
 
 
 def pretty_print_envs(envs, header=None):

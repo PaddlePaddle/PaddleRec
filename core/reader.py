@@ -17,7 +17,6 @@ import abc
 import os
 from functools import reduce
 import paddle.fluid.incubate.data_generator as dg
-import yaml
 from paddlerec.core.utils import envs
 
 
