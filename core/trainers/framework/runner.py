@@ -283,7 +283,7 @@ class SingleRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         for epoch in range(epochs):
-            for model_dict in context["env"]["phase"]:
+            for model_dict in context["phases"]:
                 begin_time = time.time()
                 self._run(context, model_dict)
                 end_time = time.time()

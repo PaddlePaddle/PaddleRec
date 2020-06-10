@@ -17,10 +17,7 @@ General Trainer, applicable to many situations: Single/Cluster/Local_Cluster + P
 from __future__ import print_function
 
 import os
-import time
-import warnings
 
-import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer, EngineMode, FleetMode, Device
 from paddlerec.core.trainers.framework.dataset import *

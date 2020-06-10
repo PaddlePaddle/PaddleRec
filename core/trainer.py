@@ -74,9 +74,20 @@ class Trainer(object):
         self._dataset = {}
         envs.set_global_envs(self._config)
         envs.update_workspace()
-        self._runner_name = envs.get_global_env("mode")
+        self._runner_name = envs.get_runtime_environ("mode")
         self._context["runner_name"] = self._runner_name
 
+        phase_names = self._config.get(
+            "runner." + self._runner_name + ".phases", None)
+        phases = []
+        if phase_names is None:
+            phases = self._config.get("phase")
+        else:
+            for phase in self._config.get("phase"):
+                if phase["name"] in phase_names:
+                    phases.append(phase)
+
+        self._context["phases"] = phases
         print("PaddleRec: Runner {} Begin".format(self._runner_name))
         self.which_engine()
         self.which_device()

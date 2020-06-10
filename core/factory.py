@@ -14,7 +14,6 @@
 
 import os
 import sys
-import yaml
 from paddlerec.core.utils import envs
 
 trainer_abs = os.path.join(

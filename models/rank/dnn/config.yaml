@@ -51,7 +51,7 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
-mode: single_cpu_train
+mode: [single_cpu_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
@@ -69,6 +69,8 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
+  phases: [phase1]
+
 - name: single_gpu_train
   class: train
   # num of epochs
@@ -84,6 +86,7 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
+
 - name: single_cpu_infer
   class: infer
   # num of epochs
@@ -91,6 +94,8 @@ runner:
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
+  phases: [phase2]
+
 - name: local_cluster_cpu_ps_train
   class: local_cluster
   epochs: 4
@@ -103,6 +108,7 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 1
+
 - name: multi_gpu_train
   class: train
   epochs: 4
@@ -123,7 +129,8 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataloader_train # select dataset by name
   thread_num: 1
-#- name: phase2
-#  model: "{workspace}/model.py" # user-defined model
-#  dataset_name: dataset_infer # select dataset by name
-#  thread_num: 1
+
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
+  thread_num: 1

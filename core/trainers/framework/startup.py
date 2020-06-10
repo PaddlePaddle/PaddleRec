@@ -54,7 +54,7 @@ class SingleStartup(StartupBase):
         pass
 
     def startup(self, context):
-        for model_dict in context["env"]["phase"]:
+        for model_dict in context["phases"]:
             with fluid.scope_guard(context["model"][model_dict["name"]][
                     "scope"]):
                 train_prog = context["model"][model_dict["name"]][
