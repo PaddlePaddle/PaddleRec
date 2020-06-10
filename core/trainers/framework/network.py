@@ -58,7 +58,8 @@ class SingleNetwork(NetworkBase):
             with fluid.program_guard(train_program, startup_program):
                 with fluid.unique_name.guard():
                     with fluid.scope_guard(scope):
-                        model_path = model_dict["model"]
+                        model_path = envs.os_path_adapter(
+                            envs.workspace_adapter(model_dict["model"]))
                         model = envs.lazy_instance_by_fliename(model_path,
                                                                "Model")(None)
 
@@ -121,7 +122,8 @@ class PSNetwork(NetworkBase):
         context["model"][model_dict["name"]] = {}
         dataset_name = model_dict["dataset_name"]
 
-        model_path = model_dict["model"]
+        model_path = envs.os_path_adapter(
+            envs.workspace_adapter(model_dict["model"]))
         model = envs.lazy_instance_by_fliename(model_path, "Model")(None)
         model._data_var = model.input_data(
             dataset_name=model_dict["dataset_name"])
@@ -212,7 +214,8 @@ class PslibNetwork(NetworkBase):
             with fluid.unique_name.guard():
                 with fluid.scope_guard(scope):
                     context["model"][model_dict["name"]] = {}
-                    model_path = model_dict["model"]
+                    model_path = envs.os_path_adapter(
+                        envs.workspace_adapter(model_dict["model"]))
                     model = envs.lazy_instance_by_fliename(model_path,
                                                            "Model")(None)
                     model._data_var = model.input_data(
@@ -277,7 +280,8 @@ class CollectiveNetwork(NetworkBase):
         scope = fluid.Scope()
         with fluid.program_guard(train_program, startup_program):
             with fluid.scope_guard(scope):
-                model_path = model_dict["model"]
+                model_path = envs.os_path_adapter(
+                    envs.workspace_adapter(model_dict["model"]))
                 model = envs.lazy_instance_by_fliename(model_path,
                                                        "Model")(None)
                 model._data_var = model.input_data(
