@@ -102,6 +102,9 @@ def get_modes(running_config):
     if not modes:
         raise ValueError("yaml mast have config: mode")
 
+    if isinstance(modes, str):
+        modes = [modes]
+
     return modes
 
 
