@@ -16,7 +16,6 @@ import abc
 import os
 import time
 import sys
-import yaml
 import traceback
 
 from paddle import fluid
@@ -74,11 +73,14 @@ class Trainer(object):
 
         phase_names = envs.get_global_env(
             "runner." + self._runner_name + ".phases", None)
+
+        _config = envs.load_yaml(config)
+
         phases = []
         if phase_names is None:
-            phases = envs.get_global_env("phase")
+            phases = _config.get("phase")
         else:
-            for phase in envs.get_global_env("phase"):
+            for phase in _config.get("phase"):
                 if phase["name"] in phase_names:
                     phases.append(phase)
 
@@ -244,15 +246,3 @@ class Trainer(object):
             self.context_process(self._context)
             if self._context['is_exit']:
                 break
-
-
-def user_define_engine(engine_yaml):
-    _config = envs.load_yaml(engine_yaml)
-    envs.set_runtime_environs(_config)
-    train_location = envs.get_global_env("engine.file")
-    train_dirname = os.path.dirname(train_location)
-    base_name = os.path.splitext(os.path.basename(train_location))[0]
-    sys.path.append(train_dirname)
-    trainer_class = envs.lazy_instance_by_fliename(base_name,
-                                                   "UserDefineTraining")
-    return trainer_class

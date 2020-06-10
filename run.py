@@ -110,7 +110,6 @@ def get_modes(running_config):
 
 def get_engine(args, running_config, mode):
     transpiler = get_transpiler()
-    _envs = envs.load_yaml(args.model)
 
     engine_class = ".".join(["runner", mode, "class"])
     engine_device = ".".join(["runner", mode, "device"])
@@ -122,11 +121,14 @@ def get_engine(args, running_config, mode):
             mode, engine_class))
     device = running_config.get(engine_device, None)
 
+    engine = engine.upper()
+    device = device.upper()
+
     if device is None:
         print("not find device be specified in yaml, set CPU as default")
         device = "CPU"
 
-    if device.upper() == "GPU":
+    if device == "GPU":
         selected_gpus = running_config.get(device_gpu_choices, None)
 
         if selected_gpus is None:
@@ -142,7 +144,6 @@ def get_engine(args, running_config, mode):
         if selected_gpus_num > 1:
             engine = "LOCAL_CLUSTER"
 
-    engine = engine.upper()
     if engine not in engine_choices:
         raise ValueError("{} can not be chosen in {}".format(engine_class,
                                                              engine_choices))
@@ -180,9 +181,7 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
 
 def single_train_engine(args):
-    _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["runner."])
-
     mode = envs.get_runtime_environ("mode")
     trainer_class = ".".join(["runner", mode, "trainer_class"])
     fleet_class = ".".join(["runner", mode, "fleet_mode"])
@@ -435,7 +434,7 @@ def local_mpi_engine(args):
 
 def get_abs_model(model):
     if model.startswith("paddlerec."):
-        dir = envs.path_adapter(model)
+        dir = envs.paddlerec_adapter(model)
         path = os.path.join(dir, "config.yaml")
     else:
         if not os.path.isfile(model):
@@ -453,13 +452,12 @@ if __name__ == "__main__":
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
 
     args = parser.parse_args()
-    model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
 
     if not validation.yaml_validation(args.model):
         sys.exit(-1)
-    engine_registry()
 
+    engine_registry()
     running_config = get_all_inters_from_yaml(args.model, ["mode", "runner."])
     modes = get_modes(running_config)
 
