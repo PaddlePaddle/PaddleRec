@@ -32,7 +32,7 @@ import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -40,8 +40,8 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.is_distributed = True if envs.get_trainer(
-        ) == "CtrTrainer" else False
+        self.is_distributed = True if envs.get_fleet_mode().upper(
+        ) == "PSLIB" else False
         self.sparse_feature_number = envs.get_global_env(
             "hyper_parameters.sparse_feature_number", None)
         self.sparse_feature_dim = envs.get_global_env(
@@ -107,7 +107,8 @@ class Model(ModelBase):
             feat_embeddings_re,
             shape=[-1, self.num_field, self.sparse_feature_dim
                    ])  # batch_size * num_field * embedding_size
-        feat_embeddings = feat_embeddings * feat_value  # batch_size * num_field * embedding_size
+        # batch_size * num_field * embedding_size
+        feat_embeddings = feat_embeddings * feat_value
 
         # ------------------------- Linear Signal --------------------------
 

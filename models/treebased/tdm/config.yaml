@@ -12,70 +12,104 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+workspace: "paddlerec.models.treebased.tdm"
 
-  epochs: 2
-  workspace: "paddlerec.models.treebased.tdm"
+# list of dataset
+dataset:
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 2
+  type: QueueDataset # or QueueDataset 
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/tdm_reader.py"
+- name: dataset_infer # name
+  batch_size: 1
+  type: DataLoader # or QueueDataset 
+  data_path: "{workspace}/data/test"
+  data_converter: "{workspace}/tdm_evaluate_reader.py"
 
-  reader:
-    batch_size: 32
-    class: "{workspace}/tdm_reader.py"
-    train_data_path: "{workspace}/data/train"
-    test_data_path: "{workspace}/data/test"
-    reader_debug_mode: False
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: async
+  # user-defined <key, value> pairs
+  max_layers: 4
+  node_nums: 26
+  leaf_node_nums: 13
+  layer_node_num_list: [2, 4, 7, 12]
+  child_nums: 2
+  node_emb_size: 64
+  input_emb_size: 768
+  neg_sampling_list: [1, 2, 3, 4]
+  output_positive: True
+  topK: 1
+  learning_rate: 0.0001
+  act: tanh
+  tree:
+    # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
+    # 分布式训练trainer需要独立load 
+    # 预测时也改为从paddle模型加载
+    load_tree_from_numpy: True # only once
+    load_paddle_model: False # train & infer need
+    tree_layer_path: "{workspace}/tree/layer_list.txt"
+    tree_travel_path: "{workspace}/tree/travel_list.npy"
+    tree_info_path: "{workspace}/tree/tree_info.npy"
+    tree_emb_path: "{workspace}/tree/tree_emb.npy"
 
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      node_emb_size: 64
-      input_emb_size: 768
-      neg_sampling_list: [1, 2, 3, 4]
-      output_positive: True
-      topK: 1
-      learning_rate: 0.0001
-      act: "tanh"
-      optimizer: ADAM
-    tree_parameters:
-      max_layers: 4
-      node_nums: 26
-      leaf_node_nums: 13
-      layer_node_num_list: [2, 4, 7, 12]
-      child_nums: 2
-      
-  
-  startup:
-    tree:
-      # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
-      # 分布式训练trainer需要独立load 
-      load_tree: True
-      tree_layer_path: "{workspace}/tree/layer_list.txt"
-      tree_travel_path: "{workspace}/tree/travel_list.npy"
-      tree_info_path: "{workspace}/tree/tree_info.npy"
-      tree_emb_path: "{workspace}/tree/tree_emb.npy"
-    single:
-      load_persistables: False
-      persistables_model_path: ""
-      save_init_model: True
-      init_model_path: "{workspace}/init_model"
-    cluster:
-      init_model_path: "{workspace}/init_model"
+# select runner by name
+mode: runner1
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: runner1
+  class: single_train
+  startup_class_path: "{workspace}/tdm_startup.py"
+  # num of epochs
+  epochs: 10
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 10
+- name: runner2
+  class: single_infer
+  startup_class_path: "{workspace}/tdm_startup.py"
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  init_model_path: "increment/0" # load model path
+  print_interval: 1
+- name: runner3
+  class: local_cluster_train
+  startup_class_path: "{workspace}/tdm_startup.py"
+  fleet_mode: ps
+  epochs: 10
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "init_model" # load model path
+  print_interval: 10
 
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 1
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 10
-      save_last: True
-
-evaluate:
-  workspace: "paddlerec.models.recall.tdm"
-  reader:
-    batch_size: 1
-    class: "{workspace}/tdm_evaluate_reader.py"
-    test_data_path: "{workspace}/data/test"
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+# - name: phase2
+#   model: "{workspace}/model.py"
+#   dataset_name: dataset_infer
+#   thread_num: 2

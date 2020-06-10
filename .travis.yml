@@ -10,10 +10,20 @@ os:
 
 env:
   - JOB=check_style
+  - JOB=model_test
 
 before_install:
   # For pylint dockstring checker
+  - sudo apt-get update 
+  - sudo apt-get install -y python-pip libpython-dev
+  - sudo pip install -U pip
+  - sudo pip install six --upgrade --ignore-installed six
+  - sudo pip install pillow
+  - sudo pip install PyYAML
   - sudo pip install pylint pytest astroid isort pre-commit
+  - sudo pip install kiwisolver
+  - sudo pip install paddlepaddle==1.7.2 --ignore-installed urllib3
+  - sudo python setup.py install
   - |
     function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 

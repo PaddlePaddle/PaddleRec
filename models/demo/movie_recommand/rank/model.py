@@ -17,7 +17,7 @@ import math
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -25,8 +25,8 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.is_distributed = True if envs.get_trainer(
-        ) == "CtrTrainer" else False
+        self.is_distributed = True if envs.get_fleet_mode().upper(
+        ) == "PSLIB" else False
         self.sparse_feature_number = envs.get_global_env(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = envs.get_global_env(
@@ -86,7 +86,7 @@ class Model(ModelBase):
 
         predict = fluid.layers.scale(sim, scale=5)
         self.predict = predict
-        #auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
+        # auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
         #                                     label=self.label_input,
         #                                     num_thresholds=10000,
         #                                     slide_steps=20)
@@ -102,7 +102,7 @@ class Model(ModelBase):
 
         #self._metrics["AUC"] = auc
         #self._metrics["BATCH_AUC"] = batch_auc
-        #cost = fluid.layers.cross_entropy(
+        # cost = fluid.layers.cross_entropy(
         #    input=self.predict, label=self.label_input)
         cost = fluid.layers.square_error_cost(
             self.predict,

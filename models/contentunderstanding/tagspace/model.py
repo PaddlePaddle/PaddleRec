@@ -17,7 +17,7 @@ import paddle.fluid.layers.nn as nn
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
 
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 from paddlerec.core.utils import envs
 
 
@@ -83,9 +83,9 @@ class Model(ModelBase):
         mul_cos_neg = nn.cos_sim(neg_tag_emb, mul_text_hid)
         cos_neg_all = fluid.layers.sequence_reshape(
             input=mul_cos_neg, new_dim=self.neg_size)
-        #choose max negtive cosine
+        # choose max negtive cosine
         cos_neg = nn.reduce_max(cos_neg_all, dim=1, keep_dim=True)
-        #calculate hinge loss
+        # calculate hinge loss
         loss_part1 = nn.elementwise_sub(
             tensor.fill_constant_batch_size_like(
                 input=cos_pos,

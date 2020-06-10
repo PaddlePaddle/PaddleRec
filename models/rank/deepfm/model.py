@@ -17,7 +17,7 @@ import math
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -85,7 +85,8 @@ class Model(ModelBase):
             feat_embeddings_re,
             shape=[-1, self.num_field, self.sparse_feature_dim
                    ])  # None * num_field * embedding_size
-        feat_embeddings = feat_embeddings * feat_value  # None * num_field * embedding_size
+        # None * num_field * embedding_size
+        feat_embeddings = feat_embeddings * feat_value
 
         # sum_square part
         summed_features_emb = fluid.layers.reduce_sum(

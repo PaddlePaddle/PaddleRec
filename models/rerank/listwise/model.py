@@ -17,7 +17,7 @@ import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -209,10 +209,10 @@ class Model(ModelBase):
         pos.stop_gradient = True
         return pos
 
-    #def train_net(self):
+    # def train_net(self):
     #    input_data = self.input_data()
     #    self.net(input_data)
 
-    #def infer_net(self):
+    # def infer_net(self):
     #    input_data = self.input_data(is_infer=True)
     #    self.net(input_data, is_infer=True)

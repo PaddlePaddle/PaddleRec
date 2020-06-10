@@ -21,7 +21,7 @@ import yaml
 from paddlerec.core.utils import envs
 
 
-class Reader(dg.MultiSlotDataGenerator):
+class ReaderBase(dg.MultiSlotDataGenerator):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
@@ -32,7 +32,7 @@ class Reader(dg.MultiSlotDataGenerator):
 
     @abc.abstractmethod
     def init(self):
-        """init"""
+        """init """
         pass
 
     @abc.abstractmethod

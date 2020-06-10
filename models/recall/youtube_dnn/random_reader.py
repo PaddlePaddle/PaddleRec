@@ -15,12 +15,12 @@ from __future__ import print_function
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 from collections import defaultdict
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         self.watch_vec_size = envs.get_global_env(
             "hyper_parameters.watch_vec_size")

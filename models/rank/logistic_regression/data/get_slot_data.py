@@ -15,7 +15,7 @@
 import yaml
 import os
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 import paddle.fluid.incubate.data_generator as dg
 
@@ -25,7 +25,7 @@ except ImportError:
     import pickle
 
 
-class TrainReader(dg.MultiSlotDataGenerator):
+class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
 
@@ -47,7 +47,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         ]
         self.continuous_range_ = range(1, 14)
         self.categorical_range_ = range(14, 40)
-        # load preprocessed feature dict 
+        # load preprocessed feature dict
         self.feat_dict_name = "sample_data/feat_dict_10.pkl2"
         self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
@@ -94,7 +94,7 @@ class TrainReader(dg.MultiSlotDataGenerator):
         return data_iter
 
 
-reader = TrainReader(
+reader = Reader(
     "../config.yaml")  # run this file in original folder to find config.yaml
 reader.init()
 reader.run_from_stdin()

@@ -25,16 +25,14 @@ if len(sys.argv) < 4:
 
 reader_package = sys.argv[1]
 
-if sys.argv[2].upper() == "TRAIN":
-    reader_name = "TrainReader"
-elif sys.argv[2].upper() == "EVALUATE":
-    reader_name = "EvaluateReader"
-else:
+if sys.argv[1].upper() == "SLOT":
     reader_name = "SlotReader"
     namespace = sys.argv[4]
     sparse_slots = sys.argv[5].replace("?", " ")
     dense_slots = sys.argv[6].replace("?", " ")
     padding = int(sys.argv[7])
+else:
+    reader_name = sys.argv[2]
 
 yaml_abs_path = sys.argv[3]
 

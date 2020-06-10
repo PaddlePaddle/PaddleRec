@@ -15,7 +15,7 @@
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -30,7 +30,7 @@ class Model(ModelBase):
         self.act = envs.get_global_env("hyper_parameters.act", "sigmoid")
         self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
                                              False)
-        #significant for speeding up the training process
+        # significant for speeding up the training process
         self.use_DataLoader = envs.get_global_env(
             "hyper_parameters.use_DataLoader", False)
         self.item_count = envs.get_global_env("hyper_parameters.item_count",
