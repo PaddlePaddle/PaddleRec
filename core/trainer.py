@@ -196,7 +196,7 @@ class Trainer(object):
                 self._status_processor[context['status']](context)
             else:
                 self.other_status_processor(context)
-        except Exception, err:
+        except Exception as err:
             traceback.print_exc()
             print('Catch Exception:%s' % str(err))
             sys.stdout.flush()
