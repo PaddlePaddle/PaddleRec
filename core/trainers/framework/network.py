@@ -48,7 +48,7 @@ class SingleNetwork(NetworkBase):
 
     def build_network(self, context):
         context["model"] = {}
-        for model_dict in context["env"]["phase"]:
+        for model_dict in context["phases"]:
             context["model"][model_dict["name"]] = {}
             train_program = fluid.Program()
             startup_program = fluid.Program()

@@ -18,11 +18,9 @@ import sys
 import argparse
 import tempfile
 
-import yaml
 import copy
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
-from paddlerec.core.utils import validation
 from paddlerec.core.utils import util
 from paddlerec.core.utils import validation
 
@@ -96,35 +94,57 @@ def get_all_inters_from_yaml(file, filters):
     return ret
 
 
-def get_engine(args):
+def get_modes(running_config):
+    if not isinstance(running_config, dict):
+        raise ValueError("get_modes arguments must be [dict]")
+
+    modes = running_config.get("mode")
+    if not modes:
+        raise ValueError("yaml mast have config: mode")
+
+    return modes
+
+
+def get_engine(args, running_config, mode):
     transpiler = get_transpiler()
-    with open(args.model, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
-    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    _envs = envs.load_yaml(args.model)
 
-    engine = run_extras.get("train.engine", None)
-    if engine is None:
-        engine = run_extras.get("runner." + _envs["mode"] + ".class", None)
-    if engine is None:
-        engine = "train"
+    engine_class = ".".join(["runner", mode, "class"])
+    engine_device = ".".join(["runner", mode, "device"])
+    device_gpu_choices = ".".join(["runner", mode, "device", "selected_gpus"])
 
-    device = run_extras.get("runner." + _envs["mode"] + ".device", "CPU")
+    engine = running_config.get(engine_class, None)
+    if engine is None:
+        raise ValueError("not find {} in yaml, please check".format(
+            mode, engine_class))
+    device = running_config.get(engine_device, None)
+
+    if device is None:
+        print("not find device be specified in yaml, set CPU as default")
+        device = "CPU"
+
     if device.upper() == "GPU":
-        selected_gpus = run_extras.get(
-            "runner." + _envs["mode"] + ".selected_gpus", "0")
+        selected_gpus = running_config.get(device_gpu_choices, None)
+
+        if selected_gpus is None:
+            print(
+                "not find selected_gpus be specified in yaml, set `0` as default"
+            )
+            selected_gpus = ["0"]
+        else:
+            print("selected_gpus {} will be specified for running".format(
+                selected_gpus))
+
         selected_gpus_num = len(selected_gpus.split(","))
         if selected_gpus_num > 1:
             engine = "LOCAL_CLUSTER"
 
     engine = engine.upper()
     if engine not in engine_choices:
-        raise ValueError("runner.class can not be chosen in {}".format(
-            engine_choices))
-
-    print("engines: \n{}".format(engines))
+        raise ValueError("{} can not be chosen in {}".format(engine_class,
+                                                             engine_choices))
 
     run_engine = engines[transpiler].get(engine, None)
-
     return run_engine
 
 
@@ -146,12 +166,7 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     if cluster_envs is None:
         cluster_envs = {}
 
-    engine_extras = get_inters_from_yaml(engine_yaml, "train.trainer.")
-    if "train.trainer.threads" in engine_extras and "CPU_NUM" in cluster_envs:
-        cluster_envs["CPU_NUM"] = engine_extras["train.trainer.threads"]
-
     envs.set_runtime_environs(cluster_envs)
-    envs.set_runtime_environs(engine_extras)
 
     need_print = {}
     for k, v in os.environ.items():
@@ -163,28 +178,32 @@ def set_runtime_envs(cluster_envs, engine_yaml):
 
 def single_train_engine(args):
     _envs = envs.load_yaml(args.model)
-    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get(
-        "runner." + _envs["mode"] + ".trainer_class", None)
+    run_extras = get_all_inters_from_yaml(args.model, ["runner."])
 
-    if trainer_class:
-        trainer = trainer_class
-    else:
-        trainer = "GeneralTrainer"
+    mode = envs.get_runtime_environ("mode")
+    trainer_class = ".".join(["runner", mode, "trainer_class"])
+    fleet_class = ".".join(["runner", mode, "fleet_mode"])
+    device_class = ".".join(["runner", mode, "device"])
+    selected_gpus_class = ".".join(["runner", mode, "selected_gpus"])
 
+    trainer = run_extras.get(trainer_class, "GeneralTrainer")
+    fleet_mode = run_extras.get(fleet_class, "ps")
+    device = run_extras.get(device_class, "cpu")
+    selected_gpus = run_extras.get(selected_gpus_class, "0")
     executor_mode = "train"
-    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
-                                "ps")
-    device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
-    selected_gpus = run_extras.get(
-        "runner." + _envs["mode"] + ".selected_gpus", "0")
-    selected_gpus_num = len(selected_gpus.split(","))
-    if device.upper() == "GPU":
-        assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
 
     single_envs = {}
-    single_envs["selsected_gpus"] = selected_gpus
-    single_envs["FLAGS_selected_gpus"] = selected_gpus
+
+    if device.upper() == "GPU":
+        selected_gpus_num = len(selected_gpus.split(","))
+        if selected_gpus_num != 1:
+            raise ValueError(
+                "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+            )
+
+        single_envs["selsected_gpus"] = selected_gpus
+        single_envs["FLAGS_selected_gpus"] = selected_gpus
+
     single_envs["train.trainer.trainer"] = trainer
     single_envs["fleet_mode"] = fleet_mode
     single_envs["train.trainer.executor_mode"] = executor_mode
@@ -444,9 +463,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
+
     if not validation.yaml_validation(args.model):
         sys.exit(-1)
     engine_registry()
-    which_engine = get_engine(args)
-    engine = which_engine(args)
-    engine.run()
+
+    running_config = get_all_inters_from_yaml(args.model, ["mode", "runner."])
+    modes = get_modes(running_config)
+
+    for mode in modes:
+        envs.set_runtime_environs({"mode": mode})
+        which_engine = get_engine(args, running_config, mode)
+        engine = which_engine(args)
+        engine.run()
