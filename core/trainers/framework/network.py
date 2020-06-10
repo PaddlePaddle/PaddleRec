@@ -60,8 +60,8 @@ class SingleNetwork(NetworkBase):
                     with fluid.scope_guard(scope):
                         model_path = envs.os_path_adapter(
                             envs.workspace_adapter(model_dict["model"]))
-                        model = envs.lazy_instance_by_fliename(model_path,
-                                                               "Model")(None)
+                        model = envs.lazy_instance_by_fliename(
+                            model_path, "Model")(context["env"])
 
                         if context["is_infer"]:
                             model._infer_data_var = model.input_data(
@@ -124,7 +124,8 @@ class PSNetwork(NetworkBase):
 
         model_path = envs.os_path_adapter(
             envs.workspace_adapter(model_dict["model"]))
-        model = envs.lazy_instance_by_fliename(model_path, "Model")(None)
+        model = envs.lazy_instance_by_fliename(model_path,
+                                               "Model")(context["env"])
         model._data_var = model.input_data(
             dataset_name=model_dict["dataset_name"])
         if envs.get_global_env("dataset." + dataset_name +
@@ -216,8 +217,8 @@ class PslibNetwork(NetworkBase):
                     context["model"][model_dict["name"]] = {}
                     model_path = envs.os_path_adapter(
                         envs.workspace_adapter(model_dict["model"]))
-                    model = envs.lazy_instance_by_fliename(model_path,
-                                                           "Model")(None)
+                    model = envs.lazy_instance_by_fliename(
+                        model_path, "Model")(context["env"])
                     model._data_var = model.input_data(
                         dataset_name=model_dict["dataset_name"])
                     if envs.get_global_env("dataset." + dataset_name +
@@ -282,8 +283,9 @@ class CollectiveNetwork(NetworkBase):
             with fluid.scope_guard(scope):
                 model_path = envs.os_path_adapter(
                     envs.workspace_adapter(model_dict["model"]))
+
                 model = envs.lazy_instance_by_fliename(model_path,
-                                                       "Model")(None)
+                                                       "Model")(context["env"])
                 model._data_var = model.input_data(
                     dataset_name=model_dict["dataset_name"])
                 if envs.get_global_env("dataset." + dataset_name +
