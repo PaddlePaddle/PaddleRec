@@ -59,7 +59,7 @@ class TrainerFactory(object):
     @staticmethod
     def create(config):
         _config = envs.load_yaml(config)
-        envs.set_global_envs(_config, True)
+        envs.set_global_envs(_config)
         trainer = TrainerFactory._build_trainer(config)
         return trainer
 

@@ -20,9 +20,8 @@ import socket
 import sys
 import traceback
 
-import yaml
-
 global_envs = {}
+global_envs_flatten = {}
 
 
 def flatten_environs(envs, separator="."):
@@ -68,7 +67,7 @@ def get_fleet_mode():
     return fleet_mode
 
 
-def set_global_envs(envs, adapter):
+def set_global_envs(envs):
     assert isinstance(envs, dict)
 
     def fatten_env_namespace(namespace_nests, local_envs):
@@ -92,10 +91,9 @@ def set_global_envs(envs, adapter):
 
     fatten_env_namespace([], envs)
 
-    if adapter:
-        workspace_adapter()
-        os_path_adapter()
-        reader_adapter()
+    workspace_adapter()
+    os_path_adapter()
+    reader_adapter()
 
 
 def get_global_env(env_name, default_value=None, namespace=None):
@@ -134,6 +132,7 @@ def workspace_adapter():
     workspace = global_envs.get("workspace")
     if not workspace:
         return
+
     workspace = paddlerec_adapter(workspace)
 
     for name, value in global_envs.items():

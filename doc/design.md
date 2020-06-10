@@ -197,7 +197,7 @@ class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
         _config = envs.load_yaml(config)
-        envs.set_global_envs(_config, True)
+        envs.set_global_envs(_config)
 
     @abc.abstractmethod
     def init(self):
