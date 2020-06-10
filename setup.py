@@ -34,27 +34,28 @@ about["__url__"] = "https://github.com/PaddlePaddle/PaddleRec"
 readme = ""
 
 
-def run_cmd(command):
-    assert command is not None and isinstance(command, str)
-    return os.popen(command).read().strip()
-
-
 def build(dirname):
     package_dir = os.path.dirname(os.path.abspath(__file__))
-    run_cmd("cp -r {}/* {}".format(package_dir, dirname))
-    run_cmd("mkdir {}".format(os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(
-        os.path.join(dirname, "core"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(
-        os.path.join(dirname, "doc"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(
-        os.path.join(dirname, "models"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(
-        os.path.join(dirname, "tests"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(
-        os.path.join(dirname, "tools"), os.path.join(dirname, "paddlerec")))
-    run_cmd("mv {} {}".format(
-        os.path.join(dirname, "*.py"), os.path.join(dirname, "paddlerec")))
+    shutil.copytree(
+        package_dir, dirname, ignore=shutil.ignore_patterns(".git"))
+    os.mkdir(os.path.join(dirname, "paddlerec"))
+    shutil.move(
+        os.path.join(dirname, "core"), os.path.join(dirname, "paddlerec"))
+    shutil.move(
+        os.path.join(dirname, "doc"), os.path.join(dirname, "paddlerec"))
+    shutil.move(
+        os.path.join(dirname, "models"), os.path.join(dirname, "paddlerec"))
+    shutil.move(
+        os.path.join(dirname, "tests"), os.path.join(dirname, "paddlerec"))
+    shutil.move(
+        os.path.join(dirname, "tools"), os.path.join(dirname, "paddlerec"))
+
+    for f in os.listdir(dirname):
+        if os.path.isdir(f):
+            continue
+        if os.path.splitext(f)[1] == ".py":
+            shutil.move(
+                os.path.join(dirname, f), os.path.join(dirname, "paddlerec"))
 
     packages = find_packages(dirname, include=('paddlerec.*'))
     package_dir = {'': dirname}
@@ -90,7 +91,7 @@ def build(dirname):
         zip_safe=False)
 
 
-dirname = tempfile.mkdtemp()
+dirname = tempfile.mktemp()
 build(dirname)
 shutil.rmtree(dirname)
 
