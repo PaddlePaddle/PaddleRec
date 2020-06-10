@@ -59,7 +59,7 @@ runner:
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  fetch_period: 10
+  print_interval: 1
 - name: infer_runner
   class: single_infer
   # num of epochs
@@ -67,6 +67,7 @@ runner:
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
+  print_interval: 1
 
 # runner will run all the phase in each epoch
 phase:
@@ -74,7 +75,7 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
-#- name: phase2
-#  model: "{workspace}/model.py" # user-defined model
-#  dataset_name: dataset_infer # select dataset by name
-#  thread_num: 1
+# - name: phase2
+#   model: "{workspace}/model.py" # user-defined model
+#   dataset_name: dataset_infer # select dataset by name
+#   thread_num: 1

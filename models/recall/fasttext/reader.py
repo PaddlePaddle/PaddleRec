@@ -16,7 +16,7 @@ import io
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
@@ -38,7 +38,7 @@ class NumpyRandomInt(object):
         return result
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         dict_path = envs.get_global_env(
             "dataset.dataset_train.word_count_dict_path")
@@ -80,7 +80,8 @@ class TrainReader(Reader):
         window_size: window size
         """
         target_window = self.random_generator()
-        start_point = idx - target_window  # if (idx - target_window) > 0 else 0
+        # if (idx - target_window) > 0 else 0
+        start_point = idx - target_window
         if start_point < 0:
             start_point = 0
         end_point = idx + target_window

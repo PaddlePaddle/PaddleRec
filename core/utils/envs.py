@@ -20,6 +20,8 @@ import socket
 import sys
 import traceback
 
+import yaml
+
 global_envs = {}
 
 
@@ -59,6 +61,11 @@ def get_runtime_environ(key):
 def get_trainer():
     train_mode = get_runtime_environ("train.trainer.trainer")
     return train_mode
+
+
+def get_fleet_mode():
+    fleet_mode = get_runtime_environ("fleet_mode")
+    return fleet_mode
 
 
 def set_global_envs(envs):

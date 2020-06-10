@@ -57,14 +57,14 @@ runner:
   class: single_infer
   init_model_path: "increment/0"
   device: cpu
-  epochs: 3
+  epochs: 1
 
 phase:
 - name: train
   model: "{workspace}/model.py"
   dataset_name: dataset_train
   thread_num: 1
-    #- name: infer
-    #  model: "{workspace}/model.py"
-    #  dataset_name: dataset_infer
-    #  thread_num: 1
+#- name: infer
+#  model: "{workspace}/model.py"
+#  dataset_name: dataset_infer
+#  thread_num: 1

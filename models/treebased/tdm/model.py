@@ -18,57 +18,64 @@
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
+
+    def _init_hyper_parameters(self):
         # tree meta hyper parameters
-        self.max_layers = envs.get_global_env("tree_parameters.max_layers", 4,
-                                              self._namespace)
-        self.node_nums = envs.get_global_env("tree_parameters.node_nums", 26,
-                                             self._namespace)
+        self.max_layers = envs.get_global_env("hyper_parameters.max_layers", 4)
+        self.node_nums = envs.get_global_env("hyper_parameters.node_nums", 26)
         self.leaf_node_nums = envs.get_global_env(
-            "tree_parameters.leaf_node_nums", 13, self._namespace)
+            "hyper_parameters.leaf_node_nums", 13)
         self.output_positive = envs.get_global_env(
-            "tree_parameters.output_positive", True, self._namespace)
+            "hyper_parameters.output_positive", True)
         self.layer_node_num_list = envs.get_global_env(
-            "tree_parameters.layer_node_num_list", [2, 4, 7,
-                                                    12], self._namespace)
-        self.child_nums = envs.get_global_env("tree_parameters.child_nums", 2,
-                                              self._namespace)
-        self.tree_layer_path = envs.get_global_env("tree.tree_layer_path",
-                                                   None, "train.startup")
+            "hyper_parameters.layer_node_num_list", [2, 4, 7, 12])
+        self.child_nums = envs.get_global_env("hyper_parameters.child_nums", 2)
+        self.tree_layer_path = envs.get_global_env(
+            "hyper_parameters.tree.tree_layer_path", None)
 
         # model training hyper parameter
         self.node_emb_size = envs.get_global_env(
-            "hyper_parameters.node_emb_size", 64, self._namespace)
+            "hyper_parameters.node_emb_size", 64)
         self.input_emb_size = envs.get_global_env(
-            "hyper_parameters.input_emb_size", 768, self._namespace)
-        self.act = envs.get_global_env("hyper_parameters.act", "tanh",
-                                       self._namespace)
+            "hyper_parameters.input_emb_size", 768)
+        self.act = envs.get_global_env("hyper_parameters.act", "tanh")
         self.neg_sampling_list = envs.get_global_env(
-            "hyper_parameters.neg_sampling_list", [1, 2, 3,
-                                                   4], self._namespace)
+            "hyper_parameters.neg_sampling_list", [1, 2, 3, 4])
 
         # model infer hyper parameter
-        self.topK = envs.get_global_env("hyper_parameters.node_nums", 1,
-                                        self._namespace)
-        self.batch_size = envs.get_global_env("batch_size", 1,
-                                              "evaluate.reader")
+        self.topK = envs.get_global_env(
+            "hyper_parameters.topK",
+            1, )
+        self.batch_size = envs.get_global_env(
+            "dataset.dataset_infer.batch_size", 1)
 
-    def train_net(self):
-        self.train_input()
-        self.tdm_net()
+    def net(self, input, is_infer=False):
+        if not is_infer:
+            return self.train_net(input)
+        else:
+            return self.infer_net(input)
+
+    def train_net(self, input):
+        self.tdm_net(input)
         self.create_info()
         self.avg_loss()
         self.metrics()
 
-    def infer_net(self):
-        self.infer_input()
+    def infer_net(self, input):
         self.create_first_layer()
-        self.tdm_infer_net()
+        self.tdm_infer_net(input)
+
+    def input_data(self, is_infer=False, **kwargs):
+        if not is_infer:
+            return self.train_input()
+        else:
+            return self.infer_input()
 
     """ -------- Train network detail ------- """
 
@@ -77,30 +84,22 @@ class Model(ModelBase):
             name="input_emb",
             shape=[None, self.input_emb_size],
             dtype="float32", )
-        self._data_var.append(input_emb)
 
         item_label = fluid.data(
             name="item_label",
             shape=[None, 1],
             dtype="int64", )
 
-        self._data_var.append(item_label)
+        return [input_emb, item_label]
 
-        if self._platform != "LINUX":
-            self._data_loader = fluid.io.DataLoader.from_generator(
-                feed_list=self._data_var,
-                capacity=64,
-                use_double_buffer=False,
-                iterable=False)
-
-    def tdm_net(self):
+    def tdm_net(self, input):
         """
         tdm训练网络的主要流程部分
         """
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
 
-        input_emb = self._data_var[0]
-        item_label = self._data_var[1]
+        input_emb = input[0]
+        item_label = input[1]
 
         # 根据输入的item的正样本在给定的树上进行负采样
         # sample_nodes 是采样的node_id的结果，包含正负样本
@@ -287,13 +286,8 @@ class Model(ModelBase):
             name="input_emb",
             shape=[self.input_emb_size],
             dtype="float32", )
-        self._infer_data_var.append(input_emb)
 
-        self._infer_data_loader = fluid.io.DataLoader.from_generator(
-            feed_list=self._infer_data_var,
-            capacity=64,
-            use_double_buffer=False,
-            iterable=False)
+        return [input_emb]
 
     def get_layer_list(self):
         """get layer list from layer_list.txt"""
@@ -330,7 +324,7 @@ class Model(ModelBase):
         self.first_layer_node = fluid.layers.concat(node_list, axis=1)
         self.first_layer_node_mask = fluid.layers.concat(mask_list, axis=1)
 
-    def tdm_infer_net(self):
+    def tdm_infer_net(self, input):
         """
         infer的主要流程
         infer的基本逻辑是：从上层开始（具体层idx由树结构及TopK值决定）
@@ -339,7 +333,7 @@ class Model(ModelBase):
         3、循环1、2步骤，遍历完所有层，得到每一层筛选结果的集合
         4、将筛选结果集合中的叶子节点，拿出来再做一次topK，得到最终的召回输出
         """
-        input_emb = self._infer_data_var[0]
+        input_emb = input[0]
         node_score = []
         node_list = []
 
@@ -353,7 +347,7 @@ class Model(ModelBase):
                 current_layer_node_num = self.first_layer_node.shape[1]
             else:
                 current_layer_node_num = current_layer_node.shape[1] * \
-                                         current_layer_node.shape[2]
+                    current_layer_node.shape[2]
 
             current_layer_node = fluid.layers.reshape(
                 current_layer_node, [-1, current_layer_node_num])
@@ -387,7 +381,7 @@ class Model(ModelBase):
 
             # 过滤掉padding产生的无效节点（node_id=0）
             node_zero_mask = fluid.layers.cast(current_layer_node, 'bool')
-            node_zero_mask = fluid.layers.cast(node_zero_mask, 'float')
+            node_zero_mask = fluid.layers.cast(node_zero_mask, 'float32')
             prob_re = prob_re * node_zero_mask
 
             # 在当前层的分类结果中取topK，并将对应的score及node_id保存下来

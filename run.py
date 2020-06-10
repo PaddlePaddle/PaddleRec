@@ -17,34 +17,39 @@ import subprocess
 import sys
 import argparse
 import tempfile
+
 import yaml
 import copy
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
+from paddlerec.core.utils import validation
 from paddlerec.core.utils import util
 from paddlerec.core.utils import validation
 
 engines = {}
 device = ["CPU", "GPU"]
-clusters = ["SINGLE", "LOCAL_CLUSTER", "CLUSTER"]
 engine_choices = [
-    "SINGLE_TRAIN", "LOCAL_CLUSTER", "CLUSTER", "TDM_SINGLE",
-    "TDM_LOCAL_CLUSTER", "TDM_CLUSTER", "SINGLE_INFER"
+    "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER",
+    "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
 ]
-custom_model = ['TDM']
-model_name = ""
 
 
 def engine_registry():
     engines["TRANSPILER"] = {}
     engines["PSLIB"] = {}
 
+    engines["TRANSPILER"]["TRAIN"] = single_train_engine
     engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
+    engines["TRANSPILER"]["INFER"] = single_infer_engine
     engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
+    engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
-    engines["PSLIB"]["SINGLE"] = local_mpi_engine
+    engines["PSLIB"]["SINGLE_TRAIN"] = local_mpi_engine
+    engines["PSLIB"]["TRAIN"] = local_mpi_engine
+    engines["PSLIB"]["LOCAL_CLUSTER_TRAIN"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
+    engines["PSLIB"]["CLUSTER_TRAIN"] = cluster_mpi_engine
     engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
 
 
@@ -60,8 +65,7 @@ def get_inters_from_yaml(file, filters):
 
 
 def get_all_inters_from_yaml(file, filters):
-    with open(file, 'r') as rb:
-        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+    _envs = envs.load_yaml(file)
     all_flattens = {}
 
     def fatten_env_namespace(namespace_nests, local_envs):
@@ -74,7 +78,7 @@ def get_all_inters_from_yaml(file, filters):
                   k == "runner") and isinstance(v, list):
                 for i in v:
                     if i.get("name") is None:
-                        raise ValueError("name must be in dataset list ", v)
+                        raise ValueError("name must be in dataset list. ", v)
                     nests = copy.deepcopy(namespace_nests)
                     nests.append(k)
                     nests.append(i["name"])
@@ -95,17 +99,26 @@ def get_all_inters_from_yaml(file, filters):
 def get_engine(args):
     transpiler = get_transpiler()
     with open(args.model, 'r') as rb:
-        envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
+        _envs = yaml.load(rb.read(), Loader=yaml.FullLoader)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
 
     engine = run_extras.get("train.engine", None)
     if engine is None:
-        engine = run_extras.get("runner." + envs["mode"] + ".class", None)
+        engine = run_extras.get("runner." + _envs["mode"] + ".class", None)
     if engine is None:
-        engine = "single_train"
+        engine = "train"
+
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "CPU")
+    if device.upper() == "GPU":
+        selected_gpus = run_extras.get(
+            "runner." + _envs["mode"] + ".selected_gpus", "0")
+        selected_gpus_num = len(selected_gpus.split(","))
+        if selected_gpus_num > 1:
+            engine = "LOCAL_CLUSTER"
+
     engine = engine.upper()
     if engine not in engine_choices:
-        raise ValueError("train.engin can not be chosen in {}".format(
+        raise ValueError("runner.class can not be chosen in {}".format(
             engine_choices))
 
     print("engines: \n{}".format(engines))
@@ -148,33 +161,74 @@ def set_runtime_envs(cluster_envs, engine_yaml):
     print(envs.pretty_print_envs(need_print, ("Runtime Envs", "Value")))
 
 
-def get_trainer_prefix(args):
-    if model_name in custom_model:
-        return model_name.upper()
-    return ""
-
-
 def single_train_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleTrainer"
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
+    executor_mode = "train"
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
+    selected_gpus_num = len(selected_gpus.split(","))
+    if device.upper() == "GPU":
+        assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+
     single_envs = {}
+    single_envs["selsected_gpus"] = selected_gpus
+    single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
+    single_envs["fleet_mode"] = fleet_mode
+    single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single_train"
     single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
+    single_envs["train.trainer.engine"] = "single"
+
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
 
 
 def single_infer_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleInfer"
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
+    executor_mode = "infer"
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
+
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
+    selected_gpus_num = len(selected_gpus.split(","))
+    if device.upper() == "GPU":
+        assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+
     single_envs = {}
+    single_envs["selected_gpus"] = selected_gpus
+    single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.executor_mode"] = executor_mode
+    single_envs["fleet_mode"] = fleet_mode
     single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single_infer"
     single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
+    single_envs["train.trainer.engine"] = "single"
+
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
     return trainer
@@ -204,18 +258,41 @@ def cluster_engine(args):
         update_workspace(flattens)
 
         envs.set_runtime_environs(flattens)
-        print(envs.pretty_print_envs(flattens, ("Submit Runtime Envs", "Value"
-                                                )))
+        print(envs.pretty_print_envs(flattens, ("Submit Envs", "Value")))
 
         launch = ClusterEngine(None, args.model)
         return launch
 
     def worker():
         role = "WORKER"
-        trainer = get_trainer_prefix(args) + "ClusterTrainer"
+
+        _envs = envs.load_yaml(args.model)
+        run_extras = get_all_inters_from_yaml(args.model,
+                                              ["train.", "runner."])
+        trainer_class = run_extras.get(
+            "runner." + _envs["mode"] + ".trainer_class", None)
+
+        if trainer_class:
+            trainer = trainer_class
+        else:
+            trainer = "GeneralTrainer"
+
+        executor_mode = "train"
+
+        distributed_strategy = run_extras.get(
+            "runner." + _envs["mode"] + ".distribute_strategy", "async")
+        selected_gpus = run_extras.get(
+            "runner." + _envs["mode"] + ".selected_gpus", "0")
+        fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                    "ps")
+
         cluster_envs = {}
+        cluster_envs["selected_gpus"] = selected_gpus
+        cluster_envs["fleet_mode"] = fleet_mode
         cluster_envs["train.trainer.trainer"] = trainer
+        cluster_envs["train.trainer.executor_mode"] = executor_mode
         cluster_envs["train.trainer.engine"] = "cluster"
+        cluster_envs["train.trainer.strategy"] = distributed_strategy
         cluster_envs["train.trainer.threads"] = envs.get_runtime_environ(
             "CPU_NUM")
         cluster_envs["train.trainer.platform"] = envs.get_platform()
@@ -251,14 +328,43 @@ def cluster_mpi_engine(args):
 def local_cluster_engine(args):
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
-    trainer = get_trainer_prefix(args) + "ClusterTrainer"
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
+                                   None)
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
+    executor_mode = "train"
+    distributed_strategy = run_extras.get(
+        "runner." + _envs["mode"] + ".distribute_strategy", "async")
+
+    worker_num = run_extras.get("runner." + _envs["mode"] + ".worker_num", 1)
+    server_num = run_extras.get("runner." + _envs["mode"] + ".server_num", 1)
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
+
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode", "")
+    if fleet_mode == "":
+        device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
+        if len(selected_gpus.split(",")) > 1 and device.upper() == "GPU":
+            fleet_mode = "COLLECTIVE"
+        else:
+            fleet_mode = "PS"
+
     cluster_envs = {}
-    cluster_envs["server_num"] = 1
-    cluster_envs["worker_num"] = 1
+    cluster_envs["server_num"] = server_num
+    cluster_envs["worker_num"] = worker_num
+    cluster_envs["selected_gpus"] = selected_gpus
     cluster_envs["start_port"] = envs.find_free_port()
+    cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.trainer"] = trainer
-    cluster_envs["train.trainer.strategy"] = "async"
+    cluster_envs["train.trainer.executor_mode"] = executor_mode
+    cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
     cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
@@ -283,12 +389,32 @@ def local_mpi_engine(args):
     mpi = util.run_which("mpirun")
     if not mpi:
         raise RuntimeError("can not find mpirun, please check environment")
+
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
+                                   None)
+    executor_mode = "train"
+    distributed_strategy = run_extras.get(
+        "runner." + _envs["mode"] + ".distribute_strategy", "async")
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
     cluster_envs = {}
     cluster_envs["mpirun"] = mpi
-    cluster_envs["train.trainer.trainer"] = "CtrCodingTrainer"
+    cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["log_dir"] = "logs"
     cluster_envs["train.trainer.engine"] = "local_cluster"
-
+    cluster_envs["train.trainer.executor_mode"] = executor_mode
+    cluster_envs["fleet_mode"] = fleet_mode
+    cluster_envs["train.trainer.strategy"] = distributed_strategy
+    cluster_envs["train.trainer.threads"] = "2"
+    cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
@@ -316,7 +442,6 @@ if __name__ == "__main__":
     envs.set_runtime_environs({"PACKAGE_BASE": abs_dir})
 
     args = parser.parse_args()
-
     model_name = args.model.split('.')[-1]
     args.model = get_abs_model(args.model)
     if not validation.yaml_validation(args.model):

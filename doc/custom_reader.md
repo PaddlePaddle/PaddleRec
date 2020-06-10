@@ -73,7 +73,7 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
 1. 首先我们需要引入Reader基类
 
     ```python
-    from paddlerec.core.reader import Reader
+    from paddlerec.core.reader import ReaderBase
     ```
 2. 创建一个子类，继承Reader的基类，训练所需Reader命名为`TrainerReader`
     ```python
@@ -257,12 +257,12 @@ self._data_var.append(self.label_input)
 
 ```python
 # 引入PaddleRec的Reader基类
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 # 引入PaddleRec的读取yaml配置文件的方法
 from paddlerec.core.utils import envs
 
 # 定义TrainReader，需要继承 paddlerec.core.reader.Reader
-class TrainReader(Reader):
+class Reader(ReaderBase)::
 
     # 数据预处理逻辑，继承自基类
     # 如果无需处理， 使用pass跳过该函数的执行

@@ -24,19 +24,157 @@ from paddle import fluid
 from paddlerec.core.utils import envs
 
 
+class EngineMode:
+    """
+    There are various engine designed for different runing environment.
+    """
+    SINGLE = 1
+    CLUSTER = 2
+    LOCAL_CLUSTER = 3
+
+
+class FleetMode:
+    """
+    Paddle Distributed train support: ParameterServer/Collective/PSlib
+    """
+    PS = 1
+    COLLECTIVE = 2
+    PSLIB = 3
+
+
+class Device:
+    """
+    PaddleRec Support CPU/GPU, XPU will comming soon
+    """
+    CPU = 1
+    GPU = 2
+    # XPU =3
+
+
 class Trainer(object):
-    """R
+    """
+    Trainer Base
     """
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config=None):
         self._status_processor = {}
-        self._place = fluid.CPUPlace()
-        self._exe = fluid.Executor(self._place)
+        self.model = None
+        self.inference_models = []
+        self.increment_models = []
         self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
         self._config_yaml = config
+        self._context["config_yaml"] = self._config_yaml
+
         self._config = envs.load_yaml(config)
+
+        self._context["env"] = self._config
+        self._model = {}
+        self._dataset = {}
+        envs.set_global_envs(self._config)
+        envs.update_workspace()
+        self._runner_name = envs.get_global_env("mode")
+        self._context["runner_name"] = self._runner_name
+
+        print("PaddleRec: Runner {} Begin".format(self._runner_name))
+        self.which_engine()
+        self.which_device()
+        self.which_fleet_mode()
+        self.which_executor_mode()
+        self.legality_check()
+
+    def which_device(self):
+        """R
+        """
+        device = envs.get_global_env(
+            "runner." + self._runner_name + ".device", default_value="CPU")
+        if device.upper() == 'GPU':
+            self.check_gpu()
+            self.device = Device.GPU
+            gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
+            self._place = fluid.CUDAPlace(gpu_id)
+            self._exe = fluid.Executor(self._place)
+        elif device.upper() == "CPU":
+            self.device = Device.CPU
+            self._place = fluid.CPUPlace()
+            self._exe = fluid.Executor(self._place)
+        else:
+            raise ValueError("Not Support device {}".format(device))
+        self._context["device"] = device.upper()
+        self._context["exe"] = self._exe
+        self._context["place"] = self._place
+
+    def check_gpu(self):
+        """
+        Log error and exit when set use_gpu=true in paddlepaddle
+        cpu version.
+        """
+        err = "GPU cannot be set as true while you are " \
+            "using paddlepaddle cpu version ! \nPlease try: \n" \
+            "\t1. Install paddlepaddle-gpu to run model on GPU \n" \
+            "\t2. Set device as cpu in config file to run " \
+            "model on CPU"
+
+        try:
+            if not fluid.is_compiled_with_cuda():
+                raise RuntimeError(err)
+                sys.exit(1)
+        except Exception as e:
+            pass
+
+    def which_engine(self):
+        engine = envs.get_runtime_environ("train.trainer.engine")
+        if engine.upper() == "SINGLE":
+            self.engine = EngineMode.SINGLE
+            self.is_fleet = False
+        elif engine.upper() == "LOCAL_CLUSTER":
+            self.engine = EngineMode.LOCAL_CLUSTER
+            self.is_fleet = True
+        elif engine.upper() == "CLUSTER":
+            self.engine = EngineMode.CLUSTER
+            self.is_fleet = True
+        else:
+            raise ValueError("Not Support Engine {}".format(engine))
+        self._context["is_fleet"] = self.is_fleet
+        self._context["engine"] = self.engine
+
+    def which_fleet_mode(self):
+        fleet_mode = envs.get_runtime_environ("fleet_mode")
+        if fleet_mode.upper() == "PS":
+            self.fleet_mode = FleetMode.PS
+        elif fleet_mode.upper() == "COLLECTIVE":
+            self.fleet_mode = FleetMode.COLLECTIVE
+        elif fleet_mode.upper() == "PSLIB":
+            self.fleet_mode = FleetMode.PSLIB
+        else:
+            raise ValueError("Not Support Fleet Mode {}".format(fleet_mode))
+
+        self._context["is_pslib"] = (fleet_mode.upper() == "PSLIB")
+        self._context["fleet_mode"] = fleet_mode
+
+    def which_executor_mode(self):
+        executor_mode = envs.get_runtime_environ("train.trainer.executor_mode")
+        if executor_mode.upper() not in ["TRAIN", "INFER"]:
+            raise ValueError("Not Support Executor Mode {}".format(
+                executor_mode))
+        if executor_mode.upper() == "TRAIN":
+            self.is_infer = False
+        else:
+            self.is_infer = True
+        print("Executor Mode: {}".format(executor_mode))
+        self._context["is_infer"] = self.is_infer
+
+    def legality_check(self):
+        if self.device == Device.CPU:
+            assert self.fleet_mode != FleetMode.COLLECTIVE, "Not Support CPU with Collective Mode"
+
+        if self.is_infer:
+            assert self.engine == EngineMode.SINGLE, "Not Support Distributed Infer "
+
+    @abc.abstractmethod
+    def processor_register(self):
+        pass
 
     def regist_context_processor(self, status_name, processor):
         """
@@ -80,8 +218,8 @@ class Trainer(object):
         Return:
             bool exit_app or not
         """
-        print('Exit app. catch exception in precoss status:%s, except:%s' \
-                % (context['status'], str(exception)))
+        print('Exit app. catch exception in precoss status:%s, except:%s' %
+              (context['status'], str(exception)))
         return True
 
     def reload_train_context(self):

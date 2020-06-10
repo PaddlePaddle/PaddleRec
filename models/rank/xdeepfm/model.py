@@ -15,7 +15,7 @@
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddlerec.core.model import Model as ModelBase
+from paddlerec.core.model import ModelBase
 
 
 class Model(ModelBase):
@@ -62,7 +62,8 @@ class Model(ModelBase):
         feat_embeddings = fluid.layers.reshape(feat_embeddings, [
             -1, self.num_field, self.sparse_feature_dim
         ])  # None * num_field * embedding_size
-        feat_embeddings = feat_embeddings * feat_value  # None * num_field * embedding_size
+        # None * num_field * embedding_size
+        feat_embeddings = feat_embeddings * feat_value
 
         # -------------------- linear  --------------------
 
@@ -108,7 +109,7 @@ class Model(ModelBase):
             Z_k_1 = fluid.layers.reshape(
                 Z_k_1,
                 [-1, last_s * self.num_field, 1, self.sparse_feature_dim]
-            )  # None, last_s*num_field, 1, embedding_size  (None, channal_in, h, w) 
+            )  # None, last_s*num_field, 1, embedding_size  (None, channal_in, h, w)
             X_k_1 = fluid.layers.conv2d(
                 Z_k_1,
                 num_filters=s,

@@ -16,12 +16,12 @@ from __future__ import print_function
 import numpy as np
 import paddle.fluid as fluid
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 from collections import defaultdict
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         self.user_vocab = envs.get_global_env("hyper_parameters.user_vocab",
                                               None, "train.model")

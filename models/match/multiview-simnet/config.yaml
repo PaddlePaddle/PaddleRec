@@ -61,14 +61,14 @@ runner:
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  fetch_period: 1
+  print_interval: 1
 - name: infer_runner
   class: single_infer
   # num of epochs
   epochs: 1
   # device to run training or infer
   device: cpu
-  fetch_period: 1
+  print_interval: 1
   init_model_path: "increment/0" # load model path
 
 # runner will run all the phase in each epoch

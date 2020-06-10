@@ -23,18 +23,13 @@ trainers = {}
 
 
 def trainer_registry():
-    trainers["SingleTrainer"] = os.path.join(trainer_abs, "single_trainer.py")
-    trainers["SingleInfer"] = os.path.join(trainer_abs, "single_infer.py")
-    trainers["ClusterTrainer"] = os.path.join(trainer_abs,
-                                              "cluster_trainer.py")
+    # Definition of procedure execution process
     trainers["CtrCodingTrainer"] = os.path.join(trainer_abs,
                                                 "ctr_coding_trainer.py")
     trainers["CtrModulTrainer"] = os.path.join(trainer_abs,
                                                "ctr_modul_trainer.py")
-    trainers["TDMSingleTrainer"] = os.path.join(trainer_abs,
-                                                "tdm_single_trainer.py")
-    trainers["TDMClusterTrainer"] = os.path.join(trainer_abs,
-                                                 "tdm_cluster_trainer.py")
+    trainers["GeneralTrainer"] = os.path.join(trainer_abs,
+                                              "general_trainer.py")
 
 
 trainer_registry()
