@@ -96,7 +96,7 @@ class SingleNetwork(NetworkBase):
                 "default_main_program"] = train_program.clone()
 
         context["dataset"] = {}
-        for dataset in self._env["dataset"]:
+        for dataset in context["env"]["dataset"]:
             if dataset["type"] != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
@@ -113,12 +113,12 @@ class PSNetwork(NetworkBase):
 
     def build_network(self, context):
         context["model"] = {}
-        if len(self._env["phase"]) > 1:
+        if len(context["env"]["phase"]) > 1:
             warnings.warn(
                 "Cluster Train Only Support One Phase.",
                 category=UserWarning,
                 stacklevel=2)
-        model_dict = self._env["phase"][0]
+        model_dict = context["env"]["phase"][0]
         context["model"][model_dict["name"]] = {}
         dataset_name = model_dict["dataset_name"]
 
@@ -154,7 +154,7 @@ class PSNetwork(NetworkBase):
         else:
             context["fleet"].init_worker()
             context["dataset"] = {}
-            for dataset in self._env["dataset"]:
+            for dataset in context["env"]["dataset"]:
                 if dataset["type"] != "DataLoader":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
@@ -200,12 +200,12 @@ class PslibNetwork(NetworkBase):
 
     def build_network(self, context):
         context["model"] = {}
-        if len(self._env["phase"]) > 1:
+        if len(context["env"]["phase"]) > 1:
             warnings.warn(
                 "Cluster Train Only Support One Phase.",
                 category=UserWarning,
                 stacklevel=2)
-        model_dict = self._env["phase"][0]
+        model_dict = context["env"]["phase"][0]
         train_program = fluid.Program()
         startup_program = fluid.Program()
         scope = fluid.Scope()
@@ -247,7 +247,7 @@ class PslibNetwork(NetworkBase):
             self._server(context)
         else:
             context["dataset"] = {}
-            for dataset in self._env["dataset"]:
+            for dataset in context["env"]["dataset"]:
                 if dataset["type"] != "DataLoader":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
@@ -267,12 +267,12 @@ class CollectiveNetwork(NetworkBase):
 
     def build_network(self, context):
         context["model"] = {}
-        if len(self._env["phase"]) > 1:
+        if len(context["env"]["phase"]) > 1:
             warnings.warn(
                 "Cluster Train Only Support One Phase.",
                 category=UserWarning,
                 stacklevel=2)
-        model_dict = self._env["phase"][0]
+        model_dict = context["env"]["phase"][0]
         context["model"][model_dict["name"]] = {}
         dataset_name = model_dict["dataset_name"]
 
@@ -311,7 +311,7 @@ class CollectiveNetwork(NetworkBase):
                     "default_main_program"] = train_program
 
         context["dataset"] = {}
-        for dataset in self._env["dataset"]:
+        for dataset in context["env"]["dataset"]:
             if dataset["type"] != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
