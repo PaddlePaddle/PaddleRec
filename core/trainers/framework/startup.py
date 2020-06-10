@@ -73,7 +73,7 @@ class PSStartup(StartupBase):
         pass
 
     def startup(self, context):
-        model_dict = context["env"]["phase"][0]
+        model_dict = envs.get_global_env("phase")[0]
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
 
             train_prog = context["model"][model_dict["name"]]["main_program"]
@@ -91,7 +91,7 @@ class CollectiveStartup(StartupBase):
         pass
 
     def startup(self, context):
-        model_dict = context["env"]["phase"][0]
+        model_dict = envs.get_global_env("phase")[0]
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             train_prog = context["model"][model_dict["name"]][
                 "default_main_program"]

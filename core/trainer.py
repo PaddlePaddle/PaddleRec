@@ -64,26 +64,21 @@ class Trainer(object):
         self.increment_models = []
         self._exector_context = {}
         self._context = {'status': 'uninit', 'is_exit': False}
-        self._config_yaml = config
-        self._context["config_yaml"] = self._config_yaml
+        self._context["config_yaml"] = config
 
-        self._config = envs.load_yaml(config)
-
-        self._context["env"] = self._config
         self._model = {}
         self._dataset = {}
-        envs.set_global_envs(self._config)
-        envs.update_workspace()
+
         self._runner_name = envs.get_runtime_environ("mode")
         self._context["runner_name"] = self._runner_name
 
-        phase_names = self._config.get(
+        phase_names = envs.get_global_env(
             "runner." + self._runner_name + ".phases", None)
         phases = []
         if phase_names is None:
-            phases = self._config.get("phase")
+            phases = envs.get_global_env("phase")
         else:
-            for phase in self._config.get("phase"):
+            for phase in envs.get_global_env("phase"):
                 if phase["name"] in phase_names:
                     phases.append(phase)
 
@@ -100,19 +95,21 @@ class Trainer(object):
         """
         device = envs.get_global_env(
             "runner." + self._runner_name + ".device", default_value="CPU")
-        if device.upper() == 'GPU':
+        device = device.upper()
+
+        if device == 'GPU':
             self.check_gpu()
             self.device = Device.GPU
             gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
             self._place = fluid.CUDAPlace(gpu_id)
             self._exe = fluid.Executor(self._place)
-        elif device.upper() == "CPU":
+        elif device == "CPU":
             self.device = Device.CPU
             self._place = fluid.CPUPlace()
             self._exe = fluid.Executor(self._place)
         else:
             raise ValueError("Not Support device {}".format(device))
-        self._context["device"] = device.upper()
+        self._context["device"] = device
         self._context["exe"] = self._exe
         self._context["place"] = self._place
 
@@ -130,7 +127,6 @@ class Trainer(object):
         try:
             if not fluid.is_compiled_with_cuda():
                 raise RuntimeError(err)
-                sys.exit(1)
         except Exception as e:
             pass
 

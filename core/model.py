@@ -35,7 +35,6 @@ class ModelBase(object):
         self._data_loader = None
         self._infer_data_loader = None
         self._fetch_interval = 20
-        self._namespace = "train.model"
         self._platform = envs.get_platform()
         self._init_hyper_parameters()
         self._env = config
@@ -50,11 +49,11 @@ class ModelBase(object):
         self._slot_inited = True
         dataset = {}
         model_dict = {}
-        for i in self._env["executor"]:
+        for i in envs.get_global_env("phase"):
             if i["name"] == kargs["name"]:
                 model_dict = i
                 break
-        for i in self._env["dataset"]:
+        for i in envs.get_global_env("dataset"):
             if i["name"] == model_dict["dataset_name"]:
                 dataset = i
                 break
@@ -139,8 +138,7 @@ class ModelBase(object):
             os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
 
         if name == "SGD":
-            reg = envs.get_global_env("hyper_parameters.reg", 0.0001,
-                                      self._namespace)
+            reg = envs.get_global_env("hyper_parameters.reg", 0.0001)
             optimizer_i = fluid.optimizer.SGD(
                 lr, regularization=fluid.regularizer.L2DecayRegularizer(reg))
         elif name == "ADAM":
