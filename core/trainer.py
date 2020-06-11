@@ -191,17 +191,10 @@ class Trainer(object):
             None : run a processor for this status
         """
         status = context['status']
-        try:
-            if status in self._status_processor:
-                self._status_processor[context['status']](context)
-            else:
-                self.other_status_processor(context)
-        except Exception as err:
-            traceback.print_exc()
-            print('Catch Exception:%s' % str(err))
-            sys.stdout.flush()
-            self._context['is_exit'] = self.handle_processor_exception(
-                status, context, err)
+        if status in self._status_processor:
+            self._status_processor[context['status']](context)
+        else:
+            self.other_status_processor(context)
 
     def other_status_processor(self, context):
         """
@@ -218,7 +211,7 @@ class Trainer(object):
         Return:
             bool exit_app or not
         """
-        print('Exit app. catch exception in precoss status:%s, except:%s' %
+        print('Exit app. catch exception in precoss status: [%s], except: %s' %
               (context['status'], str(exception)))
         return True
 
@@ -233,10 +226,17 @@ class Trainer(object):
         keep running by statu context.
         """
         while True:
-            self.reload_train_context()
-            self.context_process(self._context)
-            if self._context['is_exit']:
-                break
+            try:
+                self.reload_train_context()
+                self.context_process(self._context)
+                if self._context['is_exit']:
+                    break
+            except Exception as err:
+                traceback.print_exc()
+                print('Catch Exception:%s' % str(err))
+                sys.stdout.flush()
+                self.handle_processor_exception(status, context, err)
+                sys.exit(type(err).__name__)
 
 
 def user_define_engine(engine_yaml):

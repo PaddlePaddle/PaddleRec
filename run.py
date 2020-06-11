@@ -449,8 +449,4 @@ if __name__ == "__main__":
     engine_registry()
     which_engine = get_engine(args)
     engine = which_engine(args)
-    try:
-        engine.run()
-        sys.exit(0)
-    except:
-        sys.exit(1)
+    engine.run()
