@@ -1,7 +1,7 @@
 # 排序模型库
 
 ## 简介
-我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [logistic regression](logistic_regression)、[多层神经网络](dnn)、[FM](fm)、[FFM](ffm)、[PNN](pnn)、[多层神经网络](dnn)、[Deep Cross Network](dcn)、[DeepFM](deepfm)、 [xDeepFM](xdeepfm)、[NFM](nfm)、[AFM](afm)、[Deep Interest Network](din)、[Wide&Deep](wide_deep)。
+我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的排序模型包括 [logistic regression](logistic_regression)、[多层神经网络](dnn)、[FM](fm)、[FFM](ffm)、[PNN](pnn)、[多层神经网络](dnn)、[Deep Cross Network](dcn)、[DeepFM](deepfm)、 [xDeepFM](xdeepfm)、[NFM](nfm)、[AFM](afm)、[Deep Interest Network](din)、[Wide&Deep](wide_deep)、[FGCNN](fgcnn)。
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -34,6 +34,7 @@
 | AFM | Attentional Factorization Machines | [Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks](https://arxiv.org/pdf/1708.04617.pdf)(2017) |
 | xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
 | DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
+| FGCNN | Feature Generation by CNN | [Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)(2019) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
