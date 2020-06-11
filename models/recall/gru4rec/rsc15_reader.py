@@ -37,6 +37,6 @@ class Reader(ReaderBase):
             trg_seq = l[1:]
             trg_seq = [int(e) for e in trg_seq]
             feature_name = ["src_wordseq", "dst_wordseq"]
-            yield zip(feature_name, [src_seq] + [trg_seq])
+            yield list(zip(feature_name, [src_seq] + [trg_seq]))
 
         return reader
