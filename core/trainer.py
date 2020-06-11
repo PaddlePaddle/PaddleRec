@@ -235,7 +235,7 @@ class Trainer(object):
                 traceback.print_exc()
                 print('Catch Exception:%s' % str(err))
                 sys.stdout.flush()
-                self.handle_processor_exception(status, context, err)
+                self.handle_processor_exception(context, err)
                 sys.exit(type(err).__name__)
 
 
