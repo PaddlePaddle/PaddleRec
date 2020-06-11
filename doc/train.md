@@ -1,5 +1,7 @@
 # PaddleRec 启动训练
 
+
+
 ## 启动方法
 
 ### 1. 启动内置模型的默认配置训练
@@ -27,29 +29,34 @@ python -m paddlerec.run -m paddlerec.models.recall.word2vec
 
 - **没有改动模型组网**
 
-假如你将paddlerec代码库克隆在了`/home/PaddleRec`，并修改了`/home/PaddleRec/models/rank/dnn/config.yaml`，则如下启动训练
+  假如你将paddlerec代码库克隆在了`/home/PaddleRec`，并修改了`/home/PaddleRec/models/rank/dnn/config.yaml`，则如下启动训练
 
-```shell
-python -m paddlerec.run -m /home/PaddleRec/models/rank/dnn/config.yaml
-```
+  ```shell
+  python -m paddlerec.run -m /home/PaddleRec/models/rank/dnn/config.yaml
+  ```
 
-paddlerec 运行的是在paddlerec库安装目录下的组网文件(model.py)
+  paddlerec 运行的是在paddlerec库安装目录下的组网文件(model.py)，但个性化配置`config.yaml`是用的是指定路径下的yaml文件。
 
 - **改动了模型组网**
 
-假如你将paddlerec代码库克隆在了`/home/PaddleRec`，并修改了`/home/PaddleRec/models/rank/dnn/model.py`， 以及`/home/PaddleRec/models/rank/dnn/config.yaml`，则首先需要更改`yaml`中的`workspace`的设置：
+  假如你将paddlerec代码库克隆在了`/home/PaddleRec`，并修改了`/home/PaddleRec/models/rank/dnn/model.py`， 以及`/home/PaddleRec/models/rank/dnn/config.yaml`，则首先需要更改`yaml`中的`workspace`的设置：
 
-```yaml
-workspace: /home/PaddleRec/models/rank/dnn/
-```
+  ```yaml
+  workspace: /home/PaddleRec/models/rank/dnn/
+  ```
 
-再执行：
+  再执行：
 
-```shell
-python -m paddlerec.run -m /home/PaddleRec/models/rank/dnn/config.yaml
-```
+  ```shell
+  python -m paddlerec.run -m /home/PaddleRec/models/rank/dnn/config.yaml
+  ```
 
-paddlerec 运行的是绝对路径下的组网文件(model.py)
+  paddlerec 运行的是绝对路径下的组网文件(model.py)以及个性化配置文件(config.yaml)
+
+
+
+
+## yaml训练配置
 
 ### yaml中训练相关的概念
 
@@ -58,19 +65,18 @@ paddlerec 运行的是绝对路径下的组网文件(model.py)
 - **`runner`** : runner是训练的引擎，亦可称之为运行器，在runner中定义执行设备（cpu、gpu），执行的模式（训练、预测、单机、多机等），以及运行的超参，例如训练轮数，模型保存地址等。
 - **`phase`** : phase是训练中的阶段的概念，是引擎具体执行的内容，该内容是指：具体运行哪个模型文件，使用哪个reader。
 
-PaddleRec每次运行时，只会执行一个运行器，通过`mode`指定`runner`的名字。但每个运行器可以执行多个`phase`，所以PaddleRec支持一键启动多阶段的训练。
+PaddleRec每次运行时，会执行一个运行器，通过`mode`指定`runner`的名字。每个运行器可以执行多个`phase`，所以PaddleRec支持一键启动多阶段的训练。
 
+### 单机CPU训练
 
-### 单机训练启动配置
-
-下面我们开始定义一个单机训练的`runner`:
+下面我们开始定义一个单机CPU训练的`runner`:
 
 ```yaml
-mode: runner_train # 执行名为 runner_train 的运行器
+mode: single_cpu_train # 执行名为 single_cpu_train 的运行器
 
 runner:
-- name: runner_train # 定义 runner 名为 runner_train
-  class: single_train # 执行单机训练 class = single_train
+- name: single_cpu_train # 定义 runner 名为 single_cpu_train
+  class: train # 执行单机训练，亦可为 single_train
   device: cpu # 执行在 cpu 上
   epochs: 10 # 训练轮数
 
@@ -100,4 +106,49 @@ dataset:
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26" # sparse 输入的位置定义
   dense_slots: "dense_var:13"  # dense参数的维度定义
 
+```
+
+### 单机单卡GPU训练
+
+具体执行内容与reader与前述相同，下面介绍需要改动的地方
+
+```yaml
+mode: single_gpu_train # 执行名为 single_gpu_train 的运行器
+
+runner:
+- name: single_gpu_train # 定义 runner 名为 single_gpu_train
+  class: train # 执行单机训练，亦可为 single_train
+  device: gpu # 执行在 gpu 上
+  selected_gpus: "0" # 默认选择在id=0的卡上执行训练
+  epochs: 10 # 训练轮数
+```
+
+### 单机多卡GPU训练
+
+具体执行内容与reader与前述相同，下面介绍需要改动的地方
+
+```yaml
+mode: single_multi_gpu_train # 执行名为 single_multi_gpu_train 的运行器
+
+runner:
+- name: single_multi_gpu_train # 定义 runner 名为 single_multi_gpu_train
+  class: train # 执行单机训练，亦可为 single_train
+  device: gpu # 执行在 gpu 上
+  selected_gpus: "0,1,2,3" # 选择多卡执行训练
+  epochs: 10 # 训练轮数
+```
+
+### 本地模拟参数服务器训练
+具体执行内容与reader与前述相同，下面介绍需要改动的地方
+
+```yaml
+mode: local_cluster_cpu_train # 执行名为 local_cluster_cpu_train 的运行器
+
+runner:
+- name: local_cluster_cpu_train # 定义 runner 名为 runner_train
+  class: local_cluster # 执行本地模拟分布式——参数服务器训练
+  device: cpu # 执行在 cpu 上（paddle后续版本会支持PS-GPU）
+  worker_num: 1 # (可选)worker进程数量，默认1
+  server_num: 1 # (可选)server进程数量，默认1
+  epochs: 10 # 训练轮数
 ```
