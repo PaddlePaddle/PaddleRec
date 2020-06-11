@@ -9,7 +9,7 @@ mode: runner_train # 执行名为 runner_train 的运行器
 
 runner:
 - name: runner_train # 定义 runner 名为 runner_train
-  class: single_train # 执行单机训练 class = single_train
+  class: train # 执行单机训练 class = train
   device: cpu # 执行在 cpu 上
   epochs: 10 # 训练轮数
 

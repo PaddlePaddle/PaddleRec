@@ -4,17 +4,13 @@
 ## PaddleRec 整体设计概览
 PaddleRec将推荐模型的训练与预测流程，整体抽象为了五个大模块：
 
-* [Engine 流程执行引擎](#engine)
-* [Trainer 流程具体定义](#trainer)
-* [Model 模型组网定义](#model)
-* [Reader 数据读取定义](#reader)
-* [Metric 精度指标打印](#metric)
-
-层级结构，以及一键启动训练时的调用关系如下图所示：
-
-<p align="center">
-<img align="center" src="imgs/design.png">
-<p>
+- [PaddleRec 设计](#paddlerec-设计)
+  - [PaddleRec 整体设计概览](#paddlerec-整体设计概览)
+  - [Engine](#engine)
+  - [Trainer](#trainer)
+  - [Model](#model)
+  - [Reader](#reader)
+  - [Metric](#metric)
 
 core的文件结构如下，后续分别对各个模块进行介绍。
 ```
@@ -50,7 +46,7 @@ Engine是整体训练的执行引擎，与组网逻辑及数据无关，只与�
 运行设备是指：
 - CPU
 - GPU
-- AI芯片
+- 其他AI芯片
 
 在用户调用`python -m paddlerec.run`时，首先会根据`yaml`文件中的配置信息选择合适的执行引擎， 以下代码位于[run.py](../run.py)：
 ```python
@@ -62,15 +58,36 @@ engine.run()
 
 我们以`single engine`为例，概览engine的行为：
 ```python
-def single_engine(args):
-    trainer = get_trainer_prefix(args) + "SingleTrainer"
+def single_train_engine(args):
+    _envs = envs.load_yaml(args.model)
+    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
+    trainer_class = run_extras.get(
+        "runner." + _envs["mode"] + ".trainer_class", None)
+
+    if trainer_class:
+        trainer = trainer_class
+    else:
+        trainer = "GeneralTrainer"
+
+    executor_mode = "train"
+    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
+                                "ps")
+    device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
+    selected_gpus = run_extras.get(
+        "runner." + _envs["mode"] + ".selected_gpus", "0")
+    selected_gpus_num = len(selected_gpus.split(","))
+    if device.upper() == "GPU":
+        assert selected_gpus_num == 1, "Single Mode Only Support One GPU, Set Local Cluster Mode to use Multi-GPUS"
+
     single_envs = {}
+    single_envs["selsected_gpus"] = selected_gpus
+    single_envs["FLAGS_selected_gpus"] = selected_gpus
     single_envs["train.trainer.trainer"] = trainer
+    single_envs["fleet_mode"] = fleet_mode
+    single_envs["train.trainer.executor_mode"] = executor_mode
     single_envs["train.trainer.threads"] = "2"
-    single_envs["train.trainer.engine"] = "single"
-    single_envs["train.trainer.device"] = args.device
     single_envs["train.trainer.platform"] = envs.get_platform()
-    print("use {} engine to run model: {}".format(trainer, args.model))
+    single_envs["train.trainer.engine"] = "single"
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
@@ -91,34 +108,29 @@ Engine的自定义实现，可以参考[local_cluster.py](../core/engine/local_c
 
 `Trainer`是训练与预测流程的具体实现，会run模型中定义的各个流程，与model、reader、metric紧密相关。PaddleRec以有限状态机的逻辑定义了训练中的各个阶段，不同的Trainer子类会分别实现阶段中的特殊需求。有限状态机的流程在`def processor_register()`中注册。
 
-我们以SingleTrainer为例，概览Trainer行为：
+我们以GeneralTrainer为例，概览Trainer行为：
 
 ```python 
 class SingleTrainer(TranspileTrainer):
     def processor_register(self):
+        print("processor_register begin")
         self.regist_context_processor('uninit', self.instance)
-        self.regist_context_processor('init_pass', self.init)
+        self.regist_context_processor('network_pass', self.network)
         self.regist_context_processor('startup_pass', self.startup)
-        if envs.get_platform() == "LINUX" and envs.get_global_env("dataset_class", None, "train.reader") != "DataLoader":
-            self.regist_context_processor('train_pass', self.dataset_train)
-        else:
-            self.regist_context_processor('train_pass', self.dataloader_train)
-
-        self.regist_context_processor('infer_pass', self.infer)
+        self.regist_context_processor('train_pass', self.runner)
         self.regist_context_processor('terminal_pass', self.terminal)
 ```
 
 SingleTrainer首先注册了完成任务所需的步骤，各步骤首先按照注册顺序加入`Trainer`基类中名为`status_processor`的字典，运行的先后顺序，可以在每个执行步骤中改变`context['status']`的值，指定下一步运行哪个步骤。
 
-SingleTrainer指定了以下6个步骤：
-1. uninit：默认排在首位，通过环境变量决定model的对象
-1. init_pass：调用model_的接口，生成模型的组网，初始化fetch及metric的变量
-2. startup_pass：初始化模型组网中的各个参数，run(fluid.default_startup_program)
-3. train_pass：会根据环境分别调用`dataset`与`dataloader`进行训练的流程。
-4. infer_pass：在训练结束后，会对训练保存的模型在测试集上验证效果
-5. terminal_pass：打印全局变量及预测结果等自定义的信息。
+SingleTrainer指定了以下5个步骤：
+1. uninit：默认排在首位，通过环境变量启动paddle分布式的实例，执行在模型训练前的所有操作。
+2. network_pass：根据模型组网生成训练的program
+3. startup_pass：初始化模型组网中的各个参数，以及加载模型
+4. train_pass：会根据环境分别调用`dataset`与`dataloader`进行训练的流程。
+5. terminal_pass：停止worker，以及执行模型训练后的所有操作
 
-Trainer的自定义实现，可以参照[single_trainer.py](../core/trainers/single_trainer.py)
+Trainer的自定义实现，可以参照[general_trainer.py](../core/trainers/general_trainer.py)
 
 ## Model
 
