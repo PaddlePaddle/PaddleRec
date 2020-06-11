@@ -97,7 +97,8 @@ class SingleNetwork(NetworkBase):
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
-            if dataset["type"] != "DataLoader":
+            type = envs.get_global_env("dataset." + dataset["name"] + ".type")
+            if type != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
@@ -155,7 +156,9 @@ class PSNetwork(NetworkBase):
             context["fleet"].init_worker()
             context["dataset"] = {}
             for dataset in context["env"]["dataset"]:
-                if dataset["type"] != "DataLoader":
+                type = envs.get_global_env("dataset." + dataset["name"] +
+                                           ".type")
+                if type != "DataLoader":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
@@ -248,7 +251,9 @@ class PslibNetwork(NetworkBase):
         else:
             context["dataset"] = {}
             for dataset in context["env"]["dataset"]:
-                if dataset["type"] != "DataLoader":
+                type = envs.get_global_env("dataset." + dataset["name"] +
+                                           ".type")
+                if type != "DataLoader":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
@@ -312,7 +317,8 @@ class CollectiveNetwork(NetworkBase):
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
-            if dataset["type"] != "DataLoader":
+            type = envs.get_global_env("dataset." + dataset["name"] + ".type")
+            if type != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],

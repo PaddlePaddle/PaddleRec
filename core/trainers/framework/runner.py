@@ -155,7 +155,7 @@ class RunnerBase(object):
             gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
         else:
             raise ValueError(
-                "Unsurpported config. gradient_scale_strategy must be one of [0, 1, 2]."
+                "Unsupported config. gradient_scale_strategy must be one of [0, 1, 2]."
             )
         _build_strategy.gradient_scale_strategy = gradient_scale_strategy
 
