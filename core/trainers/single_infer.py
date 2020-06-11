@@ -198,7 +198,7 @@ class SingleInfer(TranspileTrainer):
 
     def executor_train(self, context):
         epochs = int(
-            envs.get_global_env("runner." + self._runner_name + ".epochs"))
+            envs.get_global_env("runner." + self._runner_name + ".epochs", 1))
         for j in range(epochs):
             for model_dict in self._env["phase"]:
                 if j == 0:
@@ -298,8 +298,6 @@ class SingleInfer(TranspileTrainer):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
-        with open(model_dict['save_path'], 'w') as fout:
-            json.dump(infer_results, fout)
 
     def terminal(self, context):
         context['is_exit'] = True
