@@ -310,7 +310,7 @@ class PSRunner(RunnerBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
-        model_dict = context("env")["phase"][0]
+        model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
             begin_time = time.time()
             self._run(context, model_dict)
@@ -337,7 +337,7 @@ class CollectiveRunner(RunnerBase):
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
-        model_dict = context("env")["phase"][0]
+        model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
             begin_time = time.time()
             self._run(context, model_dict)
@@ -362,7 +362,7 @@ class PslibRunner(RunnerBase):
 
     def run(self, context):
         context["fleet"].init_worker()
-        model_dict = context("env")["phase"][0]
+        model_dict = context["env"]["phase"][0]
         epochs = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))

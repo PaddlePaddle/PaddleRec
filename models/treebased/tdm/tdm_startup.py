@@ -47,7 +47,7 @@ class Startup(StartupBase):
     def _single_startup(self, context):
         load_tree_from_numpy = envs.get_global_env(
             "hyper_parameters.tree.load_tree_from_numpy", False)
-        model_dict = context("env")["phase"][0]
+        model_dict = context["env"]["phase"][0]
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             context["exe"].run(context["model"][model_dict["name"]][
                 "startup_program"])
@@ -106,7 +106,7 @@ class Startup(StartupBase):
         warmup_model_path = envs.get_global_env(
             "runner." + context["runner_name"] + ".init_model_path", None)
         assert warmup_model_path != None, "set runner.init_model_path for loading model"
-        model_dict = context("env")["phase"][0]
+        model_dict = context["env"]["phase"][0]
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             context["exe"].run(context["model"][model_dict["name"]][
                 "startup_program"])
