@@ -205,14 +205,17 @@ class Trainer(object):
         print('unknow context_status:%s, do nothing' % context['status'])
         time.sleep(60)
 
-    def handle_processor_exception(self, status, context, exception):
+    def handle_processor_exception(self, context, exception):
         """
         when exception throwed from processor, will call this func to handle it 
         Return:
             bool exit_app or not
         """
-        print('Exit app. catch exception in precoss status: [%s], except: %s' %
-              (context['status'], str(exception)))
+        print("\n----------------------\nPaddleRec Error Message "
+              "Summary:\n----------------------\n")
+        print(
+            'Exit PaddleRec. catch exception in precoss status: [%s], except: %s'
+            % (context['status'], str(exception)))
         return True
 
     def reload_train_context(self):
@@ -235,7 +238,7 @@ class Trainer(object):
                 traceback.print_exc()
                 print('Catch Exception:%s' % str(err))
                 sys.stdout.flush()
-                self.handle_processor_exception(context, err)
+                self.handle_processor_exception(self._context, err)
                 sys.exit(type(err).__name__)
 
 
