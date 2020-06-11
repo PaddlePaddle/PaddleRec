@@ -98,7 +98,7 @@ def set_global_envs(envs):
 
     if get_platform() != "LINUX":
         for dataset in envs["dataset"]:
-            name = ".".join("dataset", dataset["name"], "type")
+            name = ".".join(["dataset", dataset["name"], "type"])
             global_envs[name] = "DataLoader"
 
 
