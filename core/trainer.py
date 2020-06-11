@@ -211,8 +211,8 @@ class Trainer(object):
         Return:
             bool exit_app or not
         """
-        print("\n----------------------\nPaddleRec Error Message "
-              "Summary:\n----------------------\n")
+        print("\n--------------------------------\nPaddleRec Error Message "
+              "Summary:\n--------------------------------\n")
         print(
             'Exit PaddleRec. catch exception in precoss status: [%s], except: %s'
             % (context['status'], str(exception)))
