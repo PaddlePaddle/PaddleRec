@@ -37,7 +37,7 @@ class ModelBase(object):
         self._fetch_interval = 20
         self._platform = envs.get_platform()
         self._init_hyper_parameters()
-        context["env"] = config
+        self._env = config
         self._slot_inited = False
 
     def _init_hyper_parameters(self):
@@ -49,11 +49,11 @@ class ModelBase(object):
         self._slot_inited = True
         dataset = {}
         model_dict = {}
-        for i in context["env"]("phase"):
+        for i in self._env["phase"]:
             if i["name"] == kargs["name"]:
                 model_dict = i
                 break
-        for i in context["env"]("dataset"):
+        for i in self._env["dataset"]:
             if i["name"] == model_dict["dataset_name"]:
                 dataset = i
                 break
