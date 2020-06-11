@@ -151,7 +151,6 @@ class Model(object):
         self._data_loader = None
         self._infer_data_loader = None
         self._fetch_interval = 20
-        self._namespace = "train.model"
         self._platform = envs.get_platform()
 
     def get_inputs(self):
@@ -211,7 +210,6 @@ class Reader(dg.MultiSlotDataGenerator):
         dg.MultiSlotDataGenerator.__init__(self)
         _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
-        envs.update_workspace()
 
     @abc.abstractmethod
     def init(self):

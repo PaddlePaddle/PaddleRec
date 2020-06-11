@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
-import os
-
-from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 import paddle.fluid.incubate.data_generator as dg
 
@@ -28,12 +24,7 @@ except ImportError:
 class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
+        _config = envs.load_yaml(config)
 
     def init(self):
         self.cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -88,7 +79,6 @@ class Reader(dg.MultiSlotDataGenerator):
                 v = i[1]
                 for j in v:
                     s += " " + k + ":" + str(j)
-            print s.strip()
             yield None
 
         return data_iter
