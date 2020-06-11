@@ -9,7 +9,7 @@ mode: runner_infer # 执行名为 runner1 的运行器
 
 runner:
 - name: runner_infer # 定义 runner 名为 runner1
-  class: single_infer # 执行单机预测 class = single_infer
+  class: infer # 执行单机预测 class = infer
   device: cpu # 执行在 cpu 上
   init_model_path: "init_model" # 指定初始化模型的地址
   print_interval: 10 # 预测信息的打印间隔，以batch为单位
