@@ -65,7 +65,7 @@ python -m paddlerec.run -m paddlerec.models.recall.word2vec
 - **`runner`** : runner是训练的引擎，亦可称之为运行器，在runner中定义执行设备（cpu、gpu），执行的模式（训练、预测、单机、多机等），以及运行的超参，例如训练轮数，模型保存地址等。
 - **`phase`** : phase是训练中的阶段的概念，是引擎具体执行的内容，该内容是指：具体运行哪个模型文件，使用哪个reader。
 
-PaddleRec每次运行时，会执行一个运行器，通过`mode`指定`runner`的名字。每个运行器可以执行多个`phase`，所以PaddleRec支持一键启动多阶段的训练。
+PaddleRec每次运行时，会执行一个或多个运行器，通过`mode`指定`runner`的名字。每个运行器可以执行一个或多个`phase`，所以PaddleRec支持一键启动多阶段的训练。
 
 ### 单机CPU训练
 
@@ -73,6 +73,7 @@ PaddleRec每次运行时，会执行一个运行器，通过`mode`指定`runner`
 
 ```yaml
 mode: single_cpu_train # 执行名为 single_cpu_train 的运行器
+# mode 也支持多个runner的执行，此处可以改为 mode: [single_cpu_train, single_cpu_infer]
 
 runner:
 - name: single_cpu_train # 定义 runner 名为 single_cpu_train
@@ -88,6 +89,8 @@ runner:
   save_inference_fetch_varnames: [] # inference model 的fetch参数的名字
   init_model_path: "" # 如果是加载模型热启，则可以指定初始化模型的地址
   print_interval: 10 # 训练信息的打印间隔，以batch为单位
+  phases: phase_train # 若没有指定phases，则会默认运行所有phase
+  # phase 也支持自定多个phase的执行，此处可以改为 phases: [phase_train, phase_infer]
 ```
 
 再定义具体的执行内容：

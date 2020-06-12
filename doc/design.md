@@ -111,7 +111,7 @@ Engine的自定义实现，可以参考[local_cluster.py](../core/engine/local_c
 我们以GeneralTrainer为例，概览Trainer行为：
 
 ```python 
-class SingleTrainer(TranspileTrainer):
+class GeneralTrainer(Trainer):
     def processor_register(self):
         print("processor_register begin")
         self.regist_context_processor('uninit', self.instance)
@@ -228,9 +228,6 @@ class Reader(dg.MultiSlotDataGenerator):
 - [dataloader_instance.py](../core/utils/dataloader_instance.py)
 
 完成reader的构建工作。
-
-Reader数据处理的逻辑，可以参考[criteo_reader.py](../../models/rank/../../paddlerec/models/rank/criteo_reader.py)
-
 
 
 ## Metric
