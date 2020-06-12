@@ -94,7 +94,8 @@ class Reader(ReaderBase):
             (batch_size, max_uniq_len, max_uniq_len))
         mask = np.array(mask).astype("float32").reshape((batch_size, -1, 1))
         label = np.array(label).astype("int64").reshape((batch_size, 1))
-        return zip(items, seq_index, last_index, adj_in, adj_out, mask, label)
+        return list(
+            zip(items, seq_index, last_index, adj_in, adj_out, mask, label))
 
     def batch_reader(self, batch_size, batch_group_size, train=True):
         def _reader():
