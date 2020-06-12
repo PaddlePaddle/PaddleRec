@@ -31,36 +31,36 @@
 - 包含内容理解、匹配、召回、排序、 多任务、重排序等多个任务的完整推荐搜索算法库
 
 
-    |   方向   |                                   模型                                    | 单机CPU训练 | 单机GPU训练 | 分布式CPU训练 |
-    | :------: | :-----------------------------------------------------------------------: | :---------: | :---------: | :-----------: |
-    | 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |      ✓      |      x      |       ✓       |
-    | 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |      ✓      |      x      |       ✓       |
-    |   匹配   |                    [DSSM](models/match/dssm/model.py)                     |      ✓      |      x      |       ✓       |
-    |   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |      ✓      |      x      |       ✓       |
-    |   召回   |                   [TDM](models/treebased/tdm/model.py)                    |      ✓      |      x      |       ✓       |
-    |   召回   |                [fasttext](models/recall/fasttext/model.py)                |      ✓      |      x      |       x       |
-    |   召回   |                [Word2Vec](models/recall/word2vec/model.py)                |      ✓      |      x      |       ✓       |
-    |   召回   |                     [SSR](models/recall/ssr/model.py)                     |      ✓      |      ✓      |       ✓       |
-    |   召回   |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |      ✓      |      ✓      |       ✓       |
-    |   召回   |             [Youtube_dnn](models/recall/youtube_dnn/model.py)             |      ✓      |      ✓      |       ✓       |
-    |   召回   |                     [NCF](models/recall/ncf/model.py)                     |      ✓      |      ✓      |       ✓       |
-    |   排序   |      [Logistic Regression](models/rank/logistic_regression/model.py)      |      ✓      |      x      |       ✓       |
-    |   排序   |                      [Dnn](models/rank/dnn/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                       [FM](models/rank/fm/model.py)                       |      ✓      |      x      |       ✓       |
-    |   排序   |                      [FFM](models/rank/ffm/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                      [Pnn](models/rank/pnn/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                      [DCN](models/rank/dcn/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                      [NFM](models/rank/nfm/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                      [AFM](models/rank/afm/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                   [DeepFM](models/rank/deepfm/model.py)                   |      ✓      |      x      |       ✓       |
-    |   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |      ✓      |      x      |       ✓       |
-    |   排序   |                      [DIN](models/rank/din/model.py)                      |      ✓      |      x      |       ✓       |
-    |   排序   |                [Wide&Deep](models/rank/wide_deep/model.py)                |      ✓      |      x      |       ✓       |
-    |   排序   |                [FGCNN](models/rank/fgcnn/model.py)                |      ✓      |      x      |       ✓       |
-    |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |      ✓      |      ✓      |       ✓       |
-    |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |      ✓      |      ✓      |       ✓       |
-    |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |      ✓      |      ✓      |       ✓       |
-    |  重排序  |                [Listwise](models/rerank/listwise/model.py)                |      ✓      |      x      |       ✓       |
+    |   方向   |                                   模型                                    | 单机CPU | 单机GPU | 分布式CPU | 分布式GPU |                                                                 模型来源                                                                 |
+    | :------: | :-----------------------------------------------------------------------: | :-----: | :-----: | :-------: | :-------: | :--------------------------------------------------------------------------------------------------------------------------------------: |
+    | 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    | 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   匹配   |                    [DSSM](models/match/dssm/model.py)                     |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   召回   |                   [TDM](models/treebased/tdm/model.py)                    |    ✓    | >=1.8.0 |     ✓     |  >=1.8.0  | [[KDD 2018](https://www.kdd.org/kdd2018/)][Learning Tree-based Deep Model for Recommender Systems](https://arxiv.org/pdf/1801.02294.pdf) |
+    |   召回   |                [fasttext](models/recall/fasttext/model.py)                |    ✓    |    x    |     x     |     x     |                                                                    /                                                                     |
+    |   召回   |                [Word2Vec](models/recall/word2vec/model.py)                |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   召回   |                     [SSR](models/recall/ssr/model.py)                     |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |   召回   |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |   召回   |             [Youtube_dnn](models/recall/youtube_dnn/model.py)             |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |   召回   |                     [NCF](models/recall/ncf/model.py)                     |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |   排序   |      [Logistic Regression](models/rank/logistic_regression/model.py)      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                      [Dnn](models/rank/dnn/model.py)                      |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |   排序   |                       [FM](models/rank/fm/model.py)                       |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |   排序   |                      [FFM](models/rank/ffm/model.py)                      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                      [Pnn](models/rank/pnn/model.py)                      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                      [DCN](models/rank/dcn/model.py)                      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                      [NFM](models/rank/nfm/model.py)                      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                      [AFM](models/rank/afm/model.py)                      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                   [DeepFM](models/rank/deepfm/model.py)                   |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                      [DIN](models/rank/din/model.py)                      |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                [Wide&Deep](models/rank/wide_deep/model.py)                |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
+    |   排序   |                    [FGCNN](models/rank/fgcnn/model.py)                    |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |    ✓    |    ✓    |     ✓     |     ✓     |                                                                    /                                                                     |
+    |  重排序  |                [Listwise](models/rerank/listwise/model.py)                |    ✓    |    x    |     ✓     |     x     |                                                                    /                                                                     |
 
 
 

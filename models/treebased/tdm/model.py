@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -105,18 +105,34 @@ class Model(ModelBase):
         # sample_nodes 是采样的node_id的结果，包含正负样本
         # sample_label 是采样的node_id对应的正负标签
         # sample_mask 是为了保持tensor维度一致，padding部分的标签，若为0，则是padding的虚拟node_id
-        sample_nodes, sample_label, sample_mask = fluid.contrib.layers.tdm_sampler(
-            x=item_label,
-            neg_samples_num_list=self.neg_sampling_list,
-            layer_node_num_list=self.layer_node_num_list,
-            leaf_node_num=self.leaf_node_nums,
-            tree_travel_attr=fluid.ParamAttr(name="TDM_Tree_Travel"),
-            tree_layer_attr=fluid.ParamAttr(name="TDM_Tree_Layer"),
-            output_positive=self.output_positive,
-            output_list=True,
-            seed=0,
-            tree_dtype='int64',
-            dtype='int64')
+
+        if self.check_version():
+            with fluid.device_guard("cpu"):
+                sample_nodes, sample_label, sample_mask = fluid.contrib.layers.tdm_sampler(
+                    x=item_label,
+                    neg_samples_num_list=self.neg_sampling_list,
+                    layer_node_num_list=self.layer_node_num_list,
+                    leaf_node_num=self.leaf_node_nums,
+                    tree_travel_attr=fluid.ParamAttr(name="TDM_Tree_Travel"),
+                    tree_layer_attr=fluid.ParamAttr(name="TDM_Tree_Layer"),
+                    output_positive=self.output_positive,
+                    output_list=True,
+                    seed=0,
+                    tree_dtype='int64',
+                    dtype='int64')
+        else:
+            sample_nodes, sample_label, sample_mask = fluid.contrib.layers.tdm_sampler(
+                x=item_label,
+                neg_samples_num_list=self.neg_sampling_list,
+                layer_node_num_list=self.layer_node_num_list,
+                leaf_node_num=self.leaf_node_nums,
+                tree_travel_attr=fluid.ParamAttr(name="TDM_Tree_Travel"),
+                tree_layer_attr=fluid.ParamAttr(name="TDM_Tree_Layer"),
+                output_positive=self.output_positive,
+                output_list=True,
+                seed=0,
+                tree_dtype='int64',
+                dtype='int64')
 
         # 查表得到每个节点的Embedding
         sample_nodes_emb = [
@@ -479,3 +495,19 @@ class Model(ModelBase):
             bias_attr=fluid.ParamAttr(
                 name="cls.concat_fc.bias." + str(layer_idx)))
         return hidden_states_fc
+
+    def check_version(self):
+        """
+        Log error and exit when the installed version of paddlepaddle is
+        not satisfied.
+        """
+        err = "TDM-GPU need Paddle version 1.8 or higher is required, " \
+            "or a suitable develop version is satisfied as well. \n" \
+            "Please make sure the version is good with your code." \
+
+        try:
+            fluid.require_version('1.8.0')
+            return True
+        except Exception as e:
+            print(err)
+            return False
