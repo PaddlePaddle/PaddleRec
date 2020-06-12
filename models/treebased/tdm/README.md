@@ -2,6 +2,14 @@
 
 本代码仅作tdm组网示例，使用fake数据集，用于快速调研paddle-tdm。
 
+## 运行方法
+
+1. 运行单机流程，得到init_model
+2. 基于单机模型，可以进行分布式的参数服务器训练
+
+```shell
+python -m paddlerec.run -m paddlerec.models.treebased.tdm
+```
 
 ## 树结构的准备
 ### 名词概念

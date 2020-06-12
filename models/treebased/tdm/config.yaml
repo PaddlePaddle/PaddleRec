@@ -78,6 +78,7 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
+
 - name: runner2
   class: single_infer
   startup_class_path: "{workspace}/tdm_startup.py"
@@ -87,6 +88,7 @@ runner:
   device: cpu
   init_model_path: "increment/0" # load model path
   print_interval: 1
+  
 - name: runner3
   class: local_cluster_train
   startup_class_path: "{workspace}/tdm_startup.py"
