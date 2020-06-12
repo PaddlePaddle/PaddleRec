@@ -135,7 +135,7 @@ def get_engine(args, running_config, mode):
             print(
                 "not find selected_gpus be specified in yaml, set `0` as default"
             )
-            selected_gpus = ["0"]
+            selected_gpus = "0"
         else:
             print("selected_gpus {} will be specified for running".format(
                 selected_gpus))
