@@ -13,6 +13,7 @@ runner:
   device: cpu # 执行在 cpu 上
   init_model_path: "init_model" # 指定初始化模型的地址
   print_interval: 10 # 预测信息的打印间隔，以batch为单位
+  phases: phase_infer
 ```
 
 再定义具体的执行内容：

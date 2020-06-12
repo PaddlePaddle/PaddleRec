@@ -24,8 +24,7 @@ hyper_parameters:
 
 ```python
 if name == "SGD":
-    reg = envs.get_global_env("hyper_parameters.reg", 0.0001,
-                                self._namespace)
+    reg = envs.get_global_env("hyper_parameters.reg", 0.0001)
     optimizer_i = fluid.optimizer.SGD(
         lr, regularization=fluid.regularizer.L2DecayRegularizer(reg))
 elif name == "ADAM":

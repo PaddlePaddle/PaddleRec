@@ -17,7 +17,6 @@ import abc
 import os
 from functools import reduce
 import paddle.fluid.incubate.data_generator as dg
-import yaml
 from paddlerec.core.utils import envs
 
 
@@ -28,7 +27,6 @@ class ReaderBase(dg.MultiSlotDataGenerator):
         dg.MultiSlotDataGenerator.__init__(self)
         _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
-        envs.update_workspace()
 
     @abc.abstractmethod
     def init(self):
@@ -47,7 +45,6 @@ class SlotReader(dg.MultiSlotDataGenerator):
         dg.MultiSlotDataGenerator.__init__(self)
         _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
-        envs.update_workspace()
 
     def init(self, sparse_slots, dense_slots, padding=0):
         from operator import mul

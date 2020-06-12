@@ -126,7 +126,7 @@ class QueueDataset(DatasetBase):
             file_list = context["fleet"].split_files(file_list)
 
         dataset.set_filelist(file_list)
-        for model_dict in context["env"]["phase"]:
+        for model_dict in context["phases"]:
             if model_dict["dataset_name"] == dataset_name:
                 model = context["model"][model_dict["name"]]["model"]
                 thread_num = int(model_dict["thread_num"])

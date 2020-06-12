@@ -208,7 +208,7 @@ CTR-DNN训练及测试数据集选用[Display Advertising Challenge](https://www
 稀疏参数输入的定义:
 ```python
 def sparse_inputs():
-    ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None, self._namespace)
+    ids = envs.get_global_env("hyper_parameters.sparse_inputs_slots", None)
 
     sparse_input_ids = [
         fluid.layers.data(name="S" + str(i),
@@ -222,7 +222,7 @@ def sparse_inputs():
 稠密参数输入的定义：
 ```python
 def dense_input():
-    dim = envs.get_global_env("hyper_parameters.dense_input_dim", None, self._namespace)
+    dim = envs.get_global_env("hyper_parameters.dense_input_dim", None)
 
     dense_input_var = fluid.layers.data(name="D",
                                         shape=[dim],
