@@ -70,7 +70,8 @@ class RunnerBase(object):
                     dataset=reader,
                     fetch_list=fetch_vars,
                     fetch_info=fetch_alias,
-                    print_period=fetch_period)
+                    print_period=fetch_period,
+                    debug=envs.get_global_env("debug", False))
             else:
                 metrics = model_class.get_metrics()
                 if metrics:
@@ -82,7 +83,8 @@ class RunnerBase(object):
                         dataset=reader,
                         fetch_list=fetch_vars,
                         fetch_info=fetch_alias,
-                        print_period=fetch_period)
+                        print_period=fetch_period,
+                        debug=envs.get_global_env("debug", False))
 
     def _executor_dataloader_train(self, model_dict, context):
         model_name = model_dict["name"]
