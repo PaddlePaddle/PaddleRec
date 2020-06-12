@@ -40,9 +40,9 @@ class Reader(ReaderBase):
             src = conv_ids[:boundary]
             pos_tgt = [conv_ids[boundary]]
             feature_name = ["user", "all_item", "p_item"]
-            yield zip(
-                feature_name,
-                [src] + [np.arange(self.vocab_size).astype("int64").tolist()] +
-                [pos_tgt])
+            yield list(
+                zip(feature_name, [src] + [
+                    np.arange(self.vocab_size).astype("int64").tolist()
+                ] + [pos_tgt]))
 
         return reader

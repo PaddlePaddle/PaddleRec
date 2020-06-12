@@ -35,7 +35,7 @@ class Reader(ReaderBase):
             features = line.strip().split(',')
 
             feature_name = ["user_input", "item_input"]
-            yield zip(feature_name,
-                      [[int(features[0])]] + [[int(features[1])]])
+            yield list(
+                zip(feature_name, [[int(features[0])]] + [[int(features[1])]]))
 
         return reader
