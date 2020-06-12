@@ -115,11 +115,18 @@ class Startup(StartupBase):
                 res = var.name in special_param
                 return res
 
+            if context["fleet_mode"].upper() == "PS":
+                program = context["model"][model_dict["name"]]["main_program"]
+            elif context["fleet_mode"].upper() == "COLLECTIVE":
+                program = context["model"][model_dict["name"]][
+                    "default_main_program"]
+            else:
+                raise ValueError("TDM not support PSLIB")
+
             fluid.io.load_vars(
                 context["exe"],
                 dirname=warmup_model_path,
-                main_program=context["model"][model_dict["name"]][
-                    "main_program"],
+                main_program=program,
                 predicate=is_tdm_tree_var)
 
     """ --------  tree file load detail  --------- """
