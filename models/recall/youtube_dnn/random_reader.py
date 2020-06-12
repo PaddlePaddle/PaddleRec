@@ -41,10 +41,11 @@ class Reader(ReaderBase):
             """
 
             feature_name = ["watch_vec", "search_vec", "other_feat", "label"]
-            yield zip(feature_name,
-                      [np.random.rand(self.watch_vec_size).tolist()] +
-                      [np.random.rand(self.search_vec_size).tolist()] +
-                      [np.random.rand(self.other_feat_size).tolist()] +
-                      [[np.random.randint(self.output_size)]])
+            yield list(
+                zip(feature_name, [
+                    np.random.rand(self.watch_vec_size).tolist()
+                ] + [np.random.rand(self.search_vec_size).tolist()] + [
+                    np.random.rand(self.other_feat_size).tolist()
+                ] + [[np.random.randint(self.output_size)]]))
 
         return reader
