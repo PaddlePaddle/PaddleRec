@@ -89,7 +89,7 @@ runner:
   save_inference_fetch_varnames: [] # inference model 的fetch参数的名字
   init_model_path: "" # 如果是加载模型热启，则可以指定初始化模型的地址
   print_interval: 10 # 训练信息的打印间隔，以batch为单位
-  phases: phase_train # 若没有指定phases，则会默认运行所有phase
+  phases: [phase_train] # 若没有指定phases，则会默认运行所有phase
   # phase 也支持自定多个phase的执行，此处可以改为 phases: [phase_train, phase_infer]
 ```
 
