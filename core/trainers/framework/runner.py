@@ -40,6 +40,7 @@ class RunnerBase(object):
     def _run(self, context, model_dict):
         reader_name = model_dict["dataset_name"]
         name = "dataset." + reader_name + "."
+
         if envs.get_global_env(name + "type") == "DataLoader":
             self._executor_dataloader_train(model_dict, context)
         else:
@@ -156,7 +157,7 @@ class RunnerBase(object):
             gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
         else:
             raise ValueError(
-                "Unsurpported config. gradient_scale_strategy must be one of [0, 1, 2]."
+                "Unsupported config. gradient_scale_strategy must be one of [0, 1, 2]."
             )
         _build_strategy.gradient_scale_strategy = gradient_scale_strategy
 
@@ -285,7 +286,7 @@ class SingleRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         for epoch in range(epochs):
-            for model_dict in context["env"]["phase"]:
+            for model_dict in context["phases"]:
                 begin_time = time.time()
                 self._run(context, model_dict)
                 end_time = time.time()
@@ -384,7 +385,7 @@ class PslibRunner(RunnerBase):
                 day = begin_day + datetime.timedelta(days=day, hours=hour)
                 day_s = day.strftime('%Y%m%d/%H')
 
-                for dataset in context["env"]["dataset"]:
+                for dataset in envs.get_global_env("dataset"):
                     if dataset["type"] != "DataLoader":
                         name = dataset["name"]
                         train_data_path = envs.get_global_env(name +

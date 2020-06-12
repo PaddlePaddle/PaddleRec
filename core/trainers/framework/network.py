@@ -48,7 +48,7 @@ class SingleNetwork(NetworkBase):
 
     def build_network(self, context):
         context["model"] = {}
-        for model_dict in context["env"]["phase"]:
+        for model_dict in context["phases"]:
             context["model"][model_dict["name"]] = {}
             train_program = fluid.Program()
             startup_program = fluid.Program()
@@ -58,9 +58,8 @@ class SingleNetwork(NetworkBase):
             with fluid.program_guard(train_program, startup_program):
                 with fluid.unique_name.guard():
                     with fluid.scope_guard(scope):
-                        model_path = model_dict["model"].replace(
-                            "{workspace}",
-                            envs.path_adapter(context["env"]["workspace"]))
+                        model_path = envs.os_path_adapter(
+                            envs.workspace_adapter(model_dict["model"]))
                         model = envs.lazy_instance_by_fliename(
                             model_path, "Model")(context["env"])
 
@@ -98,7 +97,8 @@ class SingleNetwork(NetworkBase):
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
-            if dataset["type"] != "DataLoader":
+            type = envs.get_global_env("dataset." + dataset["name"] + ".type")
+            if type != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
@@ -123,8 +123,8 @@ class PSNetwork(NetworkBase):
         context["model"][model_dict["name"]] = {}
         dataset_name = model_dict["dataset_name"]
 
-        model_path = model_dict["model"].replace(
-            "{workspace}", envs.path_adapter(context["env"]["workspace"]))
+        model_path = envs.os_path_adapter(
+            envs.workspace_adapter(model_dict["model"]))
         model = envs.lazy_instance_by_fliename(model_path,
                                                "Model")(context["env"])
         model._data_var = model.input_data(
@@ -156,7 +156,9 @@ class PSNetwork(NetworkBase):
             context["fleet"].init_worker()
             context["dataset"] = {}
             for dataset in context["env"]["dataset"]:
-                if dataset["type"] != "DataLoader":
+                type = envs.get_global_env("dataset." + dataset["name"] +
+                                           ".type")
+                if type != "DataLoader":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
@@ -216,10 +218,8 @@ class PslibNetwork(NetworkBase):
             with fluid.unique_name.guard():
                 with fluid.scope_guard(scope):
                     context["model"][model_dict["name"]] = {}
-
-                    model_path = model_dict["model"].replace(
-                        "{workspace}",
-                        envs.path_adapter(context["env"]["workspace"]))
+                    model_path = envs.os_path_adapter(
+                        envs.workspace_adapter(model_dict["model"]))
                     model = envs.lazy_instance_by_fliename(
                         model_path, "Model")(context["env"])
                     model._data_var = model.input_data(
@@ -251,7 +251,9 @@ class PslibNetwork(NetworkBase):
         else:
             context["dataset"] = {}
             for dataset in context["env"]["dataset"]:
-                if dataset["type"] != "DataLoader":
+                type = envs.get_global_env("dataset." + dataset["name"] +
+                                           ".type")
+                if type != "DataLoader":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
@@ -284,9 +286,9 @@ class CollectiveNetwork(NetworkBase):
         scope = fluid.Scope()
         with fluid.program_guard(train_program, startup_program):
             with fluid.scope_guard(scope):
-                model_path = model_dict["model"].replace(
-                    "{workspace}",
-                    envs.path_adapter(context["env"]["workspace"]))
+                model_path = envs.os_path_adapter(
+                    envs.workspace_adapter(model_dict["model"]))
+
                 model = envs.lazy_instance_by_fliename(model_path,
                                                        "Model")(context["env"])
                 model._data_var = model.input_data(
@@ -315,7 +317,8 @@ class CollectiveNetwork(NetworkBase):
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
-            if dataset["type"] != "DataLoader":
+            type = envs.get_global_env("dataset." + dataset["name"] + ".type")
+            if type != "DataLoader":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
