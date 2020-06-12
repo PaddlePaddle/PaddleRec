@@ -138,9 +138,7 @@ class ModelBase(object):
             os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
 
         if name == "SGD":
-            reg = envs.get_global_env("hyper_parameters.reg", 0.0001)
-            optimizer_i = fluid.optimizer.SGD(
-                lr, regularization=fluid.regularizer.L2DecayRegularizer(reg))
+            optimizer_i = fluid.optimizer.SGD(lr)
         elif name == "ADAM":
             optimizer_i = fluid.optimizer.Adam(lr, lazy_mode=True)
         elif name == "ADAGRAD":
