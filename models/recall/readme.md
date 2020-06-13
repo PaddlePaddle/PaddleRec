@@ -17,13 +17,14 @@
 ### 召回模型列表
 
 |       模型        |       简介        |       论文        |
-| :------------------: | :--------------------: | :---------: |
-| Word2Vec | word2vector | [Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf)(2013) |
-| GRU4REC | SR-GRU | [Session-based Recommendations with Recurrent Neural Networks](https://arxiv.org/abs/1511.06939)(2015) |
-| Youtube_DNN | Youtube_DNN | [Deep Neural Networks for YouTube Recommendations](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/45530.pdf)(2016) |
-| SSR | Sequence Semantic Retrieval Model | [Multi-Rate Deep Learning for Temporal Recommendation](http://sonyis.me/paperpdf/spr209-song_sigir16.pdf)(2016) |
-| NCF | Neural Collaborative Filtering | [Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf)(2017) |
-| GNN | SR-GNN | [Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855)(2018) |
+| :------------------: | :--------------------: | :--------- |
+| Word2Vec | word2vector | [NIPS 2013][Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf) |
+| GRU4REC | SR-GRU | [2015][Session-based Recommendations with Recurrent Neural Networks](https://arxiv.org/abs/1511.06939) |
+| Youtube_DNN | Youtube_DNN | [RecSys 2016][Deep Neural Networks for YouTube Recommendations](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/45530.pdf) |
+| SSR | Sequence Semantic Retrieval Model | [SIGIR 2016][Multi-Rate Deep Learning for Temporal Recommendation](http://sonyis.me/paperpdf/spr209-song_sigir16.pdf) |
+| NCF | Neural Collaborative Filtering | [WWW 2017][Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf) |
+| GNN | SR-GNN | [AAAI 2019][Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855) |
+| Fasttext | fasttext | [EACL 2017][Bag of Tricks for Efficient Text Classification](https://www.aclweb.org/anthology/E17-2068.pdf)  |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 

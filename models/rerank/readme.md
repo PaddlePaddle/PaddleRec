@@ -15,7 +15,7 @@
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
-| Listwise | Listwise | [Sequential Evaluation and Generation Framework for Combinatorial Recommender System](https://arxiv.org/pdf/1902.00245.pdf)(2019) |
+| Listwise | Listwise | [2019][Sequential Evaluation and Generation Framework for Combinatorial Recommender System](https://arxiv.org/pdf/1902.00245.pdf) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 

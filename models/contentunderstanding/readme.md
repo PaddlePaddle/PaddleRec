@@ -22,8 +22,8 @@
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
-| TagSpace | 标签推荐 | [TagSpace: Semantic Embeddings from Hashtags (2014)](https://research.fb.com/publications/tagspace-semantic-embeddings-from-hashtags/) |
-| Classification | 文本分类 | [Convolutional neural networks for sentence classication (2014)](https://www.aclweb.org/anthology/D14-1181.pdf) |
+| TagSpace | 标签推荐 | [EMNLP 2014][TagSpace: Semantic Embeddings from Hashtags](https://research.fb.com/publications/tagspace-semantic-embeddings-from-hashtags/) |
+| Classification | 文本分类 | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
