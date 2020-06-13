@@ -31,7 +31,7 @@
 - 包含内容理解、匹配、召回、排序、 多任务、重排序等多个任务的完整推荐搜索算法库
 
 
-    |   方向   |                                   模型                                    | 单机CPU | 单机GPU | 分布式CPU | 分布式GPU | 模型来源                                                                                                                                                                                                    |
+    |   方向   |                                   模型                                    | 单机CPU | 单机GPU | 分布式CPU | 分布式GPU | 论文                                                                                                                                                                                                        |
     | :------: | :-----------------------------------------------------------------------: | :-----: | :-----: | :-------: | :-------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
     | 内容理解 | [Text-Classifcation](models/contentunderstanding/classification/model.py) |    ✓    |    x    |     ✓     |     x     | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf)                                                                                        |
     | 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |    ✓    |    x    |     ✓     |     x     | [EMNLP 2014][TagSpace: Semantic Embeddings from Hashtags](https://www.aclweb.org/anthology/D14-1194.pdf)                                                                                                    |
