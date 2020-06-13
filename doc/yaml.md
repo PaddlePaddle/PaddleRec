@@ -18,7 +18,7 @@
 |             class             |    string    | train(默认) / infer / local_cluster / cluster |    是    |           指定运行runner的类别（单机/分布式， 训练/预测）            |
 |            device             |    string    |                cpu(默认) / gpu                |    否    |                             程序执行设备                             |
 |          fleet_mode           |    string    |         ps(默认) / pslib / collective         |    否    |                            分布式运行模式                            |
-|        selsected_gpus         |    string    |                   "0"(默认)                   |    否    | 程序运行GPU卡号，若以"0,1"的方式指定多卡，则会默认启用collective模式 |
+|         selected_gpus         |    string    |                   "0"(默认)                   |    否    | 程序运行GPU卡号，若以"0,1"的方式指定多卡，则会默认启用collective模式 |
 |          worker_num           |     int      |                    1(默认)                    |    否    |                     参数服务器模式下worker的数量                     |
 |          server_num           |     int      |                    1(默认)                    |    否    |                     参数服务器模式下server的数量                     |
 |      distribute_strategy      |    string    |        async(默认)/sync/half_async/geo        |    否    |                    参数服务器模式下训练模式的选择                    |
