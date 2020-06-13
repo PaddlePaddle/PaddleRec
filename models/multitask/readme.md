@@ -19,10 +19,10 @@
 ### 多任务模型列表
 
 |       模型        |       简介        |       论文        |
-| :------------------: | :--------------------: | :---------: |
-| Share-Bottom | share-bottom | [Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)(1998) |
-| ESMM | Entire Space Multi-Task Model | [Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)(2018) |
-| MMoE | Multi-gate Mixture-of-Experts | [Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)(2018) |
+| :------------------: | :--------------------: | :--------- |
+| Share-Bottom | share-bottom | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf) |
+| ESMM | Entire Space Multi-Task Model | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931) |
+| MMOE | Multi-gate Mixture-of-Experts | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
