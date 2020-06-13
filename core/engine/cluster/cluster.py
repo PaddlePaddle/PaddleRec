@@ -48,6 +48,14 @@ class ClusterEngine(Engine):
         proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
         proc.wait()
 
+    @staticmethod
+    def workspace_replace():
+        workspace = envs.get_runtime_environ("engine_workspace")
+
+        for k, v in os.environ.items():
+            v = v.replace("{workspace}", workspace)
+            os.environ[k] = str(v)
+
     def run(self):
         role = envs.get_runtime_environ("engine_role")
 

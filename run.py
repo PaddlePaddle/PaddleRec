@@ -266,6 +266,7 @@ def cluster_engine(args):
         flattens["engine_run_config"] = args.model
         flattens["engine_temp_path"] = tempfile.mkdtemp()
         envs.set_runtime_environs(flattens)
+        ClusterEngine.workspace_replace()
         print(envs.pretty_print_envs(flattens, ("Submit Envs", "Value")))
 
         launch = ClusterEngine(None, args.model)
