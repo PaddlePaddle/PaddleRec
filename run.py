@@ -113,7 +113,7 @@ def get_engine(args, running_config, mode):
 
     engine_class = ".".join(["runner", mode, "class"])
     engine_device = ".".join(["runner", mode, "device"])
-    device_gpu_choices = ".".join(["runner", mode, "device", "selected_gpus"])
+    device_gpu_choices = ".".join(["runner", mode, "selected_gpus"])
 
     engine = running_config.get(engine_class, None)
     if engine is None:
@@ -135,7 +135,7 @@ def get_engine(args, running_config, mode):
             print(
                 "not find selected_gpus be specified in yaml, set `0` as default"
             )
-            selected_gpus = ["0"]
+            selected_gpus = "0"
         else:
             print("selected_gpus {} will be specified for running".format(
                 selected_gpus))
