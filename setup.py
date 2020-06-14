@@ -1,4 +1,5 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# coding=utf8
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +22,7 @@ from setuptools import setup, find_packages
 import shutil
 import tempfile
 
-requires = ["paddlepaddle == 1.7.2", "PyYAML >= 5.1.1"]
+requires = ["paddlepaddle >= 1.7.2", "PyYAML >= 5.1.1"]
 
 about = {}
 about["__title__"] = "paddle-rec"
@@ -97,10 +98,12 @@ shutil.rmtree(dirname)
 
 print('''
 \033[32m
-  _   _   _   _   _   _   _   _   _
- / \ / \ / \ / \ / \ / \ / \ / \ / \
-( P | A | D | D | L | E | - | R | E | C )
- \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
+██████╗  █████╗ ██████╗ ██████╗ ██╗     ███████╗██████╗ ███████╗ ██████╗
+██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝██╔════╝
+██████╔╝███████║██║  ██║██║  ██║██║     █████╗  ██████╔╝█████╗  ██║
+██╔═══╝ ██╔══██║██║  ██║██║  ██║██║     ██╔══╝  ██╔══██╗██╔══╝  ██║
+██║     ██║  ██║██████╔╝██████╔╝███████╗███████╗██║  ██║███████╗╚██████╗
+╚═╝     ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝ ╚═════╝
 \033[0m
 \033[34m
 Installation Complete. Congratulations!
