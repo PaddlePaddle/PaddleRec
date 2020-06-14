@@ -28,7 +28,7 @@ engines = {}
 device = ["CPU", "GPU"]
 engine_choices = [
     "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER",
-    "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
+    "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN", "CLUSTER"
 ]
 
 
@@ -263,6 +263,7 @@ def cluster_engine(args):
         _envs = envs.load_yaml(args.backend)
         flattens = envs.flatten_environs(_envs, "_")
         flattens["engine_role"] = "MASTER"
+        flattens["engine_mode"] = envs.get_runtime_environ("mode")
         flattens["engine_run_config"] = args.model
         flattens["engine_temp_path"] = tempfile.mkdtemp()
         envs.set_runtime_environs(flattens)
@@ -324,9 +325,9 @@ def cluster_engine(args):
         return trainer
 
     role = os.getenv("PADDLE_PADDLEREC_ROLE", "MASTER")
-    mode = os.getenv("PADDLE_PADDLEREC_MODE", None)
 
     if role == "WORKER":
+        mode = os.getenv("PADDLE_PADDLEREC_MODE", None)
         return worker(mode)
     else:
         return master()
