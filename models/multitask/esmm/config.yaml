@@ -24,7 +24,7 @@ dataset:
 - name: dataset_infer
   batch_size: 1
   type: QueueDataset
-  data_path: "{workspace}/data/train"
+  data_path: "{workspace}/data/test"
   data_converter: "{workspace}/esmm_reader.py"
 
 hyper_parameters:
