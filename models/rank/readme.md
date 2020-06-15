@@ -26,6 +26,8 @@
 | Logistic Regression | 逻辑回归 | -- |
 | FM | 因子分解机 | [Factorization Machine](https://ieeexplore.ieee.org/abstract/document/5694074)(2010) |
 | FFM | Field-Aware FM | [Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/pdf/10.1145/2959100.2959134)(2016) |
+| FNN | Factorisation-Machine Supported Neural Networks | [Deep Learning over Multi-field Categorical Data](https://arxiv.org/pdf/1601.02376.pdf)(2016) |
+| Deep Crossing | Deep Crossing | [Deep Crossing: Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf)(2016) |
 | PNN | Product Network | [Product-based Neural Networks for User Response Prediction](https://arxiv.org/pdf/1611.00144.pdf)(2016) |
 | wide&deep | Deep + wide(LR) | [Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)(2016) |
 | DeepFM | DeepFM | [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)(2017) |
