@@ -37,7 +37,6 @@ hyper_parameters:
 
 #use infer_runner mode and modify 'phase' below if infer
 mode: [train_runner, infer_runner]
-#mode: infer_runner
 
 runner:
 - name: train_runner
@@ -55,6 +54,7 @@ runner:
   init_model_path: "increment/0"
   device: cpu
   epochs: 1
+  print_interval: 1
   phases: [infer]
 
 phase:
