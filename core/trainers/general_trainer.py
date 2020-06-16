@@ -119,7 +119,7 @@ class GeneralTrainer(Trainer):
 
     def runner(self, context):
         runner_class_path = envs.get_global_env(
-            self.runner_env_name + ".runner_class_paht", default_value=None)
+            self.runner_env_name + ".runner_class_path", default_value=None)
         if runner_class_path:
             runner_class = envs.lazy_instance_by_fliename(runner_class_path,
                                                           "Runner")(context)
