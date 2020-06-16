@@ -345,7 +345,7 @@ def local_cluster_engine(args):
         _envs = envs.load_yaml(args.model)
         mode = envs.get_runtime_environ("mode")
         workspace = envs.get_runtime_environ("workspace")
-        phases_class = ".".join(["runner", mode, "trainer_class"])
+        phases_class = ".".join(["runner", mode, "phases"])
         phase_names = run_extras.get(phases_class)
         phases = []
         all_phases = _envs.get("phase")
