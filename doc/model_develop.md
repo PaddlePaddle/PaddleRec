@@ -136,7 +136,7 @@ mode: train_runner
 
 runner:
 - name: train_runner
-  class: single_train
+  class: train
   device: cpu
   epochs: 10
   save_checkpoint_interval: 2

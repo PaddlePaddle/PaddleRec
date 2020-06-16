@@ -26,10 +26,8 @@ from paddlerec.core.utils import validation
 
 engines = {}
 device = ["CPU", "GPU"]
-engine_choices = [
-    "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER",
-    "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
-]
+
+engine_choices = ["TRAIN", "INFER", "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"]
 
 
 def engine_registry():
@@ -37,16 +35,11 @@ def engine_registry():
     engines["PSLIB"] = {}
 
     engines["TRANSPILER"]["TRAIN"] = single_train_engine
-    engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
     engines["TRANSPILER"]["INFER"] = single_infer_engine
-    engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
-    engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
-    engines["PSLIB"]["SINGLE_TRAIN"] = local_mpi_engine
     engines["PSLIB"]["TRAIN"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER_TRAIN"] = local_mpi_engine
-    engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER_TRAIN"] = cluster_mpi_engine
     engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
 
@@ -142,7 +135,7 @@ def get_engine(args, running_config, mode):
 
         selected_gpus_num = len(selected_gpus.split(","))
         if selected_gpus_num > 1:
-            engine = "LOCAL_CLUSTER"
+            engine = "LOCAL_CLUSTER_TRAIN"
 
     if engine not in engine_choices:
         raise ValueError("{} can not be chosen in {}".format(engine_class,
@@ -219,7 +212,6 @@ def single_train_engine(args):
 
 
 def single_infer_engine(args):
-    _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["runner."])
 
     mode = envs.get_runtime_environ("mode")
@@ -260,48 +252,60 @@ def single_infer_engine(args):
 
 def cluster_engine(args):
     def master():
-        role = "MASTER"
         from paddlerec.core.engine.cluster.cluster import ClusterEngine
         _envs = envs.load_yaml(args.backend)
         flattens = envs.flatten_environs(_envs, "_")
-        flattens["engine_role"] = role
+        flattens["engine_role"] = "MASTER"
+        flattens["engine_mode"] = envs.get_runtime_environ("mode")
         flattens["engine_run_config"] = args.model
         flattens["engine_temp_path"] = tempfile.mkdtemp()
         envs.set_runtime_environs(flattens)
+        ClusterEngine.workspace_replace()
         print(envs.pretty_print_envs(flattens, ("Submit Envs", "Value")))
 
         launch = ClusterEngine(None, args.model)
         return launch
 
-    def worker():
-        role = "WORKER"
+    def worker(mode):
+        if not mode:
+            raise ValueError("mode: {} can not be recognized")
 
-        _envs = envs.load_yaml(args.model)
-        run_extras = get_all_inters_from_yaml(args.model,
-                                              ["train.", "runner."])
-        trainer_class = run_extras.get(
-            "runner." + _envs["mode"] + ".trainer_class", None)
+        run_extras = get_all_inters_from_yaml(args.model, ["runner."])
 
-        if trainer_class:
-            trainer = trainer_class
-        else:
-            trainer = "GeneralTrainer"
+        trainer_class = ".".join(["runner", mode, "trainer_class"])
+        fleet_class = ".".join(["runner", mode, "fleet_mode"])
+        device_class = ".".join(["runner", mode, "device"])
+        selected_gpus_class = ".".join(["runner", mode, "selected_gpus"])
+        strategy_class = ".".join(["runner", mode, "distribute_strategy"])
+        worker_class = ".".join(["runner", mode, "worker_num"])
+        server_class = ".".join(["runner", mode, "server_num"])
 
+        trainer = run_extras.get(trainer_class, "GeneralTrainer")
+        fleet_mode = run_extras.get(fleet_class, "ps")
+        device = run_extras.get(device_class, "cpu")
+        selected_gpus = run_extras.get(selected_gpus_class, "0")
+        distributed_strategy = run_extras.get(strategy_class, "async")
+        worker_num = run_extras.get(worker_class, 1)
+        server_num = run_extras.get(server_class, 1)
         executor_mode = "train"
 
-        distributed_strategy = run_extras.get(
-            "runner." + _envs["mode"] + ".distribute_strategy", "async")
-        selected_gpus = run_extras.get(
-            "runner." + _envs["mode"] + ".selected_gpus", "0")
-        fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
-                                    "ps")
+        device = device.upper()
+        fleet_mode = fleet_mode.upper()
+
+        if fleet_mode == "COLLECTIVE" and device != "GPU":
+            raise ValueError("COLLECTIVE can not be used with GPU")
 
         cluster_envs = {}
-        cluster_envs["selected_gpus"] = selected_gpus
+
+        if device == "GPU":
+            cluster_envs["selected_gpus"] = selected_gpus
+
+        cluster_envs["server_num"] = server_num
+        cluster_envs["worker_num"] = worker_num
         cluster_envs["fleet_mode"] = fleet_mode
         cluster_envs["train.trainer.trainer"] = trainer
-        cluster_envs["train.trainer.executor_mode"] = executor_mode
         cluster_envs["train.trainer.engine"] = "cluster"
+        cluster_envs["train.trainer.executor_mode"] = executor_mode
         cluster_envs["train.trainer.strategy"] = distributed_strategy
         cluster_envs["train.trainer.threads"] = envs.get_runtime_environ(
             "CPU_NUM")
@@ -316,7 +320,8 @@ def cluster_engine(args):
     role = os.getenv("PADDLE_PADDLEREC_ROLE", "MASTER")
 
     if role == "WORKER":
-        return worker()
+        mode = os.getenv("PADDLE_PADDLEREC_MODE", None)
+        return worker(mode)
     else:
         return master()
 
@@ -336,39 +341,83 @@ def cluster_mpi_engine(args):
 
 
 def local_cluster_engine(args):
+    def get_worker_num(run_extras, workers):
+        _envs = envs.load_yaml(args.model)
+        mode = envs.get_runtime_environ("mode")
+        workspace = envs.get_runtime_environ("workspace")
+        phases_class = ".".join(["runner", mode, "phases"])
+        phase_names = run_extras.get(phases_class)
+        phases = []
+        all_phases = _envs.get("phase")
+        if phase_names is None:
+            phases = all_phases
+        else:
+            for phase in all_phases:
+                if phase["name"] in phase_names:
+                    phases.append(phase)
+
+        dataset_names = []
+        for phase in phases:
+            dataset_names.append(phase["dataset_name"])
+
+        datapaths = []
+        for dataset in _envs.get("dataset"):
+            if dataset["name"] in dataset_names:
+                datapaths.append(dataset["data_path"])
+
+        if not datapaths:
+            raise ValueError("data path must exist for training/inference")
+
+        datapaths = [
+            envs.workspace_adapter_by_specific(path, workspace)
+            for path in datapaths
+        ]
+        all_workers = [len(os.listdir(path)) for path in datapaths]
+        all_workers.append(workers)
+        return min(all_workers)
+
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
-    _envs = envs.load_yaml(args.model)
-    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
-                                   None)
+    run_extras = get_all_inters_from_yaml(args.model, ["runner."])
+    mode = envs.get_runtime_environ("mode")
+    trainer_class = ".".join(["runner", mode, "trainer_class"])
+    fleet_class = ".".join(["runner", mode, "fleet_mode"])
+    device_class = ".".join(["runner", mode, "device"])
+    selected_gpus_class = ".".join(["runner", mode, "selected_gpus"])
+    strategy_class = ".".join(["runner", mode, "distribute_strategy"])
+    worker_class = ".".join(["runner", mode, "worker_num"])
+    server_class = ".".join(["runner", mode, "server_num"])
 
-    if trainer_class:
-        trainer = trainer_class
-    else:
-        trainer = "GeneralTrainer"
-
+    trainer = run_extras.get(trainer_class, "GeneralTrainer")
+    fleet_mode = run_extras.get(fleet_class, "ps")
+    device = run_extras.get(device_class, "cpu")
+    selected_gpus = run_extras.get(selected_gpus_class, "0")
+    distributed_strategy = run_extras.get(strategy_class, "async")
     executor_mode = "train"
-    distributed_strategy = run_extras.get(
-        "runner." + _envs["mode"] + ".distribute_strategy", "async")
 
-    worker_num = run_extras.get("runner." + _envs["mode"] + ".worker_num", 1)
-    server_num = run_extras.get("runner." + _envs["mode"] + ".server_num", 1)
-    selected_gpus = run_extras.get(
-        "runner." + _envs["mode"] + ".selected_gpus", "0")
+    worker_num = run_extras.get(worker_class, 1)
+    server_num = run_extras.get(server_class, 1)
+    max_worker_num = get_worker_num(run_extras, worker_num)
 
-    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode", "")
-    if fleet_mode == "":
-        device = run_extras.get("runner." + _envs["mode"] + ".device", "cpu")
-        if len(selected_gpus.split(",")) > 1 and device.upper() == "GPU":
-            fleet_mode = "COLLECTIVE"
-        else:
-            fleet_mode = "PS"
+    if max_worker_num < worker_num:
+        print(
+            "has phase do not have enough datas for training, set worker num from {} to {}".
+            format(worker_num, max_worker_num))
+        worker_num = max_worker_num
+
+    device = device.upper()
+    fleet_mode = fleet_mode.upper()
+
+    if fleet_mode == "COLLECTIVE" and device != "GPU":
+        raise ValueError("COLLECTIVE can not be used with GPU")
 
     cluster_envs = {}
+
+    if device == "GPU":
+        cluster_envs["selected_gpus"] = selected_gpus
+
     cluster_envs["server_num"] = server_num
     cluster_envs["worker_num"] = worker_num
-    cluster_envs["selected_gpus"] = selected_gpus
     cluster_envs["start_port"] = envs.find_free_port()
     cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["log_dir"] = "logs"
@@ -376,10 +425,10 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
+    cluster_envs["CPU_NUM"] = cluster_envs["train.trainer.threads"]
     cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
-    cluster_envs["CPU_NUM"] = "2"
     print("launch {} engine with cluster to run model: {}".format(trainer,
                                                                   args.model))
 
@@ -400,20 +449,16 @@ def local_mpi_engine(args):
     if not mpi:
         raise RuntimeError("can not find mpirun, please check environment")
 
-    _envs = envs.load_yaml(args.model)
-    run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
-    trainer_class = run_extras.get("runner." + _envs["mode"] + ".runner_class",
-                                   None)
-    executor_mode = "train"
-    distributed_strategy = run_extras.get(
-        "runner." + _envs["mode"] + ".distribute_strategy", "async")
-    fleet_mode = run_extras.get("runner." + _envs["mode"] + ".fleet_mode",
-                                "ps")
+    run_extras = get_all_inters_from_yaml(args.model, ["runner."])
 
-    if trainer_class:
-        trainer = trainer_class
-    else:
-        trainer = "GeneralTrainer"
+    mode = envs.get_runtime_environ("mode")
+    trainer_class = ".".join(["runner", mode, "trainer_class"])
+    fleet_class = ".".join(["runner", mode, "fleet_mode"])
+    distributed_strategy = "async"
+    executor_mode = "train"
+
+    trainer = run_extras.get(trainer_class, "GeneralTrainer")
+    fleet_mode = run_extras.get(fleet_class, "ps")
 
     cluster_envs = {}
     cluster_envs["mpirun"] = mpi
@@ -424,7 +469,6 @@ def local_mpi_engine(args):
     cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
-    cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
@@ -458,11 +502,15 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     engine_registry()
-    running_config = get_all_inters_from_yaml(args.model, ["mode", "runner."])
+    running_config = get_all_inters_from_yaml(
+        args.model, ["workspace", "mode", "runner."])
     modes = get_modes(running_config)
 
     for mode in modes:
-        envs.set_runtime_environs({"mode": mode})
+        envs.set_runtime_environs({
+            "mode": mode,
+            "workspace": running_config["workspace"]
+        })
         which_engine = get_engine(args, running_config, mode)
         engine = which_engine(args)
         engine.run()
