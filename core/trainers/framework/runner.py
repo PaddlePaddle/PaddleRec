@@ -133,6 +133,7 @@ class RunnerBase(object):
                 reader.reset()
 
     def _get_dataloader_program(self, model_dict, context):
+        model_name = model_dict["name"]
         if context["model"][model_name]["exe_program"] == None:
             if context["is_infer"]:
                 program = context["model"][model_name]["main_program"]
