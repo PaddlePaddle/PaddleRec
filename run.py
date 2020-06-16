@@ -368,7 +368,7 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
-    cluster_envs["train.trainer.engine"] = "local_cluster_train"
+    cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     cluster_envs["CPU_NUM"] = "2"
@@ -411,12 +411,11 @@ def local_mpi_engine(args):
     cluster_envs["mpirun"] = mpi
     cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["log_dir"] = "logs"
-    cluster_envs["train.trainer.engine"] = "local_cluster_train"
+    cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
-    cluster_envs["train.trainer.engine"] = "local_cluster_train"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)
