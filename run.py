@@ -17,6 +17,7 @@ import subprocess
 import sys
 import argparse
 import tempfile
+import warnings
 
 import copy
 from paddlerec.core.factory import TrainerFactory
@@ -227,6 +228,14 @@ def single_infer_engine(args):
     fleet_class = ".".join(["runner", mode, "fleet_mode"])
     device_class = ".".join(["runner", mode, "device"])
     selected_gpus_class = ".".join(["runner", mode, "selected_gpus"])
+
+    epochs_class = ".".join(["runner", mode, "epochs"])
+    epochs = run_extras.get(epochs_class, 1)
+    if epochs > 1:
+        warnings.warn(
+            "It makes no sense to predict the same model for multiple epochs",
+            category=UserWarning,
+            stacklevel=2)
 
     trainer = run_extras.get(trainer_class, "GeneralTrainer")
     fleet_mode = run_extras.get(fleet_class, "ps")

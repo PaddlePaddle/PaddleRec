@@ -94,6 +94,7 @@ class SingleNetwork(NetworkBase):
             context["model"][model_dict["name"]]["model"] = model
             context["model"][model_dict["name"]][
                 "default_main_program"] = train_program.clone()
+            context["model"][model_dict["name"]]["exe_program"] = None
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
@@ -149,6 +150,7 @@ class PSNetwork(NetworkBase):
         context["model"][model_dict["name"]]["model"] = model
         context["model"][model_dict["name"]]["default_main_program"] = context[
             "fleet"].main_program.clone()
+        context["model"][model_dict["name"]]["exe_program"] = None
 
         if context["fleet"].is_server():
             self._server(context)
@@ -245,6 +247,7 @@ class PslibNetwork(NetworkBase):
                     context["model"][model_dict["name"]]["model"] = model
                     context["model"][model_dict["name"]][
                         "default_main_program"] = train_program.clone()
+                    context["model"][model_dict["name"]]["exe_program"] = None
 
         if context["fleet"].is_server():
             self._server(context)
@@ -314,6 +317,7 @@ class CollectiveNetwork(NetworkBase):
                 context["model"][model_dict["name"]]["model"] = model
                 context["model"][model_dict["name"]][
                     "default_main_program"] = train_program
+                context["model"][model_dict["name"]]["exe_program"] = None
 
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
