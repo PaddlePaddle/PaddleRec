@@ -133,7 +133,9 @@ class RunnerBase(object):
             try:
                 while True:
                     metrics_rets = context["exe"].run(
-                        program=program, fetch_list=metrics_varnames)
+                        program=program,
+                        fetch_list=metrics_varnames,
+                        return_numpy=False)
                     metrics = [batch_id]
                     metrics.extend(metrics_rets)
 
