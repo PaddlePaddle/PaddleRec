@@ -418,7 +418,9 @@ def local_cluster_engine(args):
     fleet_mode = fleet_mode.upper()
 
     if fleet_mode == "COLLECTIVE" and device != "GPU":
-        raise ValueError("COLLECTIVE can not be used with GPU")
+        raise ValueError("COLLECTIVE can not be used without GPU")
+    if fleet_mode == "PS" and device != "CPU":
+        raise ValueError("PS can not be used with GPU")
 
     cluster_envs = {}
 

@@ -102,7 +102,7 @@ class GeneralTrainer(Trainer):
                                                            "Startup")(context)
         else:
             if self.engine == EngineMode.SINGLE and context["is_infer"]:
-                runner_class_name = "SingleInferStartup"
+                startup_class_name = "SingleInferStartup"
             elif self.engine == EngineMode.SINGLE and not context["is_infer"]:
                 startup_class_name = "SingleStartup"
             elif self.fleet_mode == FleetMode.PS or self.fleet_mode == FleetMode.PSLIB:
