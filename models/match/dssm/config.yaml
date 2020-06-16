@@ -42,7 +42,7 @@ mode: train_runner
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: train_runner
-  class: single_train
+  class: train
   # num of epochs
   epochs: 4
   # device to run training or infer

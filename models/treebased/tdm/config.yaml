@@ -64,7 +64,7 @@ mode: runner1
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: runner1
-  class: single_train
+  class: train
   startup_class_path: "{workspace}/tdm_startup.py"
   # num of epochs
   epochs: 10
