@@ -372,9 +372,19 @@ def local_cluster_engine(args):
             envs.workspace_adapter_by_specific(path, workspace)
             for path in datapaths
         ]
+
         all_workers = [len(os.listdir(path)) for path in datapaths]
         all_workers.append(workers)
-        return min(all_workers)
+        max_worker_num = min(all_workers)
+
+        if max_worker_num >= workers:
+            return workers
+
+        print(
+            "phases do not have enough datas for training, set worker/gpu cards num from {} to {}".
+            format(workers, max_worker_num))
+
+        return max_worker_num
 
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
@@ -397,24 +407,23 @@ def local_cluster_engine(args):
 
     worker_num = run_extras.get(worker_class, 1)
     server_num = run_extras.get(server_class, 1)
-    max_worker_num = get_worker_num(run_extras, worker_num)
-
-    if max_worker_num < worker_num:
-        print(
-            "has phase do not have enough datas for training, set worker num from {} to {}".
-            format(worker_num, max_worker_num))
-        worker_num = max_worker_num
 
     device = device.upper()
     fleet_mode = fleet_mode.upper()
 
+    cluster_envs = {}
+
     if fleet_mode == "COLLECTIVE" and device != "GPU":
         raise ValueError("COLLECTIVE can not be used with GPU")
 
-    cluster_envs = {}
+    if fleet_mode == "PS":
+        worker_num = get_worker_num(run_extras, worker_num)
 
-    if device == "GPU":
+    if fleet_mode == "COLLECTIVE":
         cluster_envs["selected_gpus"] = selected_gpus
+        gpus = selected_gpus.split(",")
+        gpu_num = get_worker_num(run_extras, len(gpus))
+        cluster_envs["selected_gpus"] = ','.join(gpus[:gpu_num])
 
     cluster_envs["server_num"] = server_num
     cluster_envs["worker_num"] = worker_num
