@@ -434,7 +434,7 @@ class SingleInferRunner(RunnerBase):
         pass
 
     def run(self, context):
-        self._dir_check()
+        self._dir_check(context)
 
         for index, epoch_name in enumerate(self.epoch_model_name_list):
             for model_dict in context["phases"]:
