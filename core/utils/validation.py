@@ -65,6 +65,13 @@ class ValueFormat:
                     return False
             return True
 
+        elif self.value_type == "dict":
+            if not isinstance(value, dict):
+                print("\nattr {} should be str, but {} now\n".format(
+                    name, type(value)))
+                return False
+            return True
+
         elif self.value_type == "dicts":
             if not isinstance(value, list):
                 print("\nattr {} should be list(dist), but {} now\n".format(
