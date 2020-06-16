@@ -31,7 +31,7 @@ class LocalClusterEngine(Engine):
         server_num = self.envs["server_num"]
         ports = [self.envs["start_port"]]
         logs_dir = self.envs["log_dir"]
-        selected_gpus = self.envs["selected_gpus"].split(",")
+
         default_env = os.environ.copy()
         current_env = copy.copy(default_env)
         current_env["CLUSTER_INSTANCE"] = "1"
@@ -115,7 +115,7 @@ class LocalClusterEngine(Engine):
                 format(logs_dir),
                 file=sys.stderr)
         elif fleet_mode.upper() == "COLLECTIVE":
-
+            selected_gpus = self.envs["selected_gpus"].split(",")
             selected_gpus_num = len(selected_gpus)
 
             for i in range(selected_gpus_num - 1):
