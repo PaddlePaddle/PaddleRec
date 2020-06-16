@@ -36,12 +36,11 @@ hyper_parameters:
     strategy: async
 
 #use infer_runner mode and modify 'phase' below if infer
-mode: train_runner
-#mode: infer_runner
+mode: [train_runner, infer_runner]
 
 runner:
 - name: train_runner
-  class: single_train
+  class: train
   device: cpu
   epochs: 3
   save_checkpoint_interval: 2
@@ -49,17 +48,20 @@ runner:
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
   print_interval: 10
+  phases: [train]
 - name: infer_runner
-  class: single_infer
+  class: infer
   init_model_path: "increment/0"
   device: cpu
-  epochs: 3
+  epochs: 1
+  print_interval: 1
+  phases: [infer]
 
 phase:
-# - name: train
-#   model: "{workspace}/model.py"
-#   dataset_name: dataset_train
-#   thread_num: 1
+- name: train
+  model: "{workspace}/model.py"
+  dataset_name: dataset_train
+  thread_num: 1
 - name: infer
   model: "{workspace}/model.py"
   dataset_name: dataset_infer
