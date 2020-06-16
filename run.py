@@ -26,10 +26,7 @@ from paddlerec.core.utils import validation
 
 engines = {}
 device = ["CPU", "GPU"]
-engine_choices = [
-    "TRAIN", "SINGLE_TRAIN", "INFER", "SINGLE_INFER", "LOCAL_CLUSTER",
-    "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"
-]
+engine_choices = ["TRAIN", "INFER", "LOCAL_CLUSTER_TRAIN", "CLUSTER_TRAIN"]
 
 
 def engine_registry():
@@ -37,16 +34,11 @@ def engine_registry():
     engines["PSLIB"] = {}
 
     engines["TRANSPILER"]["TRAIN"] = single_train_engine
-    engines["TRANSPILER"]["SINGLE_TRAIN"] = single_train_engine
     engines["TRANSPILER"]["INFER"] = single_infer_engine
-    engines["TRANSPILER"]["SINGLE_INFER"] = single_infer_engine
-    engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
-    engines["PSLIB"]["SINGLE_TRAIN"] = local_mpi_engine
     engines["PSLIB"]["TRAIN"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER_TRAIN"] = local_mpi_engine
-    engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER_TRAIN"] = cluster_mpi_engine
     engines["PSLIB"]["CLUSTER"] = cluster_mpi_engine
 
@@ -142,7 +134,7 @@ def get_engine(args, running_config, mode):
 
         selected_gpus_num = len(selected_gpus.split(","))
         if selected_gpus_num > 1:
-            engine = "LOCAL_CLUSTER"
+            engine = "LOCAL_CLUSTER_TRAIN"
 
     if engine not in engine_choices:
         raise ValueError("{} can not be chosen in {}".format(engine_class,
@@ -376,7 +368,7 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
-    cluster_envs["train.trainer.engine"] = "local_cluster"
+    cluster_envs["train.trainer.engine"] = "local_cluster_train"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     cluster_envs["CPU_NUM"] = "2"
@@ -419,12 +411,12 @@ def local_mpi_engine(args):
     cluster_envs["mpirun"] = mpi
     cluster_envs["train.trainer.trainer"] = trainer
     cluster_envs["log_dir"] = "logs"
-    cluster_envs["train.trainer.engine"] = "local_cluster"
+    cluster_envs["train.trainer.engine"] = "local_cluster_train"
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["fleet_mode"] = fleet_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
-    cluster_envs["train.trainer.engine"] = "local_cluster"
+    cluster_envs["train.trainer.engine"] = "local_cluster_train"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
     set_runtime_envs(cluster_envs, args.model)

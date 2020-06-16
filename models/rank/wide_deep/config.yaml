@@ -45,7 +45,7 @@ mode: train_runner
 
 runner:
   - name: train_runner
-    class: single_train
+    class: train
     epochs: 1
     device: cpu
     init_model_path: ""
