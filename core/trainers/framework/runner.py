@@ -134,7 +134,7 @@ class RunnerBase(object):
 
     def _get_dataloader_program(self, model_dict, context):
         model_name = model_dict["name"]
-        if context["model"][model_name]["compile_program"] == None:
+        if context["model"][model_name]["compiled_program"] == None:
             if context["is_infer"]:
                 program = context["model"][model_name]["main_program"]
             elif context["is_fleet"]:
@@ -147,8 +147,8 @@ class RunnerBase(object):
                     program = self._get_single_cpu_program(model_dict, context)
                 elif context["device"].upper() == "GPU":
                     program = self._get_single_gpu_program(model_dict, context)
-            context["model"][model_name]["compile_program"] = program
-        return context["model"][model_name]["compile_program"]
+            context["model"][model_name]["compiled_program"] = program
+        return context["model"][model_name]["compiled_program"]
 
     def _get_strategy(self, model_dict, context):
         _build_strategy = fluid.BuildStrategy()
