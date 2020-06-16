@@ -134,6 +134,10 @@ def os_path_adapter(value):
 
 def workspace_adapter(value):
     workspace = global_envs.get("workspace")
+    return workspace_adapter_by_specific(value, workspace)
+
+
+def workspace_adapter_by_specific(value, workspace):
     workspace = paddlerec_adapter(workspace)
     value = value.replace("{workspace}", workspace)
     return value

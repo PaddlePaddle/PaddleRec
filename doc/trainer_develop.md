@@ -137,7 +137,7 @@ class TerminalBase(object):
 ```yaml
 runner:
   - name: train_runner
-    class: single_train
+    class: train
     epochs: 2
     device: cpu
     instance_class_path: "{workspace}/your_instance.py"
@@ -174,7 +174,7 @@ class Startup(StartupBase):
 ```yaml
 runner:
 - name: runner1
-  class: single_train
+  class: train
   startup_class_path: "{workspace}/tdm_startup.py"
   epochs: 10
   device: cpu

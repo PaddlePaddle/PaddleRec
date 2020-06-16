@@ -1,0 +1,191 @@
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: <$ JOB_NAME $>
+spec:
+  minAvailable: <$ TOTAL_POD_NUM $>
+  schedulerName: volcano
+  policies:
+  - event: PodEvicted
+    action: RestartJob
+  - event: PodFailed
+    action: RestartJob
+  tasks:
+    - replicas: <$ PSERVER_NUM $>
+      name: pserver
+      template:
+        metadata:
+          labels:
+            paddle-job-pserver: paddle-rec
+        spec:
+          imagePullSecrets:
+            - name: default-secret
+          containers:
+            - image: <$ IMAGE $>
+              command:
+                - '/bin/bash'
+              args:
+              - "-c"
+              - |
+                set -ex
+                sh /usr/paddlerec/set_k8s_env.sh start_fluid
+              imagePullPolicy: Always
+              volumeMounts:
+                - name: model-config
+                  mountPath: "/usr/paddlerec"
+              name: pserver
+              resources:
+                limits:
+                  cpu: <$ CPU_NUM $>
+                  memory: <$ MEMORY $>
+                  ephemeral-storage: <$ STORAGE $>
+                requests:
+                  cpu: 1
+                  memory: 1Gi
+                  ephemeral-storage: 1Gi
+              env:
+                - name: GLOG_v
+                  value: "<$ GLOG_V $>"
+                - name: GLOG_logtostderr
+                  value: "1"
+                - name: TOPOLOGY
+                  value: ""
+                - name: TRAINER_PACKAGE
+                  value: /root/paddlejob
+                - name: PADDLE_INIT_NICS
+                  value: eth2
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: POD_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.podIP
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.name
+                - name: PADDLE_CURRENT_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.podIP
+                - name: PADDLE_JOB_NAME
+                  value: paddle-rec
+                - name: PADDLE_IS_LOCAL
+                  value: "0"
+                - name: PADDLE_TRAINERS_NUM
+                  value: "<$ TRAINER_NUM $>"
+                - name: PADDLE_PSERVERS_NUM
+                  value: "<$ PSERVER_NUM $>"
+                - name: FLAGS_rpc_deadline
+                  value: "100000"
+                - name: ENTRY
+                  value: python -m paddlerec.run -m /usr/paddlerec/config.yaml -r WORKER
+                - name: PADDLE_PORT
+                  value: "30240"
+                - name: PADDLE_TRAINING_ROLE
+                  value: PSERVER
+                - name: TRAINING_ROLE
+                  value: PSERVER
+          volumes:
+            - name: model-config
+              configMap:
+                name: modelconfig
+                defaultMode: 0777
+          restartPolicy: OnFailure
+
+    - replicas: <$ TRAINER_NUM $>
+      policies:
+      - event: TaskCompleted
+        action: CompleteJob
+      name: trainer
+      template:
+        metadata:
+          labels:
+            paddle-job: paddle-rec
+        spec:
+          imagePullSecrets:
+            - name: default-secret
+          containers:
+            - image: <$ IMAGE $>
+              command:
+                - '/bin/bash'
+              args:
+              - "-c"
+              - |
+                set -ex
+                sh /usr/paddlerec/set_k8s_env.sh start_fluid
+              imagePullPolicy: Always
+              volumeMounts:
+                - name: model-config
+                  mountPath: "/usr/paddlerec"
+              name: trainer
+              resources:
+                limits:
+                  cpu: <$ CPU_NUM $>
+                  memory: <$ MEMORY $>
+                  ephemeral-storage: <$ STORAGE $>
+                requests:
+                  cpu: 1
+                  memory: 1Gi
+                  ephemeral-storage: 1Gi
+              env:
+                - name: GLOG_v
+                  value: "<$ GLOG_V $>"
+                - name: GLOG_logtostderr
+                  value: "1"
+                - name: TRAINER_PACKAGE
+                  value: /root/paddlejob
+                - name: PADDLE_INIT_NICS
+                  value: eth2
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: POD_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.podIP
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.name
+                - name: PADDLE_CURRENT_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.podIP
+                - name: PADDLE_JOB_NAME
+                  value: paddle-rec
+                - name: PADDLE_IS_LOCAL
+                  value: "0"
+                - name: FLAGS_rpc_deadline
+                  value: "3600"
+                - name: PADDLE_PORT
+                  value: "30240"
+                - name: PADDLE_PSERVERS_NUM
+                  value: "<$ PSERVER_NUM $>"
+                - name: PADDLE_TRAINERS_NUM
+                  value: "<$ TRAINER_NUM $>"
+                - name: PADDLE_TRAINING_ROLE
+                  value: TRAINER
+                - name: TRAINING_ROLE
+                  value: TRAINER
+                - name: ENTRY
+                  value: python -m paddlerec.run -m /usr/paddlerec/config.yaml -r WORKER
+          volumes:
+            - name: model-config
+              configMap:
+                name: modelconfig
+                defaultMode: 0777
+          restartPolicy: OnFailure
+
+
