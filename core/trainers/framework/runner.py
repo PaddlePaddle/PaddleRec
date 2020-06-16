@@ -431,6 +431,7 @@ class PslibRunner(RunnerBase):
 
 class SingleInferRunner(RunnerBase):
     def __init__(self, context):
+        print("Running SingleInferRunner.")
         pass
 
     def run(self, context):
@@ -441,7 +442,6 @@ class SingleInferRunner(RunnerBase):
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
                 begin_time = time.time()
-                self._load(context)
                 self._run(context, model_dict)
                 end_time = time.time()
                 seconds = end_time - begin_time
@@ -450,7 +450,7 @@ class SingleInferRunner(RunnerBase):
         context["status"] = "terminal_pass"
 
     def _load(self, context, model_dict, model_path):
-        if model_path is None or dirname == "":
+        if model_path is None or model_path == "":
             return
         print("going to load ", model_path)
 
@@ -460,7 +460,7 @@ class SingleInferRunner(RunnerBase):
                 "startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
                 fluid.io.load_persistables(
-                    context["exe"], model_path, main_program=main_program)
+                    context["exe"], model_path, main_program=train_prog)
 
     def _dir_check(self, context):
         dirname = envs.get_global_env(
