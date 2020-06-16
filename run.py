@@ -341,6 +341,41 @@ def cluster_mpi_engine(args):
 
 
 def local_cluster_engine(args):
+    def get_worker_num(run_extras, workers):
+        _envs = envs.load_yaml(args.model)
+        mode = envs.get_runtime_environ("mode")
+        workspace = envs.get_runtime_environ("workspace")
+        phases_class = ".".join(["runner", mode, "trainer_class"])
+        phase_names = run_extras.get(phases_class)
+        phases = []
+        all_phases = _envs.get("phase")
+        if phase_names is None:
+            phases = all_phases
+        else:
+            for phase in all_phases:
+                if phase["name"] in phase_names:
+                    phases.append(phase)
+
+        dataset_names = []
+        for phase in phases:
+            dataset_names.append(phase["dataset_name"])
+
+        datapaths = []
+        for dataset in _envs.get("dataset"):
+            if dataset["name"] in dataset_names:
+                datapaths.append(dataset["data_path"])
+
+        if not datapaths:
+            raise ValueError("data path must exist for training/inference")
+
+        datapaths = [
+            envs.workspace_adapter_by_specific(path, workspace)
+            for path in datapaths
+        ]
+        all_workers = [len(os.listdir(path)) for path in datapaths]
+        all_workers.append(workers)
+        return min(all_workers)
+
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
     run_extras = get_all_inters_from_yaml(args.model, ["runner."])
@@ -359,8 +394,16 @@ def local_cluster_engine(args):
     selected_gpus = run_extras.get(selected_gpus_class, "0")
     distributed_strategy = run_extras.get(strategy_class, "async")
     executor_mode = "train"
+
     worker_num = run_extras.get(worker_class, 1)
     server_num = run_extras.get(server_class, 1)
+    max_worker_num = get_worker_num(run_extras, worker_num)
+
+    if max_worker_num < worker_num:
+        print(
+            "has phase do not have enough datas for training, set worker num from {} to {}".
+            format(worker_num, max_worker_num))
+        worker_num = max_worker_num
 
     device = device.upper()
     fleet_mode = fleet_mode.upper()
@@ -382,10 +425,10 @@ def local_cluster_engine(args):
     cluster_envs["train.trainer.executor_mode"] = executor_mode
     cluster_envs["train.trainer.strategy"] = distributed_strategy
     cluster_envs["train.trainer.threads"] = "2"
+    cluster_envs["CPU_NUM"] = cluster_envs["train.trainer.threads"]
     cluster_envs["train.trainer.engine"] = "local_cluster"
     cluster_envs["train.trainer.platform"] = envs.get_platform()
 
-    cluster_envs["CPU_NUM"] = "2"
     print("launch {} engine with cluster to run model: {}".format(trainer,
                                                                   args.model))
 
@@ -459,11 +502,15 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     engine_registry()
-    running_config = get_all_inters_from_yaml(args.model, ["mode", "runner."])
+    running_config = get_all_inters_from_yaml(
+        args.model, ["workspace", "mode", "runner."])
     modes = get_modes(running_config)
 
     for mode in modes:
-        envs.set_runtime_environs({"mode": mode})
+        envs.set_runtime_environs({
+            "mode": mode,
+            "workspace": running_config["workspace"]
+        })
         which_engine = get_engine(args, running_config, mode)
         engine = which_engine(args)
         engine.run()
