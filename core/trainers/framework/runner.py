@@ -134,7 +134,7 @@ class RunnerBase(object):
 
     def _get_dataloader_program(self, model_dict, context):
         model_name = model_dict["name"]
-        if context["model"][model_name]["exe_program"] == None:
+        if context["model"][model_name]["compile_program"] == None:
             if context["is_infer"]:
                 program = context["model"][model_name]["main_program"]
             elif context["is_fleet"]:
@@ -147,8 +147,8 @@ class RunnerBase(object):
                     program = self._get_single_cpu_program(model_dict, context)
                 elif context["device"].upper() == "GPU":
                     program = self._get_single_gpu_program(model_dict, context)
-            context["model"][model_name]["exe_program"] = program
-        return context["model"][model_name]["exe_program"]
+            context["model"][model_name]["compile_program"] = program
+        return context["model"][model_name]["compile_program"]
 
     def _get_strategy(self, model_dict, context):
         _build_strategy = fluid.BuildStrategy()
@@ -452,7 +452,7 @@ class SingleInferRunner(RunnerBase):
     def _load(self, context, model_dict, model_path):
         if model_path is None or model_path == "":
             return
-        print("going to load ", model_path)
+        print("load persistables from", model_path)
 
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             train_prog = context["model"][model_dict["name"]]["main_program"]
@@ -476,4 +476,4 @@ class SingleInferRunner(RunnerBase):
 
         if len(self.epoch_model_path_list) == 0:
             self.epoch_model_path_list.append(dirname)
-            self.epoch_model_name_list.append("dirname")
+            self.epoch_model_name_list.append(dirname)
