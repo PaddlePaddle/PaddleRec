@@ -137,7 +137,7 @@ def register():
     validations["mode"] = ValueFormat(None, None, None, True)
     validations["runner"] = ValueFormat("dicts", None, None, True)
     validations["phase"] = ValueFormat("dicts", None, None, True)
-    validations["hyper_parameters"] = ValueFormat("dicts", None, None, False)
+    validations["hyper_parameters"] = ValueFormat("dict", None, None, False)
     return validations
 
 
