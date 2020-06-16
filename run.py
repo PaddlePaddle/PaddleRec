@@ -422,10 +422,16 @@ def local_cluster_engine(args):
 
     cluster_envs = {}
 
-    if fleet_mode == "COLLECTIVE" and device != "GPU":
-        raise ValueError("COLLECTIVE can not be used without GPU")
+    # Todo: delete follow hard code when paddle support ps-gpu.
+    if device == "CPU":
+        fleet_mode = "PS"
+    elif device == "GPU":
+        fleet_mode = "COLLECTIVE"
     if fleet_mode == "PS" and device != "CPU":
         raise ValueError("PS can not be used with GPU")
+
+    if fleet_mode == "COLLECTIVE" and device != "GPU":
+        raise ValueError("COLLECTIVE can not be used without GPU")
 
     if fleet_mode == "PS":
         worker_num = get_worker_num(run_extras, worker_num)
