@@ -117,7 +117,8 @@ def register():
                                               in_value_handler)
     validations["train.epochs"] = ValueFormat("int", 1, ge_value_handler)
     validations["train.engine"] = ValueFormat(
-        "str", ["single", "local_cluster", "cluster"], in_value_handler)
+        "str", ["train", "infer", "local_cluster_train", "cluster_train"],
+        in_value_handler)
 
     requires = ["workspace", "dataset", "mode", "runner", "phase"]
     return validations, requires

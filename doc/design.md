@@ -56,9 +56,9 @@ engine = which_engine(args)
 engine.run()
 ```
 
-我们以`single engine`为例，概览engine的行为：
+我们以`单机 engine`为例，概览engine的行为：
 ```python
-def single_train_engine(args):
+def train_engine(args):
     _envs = envs.load_yaml(args.model)
     run_extras = get_all_inters_from_yaml(args.model, ["train.", "runner."])
     trainer_class = run_extras.get(

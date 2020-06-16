@@ -38,7 +38,7 @@ mode: runner1
 
 runner:
 - name: runner1
-  class: single_train
+  class: train
   epochs: 10
   device: cpu
   save_checkpoint_interval: 2

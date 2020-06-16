@@ -55,7 +55,7 @@ mode: runner_train
 #mode: runner_infer
 runner:
 - name: runner_train
-  class: single_train
+  class: train
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 1 # save inference
   save_checkpoint_path: "increment" # save checkpoint path

@@ -77,7 +77,7 @@ mode: single_cpu_train # 执行名为 single_cpu_train 的运行器
 
 runner:
 - name: single_cpu_train # 定义 runner 名为 single_cpu_train
-  class: train # 执行单机训练，亦可为 single_train
+  class: train # 执行单机训练
   device: cpu # 执行在 cpu 上
   epochs: 10 # 训练轮数
 
@@ -120,7 +120,7 @@ mode: single_gpu_train # 执行名为 single_gpu_train 的运行器
 
 runner:
 - name: single_gpu_train # 定义 runner 名为 single_gpu_train
-  class: train # 执行单机训练，亦可为 single_train
+  class: train # 执行单机训练
   device: gpu # 执行在 gpu 上
   selected_gpus: "0" # 默认选择在id=0的卡上执行训练
   epochs: 10 # 训练轮数
@@ -135,7 +135,7 @@ mode: single_multi_gpu_train # 执行名为 single_multi_gpu_train 的运行器
 
 runner:
 - name: single_multi_gpu_train # 定义 runner 名为 single_multi_gpu_train
-  class: train # 执行单机训练，亦可为 single_train
+  class: train # 执行单机训练
   device: gpu # 执行在 gpu 上
   selected_gpus: "0,1,2,3" # 选择多卡执行训练
   epochs: 10 # 训练轮数
@@ -149,7 +149,7 @@ mode: local_cluster_cpu_train # 执行名为 local_cluster_cpu_train 的运行�
 
 runner:
 - name: local_cluster_cpu_train # 定义 runner 名为 runner_train
-  class: local_cluster # 执行本地模拟分布式——参数服务器训练
+  class: local_cluster_train # 执行本地模拟分布式——参数服务器训练
   device: cpu # 执行在 cpu 上（paddle后续版本会支持PS-GPU）
   worker_num: 1 # (可选)worker进程数量，默认1
   server_num: 1 # (可选)server进程数量，默认1
