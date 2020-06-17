@@ -77,7 +77,7 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
     ```
 2. 创建一个子类，继承Reader的基类，训练所需Reader命名为`TrainerReader`
     ```python
-    class TrainerReader(Reader):
+    class TrainerReader(ReaderBase):
         def init(self):
             pass
 
