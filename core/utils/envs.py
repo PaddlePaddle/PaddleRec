@@ -18,6 +18,7 @@ import copy
 import os
 import socket
 import sys
+import six
 import traceback
 import six
 
@@ -98,6 +99,12 @@ def set_global_envs(envs):
             global_envs[name] = value
 
     if get_platform() != "LINUX":
+        for dataset in envs["dataset"]:
+            name = ".".join(["dataset", dataset["name"], "type"])
+            global_envs[name] = "DataLoader"
+
+    if get_platform() == "LINUX" and six.PY3:
+        print("QueueDataset can not support PY3, change to DataLoader")
         for dataset in envs["dataset"]:
             name = ".".join(["dataset", dataset["name"], "type"])
             global_envs[name] = "DataLoader"

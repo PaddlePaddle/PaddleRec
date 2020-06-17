@@ -26,7 +26,7 @@ requires = ["paddlepaddle == 1.7.2", "PyYAML >= 5.1.1"]
 
 about = {}
 about["__title__"] = "paddle-rec"
-about["__version__"] = "0.0.2"
+about["__version__"] = "0.1.0"
 about["__description__"] = "paddle-rec"
 about["__author__"] = "paddle-dev"
 about["__author_email__"] = "paddle-dev@baidu.com"
@@ -96,7 +96,7 @@ dirname = tempfile.mktemp()
 build(dirname)
 shutil.rmtree(dirname)
 
-print('''
+print(u'''
 \033[32m
 ██████╗  █████╗ ██████╗ ██████╗ ██╗     ███████╗██████╗ ███████╗ ██████╗
 ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝██╔════╝
