@@ -20,6 +20,7 @@ import socket
 import sys
 import six
 import traceback
+import six
 
 global_envs = {}
 global_envs_flatten = {}
@@ -260,11 +261,19 @@ def load_yaml(config):
             use_full_loader = False
 
     if os.path.isfile(config):
-        with open(config, 'r') as rb:
-            if use_full_loader:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-            else:
-                _config = yaml.load(rb.read())
-            return _config
+        if six.PY2:
+            with open(config, 'r') as rb:
+                if use_full_loader:
+                    _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+                else:
+                    _config = yaml.load(rb.read())
+                return _config
+        else:
+            with open(config, 'r', encoding="utf-8") as rb:
+                if use_full_loader:
+                    _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+                else:
+                    _config = yaml.load(rb.read())
+                return _config
     else:
         raise ValueError("config {} can not be supported".format(config))
