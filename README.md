@@ -92,10 +92,10 @@
 - 安装方法二
 
   源码编译安装
-  1. 安装飞桨  **注：需要用户安装版本 >=1.7.2 的飞桨**
+  1. 安装飞桨  **注：需要用户安装版本 ==1.7.2 的飞桨**
 
     ```shell
-    python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+    python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple
     ```
 
   2. 源码安装PaddleRec
