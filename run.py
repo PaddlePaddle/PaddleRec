@@ -139,7 +139,7 @@ def get_engine(args, running_config, mode):
             engine = "LOCAL_CLUSTER_TRAIN"
 
     if engine not in engine_choices:
-        raise ValueError("{} can not be chosen in {}".format(engine_class,
+        raise ValueError("{} can only be chosen in {}".format(engine_class,
                                                              engine_choices))
 
     run_engine = engines[transpiler].get(engine, None)
