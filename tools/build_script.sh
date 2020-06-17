@@ -49,7 +49,7 @@ function model_test() {
   
   root_dir=`pwd`
   all_model=$(find ${root_dir} -name config.yaml)
-  special_models=("demo" "pnn" "fgcnn" "esmm")
+  special_models=("demo" "pnn" "fgcnn" "gru4rec" "tagspace")
 
   for model in ${all_model}
   do
@@ -68,7 +68,7 @@ function model_test() {
       continue
     fi
     echo "Running "$model
-    python -m paddlerec.run -m ${model}
+    python3 -m paddlerec.run -m ${model}
 
     status=$(echo $?)
     if [[ ${status} -ne 0 ]]
