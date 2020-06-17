@@ -52,10 +52,9 @@ runner:
   save_inference_path: "inference"
   print_interval: 10
 - name: infer_runner
-  class: single_infer
+  class: infer
   init_model_path: "increment/0"
   device: cpu
-  epochs: 3
 
 phase:
 - name: train

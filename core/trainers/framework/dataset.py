@@ -15,13 +15,13 @@
 from __future__ import print_function
 
 import os
-import warnings
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.utils import dataloader_instance
 from paddlerec.core.reader import SlotReader
 from paddlerec.core.trainer import EngineMode
+from paddlerec.core.utils.util import split_files
 
 __all__ = ["DatasetBase", "DataLoader", "QueueDataset"]
 
@@ -123,7 +123,8 @@ class QueueDataset(DatasetBase):
             for x in os.listdir(train_data_path)
         ]
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
-            file_list = context["fleet"].split_files(file_list)
+            file_list = split_files(file_list, context["fleet"].worker_index(),
+                                    context["fleet"].worker_num())
 
         dataset.set_filelist(file_list)
         for model_dict in context["phases"]:

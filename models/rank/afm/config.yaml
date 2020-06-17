@@ -59,8 +59,7 @@ runner:
     save_inference_path: "inference"
     print_interval: 1
   - name: infer_runner
-    class: single_infer
-    epochs: 1
+    class: infer
     device: cpu
     init_model_path: "increment/0"
     print_interval: 1
