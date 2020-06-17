@@ -16,15 +16,50 @@ from __future__ import print_function
 
 import os
 import time
-import warnings
-import datetime
-
+import numpy as np
 import paddle.fluid as fluid
+
 from paddlerec.core.utils import envs
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
 ]
+
+
+def as_numpy(tensor):
+    """
+    Convert a Tensor to a numpy.ndarray, its only support Tensor without LoD information.
+    For higher dimensional sequence data, please use LoDTensor directly.
+
+    Examples:
+        .. code-block:: python
+
+          import paddle.fluid as fluid
+          import numpy
+
+          new_scope = fluid.Scope()
+          with fluid.scope_guard(new_scope):
+              fluid.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), fluid.CPUPlace())
+          tensor = new_scope.find_var("data").get_tensor()
+          fluid.executor.as_numpy(tensor) # or numpy.array(new_scope.find_var("data").get_tensor())
+
+    Args:
+       tensor(Variable): a instance of Tensor
+
+    Returns:
+        numpy.ndarray
+    """
+    if isinstance(tensor, fluid.core.LoDTensorArray):
+        return [as_numpy(t) for t in tensor]
+    if isinstance(tensor, list):
+        return [as_numpy(t) for t in tensor]
+    assert isinstance(tensor, fluid.core.LoDTensor)
+    lod = tensor.lod()
+    # (todo) need print lod or return it for user
+    if tensor._is_initialized():
+        return np.array(tensor)
+    else:
+        return None
 
 
 class RunnerBase(object):
@@ -92,9 +127,6 @@ class RunnerBase(object):
         model_class = context["model"][model_dict["name"]]["model"]
         program = self._get_dataloader_program(model_dict, context)
 
-        reader_name = model_dict["dataset_name"]
-        fetch_vars = []
-        fetch_alias = []
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
@@ -103,9 +135,6 @@ class RunnerBase(object):
         else:
             metrics = model_class.get_metrics()
 
-        if metrics:
-            fetch_vars = metrics.values()
-            fetch_alias = metrics.keys()
         metrics_varnames = []
         metrics_format = []
         metrics_format.append("{}: {{}}".format("batch"))
@@ -121,9 +150,16 @@ class RunnerBase(object):
         with fluid.scope_guard(scope):
             try:
                 while True:
-                    metrics_rets = context["exe"].run(
-                        program=program, fetch_list=metrics_varnames)
+                    metrics_tensors = context["exe"].run(
+                        program=program,
+                        fetch_list=metrics_varnames,
+                        return_numpy=False)
                     metrics = [batch_id]
+
+                    metrics_rets = [
+                        as_numpy(metrics_tensor)
+                        for metrics_tensor in metrics_tensors
+                    ]
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
@@ -248,7 +284,7 @@ class RunnerBase(object):
             fetch_varnames = envs.get_global_env(
                 name + "save_inference_fetch_varnames", [])
             if feed_varnames is None or fetch_varnames is None or feed_varnames == "" or fetch_varnames == "" or \
-               len(feed_varnames) == 0 or len(fetch_varnames) == 0:
+                    len(feed_varnames) == 0 or len(fetch_varnames) == 0:
                 return
             fetch_vars = [
                 fluid.default_main_program().global_block().vars[varname]
