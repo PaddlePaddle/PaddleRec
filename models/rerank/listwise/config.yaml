@@ -51,10 +51,9 @@ runner:
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
 - name: infer_runner
-  class: single_infer
+  class: infer
   init_model_path: "increment/0"
   device: cpu
-  epochs: 3
 
 phase:
 - name: train
