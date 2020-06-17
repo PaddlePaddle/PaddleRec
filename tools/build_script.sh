@@ -68,7 +68,7 @@ function model_test() {
       continue
     fi
     echo "Running "$model
-    python3 -m paddlerec.run -m ${model}
+    python -m paddlerec.run -m ${model}
 
     status=$(echo $?)
     if [[ ${status} -ne 0 ]]
