@@ -106,6 +106,10 @@
     python setup.py install
     ```
 
+- PaddleRec-GPU安装方法
+
+  在使用方法一或方法二完成PaddleRec安装后，需再手动安装`paddlepaddle-gpu`，并根据自身环境(Cuda/Cudnn)选择合适的版本，安装教程请查阅[飞桨-开始使用](https://www.paddlepaddle.org.cn/install/quick)
+
 
 <h2 align="center">一键启动</h2>
 
