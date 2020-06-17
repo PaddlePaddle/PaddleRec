@@ -64,8 +64,7 @@ runner:
   device: cpu
 
 - name: runner_infer
-  epochs: 1
-  class: single_infer
+  class: infer
   print_interval: 10000
   init_model_path: "increment/9" # load model path
 

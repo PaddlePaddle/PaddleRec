@@ -80,10 +80,8 @@ runner:
   print_interval: 10
 
 - name: runner2
-  class: single_infer
+  class: infer
   startup_class_path: "{workspace}/tdm_startup.py"
-  # num of epochs
-  epochs: 1
   # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
