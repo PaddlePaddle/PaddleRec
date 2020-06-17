@@ -50,6 +50,7 @@ class RunnerBase(object):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
+
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -89,19 +90,7 @@ class RunnerBase(object):
     def _executor_dataloader_train(self, model_dict, context):
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
-
-        if context["is_infer"]:
-            program = context["model"][model_name]["main_program"]
-        elif context["is_fleet"]:
-            if context["fleet_mode"].upper() == "PS":
-                program = self._get_ps_program(model_dict, context)
-            elif context["fleet_mode"].upper() == "COLLECTIVE":
-                program = context["model"][model_name]["main_program"]
-        elif not context["is_fleet"]:
-            if context["device"].upper() == "CPU":
-                program = self._get_single_cpu_program(model_dict, context)
-            elif context["device"].upper() == "GPU":
-                program = self._get_single_gpu_program(model_dict, context)
+        program = self._get_dataloader_program(model_dict, context)
 
         reader_name = model_dict["dataset_name"]
         fetch_vars = []
@@ -142,6 +131,24 @@ class RunnerBase(object):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+
+    def _get_dataloader_program(self, model_dict, context):
+        model_name = model_dict["name"]
+        if context["model"][model_name]["compiled_program"] == None:
+            if context["is_infer"]:
+                program = context["model"][model_name]["main_program"]
+            elif context["is_fleet"]:
+                if context["fleet_mode"].upper() == "PS":
+                    program = self._get_ps_program(model_dict, context)
+                elif context["fleet_mode"].upper() == "COLLECTIVE":
+                    program = context["model"][model_name]["main_program"]
+            elif not context["is_fleet"]:
+                if context["device"].upper() == "CPU":
+                    program = self._get_single_cpu_program(model_dict, context)
+                elif context["device"].upper() == "GPU":
+                    program = self._get_single_gpu_program(model_dict, context)
+            context["model"][model_name]["compiled_program"] = program
+        return context["model"][model_name]["compiled_program"]
 
     def _get_strategy(self, model_dict, context):
         _build_strategy = fluid.BuildStrategy()
@@ -218,12 +225,17 @@ class RunnerBase(object):
 
     def save(self, epoch_id, context, is_fleet=False):
         def need_save(epoch_id, epoch_interval, is_last=False):
+            name = "runner." + context["runner_name"] + "."
+            total_epoch = int(envs.get_global_env(name + "epochs", 1))
+            if epoch_id + 1 == total_epoch:
+                is_last = True
+
             if is_last:
                 return True
             if epoch_id == -1:
                 return False
 
-            return epoch_id % epoch_interval == 0
+            return (epoch_id + 1) % epoch_interval == 0
 
         def save_inference_model():
             name = "runner." + context["runner_name"] + "."
@@ -415,3 +427,53 @@ class PslibRunner(RunnerBase):
 
         """
         context["status"] = "terminal_pass"
+
+
+class SingleInferRunner(RunnerBase):
+    def __init__(self, context):
+        print("Running SingleInferRunner.")
+        pass
+
+    def run(self, context):
+        self._dir_check(context)
+
+        for index, epoch_name in enumerate(self.epoch_model_name_list):
+            for model_dict in context["phases"]:
+                self._load(context, model_dict,
+                           self.epoch_model_path_list[index])
+                begin_time = time.time()
+                self._run(context, model_dict)
+                end_time = time.time()
+                seconds = end_time - begin_time
+                print("Infer {} of {} done, use time: {}".format(model_dict[
+                    "name"], epoch_name, seconds))
+        context["status"] = "terminal_pass"
+
+    def _load(self, context, model_dict, model_path):
+        if model_path is None or model_path == "":
+            return
+        print("load persistables from", model_path)
+
+        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+            train_prog = context["model"][model_dict["name"]]["main_program"]
+            startup_prog = context["model"][model_dict["name"]][
+                "startup_program"]
+            with fluid.program_guard(train_prog, startup_prog):
+                fluid.io.load_persistables(
+                    context["exe"], model_path, main_program=train_prog)
+
+    def _dir_check(self, context):
+        dirname = envs.get_global_env(
+            "runner." + context["runner_name"] + ".init_model_path", None)
+        self.epoch_model_path_list = []
+        self.epoch_model_name_list = []
+
+        for file in os.listdir(dirname):
+            file_path = os.path.join(dirname, file)
+            if os.path.isdir(file_path):
+                self.epoch_model_path_list.append(file_path)
+                self.epoch_model_name_list.append(file)
+
+        if len(self.epoch_model_path_list) == 0:
+            self.epoch_model_path_list.append(dirname)
+            self.epoch_model_name_list.append(dirname)

@@ -31,13 +31,15 @@ class Reader(ReaderBase):
             This function needs to be implemented by the user, based on data format
             """
             features = line.rstrip('\n').split('\t')
-            query = map(float, features[0].split(','))
-            pos_doc = map(float, features[1].split(','))
+            query = [float(feature) for feature in features[0].split(',')]
+            pos_doc = [float(feature) for feature in features[1].split(',')]
             feature_names = ['query', 'doc_pos']
             neg_docs = []
             for i in range(len(features) - 2):
                 feature_names.append('doc_neg_' + str(i))
-                neg_docs.append(map(float, features[i + 2].split(',')))
+                neg_docs.append([
+                    float(feature) for feature in features[i + 2].split(',')
+                ])
 
             yield zip(feature_names, [query] + [pos_doc] + neg_docs)
 

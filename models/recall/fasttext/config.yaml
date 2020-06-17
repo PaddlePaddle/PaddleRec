@@ -11,23 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-workspace: "paddlerec.models.recall.fasttext" 
+workspace: "paddlerec.models.recall.fasttext"
 
 # list of dataset
 dataset:
-- name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 10
-  type: DataLoader # or QueueDataset 
-  data_path: "{workspace}/data/train"
-  word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
-  word_ngrams_path: "{workspace}/data/dict/word_ngrams_id.txt"
-  data_converter: "{workspace}/reader.py"
-- name: dataset_infer # name
-  batch_size: 10
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/test"
-  word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
-  data_converter: "{workspace}/evaluate_reader.py"
+  - name: dataset_train # name of dataset to distinguish different datasets
+    batch_size: 10
+    type: DataLoader # or QueueDataset
+    data_path: "{workspace}/data/train"
+    word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
+    word_ngrams_path: "{workspace}/data/dict/word_ngrams_id.txt"
+    data_converter: "{workspace}/reader.py"
+  - name: dataset_infer # name
+    batch_size: 10
+    type: DataLoader # or QueueDataset
+    data_path: "{workspace}/data/test"
+    word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
+    data_converter: "{workspace}/evaluate_reader.py"
 
 hyper_parameters:
   optimizer:
@@ -45,41 +45,41 @@ hyper_parameters:
   max_n: 5
 
 # select runner by name
-mode: train_runner
+mode: [train_runner, infer_runner]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: train_runner
-  class: train
-  # num of epochs
-  epochs: 2
-  # device to run training or infer
-  device: cpu
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_inference_interval: 1 # save inference
-  save_checkpoint_path: "increment" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
-  init_model_path: "" # load model path
-  print_interval: 1
-- name: infer_runner
-  class: single_infer
-  # num of epochs
-  epochs: 1
-  # device to run training or infer
-  device: cpu
-  init_model_path: "increment/0" # load model path
-  print_interval: 1
+  - name: train_runner
+    class: train
+    # num of epochs
+    epochs: 2
+    # device to run training or infer
+    device: cpu
+    save_checkpoint_interval: 1 # save model interval of epochs
+    save_inference_interval: 1 # save inference
+    save_checkpoint_path: "increment" # save checkpoint path
+    save_inference_path: "inference" # save inference path
+    save_inference_feed_varnames: [] # feed vars of save inference
+    save_inference_fetch_varnames: [] # fetch vars of save inference
+    init_model_path: "" # load model path
+    print_interval: 10
+    phases: [phase1]
+  - name: infer_runner
+    class: infer
+    # device to run training or infer
+    device: cpu
+    init_model_path: "increment/0" # load model path
+    print_interval: 1
+    phases: [phase2]
 
 # runner will run all the phase in each epoch
 phase:
-- name: phase1
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
-  thread_num: 1
-  gradient_scale_strategy: 1
-# - name: phase2
-#   model: "{workspace}/model.py" # user-defined model
-#   dataset_name: dataset_infer # select dataset by name
-#   thread_num: 1
+  - name: phase1
+    model: "{workspace}/model.py" # user-defined model
+    dataset_name: dataset_train # select dataset by name
+    thread_num: 1
+    gradient_scale_strategy: 1
+  - name: phase2
+    model: "{workspace}/model.py" # user-defined model
+    dataset_name: dataset_infer # select dataset by name
+    thread_num: 1
