@@ -98,7 +98,7 @@ python -m paddlerec.run -m ./config.yaml
 ```
 # 修改对应模型的config.yaml，mode配置infer_runner
 # 示例: mode: runner1 -> mode: infer_runner
-# infer_runner中 class配置为 class: single_infer
+# infer_runner中 class配置为 class: infer
 # 如果训练阶段和预测阶段的模型输入一致，phase不需要改动，复用train的即可
 
 # 修改完config.yaml后 执行:
