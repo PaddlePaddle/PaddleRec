@@ -17,6 +17,7 @@ import subprocess
 import sys
 import argparse
 import tempfile
+import warnings
 
 import copy
 from paddlerec.core.factory import TrainerFactory
@@ -220,6 +221,14 @@ def single_infer_engine(args):
     device_class = ".".join(["runner", mode, "device"])
     selected_gpus_class = ".".join(["runner", mode, "selected_gpus"])
 
+    epochs_class = ".".join(["runner", mode, "epochs"])
+    epochs = run_extras.get(epochs_class, 1)
+    if epochs > 1:
+        warnings.warn(
+            "It makes no sense to predict the same model for multiple epochs",
+            category=UserWarning,
+            stacklevel=2)
+
     trainer = run_extras.get(trainer_class, "GeneralTrainer")
     fleet_mode = run_extras.get(fleet_class, "ps")
     device = run_extras.get(device_class, "cpu")
@@ -372,9 +381,19 @@ def local_cluster_engine(args):
             envs.workspace_adapter_by_specific(path, workspace)
             for path in datapaths
         ]
+
         all_workers = [len(os.listdir(path)) for path in datapaths]
         all_workers.append(workers)
-        return min(all_workers)
+        max_worker_num = min(all_workers)
+
+        if max_worker_num >= workers:
+            return workers
+
+        print(
+            "phases do not have enough datas for training, set worker/gpu cards num from {} to {}".
+            format(workers, max_worker_num))
+
+        return max_worker_num
 
     from paddlerec.core.engine.local_cluster import LocalClusterEngine
 
@@ -397,24 +416,31 @@ def local_cluster_engine(args):
 
     worker_num = run_extras.get(worker_class, 1)
     server_num = run_extras.get(server_class, 1)
-    max_worker_num = get_worker_num(run_extras, worker_num)
-
-    if max_worker_num < worker_num:
-        print(
-            "has phase do not have enough datas for training, set worker num from {} to {}".
-            format(worker_num, max_worker_num))
-        worker_num = max_worker_num
 
     device = device.upper()
     fleet_mode = fleet_mode.upper()
 
-    if fleet_mode == "COLLECTIVE" and device != "GPU":
-        raise ValueError("COLLECTIVE can not be used with GPU")
-
     cluster_envs = {}
 
-    if device == "GPU":
+    # Todo: delete follow hard code when paddle support ps-gpu.
+    if device == "CPU":
+        fleet_mode = "PS"
+    elif device == "GPU":
+        fleet_mode = "COLLECTIVE"
+    if fleet_mode == "PS" and device != "CPU":
+        raise ValueError("PS can not be used with GPU")
+
+    if fleet_mode == "COLLECTIVE" and device != "GPU":
+        raise ValueError("COLLECTIVE can not be used without GPU")
+
+    if fleet_mode == "PS":
+        worker_num = get_worker_num(run_extras, worker_num)
+
+    if fleet_mode == "COLLECTIVE":
         cluster_envs["selected_gpus"] = selected_gpus
+        gpus = selected_gpus.split(",")
+        gpu_num = get_worker_num(run_extras, len(gpus))
+        cluster_envs["selected_gpus"] = ','.join(gpus[:gpu_num])
 
     cluster_envs["server_num"] = server_num
     cluster_envs["worker_num"] = worker_num

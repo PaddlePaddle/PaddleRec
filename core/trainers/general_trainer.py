@@ -101,7 +101,9 @@ class GeneralTrainer(Trainer):
             startup_class = envs.lazy_instance_by_fliename(startup_class_path,
                                                            "Startup")(context)
         else:
-            if self.engine == EngineMode.SINGLE:
+            if self.engine == EngineMode.SINGLE and context["is_infer"]:
+                startup_class_name = "SingleInferStartup"
+            elif self.engine == EngineMode.SINGLE and not context["is_infer"]:
                 startup_class_name = "SingleStartup"
             elif self.fleet_mode == FleetMode.PS or self.fleet_mode == FleetMode.PSLIB:
                 startup_class_name = "PSStartup"
@@ -117,12 +119,14 @@ class GeneralTrainer(Trainer):
 
     def runner(self, context):
         runner_class_path = envs.get_global_env(
-            self.runner_env_name + ".runner_class_paht", default_value=None)
+            self.runner_env_name + ".runner_class_path", default_value=None)
         if runner_class_path:
             runner_class = envs.lazy_instance_by_fliename(runner_class_path,
                                                           "Runner")(context)
         else:
-            if self.engine == EngineMode.SINGLE:
+            if self.engine == EngineMode.SINGLE and context["is_infer"]:
+                runner_class_name = "SingleInferRunner"
+            elif self.engine == EngineMode.SINGLE and not context["is_infer"]:
                 runner_class_name = "SingleRunner"
             elif self.fleet_mode == FleetMode.PSLIB:
                 runner_class_name = "PslibRunner"

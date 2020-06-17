@@ -101,3 +101,21 @@ class CollectiveStartup(StartupBase):
                 context["exe"].run(startup_prog)
                 self.load(context, True)
         context["status"] = "train_pass"
+
+
+class SingleInferStartup(StartupBase):
+    def __init__(self, context):
+        print("Running SingleInferStartup.")
+        pass
+
+    def startup(self, context):
+        for model_dict in context["phases"]:
+            with fluid.scope_guard(context["model"][model_dict["name"]][
+                    "scope"]):
+                train_prog = context["model"][model_dict["name"]][
+                    "main_program"]
+                startup_prog = context["model"][model_dict["name"]][
+                    "startup_program"]
+                with fluid.program_guard(train_prog, startup_prog):
+                    context["exe"].run(startup_prog)
+        context["status"] = "train_pass"

@@ -16,15 +16,24 @@ from paddlerec.core.utils import envs
 
 
 class ValueFormat:
-    def __init__(self, value_type, value, value_handler):
+    def __init__(self, value_type, value, value_handler, required=False):
         self.value_type = value_type
-        self.value = value
         self.value_handler = value_handler
+        self.value = value
+        self.required = required
 
     def is_valid(self, name, value):
-        ret = self.is_type_valid(name, value)
+
+        if not self.value_type:
+            ret = True
+        else:
+            ret = self.is_type_valid(name, value)
+
         if not ret:
             return ret
+
+        if not self.value or not self.value_handler:
+            return True
 
         ret = self.is_value_valid(name, value)
         return ret
@@ -33,21 +42,21 @@ class ValueFormat:
         if self.value_type == "int":
             if not isinstance(value, int):
                 print("\nattr {} should be int, but {} now\n".format(
-                    name, self.value_type))
+                    name, type(value)))
                 return False
             return True
 
         elif self.value_type == "str":
             if not isinstance(value, str):
                 print("\nattr {} should be str, but {} now\n".format(
-                    name, self.value_type))
+                    name, type(value)))
                 return False
             return True
 
         elif self.value_type == "strs":
             if not isinstance(value, list):
                 print("\nattr {} should be list(str), but {} now\n".format(
-                    name, self.value_type))
+                    name, type(value)))
                 return False
             for v in value:
                 if not isinstance(v, str):
@@ -56,10 +65,29 @@ class ValueFormat:
                     return False
             return True
 
+        elif self.value_type == "dict":
+            if not isinstance(value, dict):
+                print("\nattr {} should be str, but {} now\n".format(
+                    name, type(value)))
+                return False
+            return True
+
+        elif self.value_type == "dicts":
+            if not isinstance(value, list):
+                print("\nattr {} should be list(dist), but {} now\n".format(
+                    name, type(value)))
+                return False
+            for v in value:
+                if not isinstance(v, dict):
+                    print("\nattr {} should be list(dist), but list({}) now\n".
+                          format(name, type(v)))
+                    return False
+            return True
+
         elif self.value_type == "ints":
             if not isinstance(value, list):
                 print("\nattr {} should be list(int), but {} now\n".format(
-                    name, self.value_type))
+                    name, type(value)))
                 return False
             for v in value:
                 if not isinstance(v, int):
@@ -74,7 +102,7 @@ class ValueFormat:
             return False
 
     def is_value_valid(self, name, value):
-        ret = self.value_handler(value)
+        ret = self.value_handler(name, value, self.value)
         return ret
 
 
@@ -112,38 +140,35 @@ def le_value_handler(name, value, values):
 
 def register():
     validations = {}
-    validations["train.workspace"] = ValueFormat("str", None, eq_value_handler)
-    validations["train.device"] = ValueFormat("str", ["cpu", "gpu"],
-                                              in_value_handler)
-    validations["train.epochs"] = ValueFormat("int", 1, ge_value_handler)
-    validations["train.engine"] = ValueFormat(
-        "str", ["train", "infer", "local_cluster_train", "cluster_train"],
-        in_value_handler)
-
-    requires = ["workspace", "dataset", "mode", "runner", "phase"]
-    return validations, requires
+    validations["workspace"] = ValueFormat("str", None, None, True)
+    validations["mode"] = ValueFormat(None, None, None, True)
+    validations["runner"] = ValueFormat("dicts", None, None, True)
+    validations["phase"] = ValueFormat("dicts", None, None, True)
+    validations["hyper_parameters"] = ValueFormat("dict", None, None, False)
+    return validations
 
 
 def yaml_validation(config):
-    all_checkers, require_checkers = register()
+    all_checkers = register()
+
+    require_checkers = []
+    for name, checker in all_checkers.items():
+        if checker.required:
+            require_checkers.append(name)
 
     _config = envs.load_yaml(config)
-    flattens = envs.flatten_environs(_config)
 
     for required in require_checkers:
-        if required not in flattens.keys():
+        if required not in _config.keys():
             print("\ncan not find {} in yaml, which is required\n".format(
                 required))
             return False
 
-    for name, flatten in flattens.items():
+    for name, value in _config.items():
         checker = all_checkers.get(name, None)
-
-        if not checker:
-            continue
-
-        ret = checker.is_valid(name, flattens)
-        if not ret:
-            return False
+        if checker:
+            ret = checker.is_valid(name, value)
+            if not ret:
+                return False
 
     return True
