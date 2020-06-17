@@ -19,12 +19,7 @@ from __future__ import print_function
 import os
 
 from paddlerec.core.utils import envs
-from paddlerec.core.trainer import Trainer, EngineMode, FleetMode, Device
-from paddlerec.core.trainers.framework.dataset import *
-from paddlerec.core.trainers.framework.runner import *
-from paddlerec.core.trainers.framework.instance import *
-from paddlerec.core.trainers.framework.network import *
-from paddlerec.core.trainers.framework.startup import *
+from paddlerec.core.trainer import Trainer, EngineMode, FleetMode
 
 
 class GeneralTrainer(Trainer):
