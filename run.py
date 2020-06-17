@@ -139,8 +139,8 @@ def get_engine(args, running_config, mode):
             engine = "LOCAL_CLUSTER_TRAIN"
 
     if engine not in engine_choices:
-        raise ValueError("{} can not be chosen in {}".format(engine_class,
-                                                             engine_choices))
+        raise ValueError("{} can only be chosen in {}".format(engine_class,
+                                                              engine_choices))
 
     run_engine = engines[transpiler].get(engine, None)
     return run_engine
@@ -439,8 +439,8 @@ def local_cluster_engine(args):
     if fleet_mode == "COLLECTIVE":
         cluster_envs["selected_gpus"] = selected_gpus
         gpus = selected_gpus.split(",")
-        gpu_num = get_worker_num(run_extras, len(gpus))
-        cluster_envs["selected_gpus"] = ','.join(gpus[:gpu_num])
+        worker_num = get_worker_num(run_extras, len(gpus))
+        cluster_envs["selected_gpus"] = ','.join(gpus[:worker_num])
 
     cluster_envs["server_num"] = server_num
     cluster_envs["worker_num"] = worker_num

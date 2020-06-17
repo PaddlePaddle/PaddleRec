@@ -19,11 +19,8 @@ import time
 import numpy as np
 from paddle import fluid
 
-from paddlerec.core.utils import fs as fs
-
 
 def save_program_proto(path, program=None):
-
     if program is None:
         _program = fluid.default_main_program()
     else:
@@ -169,6 +166,39 @@ def print_cost(cost, params):
     log_str = params['log_format'] % cost
     print_log(log_str, params)
     return log_str
+
+
+def split_files(files, trainer_id, trainers):
+    """
+    split files before distributed training,
+    example 1: files is [a, b, c ,d, e]  and trainer_num = 2, then trainer
+               0 gets [a, b, c] and trainer 1 gets [d, e].
+    example 2: files is [a, b], and trainer_num = 3, then trainer 0 gets
+               [a], trainer 1 gets [b],  trainer 2 gets []
+
+    Args:
+        files(list): file list need to be read.
+
+    Returns:
+        list: files belongs to this worker.
+    """
+    if not isinstance(files, list):
+        raise TypeError("files should be a list of file need to be read.")
+
+    remainder = len(files) % trainers
+    blocksize = int(len(files) / trainers)
+
+    blocks = [blocksize] * trainers
+    for i in range(remainder):
+        blocks[i] += 1
+
+    trainer_files = [[]] * trainers
+    begin = 0
+    for i in range(trainers):
+        trainer_files[i] = files[begin:begin + blocks[i]]
+        begin += blocks[i]
+
+    return trainer_files[trainer_id]
 
 
 class CostPrinter(object):
