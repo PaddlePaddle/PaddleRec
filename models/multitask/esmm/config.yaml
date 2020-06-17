@@ -51,7 +51,7 @@ runner:
     phases: [train]
   - name: infer_runner
     class: infer
-    init_model_path: "increment"
+    init_model_path: "increment/1"
     device: cpu
     print_interval: 1
     phases: [infer]
