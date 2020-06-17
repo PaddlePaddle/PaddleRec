@@ -80,7 +80,7 @@
   
 ### 安装命令
 
-- 安装方法一<PIP源直接安装>：
+- 安装方法一 **PIP源直接安装**
   ```bash
   python -m pip install paddle-rec
   ```
@@ -89,9 +89,8 @@
     > - 可以先pip安装`PaddlePaddle`，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
     > - 其他安装问题可以在[Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues)或[PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)提出，会有工程师及时解答
 
-- 安装方法二
-
-  源码编译安装
+- 安装方法二 **源码编译安装**
+  
   - 安装飞桨  **注：需要用户安装版本 == 1.7.2 的飞桨**
 
     ```shell
