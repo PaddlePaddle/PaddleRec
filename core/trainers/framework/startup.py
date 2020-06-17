@@ -39,6 +39,9 @@ class StartupBase(object):
             return
         print("going to load ", dirname)
         if is_fleet:
+            if context["fleet_mode"].upper() == "PS":
+                return
+            # For Pslib
             context["fleet"].load_persistables(context["exe"], dirname)
         else:
             fluid.io.load_persistables(
