@@ -84,6 +84,10 @@
   ```bash
   python -m pip install paddle-rec
   ```
+  > 该方法会默认下载安装`paddlepaddle v1.7.2 cpu版本`，若无法正常下载：
+  > - 可以在[该地址](https://pypi.org/project/paddlepaddle/1.7.2/#files)，下载PaddlePaddle后手动安装whl包
+  > - 可以pip安装PaddlePaddle，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
+  > - 其他安装问题可以在[Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues)或[PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)提出，会有工程师及时解答
 
 - 安装方法二
 
