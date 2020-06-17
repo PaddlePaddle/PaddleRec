@@ -16,21 +16,21 @@
 workspace: "paddlerec.models.multitask.esmm"
 
 dataset:
-- name: dataset_train
-  batch_size: 1
-  type: QueueDataset
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/esmm_reader.py"
-- name: dataset_infer
-  batch_size: 1
-  type: QueueDataset
-  data_path: "{workspace}/data/test"
-  data_converter: "{workspace}/esmm_reader.py"
+  - name: dataset_train
+    batch_size: 1
+    type: QueueDataset
+    data_path: "{workspace}/data/train"
+    data_converter: "{workspace}/esmm_reader.py"
+  - name: dataset_infer
+    batch_size: 1
+    type: QueueDataset
+    data_path: "{workspace}/data/test"
+    data_converter: "{workspace}/esmm_reader.py"
 
 hyper_parameters:
   vocab_size: 10000
   embed_size: 128
-  optimizer: 
+  optimizer:
     class: adam
     learning_rate: 0.001
     strategy: async
@@ -39,30 +39,29 @@ hyper_parameters:
 mode: [train_runner, infer_runner]
 
 runner:
-- name: train_runner
-  class: train
-  device: cpu
-  epochs: 3
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
-  print_interval: 10
-  phases: [train]
-- name: infer_runner
-  class: infer
-  init_model_path: "increment/0"
-  device: cpu
-  epochs: 1
-  print_interval: 1
-  phases: [infer]
+  - name: train_runner
+    class: train
+    device: cpu
+    epochs: 3
+    save_checkpoint_interval: 2
+    save_inference_interval: 4
+    save_checkpoint_path: "increment"
+    save_inference_path: "inference"
+    print_interval: 10
+    phases: [train]
+  - name: infer_runner
+    class: infer
+    init_model_path: "increment/1"
+    device: cpu
+    print_interval: 1
+    phases: [infer]
 
 phase:
-- name: train
-  model: "{workspace}/model.py"
-  dataset_name: dataset_train
-  thread_num: 1
-- name: infer
-  model: "{workspace}/model.py"
-  dataset_name: dataset_infer
-  thread_num: 1
+  - name: train
+    model: "{workspace}/model.py"
+    dataset_name: dataset_train
+    thread_num: 1
+  - name: infer
+    model: "{workspace}/model.py"
+    dataset_name: dataset_infer
+    thread_num: 1

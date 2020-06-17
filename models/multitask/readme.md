@@ -77,7 +77,7 @@ python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配�
 # 修改对应模型的config.yaml, workspace配置为当前目录的绝对路径
 # 修改对应模型的config.yaml，mode配置infer_runner
 # 示例: mode: train_runner -> mode: infer_runner
-# infer_runner中 class配置为 class: single_infer
+# infer_runner中 class配置为 class: infer
 # 修改phase阶段为infer的配置，参照config注释
 
 # 修改完config.yaml后 执行:

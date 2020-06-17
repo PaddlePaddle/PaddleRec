@@ -19,6 +19,7 @@ from paddlerec.core.utils.envs import get_global_env
 from paddlerec.core.utils.envs import get_runtime_environ
 from paddlerec.core.reader import SlotReader
 from paddlerec.core.trainer import EngineMode
+from paddlerec.core.utils.util import split_files
 
 
 def dataloader_by_name(readerclass,
@@ -39,7 +40,8 @@ def dataloader_by_name(readerclass,
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
-        files = context["fleet"].split_files(files)
+        files = split_files(files, context["fleet"].worker_index(),
+                            context["fleet"].worker_num())
         print("file_list : {}".format(files))
 
     reader = reader_class(yaml_file)
@@ -80,7 +82,8 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
-        files = context["fleet"].split_files(files)
+        files = split_files(files, context["fleet"].worker_index(),
+                            context["fleet"].worker_num())
         print("file_list: {}".format(files))
 
     sparse = get_global_env(name + "sparse_slots", "#")
@@ -133,7 +136,8 @@ def slotdataloader(readerclass, train, yaml_file, context):
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
-        files = context["fleet"].split_files(files)
+        files = split_files(files, context["fleet"].worker_index(),
+                            context["fleet"].worker_num())
         print("file_list: {}".format(files))
 
     sparse = get_global_env("sparse_slots", "#", namespace)
