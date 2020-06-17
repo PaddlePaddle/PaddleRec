@@ -53,7 +53,6 @@ runner:
     class: infer
     init_model_path: "increment"
     device: cpu
-    epochs: 1
     print_interval: 1
     phases: [infer]
 
