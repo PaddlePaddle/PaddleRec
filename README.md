@@ -162,8 +162,9 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 <p>
 
 ### 版本历史
-- 2020.6.17 - PaddleRec v0.1.0
-- 2020.5.14 - PaddleRec v0.0.1
+- 2020.06.17 - PaddleRec v0.1.0
+- 2020.06.03 - PaddleRec v0.0.2
+- 2020.05.14 - PaddleRec v0.0.1
   
 ### 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
