@@ -439,8 +439,8 @@ def local_cluster_engine(args):
     if fleet_mode == "COLLECTIVE":
         cluster_envs["selected_gpus"] = selected_gpus
         gpus = selected_gpus.split(",")
-        gpu_num = get_worker_num(run_extras, len(gpus))
-        cluster_envs["selected_gpus"] = ','.join(gpus[:gpu_num])
+        worker_num = get_worker_num(run_extras, len(gpus))
+        cluster_envs["selected_gpus"] = ','.join(gpus[:worker_num])
 
     cluster_envs["server_num"] = server_num
     cluster_envs["worker_num"] = worker_num
