@@ -80,27 +80,34 @@
   
 ### 安装命令
 
-- 安装方法一<PIP源直接安装>：
+- 安装方法一 **PIP源直接安装**
   ```bash
   python -m pip install paddle-rec
   ```
+    > 该方法会默认下载安装`paddlepaddle v1.7.2 cpu版本`，若提示`PaddlePaddle`无法安装，则依照下述方法首先安装`PaddlePaddle`，再安装`PaddleRec`：
+    > - 可以在[该地址](https://pypi.org/project/paddlepaddle/1.7.2/#files)，下载PaddlePaddle后手动安装whl包
+    > - 可以先pip安装`PaddlePaddle`，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
+    > - 其他安装问题可以在[Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues)或[PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)提出，会有工程师及时解答
 
-- 安装方法二
-
-  源码编译安装
-  1. 安装飞桨  **注：需要用户安装版本 >=1.7.2 的飞桨**
+- 安装方法二 **源码编译安装**
+  
+  - 安装飞桨  **注：需要用户安装版本 == 1.7.2 的飞桨**
 
     ```shell
-    python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+    python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple
     ```
 
-  2. 源码安装PaddleRec
+  - 源码安装PaddleRec
 
     ```
     git clone https://github.com/PaddlePaddle/PaddleRec/
     cd PaddleRec
     python setup.py install
     ```
+
+- PaddleRec-GPU安装方法
+
+  在使用方法一或方法二完成PaddleRec安装后，需再手动安装`paddlepaddle-gpu`，并根据自身环境(Cuda/Cudnn)选择合适的版本，安装教程请查阅[飞桨-开始使用](https://www.paddlepaddle.org.cn/install/quick)
 
 
 <h2 align="center">一键启动</h2>
