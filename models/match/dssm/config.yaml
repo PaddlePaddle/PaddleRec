@@ -56,9 +56,7 @@ runner:
   init_model_path: "" # load model path
   print_interval: 2
 - name: infer_runner
-  class: single_infer
-  # num of epochs
-  epochs: 1
+  class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
