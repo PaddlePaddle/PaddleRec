@@ -156,13 +156,14 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 <p align="center">
     <br>
     <img alt="Release" src="https://img.shields.io/badge/Release-0.1.0-yellowgreen">
-    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/Serving">
+    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/PaddleRec">
     <img alt="Slack" src="https://img.shields.io/badge/Join-Slack-green">
     <br>
 <p>
 
 ### 版本历史
-- 2020.5.14 - PaddleRec v0.1
+- 2020.6.17 - PaddleRec v0.1.0
+- 2020.5.14 - PaddleRec v0.0.1
   
 ### 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
