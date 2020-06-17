@@ -38,14 +38,9 @@ class StartupBase(object):
         if dirname is None or dirname == "":
             return
         print("going to load ", dirname)
-        if is_fleet:
-            if context["fleet_mode"].upper() == "PS":
-                return
-            # For Pslib
-            context["fleet"].load_persistables(context["exe"], dirname)
-        else:
-            fluid.io.load_persistables(
-                context["exe"], dirname, main_program=main_program)
+        fluid.io.load_persistables(
+            context["exe"], dirname, main_program=main_program)
+        print("load from {} success".format(dirname))
 
 
 class SingleStartup(StartupBase):
@@ -84,7 +79,6 @@ class PSStartup(StartupBase):
                 "startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
                 context["exe"].run(startup_prog)
-                self.load(context, True)
         context["status"] = "train_pass"
 
 
@@ -102,7 +96,7 @@ class CollectiveStartup(StartupBase):
                 "startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
                 context["exe"].run(startup_prog)
-                self.load(context, True)
+                self.load(context, main_program=train_prog)
         context["status"] = "train_pass"
 
 

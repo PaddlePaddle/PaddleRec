@@ -26,7 +26,7 @@ class InstanceBase(object):
 
 ## network
 
-network将在instanc后调用，执行模型的组网。network的官方实现位于[network.py](../core/trainers/framework/network.py),network基类定义如下：
+network将在instanc后调用，执行模型的组网。network的官方实现位于[network.py](../core/trainers/framework/network.py)，network基类定义如下：
 
 ```python
 class NetworkBase(object):
@@ -37,7 +37,7 @@ class NetworkBase(object):
         pass
 ```
 
-可参照其他模式的实现方式，自定其中的部分步骤。您需要您需要继承`NetworkBase`并命名为`Network`，完成`build_network`的实现，通过上下文信息字典`context`拿到模型所需信息，并在context中保存模型的program与scope信息，例如：
+可参照其他模式的实现方式，实现其中的部分步骤。您需要继承`NetworkBase`并命名为`Network`，完成`build_network`的实现，通过上下文信息字典`context`拿到模型所需信息，并在context中保存模型的program与scope信息，例如：
 
 ```python
 context["model"][model_dict["name"]][
@@ -52,7 +52,7 @@ context["model"][model_dict["name"]][
 
 ## startup
 
-startup执行网络参数的初始化，抑或模型的热启动，主要功能是执行`exe.run(fluid.default_startup_program())`。 startup的官方实现在[startup](../core/trainers/framework/startup.py)
+startup执行网络参数的初始化，或者模型的热启动，主要功能是执行`exe.run(fluid.default_startup_program())`。 startup的官方实现在[startup](../core/trainers/framework/startup.py)
 
 ```python
 class StartupBase(object):
@@ -75,7 +75,7 @@ class StartupBase(object):
                 context["exe"], dirname, main_program=main_program)
 ```
 
-自定义startup流程，您需要您需要继承`StartupBase`并命名为`Startup`，实现该类型中startup成员函数。
+自定义startup流程，您需要继承`StartupBase`并命名为`Startup`，实现该类型中startup成员函数。
 
 ## runner
 
@@ -113,7 +113,7 @@ class PSRunner(RunnerBase):
         context["status"] = "terminal_pass"
 ```
 
-自定义runner需要参照官方实现[runner.py](../core/trainers/framework/startup.py)，继承基类`RunnerBase`，命名为`Runner`，并实现`run`成员函数。
+自定义runner需要参照官方实现[runner.py](../core/trainers/framework/runner.py)，继承基类`RunnerBase`，命名为`Runner`，并实现`run`成员函数。
 
 ## terminal
 
