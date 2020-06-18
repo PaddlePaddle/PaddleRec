@@ -16,15 +16,50 @@ from __future__ import print_function
 
 import os
 import time
-import warnings
-import datetime
-
+import numpy as np
 import paddle.fluid as fluid
+
 from paddlerec.core.utils import envs
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
 ]
+
+
+def as_numpy(tensor):
+    """
+    Convert a Tensor to a numpy.ndarray, its only support Tensor without LoD information.
+    For higher dimensional sequence data, please use LoDTensor directly.
+
+    Examples:
+        .. code-block:: python
+
+          import paddle.fluid as fluid
+          import numpy
+
+          new_scope = fluid.Scope()
+          with fluid.scope_guard(new_scope):
+              fluid.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), fluid.CPUPlace())
+          tensor = new_scope.find_var("data").get_tensor()
+          fluid.executor.as_numpy(tensor) # or numpy.array(new_scope.find_var("data").get_tensor())
+
+    Args:
+       tensor(Variable): a instance of Tensor
+
+    Returns:
+        numpy.ndarray
+    """
+    if isinstance(tensor, fluid.core.LoDTensorArray):
+        return [as_numpy(t) for t in tensor]
+    if isinstance(tensor, list):
+        return [as_numpy(t) for t in tensor]
+    assert isinstance(tensor, fluid.core.LoDTensor)
+    lod = tensor.lod()
+    # (todo) need print lod or return it for user
+    if tensor._is_initialized():
+        return np.array(tensor)
+    else:
+        return None
 
 
 class RunnerBase(object):
@@ -50,6 +85,7 @@ class RunnerBase(object):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
+
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -89,23 +125,8 @@ class RunnerBase(object):
     def _executor_dataloader_train(self, model_dict, context):
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
+        program = self._get_dataloader_program(model_dict, context)
 
-        if context["is_infer"]:
-            program = context["model"][model_name]["main_program"]
-        elif context["is_fleet"]:
-            if context["fleet_mode"].upper() == "PS":
-                program = self._get_ps_program(model_dict, context)
-            elif context["fleet_mode"].upper() == "COLLECTIVE":
-                program = context["model"][model_name]["main_program"]
-        elif not context["is_fleet"]:
-            if context["device"].upper() == "CPU":
-                program = self._get_single_cpu_program(model_dict, context)
-            elif context["device"].upper() == "GPU":
-                program = self._get_single_gpu_program(model_dict, context)
-
-        reader_name = model_dict["dataset_name"]
-        fetch_vars = []
-        fetch_alias = []
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
@@ -114,9 +135,6 @@ class RunnerBase(object):
         else:
             metrics = model_class.get_metrics()
 
-        if metrics:
-            fetch_vars = metrics.values()
-            fetch_alias = metrics.keys()
         metrics_varnames = []
         metrics_format = []
         metrics_format.append("{}: {{}}".format("batch"))
@@ -132,9 +150,16 @@ class RunnerBase(object):
         with fluid.scope_guard(scope):
             try:
                 while True:
-                    metrics_rets = context["exe"].run(
-                        program=program, fetch_list=metrics_varnames)
+                    metrics_tensors = context["exe"].run(
+                        program=program,
+                        fetch_list=metrics_varnames,
+                        return_numpy=False)
                     metrics = [batch_id]
+
+                    metrics_rets = [
+                        as_numpy(metrics_tensor)
+                        for metrics_tensor in metrics_tensors
+                    ]
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
@@ -142,6 +167,24 @@ class RunnerBase(object):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+
+    def _get_dataloader_program(self, model_dict, context):
+        model_name = model_dict["name"]
+        if context["model"][model_name]["compiled_program"] == None:
+            if context["is_infer"]:
+                program = context["model"][model_name]["main_program"]
+            elif context["is_fleet"]:
+                if context["fleet_mode"].upper() == "PS":
+                    program = self._get_ps_program(model_dict, context)
+                elif context["fleet_mode"].upper() == "COLLECTIVE":
+                    program = context["model"][model_name]["main_program"]
+            elif not context["is_fleet"]:
+                if context["device"].upper() == "CPU":
+                    program = self._get_single_cpu_program(model_dict, context)
+                elif context["device"].upper() == "GPU":
+                    program = self._get_single_gpu_program(model_dict, context)
+            context["model"][model_name]["compiled_program"] = program
+        return context["model"][model_name]["compiled_program"]
 
     def _get_strategy(self, model_dict, context):
         _build_strategy = fluid.BuildStrategy()
@@ -218,12 +261,17 @@ class RunnerBase(object):
 
     def save(self, epoch_id, context, is_fleet=False):
         def need_save(epoch_id, epoch_interval, is_last=False):
+            name = "runner." + context["runner_name"] + "."
+            total_epoch = int(envs.get_global_env(name + "epochs", 1))
+            if epoch_id + 1 == total_epoch:
+                is_last = True
+
             if is_last:
                 return True
             if epoch_id == -1:
                 return False
 
-            return epoch_id % epoch_interval == 0
+            return (epoch_id + 1) % epoch_interval == 0
 
         def save_inference_model():
             name = "runner." + context["runner_name"] + "."
@@ -236,7 +284,7 @@ class RunnerBase(object):
             fetch_varnames = envs.get_global_env(
                 name + "save_inference_fetch_varnames", [])
             if feed_varnames is None or fetch_varnames is None or feed_varnames == "" or fetch_varnames == "" or \
-               len(feed_varnames) == 0 or len(fetch_varnames) == 0:
+                    len(feed_varnames) == 0 or len(fetch_varnames) == 0:
                 return
             fetch_vars = [
                 fluid.default_main_program().global_block().vars[varname]
@@ -415,3 +463,53 @@ class PslibRunner(RunnerBase):
 
         """
         context["status"] = "terminal_pass"
+
+
+class SingleInferRunner(RunnerBase):
+    def __init__(self, context):
+        print("Running SingleInferRunner.")
+        pass
+
+    def run(self, context):
+        self._dir_check(context)
+
+        for index, epoch_name in enumerate(self.epoch_model_name_list):
+            for model_dict in context["phases"]:
+                self._load(context, model_dict,
+                           self.epoch_model_path_list[index])
+                begin_time = time.time()
+                self._run(context, model_dict)
+                end_time = time.time()
+                seconds = end_time - begin_time
+                print("Infer {} of {} done, use time: {}".format(model_dict[
+                    "name"], epoch_name, seconds))
+        context["status"] = "terminal_pass"
+
+    def _load(self, context, model_dict, model_path):
+        if model_path is None or model_path == "":
+            return
+        print("load persistables from", model_path)
+
+        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+            train_prog = context["model"][model_dict["name"]]["main_program"]
+            startup_prog = context["model"][model_dict["name"]][
+                "startup_program"]
+            with fluid.program_guard(train_prog, startup_prog):
+                fluid.io.load_persistables(
+                    context["exe"], model_path, main_program=train_prog)
+
+    def _dir_check(self, context):
+        dirname = envs.get_global_env(
+            "runner." + context["runner_name"] + ".init_model_path", None)
+        self.epoch_model_path_list = []
+        self.epoch_model_name_list = []
+
+        for file in os.listdir(dirname):
+            file_path = os.path.join(dirname, file)
+            if os.path.isdir(file_path):
+                self.epoch_model_path_list.append(file_path)
+                self.epoch_model_name_list.append(file)
+
+        if len(self.epoch_model_path_list) == 0:
+            self.epoch_model_path_list.append(dirname)
+            self.epoch_model_name_list.append(dirname)

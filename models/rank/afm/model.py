@@ -133,7 +133,7 @@ class Model(ModelBase):
             attention_h)  # (batch_size * (num_field*(num_field-1)/2)) * 1
         attention_out = fluid.layers.softmax(
             attention_out)  # (batch_size * (num_field*(num_field-1)/2)) * 1
-        num_interactions = self.num_field * (self.num_field - 1) / 2
+        num_interactions = int(self.num_field * (self.num_field - 1) / 2)
         attention_out = fluid.layers.reshape(
             attention_out,
             shape=[-1, num_interactions,

@@ -18,7 +18,9 @@ import copy
 import os
 import socket
 import sys
+import six
 import traceback
+import six
 
 global_envs = {}
 global_envs_flatten = {}
@@ -101,6 +103,12 @@ def set_global_envs(envs):
             name = ".".join(["dataset", dataset["name"], "type"])
             global_envs[name] = "DataLoader"
 
+    if get_platform() == "LINUX" and six.PY3:
+        print("QueueDataset can not support PY3, change to DataLoader")
+        for dataset in envs["dataset"]:
+            name = ".".join(["dataset", dataset["name"], "type"])
+            global_envs[name] = "DataLoader"
+
 
 def get_global_env(env_name, default_value=None, namespace=None):
     """
@@ -134,6 +142,10 @@ def os_path_adapter(value):
 
 def workspace_adapter(value):
     workspace = global_envs.get("workspace")
+    return workspace_adapter_by_specific(value, workspace)
+
+
+def workspace_adapter_by_specific(value, workspace):
     workspace = paddlerec_adapter(workspace)
     value = value.replace("{workspace}", workspace)
     return value
@@ -249,11 +261,19 @@ def load_yaml(config):
             use_full_loader = False
 
     if os.path.isfile(config):
-        with open(config, 'r') as rb:
-            if use_full_loader:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-            else:
-                _config = yaml.load(rb.read())
-            return _config
+        if six.PY2:
+            with open(config, 'r') as rb:
+                if use_full_loader:
+                    _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+                else:
+                    _config = yaml.load(rb.read())
+                return _config
+        else:
+            with open(config, 'r', encoding="utf-8") as rb:
+                if use_full_loader:
+                    _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+                else:
+                    _config = yaml.load(rb.read())
+                return _config
     else:
         raise ValueError("config {} can not be supported".format(config))

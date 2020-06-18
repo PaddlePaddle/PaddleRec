@@ -36,7 +36,8 @@ class Reader(ReaderBase):
                 for line in fin:
                     line = line.strip().split('\t')
                     res.append(
-                        tuple([map(int, line[0].split(',')), int(line[1])]))
+                        tuple([[int(l)
+                                for l in line[0].split(',')], int(line[1])]))
         return res
 
     def make_data(self, cur_batch, batch_size):

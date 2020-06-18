@@ -45,19 +45,21 @@
     |   召回   |             [Youtube_dnn](models/recall/youtube_dnn/model.py)             |    ✓    |    ✓    |     ✓     |     ✓     | [RecSys 2016][Deep Neural Networks for YouTube Recommendations](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/45530.pdf)                                               |
     |   召回   |                     [NCF](models/recall/ncf/model.py)                     |    ✓    |    ✓    |     ✓     |     ✓     | [WWW 2017][Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf)                                                                                                                            |
     |   召回   |                     [GNN](models/recall/gnn/model.py)                     |    ✓    |    ✓    |     ✓     |     ✓     | [AAAI 2019][Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855)                                                                                                      |
-    |   排序   |      [Logistic Regression](models/rank/logistic_regression/model.py)      |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
+    |   排序   |      [Logistic Regression](models/rank/logistic_regression/model.py)      |    ✓    |    x    |     ✓     |     x     | /                                                                                                                                                                                                           |
     |   排序   |                      [Dnn](models/rank/dnn/model.py)                      |    ✓    |    ✓    |     ✓     |     ✓     | /                                                                                                                                                                                                           |
-    |   排序   |                       [FM](models/rank/fm/model.py)                       |    ✓    |    ✓    |     ✓     |     ✓     | /                                                                                                                                                                                                           |
-    |   排序   |                      [FFM](models/rank/ffm/model.py)                      |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                      [Pnn](models/rank/pnn/model.py)                      |  >=2.0  |  >=2.0  |   >=2.0   |   >=2.0   | /                                                                                                                                                                                                           |
-    |   排序   |                      [DCN](models/rank/dcn/model.py)                      |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                      [NFM](models/rank/nfm/model.py)                      |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                      [AFM](models/rank/afm/model.py)                      |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                   [DeepFM](models/rank/deepfm/model.py)                   |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                      [DIN](models/rank/din/model.py)                      |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                [Wide&Deep](models/rank/wide_deep/model.py)                |    ✓    |    ✓    |     ✓     |     x     | /                                                                                                                                                                                                           |
-    |   排序   |                    [FGCNN](models/rank/fgcnn/model.py)                    |    ✓    |    ✓    |     ✓     |     ✓     | /                                                                                                                                                                                                           |
+    |   排序   |                       [FM](models/rank/fm/model.py)                       |    ✓    |    x    |     ✓     |     x     | [IEEE Data Mining 2010][Factorization machines](https://analyticsconsultores.com.mx/wp-content/uploads/2019/03/Factorization-Machines-Steffen-Rendle-Osaka-University-2010.pdf)                             |
+    |   排序   |                      [FFM](models/rank/ffm/model.py)                      |    ✓    |    x    |     ✓     |     x     | [RECSYS 2016][Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/pdf/10.1145/2959100.2959134)                                                                                    |
+    |   排序   |                      [FNN](models/rank/fnn/model.py)                      |    ✓    |    x    |     ✓     |     x     | [ECIR 2016][Deep Learning over Multi-field Categorical Data](https://arxiv.org/pdf/1601.02376.pdf)                                                                                                          |
+    |   排序   |            [Deep Crossing](models/rank/deep_crossing/model.py)            |    ✓    |    x    |     ✓     |     x     | [ACM 2016][Deep Crossing: Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf)                                                   |
+    |   排序   |                      [Pnn](models/rank/pnn/model.py)                      |    ✓    |    x    |     ✓     |     x     | [ICDM 2016][Product-based Neural Networks for User Response Prediction](https://arxiv.org/pdf/1611.00144.pdf)                                                                                               |
+    |   排序   |                      [DCN](models/rank/dcn/model.py)                      |    ✓    |    x    |     ✓     |     x     | [KDD 2017][Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754)                                                                                               |
+    |   排序   |                      [NFM](models/rank/nfm/model.py)                      |    ✓    |    x    |     ✓     |     x     | [SIGIR 2017][Neural Factorization Machines for Sparse Predictive Analytics](https://dl.acm.org/doi/pdf/10.1145/3077136.3080777)                                                                             |
+    |   排序   |                      [AFM](models/rank/afm/model.py)                      |    ✓    |    x    |     ✓     |     x     | [IJCAI 2017][Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks](https://arxiv.org/pdf/1708.04617.pdf)                                                  |
+    |   排序   |                   [DeepFM](models/rank/deepfm/model.py)                   |    ✓    |    x    |     ✓     |     x     | [IJCAI 2017][DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)                                                                                 |
+    |   排序   |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |    ✓    |    x    |     ✓     |     x     | [KDD 2018][xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)                                                       |
+    |   排序   |                      [DIN](models/rank/din/model.py)                      |    ✓    |    x    |     ✓     |     x     | [KDD 2018][Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)                                                                                     |
+    |   排序   |                [Wide&Deep](models/rank/wide_deep/model.py)                |    ✓    |    x    |     ✓     |     x     | [DLRS 2016][Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)                                                                                               |
+    |   排序   |                    [FGCNN](models/rank/fgcnn/model.py)                    |    ✓    |    ✓    |     ✓     |     ✓     | [WWW 2019][Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)                                                                      |
     |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)                                                              |
     |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)                                                       |
     |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |    ✓    |    ✓    |     ✓     |     ✓     | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)                                                                                                               |
@@ -78,27 +80,34 @@
   
 ### 安装命令
 
-- 安装方法一<PIP源直接安装>：
+- 安装方法一 **PIP源直接安装**
   ```bash
   python -m pip install paddle-rec
   ```
+    > 该方法会默认下载安装`paddlepaddle v1.7.2 cpu版本`，若提示`PaddlePaddle`无法安装，则依照下述方法首先安装`PaddlePaddle`，再安装`PaddleRec`：
+    > - 可以在[该地址](https://pypi.org/project/paddlepaddle/1.7.2/#files)，下载PaddlePaddle后手动安装whl包
+    > - 可以先pip安装`PaddlePaddle`，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
+    > - 其他安装问题可以在[Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues)或[PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)提出，会有工程师及时解答
 
-- 安装方法二
-
-  源码编译安装
-  1. 安装飞桨  **注：需要用户安装版本 >=1.7.2 的飞桨**
+- 安装方法二 **源码编译安装**
+  
+  - 安装飞桨  **注：需要用户安装版本 == 1.7.2 的飞桨**
 
     ```shell
-    python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+    python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple
     ```
 
-  2. 源码安装PaddleRec
+  - 源码安装PaddleRec
 
     ```
     git clone https://github.com/PaddlePaddle/PaddleRec/
     cd PaddleRec
     python setup.py install
     ```
+
+- PaddleRec-GPU安装方法
+
+  在使用方法一或方法二完成PaddleRec安装后，需再手动安装`paddlepaddle-gpu`，并根据自身环境(Cuda/Cudnn)选择合适的版本，安装教程请查阅[飞桨-开始使用](https://www.paddlepaddle.org.cn/install/quick)
 
 
 <h2 align="center">一键启动</h2>
@@ -118,7 +127,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 * [分布式深度学习介绍](doc/ps_background.md)
 
 ### 快速开始
-* [十分钟上手PaddleRec](https://aistudio.baidu.com/aistudio/projectdetail/523965)
+* [十分钟上手PaddleRec](https://aistudio.baidu.com/aistudio/projectdetail/559336)
 
 ### 入门教程
 * [数据准备](doc/slot_reader.md)
@@ -147,13 +156,15 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 <p align="center">
     <br>
     <img alt="Release" src="https://img.shields.io/badge/Release-0.1.0-yellowgreen">
-    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/Serving">
+    <img alt="License" src="https://img.shields.io/github/license/PaddlePaddle/PaddleRec">
     <img alt="Slack" src="https://img.shields.io/badge/Join-Slack-green">
     <br>
 <p>
 
 ### 版本历史
-- 2020.5.14 - PaddleRec v0.1
+- 2020.06.17 - PaddleRec v0.1.0
+- 2020.06.03 - PaddleRec v0.0.2
+- 2020.05.14 - PaddleRec v0.0.1
   
 ### 许可证书
 本项目的发布受[Apache 2.0 license](LICENSE)许可认证。

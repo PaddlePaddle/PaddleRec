@@ -29,8 +29,13 @@ class ClusterEngine(Engine):
         abs_dir = os.path.dirname(os.path.abspath(__file__))
 
         backend = envs.get_runtime_environ("engine_backend")
-        if backend == "PaddleCloud":
+        if not backend:
+            backend = ""
+        backend = backend.upper()
+        if backend == "PADDLECLOUD":
             self.submit_script = os.path.join(abs_dir, "cloud/cluster.sh")
+        elif backend == "KUBERNETES":
+            self.submit_script = os.path.join(abs_dir, "k8s/cluster.sh")
         else:
             raise ValueError("{} can not be supported now".format(backend))
 
@@ -47,6 +52,14 @@ class ClusterEngine(Engine):
         cmd = ("bash {}".format(self.submit_script)).split(" ")
         proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
         proc.wait()
+
+    @staticmethod
+    def workspace_replace():
+        workspace = envs.get_runtime_environ("engine_workspace")
+
+        for k, v in os.environ.items():
+            v = v.replace("{workspace}", workspace)
+            os.environ[k] = str(v)
 
     def run(self):
         role = envs.get_runtime_environ("engine_role")
