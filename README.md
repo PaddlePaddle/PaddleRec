@@ -1,17 +1,17 @@
 <p align="center">
-<img align="center" src="doc/imgs/logo.png">
+<img align="center" src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/logo.png">
 <p>
 <p align="center">
-<img align="center" src="doc/imgs/structure.png">
+<img align="center" src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/structure.png">
 <p>
 <p align="center">
-<img align="center" src="doc/imgs/overview.png">
+<img align="center" src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/overview.png">
 <p>
 
 
 <h2 align="center">什么是推荐系统?</h2>
 <p align="center">
-<img align="center" src="doc/imgs/rec-overview.png">
+<img align="center" src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/rec-overview.png">
 <p>
 
 - 推荐系统是在互联网信息爆炸式增长的时代背景下，帮助用户高效获得感兴趣信息的关键；
@@ -175,5 +175,5 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 亦可通过以下方式与我们沟通交流：
 
-<p align="center"><img width="200" height="200"  src="doc/imgs/wechet.png"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./doc/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="doc/imgs/weixin_supporter.png"/></p>
+<p align="center"><img width="200" height="200"  src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/wechet.png"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="https://gitee.com/mrchengmo/PaddleRecImg/raw/master/doc/imgs/weixin_supporter.png"/></p>
 <p align="center">  &#8194;&#8194;&#8194;&#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec交流QQ群&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec微信小助手</p>
