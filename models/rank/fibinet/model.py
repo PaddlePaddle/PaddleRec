@@ -77,22 +77,8 @@ class Model(ModelBase):
                                 is_sparse=True)
             emb.append(feat_emb)
         concat_emb = fluid.layers.concat(emb, axis=1)
-        '''
-        def _embedding_layer(input):
-            emb = fluid.layers.embedding(
-                input=input,
-                is_sparse=True,
-                is_distributed=self.is_distributed,
-                size=[self.sparse_feature_number, self.sparse_feature_dim],
-                param_attr=fluid.ParamAttr(
-                    name="SparseFeatFactors",
-                    initializer=fluid.initializer.Uniform()), )
-            emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
-            return emb_sum
-        concat_emb = list(map(_embedding_layer, self.sparse_inputs))
-        concat_emb = fluid.layers.concat(concat_emb, axis=1)'''
-
-        #filed_size = len(self.sparse_inputs)
+ 
+        filed_size = len(self.sparse_inputs)
         filed_size = 26
         bilinear_type = envs.get_global_env("hyper_parameters.bilinear_type")
         reduction_ratio = envs.get_global_env("hyper_parameters.reduction_ratio")
@@ -127,10 +113,3 @@ class Model(ModelBase):
         cost = fluid.layers.log_loss(input=self.predict, label=fluid.layers.cast(x=self.label_input, dtype='float32'))
         avg_cost = fluid.layers.reduce_mean(cost)
         self._cost = avg_cost
-        '''
-        def optimizer(self):
-            optimizer = fluid.optimizer.Adam(self.learning_rate, lazy_mode=True)
-            return optimizer
-
-        def infer_net(self):
-            pass'''
