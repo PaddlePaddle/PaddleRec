@@ -37,35 +37,43 @@
 | xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
 | DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
 | FGCNN | Feature Generation by CNN | [Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)(2019) |
+| FIBINET | Combining Feature Importance and Bilinear feature Interaction | [《FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction》]( https://arxiv.org/pdf/1905.09433.pdf) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
 [wide&deep](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454):
+
 <p align="center">
 <img align="center" src="../../doc/imgs/wide&deep.png">
 <p>
-
 [DeepFM](https://arxiv.org/pdf/1703.04247.pdf):
+
 <p align="center">
 <img align="center" src="../../doc/imgs/deepfm.png">
 <p>
-
 [XDeepFM](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023):
+
 <p align="center">
 <img align="center" src="../../doc/imgs/xdeepfm.png">
 <p>
-
 [DCN](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754):
+
 <p align="center">
 <img align="center" src="../../doc/imgs/dcn.png">
 <p>
-
 [DIN](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823):
+
 <p align="center">
 <img align="center" src="../../doc/imgs/din.png">
 <p>
+[FIBINET](https://arxiv.org/pdf/1905.09433.pdf):
+
+<p align="center">
+<img align="center" src="../../doc/imgs/fibinet.png">
+<p>
 
 ## 使用教程(快速开始)
+
 使用样例数据快速开始，参考[训练](###训练) & [预测](###预测)
 ## 使用教程(复现论文)
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据，并且调整了batch_size等超参以便在样例数据上更加友好的显示训练&测试日志。如果需要复现readme中的效果请按照如下表格调整batch_size等超参，并使用提供的脚本下载对应数据集以及数据预处理。
