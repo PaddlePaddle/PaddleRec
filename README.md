@@ -1,17 +1,17 @@
 <p align="center">
-<img align="center" src="doc/imgs/logo.png">
+<img align="center" src="https://paddlerec.bj.bcebos.com/imgs/logo.png">
 <p>
 <p align="center">
-<img align="center" src="doc/imgs/structure.png">
+<img align="center" src="https://paddlerec.bj.bcebos.com/imgs/structure.png">
 <p>
 <p align="center">
-<img align="center" src="doc/imgs/overview.png">
+<img align="center" src="https://paddlerec.bj.bcebos.com/imgs/overview.png">
 <p>
 
 
 <h2 align="center">什么是推荐系统?</h2>
 <p align="center">
-<img align="center" src="doc/imgs/rec-overview.png">
+<img align="center" src="https://paddlerec.bj.bcebos.com/imgs/rec-overview.png">
 <p>
 
 - 推荐系统是在互联网信息爆炸式增长的时代背景下，帮助用户高效获得感兴趣信息的关键；
@@ -178,5 +178,5 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 - QQ群号码：`861717190`
 - 微信小助手微信号：`paddlerec2020`
 
-<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="doc/imgs/weixin_supporter.png"/></p>
+<p align="center"><img width="200" height="200" margin="500" src="https://paddlerec.bj.bcebos.com/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="https://paddlerec.bj.bcebos.com/imgs/weixin_supporter.png"/></p>
 <p align="center">PaddleRec交流QQ群&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec微信小助手</p>
