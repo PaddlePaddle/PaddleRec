@@ -30,6 +30,12 @@
 
 （2）数值特征（连续特征）进行归一化处理
 
+执行run.sh生成训练集和测试集
+
+```
+sh run.sh
+```
+
 ## 环境
 
 PaddlePaddle 1.7.2
@@ -97,38 +103,36 @@ python -m paddlerec.run -m paddlerec.models.rank.fibinet
 训练：
 
 ```
-I0622 19:25:12.142271   344 parallel_executor.cc:440] The Program will be executed on CPU using ParallelExecutor, 1 cards are used, so 1 programs are executed in parallel.
-I0622 19:25:12.673106   344 build_strategy.cc:365] SeqOnlyAllReduceOps:0, num_trainers:1
-I0622 19:25:17.203287   344 parallel_executor.cc:307] Inplace strategy is enabled, when build_strategy.enable_inplace = True
-I0622 19:25:17.684131   344 parallel_executor.cc:375] Garbage collection strategy is enabled, when FLAGS_eager_delete_tensor_gb = 0
-batch: 10, AUC: [0.52777778], BATCH_AUC: [0.52777778]
-batch: 20, AUC: [0.51836735], BATCH_AUC: [0.45098039]
-batch: 30, AUC: [0.30978261], BATCH_AUC: [0.23214286]
-epoch 0 done, use time: 11.074166536331177
-batch: 10, AUC: [0.44592593], BATCH_AUC: [0.74294671]
-batch: 20, AUC: [0.52282609], BATCH_AUC: [0.83333333]
-batch: 30, AUC: [0.5210356], BATCH_AUC: [0.91071429]
-epoch 1 done, use time: 4.212069749832153
-batch: 10, AUC: [0.60075758], BATCH_AUC: [0.89184953]
-batch: 20, AUC: [0.64758769], BATCH_AUC: [1.]
-batch: 30, AUC: [0.68684476], BATCH_AUC: [1.]
-epoch 2 done, use time: 4.276938438415527
-batch: 10, AUC: [0.75172139], BATCH_AUC: [1.]
-batch: 20, AUC: [0.77915815], BATCH_AUC: [1.]
-batch: 30, AUC: [0.81179181], BATCH_AUC: [1.]
-epoch 3 done, use time: 4.278341770172119
-PaddleRec Finish
+Running SingleStartup.
+W0623 12:03:35.130075   509 device_context.cc:237] Please NOTE: device: 0, CUDA Capability: 70, Driver API Version: 9.2, Runtime API Version: 9.0
+W0623 12:03:35.134771   509 device_context.cc:245] device: 0, cuDNN Version: 7.3.
+Running SingleRunner.
+batch: 100, AUC: [0.6449976], BATCH_AUC: [0.69029814]
+batch: 200, AUC: [0.6769844], BATCH_AUC: [0.70255003]
+batch: 300, AUC: [0.67131597], BATCH_AUC: [0.68954499]
+batch: 400, AUC: [0.68129822], BATCH_AUC: [0.70892718]
+batch: 500, AUC: [0.68242937], BATCH_AUC: [0.69269376]
+batch: 600, AUC: [0.68741928], BATCH_AUC: [0.72034578]
+...
+batch: 1400, AUC: [0.84607023], BATCH_AUC: [0.93358024]
+batch: 1500, AUC: [0.84796116], BATCH_AUC: [0.95302841]
+batch: 1600, AUC: [0.84949111], BATCH_AUC: [0.92868531]
+batch: 1700, AUC: [0.85113661], BATCH_AUC: [0.95452616]
+batch: 1800, AUC: [0.85260467], BATCH_AUC: [0.92847032]
+epoch 3 done, use time: 1618.1106688976288
 ```
 
 预测
 
 ```
 load persistables from increment_model/3
-batch: 20, AUC: [0.86578715], BATCH_AUC: [1.]
-Infer phase2 of 3 done, use time: 13.813123941421509
-load persistables from increment_model/1
-batch: 20, AUC: [0.6480309], BATCH_AUC: [1.]
-Infer phase2 of 1 done, use time: 13.001627922058105
-PaddleRec Finish
+batch: 20, AUC: [0.85304064], BATCH_AUC: [0.94178556]
+batch: 40, AUC: [0.85304544], BATCH_AUC: [0.95207907]
+batch: 60, AUC: [0.85303907], BATCH_AUC: [0.94782551]
+batch: 80, AUC: [0.85298773], BATCH_AUC: [0.93987691]
+...
+batch: 1780, AUC: [0.866046], BATCH_AUC: [0.96424594]
+batch: 1800, AUC: [0.86633785], BATCH_AUC: [0.96900967]
+batch: 1820, AUC: [0.86662365], BATCH_AUC: [0.96759972]
 ```
 
