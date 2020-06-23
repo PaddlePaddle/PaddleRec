@@ -37,7 +37,7 @@
 | xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
 | DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
 | FGCNN | Feature Generation by CNN | [Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)(2019) |
-| FIBINET | Combining Feature Importance and Bilinear feature Interaction | [《FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction》]( https://arxiv.org/pdf/1905.09433.pdf) |
+| FIBINET | Combining Feature Importance and Bilinear feature Interaction | [《FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction》]( https://arxiv.org/pdf/1905.09433.pdf)(2019) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
@@ -85,6 +85,7 @@
 |       DIN        |       32       |       10       |        100       |
 |       Wide&Deep  |       40       |       1       |        40       |
 |       xDeepFM        |       100       |       1       |        10       |
+| Fibinet | 1000 | 8 | 4 |
 ### 数据处理
 参考每个模型目录数据下载&预处理脚本
 
@@ -124,6 +125,7 @@ python -m paddlerec.run -m ./config.yaml # 以DNN为例
 |       Criteo        |       xDeepFM       |       0.48657        |       --          |       --          |       --          |
 |       Census-income Data        |       Wide&Deep       |       0.76195         |       0.90577          |       --          |       --          |
 |       Amazon Product        |       DIN       |       0.47005        |       0.86379         |       --          |       --          |
+| Criteo | Fibinet | -- | 0.86662 | -- | -- |
 
 
 ## 分布式
