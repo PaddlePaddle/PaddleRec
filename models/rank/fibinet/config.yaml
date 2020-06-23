@@ -47,7 +47,7 @@ hyper_parameters:
   dropout_rate: 0.5
 
 # select runner by name
-mode: [single_gpu_train, single_gpu_infer]
+mode: [single_cpu_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
