@@ -2,7 +2,6 @@
 
 
 ## PaddleRec 整体设计概览
-PaddleRec将推荐模型的训练与预测流程，整体抽象为了五个大模块：
 
 - [PaddleRec 设计](#paddlerec-设计)
   - [PaddleRec 整体设计概览](#paddlerec-整体设计概览)
@@ -11,6 +10,12 @@ PaddleRec将推荐模型的训练与预测流程，整体抽象为了五个大�
   - [Model](#model)
   - [Reader](#reader)
   - [Metric](#metric)
+
+PaddleRec将推荐模型的训练与预测流程，整体抽象为了五个大模块：
+
+<p align="center">
+<img align="center" src="imgs/design.png">
+<p>
 
 core的文件结构如下，后续分别对各个模块进行介绍。
 ```
