@@ -12,22 +12,20 @@
 <img align="center" src="doc/imgs/rec-overview-en.png">
 <p>
 
-- Recommendation system is the key to help users get information of interest efficiently in the era of explosive growth of Internet information
+- Recommendation system is the key to help users get useful infomation from big data.
 
-- The recommendation system is also a silver bullet to help the product attract users, retain users, increase user stickiness and improve user conversion.
+- Recommendation system is also a silver bullet to attract users, retain users, increase user stickiness and improve user conversion.
 
-- Excellent recommendation system can help the product establish a good reputation, and help the product gain market share
-
-  > It can be said that who can master and make good use of the recommendation system, who can get the first chance in the fierce competition of information distribution.
+  > Who can better use the recommendation system, who can gain more advantage in the fierce competition.
   >
-  > At the same time, there are many problems that perplex the developers of the recommendation system, such as: huge data volume, complex model structure, inefficient distributed training environment, demanding online deployment requirements, all of which are too numerous to enumerate.
+  > At the same time, there are many problems in the process of using the recommendation system, such as: huge data volume, complex model structure, inefficient distributed training environment, demanding online deployment requirements, and so on.
 
 <h2 align="center">What is PaddleRec ?</h2>
 
 
-- A quick start tool of search & recommendation model based on [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/en/beginners_guide/index_en.html)
-- The whole process solution of recommendation system for beginners, developers and researchers
-- Complete recommendation algorithm library including content understanding, matching, recall, ranking, multi-task, re-rank etc.
+- A quick start tool of search & recommendation algorithm based on [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/en/beginners_guide/index_en.html)
+- The complete solution of recommendation system for beginners, developers and researchers
+- Recommendation algorithm library including content-understanding, matching, recall, ranking, multi-task, re-rank etc.
 
 
     |         Type          |                                 Algorithm                                 |  CPU  |   GPU   | Parameter-Server | Multi-GPU | Paper                                                                                                                                                                                                       |
@@ -84,9 +82,9 @@
   ```bash
   python -m pip install paddle-rec
   ```
-  > This method will download and install`paddlepaddle-v1.7.2-cpu`，if you are prompted that `PaddlePaddle` can not be installed automatically，You need to install `PaddlePaddle` manually，and then install `Paddlerec` again：
-  > - Download PaddlePaddle whl from [address](https://pypi.org/project/paddlepaddle/1.7.2/#files) and install by pip.
-  > - Directly install `PaddlePaddle` by pip，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
+  > This method will download and install `paddlepaddle-v1.7.2-cpu`. If `PaddlePaddle` can not be installed automatically，You need to install `PaddlePaddle` manually，and then install `PaddleRec` again：
+  > - Download [PaddlePaddle](https://pypi.org/project/paddlepaddle/1.7.2/#files) and install by pip.
+  > - Install `PaddlePaddle` by pip，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
   > - Other installation problems can be raised in [Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues) or [PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)
 
 2. **Install by source code**
@@ -107,12 +105,12 @@
 
 - Install PaddleRec-GPU  
 
-  After installing `PaddleRec`，You need to manually install `paddlepaddle-gpu`，select the appropriate version according to your environment (CUDA / cudnn)，please refer to the installation tutorial[Installation Manuals](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html)
+  After installing `PaddleRec`，please install the appropriate version of `paddlepaddle-gpu` according to your environment (CUDA / cudnn)，refer to the installation tutorial [Installation Manuals](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html)
 
 
 <h2 align="center">Quick Start</h2>
 
-We take the `dnn` algorithm as an example to introduce the quick start of `PaddleRec`, and we took 100 pieces of training data from [Criteo Dataset](https://www.kaggle.com/c/criteo-display-ad-challenge/):
+We take the `dnn` algorithm as an example to get start of `PaddleRec`, and we take 100 pieces of training data from [Criteo Dataset](https://www.kaggle.com/c/criteo-display-ad-challenge/):
 
 ```bash
 # Training with cpu
@@ -127,13 +125,13 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 * [Distributed deep learning](doc/ps_background.md)
 
 ### Introductory Project
-* [Ten minutes to learn PaddleRec](https://aistudio.baidu.com/aistudio/projectdetail/559336)
+* [Get start of PaddleRec in ten minutes](https://aistudio.baidu.com/aistudio/projectdetail/559336)
 
 ### Introductory tutorial
-* [Prepare Data](doc/slot_reader.md)
-* [HyperParameter of model](doc/model.md)
-* [Start Training](doc/train.md)
-* [Start Predicting](doc/predict.md)
+* [Data](doc/slot_reader.md)
+* [Model](doc/model.md)
+* [Train](doc/train.md)
+* [Predict](doc/predict.md)
 * [Serving](doc/serving.md)
 
 
@@ -169,9 +167,9 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 ### License
 [Apache 2.0 license](LICENSE)
 
-### Contack us
+### Contact us
 
-For any feedback or to report a bug, please propose a [GitHub Issue](https://github.com/PaddlePaddle/PaddleRec/issues)
+For any feedback, please propose a [GitHub Issue](https://github.com/PaddlePaddle/PaddleRec/issues)
 
 You can also communicate with us in the following ways：
 
