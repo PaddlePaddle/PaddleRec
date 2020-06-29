@@ -24,7 +24,7 @@
 
 
 - A quick start tool of search & recommendation algorithm based on [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/en/beginners_guide/index_en.html)
-- A complete solution of recommendation system for beginners, developers and researchers
+- A complete solution of recommendation system for beginners, developers and researchers.
 - Recommendation algorithm library including content-understanding, match, recall, rank, multi-task, re-rank etc.
 
 
