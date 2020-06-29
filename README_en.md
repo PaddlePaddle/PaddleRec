@@ -14,7 +14,7 @@
 
 - Recommendation system helps users quickly find useful and interesting information from massive data.
 
-- Recommendation system is also a silver bullet to attract users, retain users, increase users stickiness and improve users conversion.
+- Recommendation system is also a silver bullet to attract users, retain users, increase users' stickness or conversionn.
 
   > Who can better use the recommendation system, who can gain more advantage in the fierce competition.
   >
@@ -24,8 +24,8 @@
 
 
 - A quick start tool of search & recommendation algorithm based on [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/en/beginners_guide/index_en.html)
-- The complete solution of recommendation system for beginners, developers and researchers
-- Recommendation algorithm library including content-understanding, matching, recall, rank, multi-task, re-rank etc.
+- A complete solution of recommendation system for beginners, developers and researchers
+- Recommendation algorithm library including content-understanding, match, recall, rank, multi-task, re-rank etc.
 
 
     |         Type          |                                 Algorithm                                 |  CPU  |   GPU   | Parameter-Server | Multi-GPU | Paper                                                                                                                                                                                                       |
