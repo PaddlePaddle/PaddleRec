@@ -38,7 +38,7 @@ PaddleRec支持模型自定义数据集。
 
 Reader读取文件后，产出的数据喂入网络，需要有占位符进行接收。占位符在Paddle中使用`fluid.data`或`fluid.layers.data`进行定义。`data`的定义可以参考[fluid.data](https://www.paddlepaddle.org.cn/documentation/docs/zh/api_cn/fluid_cn/data_cn.html#data)以及[fluid.layers.data](https://www.paddlepaddle.org.cn/documentation/docs/zh/api_cn/layers_cn/data_cn.html#data)。
 
-加入您希望输入三个数据，分别是维度32的数据A，维度变长的稀疏数据B，以及一个一维的标签数据C，并希望梯度可以经过该变量向前传递，则示例如下：
+假如您希望输入三个数据，分别是维度32的数据A，维度变长的稀疏数据B，以及一个一维的标签数据C，并希望梯度可以经过该变量向前传递，则示例如下：
 
 数据A的定义：
 ```python
