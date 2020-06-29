@@ -1,3 +1,4 @@
+([简体中文](./README.md)|English)
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
