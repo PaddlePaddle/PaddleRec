@@ -135,6 +135,8 @@ SingleTrainer指定了以下5个步骤：
 4. train_pass：会根据环境分别调用`dataset`与`dataloader`进行训练的流程。
 5. terminal_pass：停止worker，以及执行模型训练后的所有操作
 
+各个步骤的详细介绍及自定义方法，可以参照[自定义流程](./trainer_develop.md)
+
 Trainer的自定义实现，可以参照[general_trainer.py](../core/trainers/general_trainer.py)
 
 ## Model
