@@ -82,7 +82,7 @@ runner:
   epochs: 10 # 训练轮数
 
   save_checkpoint_interval: 2 # 每隔2轮保存一次checkpoint
-  save_inference_interval: 4 # 每个4轮保存依次inference model
+  save_inference_interval: 4 # 每隔4轮保存一次inference model
   save_checkpoint_path: "increment" # checkpoint 的保存地址
   save_inference_path: "inference" # inference model 的保存地址
   save_inference_feed_varnames: [] # inference model 的feed参数的名字
