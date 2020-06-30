@@ -79,7 +79,7 @@
 * PaddlePaddle  >= 1.7.2
 * 操作系统: Windows/Mac/Linux
 
-  > Windows下目前仅提供单机训练，建议分布式使用Linux
+  > Windows下PaddleRec目前仅支持单机训练，分布式训练建议使用Linux环境
   
 ### 安装命令
 
