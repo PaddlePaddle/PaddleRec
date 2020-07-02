@@ -107,7 +107,7 @@ class Model(ModelBase):
 
         return deep_input
 
-    def embeddingLayer(self, inputs):
+    def _embeddingLayer(self, inputs):
         emb_list = []
         in_len = len(inputs)
         for data in inputs:
@@ -138,7 +138,7 @@ class Model(ModelBase):
 
         field_wise_embeds_list = []
         for inputs in [self.user_inputs, self.item_inputs, self.contex_inputs]:
-            field_emb = self.embeddingLayer(inputs)
+            field_emb = self._embeddingLayer(inputs)
             field_wise_embeds_list.append(field_emb)
 
         dnn_input = fluid.layers.concat(
