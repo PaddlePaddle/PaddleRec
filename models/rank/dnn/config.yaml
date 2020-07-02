@@ -86,7 +86,7 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataloader_train # select dataset by name
   thread_num: 1
-# runner infer
+
 - name: phase2
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_infer # select dataset by name
