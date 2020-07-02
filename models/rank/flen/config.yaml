@@ -106,4 +106,5 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_infer # select dataset by name
   thread_num: 2
+
   
