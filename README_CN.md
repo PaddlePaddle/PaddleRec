@@ -6,6 +6,7 @@
 <h5>test ci</h5>
 <h5>test ci</h5>
 <h6>test ci</h6>
+<h6>test ci</h6>
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
