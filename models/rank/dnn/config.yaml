@@ -87,7 +87,7 @@ phase:
   dataset_name: dataloader_train # select dataset by name
   thread_num: 1
 
-#test ci test ci  test ci test ci
+#test ci
 - name: phase2
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_infer # select dataset by name
