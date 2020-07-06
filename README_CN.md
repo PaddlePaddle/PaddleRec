@@ -2,6 +2,7 @@
 <h1>test ci</h1>
 <h2>test ci</h2>
 <h3>test ci</h3>
+<h4>test ci</h4>
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
