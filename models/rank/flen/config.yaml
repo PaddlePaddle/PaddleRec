@@ -19,13 +19,13 @@ workspace: "paddlerec.models.rank.flen"
 dataset:
 - name: dataloader_train # name of dataset to distinguish different datasets
   batch_size: 2
-  type: DataLoader # or QueueDataset 
+  type: QueueDataset  
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click user_0 user_1 user_2 user_3 user_4 user_5 user_6 user_7 user_8 user_9 user_10 user_11 item_0 item_1 item_2 contex_0 contex_1 contex_2 contex_3 contex_4 contex_5"
   dense_slots: ""
 - name: dataset_infer # name
   batch_size: 2
-  type: DataLoader # or QueueDataset
+  type: QueueDataset 
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click user_0 user_1 user_2 user_3 user_4 user_5 user_6 user_7 user_8 user_9 user_10 user_11 item_0 item_1 item_2 contex_0 contex_1 contex_2 contex_3 contex_4 contex_5"
   dense_slots: ""
