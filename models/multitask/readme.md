@@ -80,7 +80,7 @@ python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配�
 # infer_runner中 class配置为 class: infer
 # 修改phase阶段为infer的配置，参照config注释
 
-# 修改完config.yaml后 执行:
+# 修改完config.yaml后执行:
 python -m paddlerec.run -m ./config.yaml # 以MMoE为例
 ```
 
