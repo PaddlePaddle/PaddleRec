@@ -36,8 +36,9 @@ hyper_parameters:
         class: SGD
         learning_rate: 0.0001
     sparse_feature_number: 1086460
-    sparse_feature_dim: 9
+    sparse_feature_dim: 96
     num_field: 39
+    d_model: 96
     d_key: 16
     d_value: 16
     n_head: 6
