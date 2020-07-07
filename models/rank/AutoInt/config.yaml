@@ -14,8 +14,7 @@
 
 # global settings 
 debug: false
-#workspace: "paddlerec.models.rank.AutoInt"
-workspace: "/home/yaoxuefeng/repos/PaddleRec/PaddleRec/models/rank/AutoInt"
+workspace: "paddlerec.models.rank.AutoInt"
 
 
 dataset:
