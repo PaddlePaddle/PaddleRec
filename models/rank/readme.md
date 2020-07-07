@@ -37,9 +37,9 @@
 | xDeepFM | xDeepFM | [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)(2018) |
 | DIN | Deep Interest Network | [Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)(2018) |
 | DIEN | Deep Interest Evolution Network | [Deep Interest Evolution Network for Click-Through Rate Prediction](https://www.aaai.org/ojs/index.php/AAAI/article/view/4545/4423)(2019) |
-| AutoInt | Automatic Feature Interaction Learning via Self-Attentive Neural Networks | [AutoInt: Automatic Feature Interaction Learning via Self-Attentive Neural Networks](https://arxiv.org/pdf/1810.11921.pdf)(2019) |
 | FGCNN | Feature Generation by CNN | [Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)(2019) |
 | FIBINET | Combining Feature Importance and Bilinear feature Interaction | [《FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction》]( https://arxiv.org/pdf/1905.09433.pdf)(2019) |
+| FLEN | Leveraging Field for Scalable CTR Prediction | [《FLEN: Leveraging Field for Scalable CTR Prediction》]( https://arxiv.org/pdf/1911.04690.pdf)（2019） |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
@@ -73,6 +73,11 @@
 <p align="center">
 <img align="center" src="../../doc/imgs/fibinet.png">
 <p>
+[FLEN](https://arxiv.org/pdf/1911.04690.pdf):
+
+<p align="center">
+<img align="center" src="../../doc/imgs/flen.png">
+<p>
 
 ## 使用教程(快速开始)
 
@@ -88,6 +93,7 @@
 |       Wide&Deep  |       40       |       1       |        40       |
 |       xDeepFM        |       100       |       1       |        10       |
 | Fibinet | 1000 | 8 | 4 |
+| Flen | 512 | 8 | 1 |
 ### 数据处理
 参考每个模型目录数据下载&预处理脚本
 
@@ -128,6 +134,7 @@ python -m paddlerec.run -m ./config.yaml # 以DNN为例
 |       Census-income Data        |       Wide&Deep       |       0.76195         |       0.90577          |       --          |       --          |
 |       Amazon Product        |       DIN       |       0.47005        |       0.86379         |       --          |       --          |
 | Criteo | Fibinet | -- | 0.86662 | -- | -- |
+| Avazu | Flen | -- | -- | -- | -- |
 
 
 ## 分布式
