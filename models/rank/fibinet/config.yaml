@@ -59,8 +59,8 @@ runner:
   device: cpu
   save_checkpoint_interval: 2 # save model interval of epochs
   save_inference_interval: 4 # save inference
-  save_checkpoint_path: "increment_model" # save checkpoint path
-  save_inference_path: "inference" # save inference path
+  save_checkpoint_path: "increment_model_fibinet" # save checkpoint path
+  save_inference_path: "inference_fibinet" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
@@ -75,8 +75,8 @@ runner:
   device: gpu
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 4 # save inference
-  save_checkpoint_path: "increment_model" # save checkpoint path
-  save_inference_path: "inference" # save inference path
+  save_checkpoint_path: "increment_model_fibinet" # save checkpoint path
+  save_inference_path: "inference_fibinet" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
@@ -87,14 +87,14 @@ runner:
   class: infer
   # device to run training or infer
   device: cpu
-  init_model_path: "increment_model" # load model path
+  init_model_path: "increment_model_fibinet" # load model path
   phases: [phase2]
 
 - name: single_gpu_infer
   class: infer
   # device to run training or infer
   device: gpu
-  init_model_path: "increment_model" # load model path
+  init_model_path: "increment_model_fibinet" # load model path
   phases: [phase2]
 
 # runner will run all the phase in each epoch
