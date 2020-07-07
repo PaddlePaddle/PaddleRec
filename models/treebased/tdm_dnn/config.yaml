@@ -1,0 +1,88 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+workspace: "./"
+
+# list of dataset
+dataset:
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 100
+  type: QueueDataset # or QueueDataset 
+  data_path: "{workspace}/data/"
+  data_converter: "{workspace}/user_behavoir_reader.py"
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.0005
+    strategy: async
+  # user-defined <key, value> pairs
+  hidden_layers: [128, 64, 24]
+  max_layers: 22
+  node_nums: 8324047
+  leaf_node_nums: 4162024
+  layer_node_num_list: [2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4129744]
+  child_nums: 2
+  fea_group: [20,20,10,10,2,2,2,1,1,1]
+  item_nums: 69
+  node_emb_size: 24
+  neg_sampling_list: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,19,22,25,30,76,200]
+  output_positive: True
+  topK: 100
+  learning_rate: 0.001
+  tree:
+    # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
+    # 分布式训练trainer需要独立load 
+    # 预测时也改为从paddle模型加载
+    load_tree_from_numpy: True # only once
+    load_paddle_model: False # train & infer need
+    id2nodeid_path: "{workspace}/thirdparty/new_id2nodeid.txt"
+    tree_layer_path: "{workspace}/thirdparty/layer_list.txt"
+    tree_travel_path: "{workspace}/thirdparty/travel_list.npy"
+    tree_info_path: "{workspace}/thirdparty/tree_node_info.npy"
+    tree_emb_path: "{workspace}/thirdparty/tree_emb.npy"
+
+# select runner by name
+mode: runner1
+# config of each runner.
+# runner is a kind of padd training class, which wraps the train/infer process.
+runner:
+- name: runner1
+  class: train
+  startup_class_path: "{workspace}/tdm_startup.py"
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment" # save checkpoint path
+  init_model_path: "init_model" # load model path
+  print_interval: 1
+
+- name: runner2
+  class: infer
+  startup_class_path: "{workspace}/tdm_startup.py"
+  # device to run training or infer
+  device: cpu
+  init_model_path: "init_model" # load model path
+  print_interval: 1
+
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
