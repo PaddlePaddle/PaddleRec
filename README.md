@@ -60,6 +60,7 @@
     |         Rank          |                [Wide&Deep](models/rank/wide_deep/model.py)                |   ✓   |    x    |        ✓         |     x     | [DLRS 2016][Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)                                                                                               |
     |         Rank          |                    [FGCNN](models/rank/fgcnn/model.py)                    |   ✓   |    ✓    |        ✓         |     ✓     | [WWW 2019][Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)                                                                      |
     |         Rank          |                  [Fibinet](models/rank/fibinet/model.py)                  |   ✓   |    ✓    |        ✓         |     ✓     | [RecSys19][FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction]( https://arxiv.org/pdf/1905.09433.pdf)                                                 |
+    |         Rank          |                  [Flen](models/rank/flen/model.py)                  |   ✓   |    ✓    |        ✓         |     ✓     | [2019][FLEN: Leveraging Field for Scalable CTR Prediction]( https://arxiv.org/pdf/1911.04690.pdf)                                                 |
     |      Multi-Task       |                  [ESMM](models/multitask/esmm/model.py)                   |   ✓   |    ✓    |        ✓         |     ✓     | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)                                                              |
     |      Multi-Task       |                  [MMOE](models/multitask/mmoe/model.py)                   |   ✓   |    ✓    |        ✓         |     ✓     | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)                                                       |
     |      Multi-Task       |           [ShareBottom](models/multitask/share-bottom/model.py)           |   ✓   |    ✓    |        ✓         |     ✓     | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)                                                                                                               |
@@ -90,7 +91,7 @@
   > - Other installation problems can be raised in [Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues) or [PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)
 
 2. **Install by source code**
-  
+
   - Install PaddlePaddle  
 
     ```shell
