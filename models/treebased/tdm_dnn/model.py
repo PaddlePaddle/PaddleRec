@@ -19,6 +19,7 @@ import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+import math
 
 
 class Model(ModelBase):
@@ -27,8 +28,9 @@ class Model(ModelBase):
 
     def _init_hyper_parameters(self):
         # tree meta hyper parameters
-        self.item_num = 70
-        self.hidden_layers = [128, 64, 24]
+        self.hidden_layers = envs.get_global_env(
+            "hyper_parameters.hidden_layers", [128, 64, 24])
+
         self.max_layers = envs.get_global_env("hyper_parameters.max_layers", 4)
         self.node_nums = envs.get_global_env("hyper_parameters.node_nums", 26)
         self.leaf_node_nums = envs.get_global_env(
@@ -44,18 +46,17 @@ class Model(ModelBase):
         # model training hyper parameter
         self.node_emb_size = envs.get_global_env(
             "hyper_parameters.node_emb_size", 64)
-        self.input_emb_size = envs.get_global_env(
-            "hyper_parameters.input_emb_size", 768)
-        self.act = envs.get_global_env("hyper_parameters.act", "tanh")
         self.neg_sampling_list = envs.get_global_env(
             "hyper_parameters.neg_sampling_list", [1, 2, 3, 4])
-
+        self.fea_group = envs.get_global_env(
+            "hyper_parameters.fea_group", [20, 20, 10, 10, 2, 2, 2, 1, 1, 1])
+        self.item_nums = envs.get_global_env("hyper_parameters.item_nums", 69)
         # model infer hyper parameter
         self.topK = envs.get_global_env(
             "hyper_parameters.topK",
             1, )
         self.batch_size = envs.get_global_env(
-            "dataset.dataset_infer.batch_size", 1)
+            "dataset.dataset_train.batch_size", 100)
 
     def net(self, input, is_infer=False):
         if not is_infer:
@@ -64,7 +65,7 @@ class Model(ModelBase):
             return self.infer_net(input)
 
     def train_net(self, input):
-        self.tdm_net(input)
+        self.tdm_dnn_net(input)
         self.create_info()
         self.avg_loss()
         self.metrics()
@@ -84,8 +85,15 @@ class Model(ModelBase):
     def train_input(self):
         user_input = [
             fluid.data(
-                name="item_" + str(i), shape=[1], lod_level=1, dtype="int64")
-            for i in range(1, self.item_num)
+                name="item_" + str(i + 1), shape=[None, 1], dtype="int64")
+            for i in range(self.item_nums)
+        ]
+
+        user_input_mask = [
+            fluid.data(
+                name="item_mask_" + str(i + 1),
+                shape=[None, 1],
+                dtype="float32") for i in range(self.item_nums)
         ]
 
         item_label = fluid.data(
@@ -93,15 +101,17 @@ class Model(ModelBase):
             shape=[None, 1],
             dtype="int64", )
 
-        return user_input + [item_label]
+        return user_input + user_input_mask + [item_label]
 
     def tdm_dnn_net(self, input):
         """
         tdm训练网络的主要流程部分
         """
+        print("in train net")
         is_distributed = True if envs.get_trainer() == "CtrTrainer" else False
 
-        user_feature = input[0:-1]
+        user_feature = input[0:self.item_nums]
+        user_feature_mask = input[self.item_nums:-1]
         item_label = input[-1]
 
         # 根据输入的item的正样本在给定的树上进行负采样
@@ -139,7 +149,7 @@ class Model(ModelBase):
 
         # 查表得到每个节点的Embedding
         sample_nodes_emb = [
-            fluid.embedding(
+            fluid.layers.embedding(
                 input=sample_nodes[i],
                 is_sparse=True,
                 size=[self.node_nums, self.node_emb_size],
@@ -160,18 +170,15 @@ class Model(ModelBase):
         # TDM原始论文 各层共享一个分类器, 因此将同一个batch的所有采样节点拼到一起 [batch_size, node_nums, node_emb_dim]
         sample_nodes_emb = fluid.layers.concat(sample_nodes_emb, axis=1)
 
-        # expand一下uesr feature的维度，与node数量相等 [batch_size, node_nums, feature_emb_dim * feature_nums]
-        user_feature_emb = fluid.layers.expand(
-            user_feature_emb, expand_times=[1, sample_nodes_emb.shape[1], 1])
-
-        # cocat user与node的emb
-        user_node_emb = fluid.layers.concat(
-            [user_feature_emb, sample_nodes_emb], axis=2)
+        # 过Attention结构，得到若干fea_group(time_window)的特征与sample_node组合成的输入
+        user_node_concat = self.dnn_layer(user_feature_emb, sample_nodes_emb,
+                                          user_feature_mask)
 
         # 过3层分类器
-        fcs = [user_node_emb]
+        fcs = [user_node_concat]
         for index, size in enumerate(self.hidden_layers):
-            output = self.dnn_layer(fcs[-1], size, str(index))
+            output = self.dnn_layer(fcs[-1], size, fcs[-1].shape[2],
+                                    str(index), True)
             fcs.append(output)
 
         # 计算最后的prob
@@ -180,8 +187,13 @@ class Model(ModelBase):
             size=2,
             act=None,
             num_flatten_dims=2,
-            param_attr=fluid.ParamAttr(name="tdm.cls_fc.weight"),
-            bias_attr=fluid.ParamAttr(name="tdm.cls_fc.bias"))
+            param_attr=fluid.ParamAttr(
+                name="tdm.cls_fc.weight",
+                initializer=fluid.initializer.Normal(
+                    scale=1.0 / math.sqrt(fcs[-1].shape[2]))),
+            bias_attr=fluid.ParamAttr(
+                name="tdm.cls_fc.bias",
+                initializer=fluid.initializer.Constant(0.1)))
 
         # 将loss打平，放到一起计算整体网络的loss
         tdm_fc_re = fluid.layers.reshape(tdm_fc, [-1, 2])
@@ -217,33 +229,91 @@ class Model(ModelBase):
             emb = fluid.layers.embedding(
                 input=input,
                 is_sparse=True,
-                is_distributed=self.is_distributed,
-                size=[self.user_feature_number, self.user_feature_dim],
-                param_attr=fluid.ParamAttr(
-                    name="UserFeature",
-                    initializer=fluid.initializer.Uniform()), )
-            emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
-            return emb_sum
+                size=[self.node_nums, self.node_emb_size],
+                param_attr=fluid.ParamAttr(name="TDM_Tree_Emb"))
+            return emb
 
         user_feature_emb = list(map(embedding_layer, user_feature))
-        user_feature_emb = [
-            fluid.layers.reshape(user_feature_emb[i],
-                                 [-1, 1, self.user_feature_dim])
-        ]
-        user_feature_emb = fluid.layers.concat(user_feature_emb, axis=2)
 
         return user_feature_emb
 
-    def dnn_layer(self, input, dims=128, name=""):
+    def dnn_layer(self, user_feature_emb, sample_nodes_emb, user_feature_mask):
+        # user_feature_emb: list[ [batch_size, emb] ..{item_nums}.. [batch_size, emb]]
+        # sample_nodes_emb: [batch_size, node_nums, emb]
+
+        user_feature_emb_unsqueeze = [
+            fluid.layers.unsqueeze(
+                user_feature_emb[i], axes=1) for i in range(self.item_nums)
+        ]
+        # user_feature_emb: list[ [batch_size, 1, emb] ..{item_nums}.. [batch_size, 1, emb]]
+
+        user_feature_emb_expand = [
+            fluid.layers.expand(
+                user_feature_emb_unsqueeze[i],
+                expand_times=[1, sample_nodes_emb.shape[1], 1])
+            for i in range(self.item_nums)
+        ]
+        # user_feature_emb: list[ [batch_size, node_nums, emb] ..{item_nums}.. [batch_size, node_nums, emb]]
+
+        # user_input_mask: list [ [batch_size, 1] ..{item_nums}.. [batch_size, 1]
+        user_feature_mask_unsqueeze = [
+            fluid.layers.unsqueeze(
+                user_feature_mask[i], axes=1) for i in range(self.item_nums)
+        ]
+
+        user_feature_mask_expand = [
+            fluid.layers.expand(
+                user_feature_mask_unsqueeze[i],
+                expand_times=[1, sample_nodes_emb.shape[1], 1])
+            for i in range(self.item_nums)
+        ]
+        # user_feature_mask_expand: list[ [batch_size, node_nums, 1] ..{item_nums}.. [batch_size, node_nums, 1]]
+
+        # att_res: list[ [batch_size, node_nums, emb] ..{item_nums}.. [batch_size, node_nums, emb] ]
+        user_feature = [
+            fluid.layers.elementwise_mul(user_feature_emb_expand[i],
+                                         user_feature_mask_expand[i])
+            for i in range(self.item_nums)
+        ]
+
+        # fea_group: [20, 20, 10, 10, 2, 2, 2, 1, 1, 1], do average in each fea_group
+        start_item_index = 0
+        end_item_index = 0
+        fea_group_output = []
+        for feasign_grout_length in self.fea_group:
+            end_item_index = start_item_index + feasign_grout_length
+            current_fea_group = user_feature[start_item_index:end_item_index]
+            current_fea_group_sum = fluid.layers.sum(current_fea_group)
+
+            current_fea_group_average = fluid.layers.scale(
+                current_fea_group_sum, 1.0 / float(feasign_grout_length))
+            # current_fea_group_average: [batch_size, node_nums, emb]
+            fea_group_output.append(current_fea_group_average)
+            start_item_index = end_item_index
+
+        fea_grouo_concat = fluid.layers.concat(
+            fea_group_output + [sample_nodes_emb], axis=2)
+        # fea_grouo_concat: [batch_size, node_nums, emb * len(fea_group)]
+
+        return fea_grouo_concat
+
+    def dnn_layer(self, input, size=128, pre_shape=128, name="",
+                  use_act=False):
         # 分类器网络，DNN接prelu及batchnorm
 
         fc = fluid.layers.fc(
-            input=user_node_emb,
-            size=128,
+            input=input,
+            size=size,
             num_flatten_dims=2,
             act="relu",
-            param_attr=fluid.ParamAttr(name="cls.fc_{}.weight".format(name)),
-            bias_attr=fluid.ParamAttr(name="cls.fc_{}.bias".format(name)), )
+            param_attr=fluid.ParamAttr(
+                name="cls.fc_{}.weight".format(name),
+                initializer=fluid.initializer.Normal(scale=1.0 /
+                                                     math.sqrt(pre_shape))),
+            bias_attr=fluid.ParamAttr(
+                name="cls.fc_{}.bias".format(name),
+                initializer=fluid.initializer.Constant(0.1)), )
+
         return fc
 
     def create_info(self):
@@ -275,12 +345,18 @@ class Model(ModelBase):
     """ -------- Infer network detail ------- """
 
     def infer_input(self):
-        input_emb = fluid.layers.data(
-            name="input_emb",
-            shape=[self.input_emb_size],
-            dtype="float32", )
+        user_input = [
+            fluid.data(
+                name="fea_" + str(i), shape=[1], lod_level=1, dtype="int64")
+            for i in range(self.item_nums)
+        ]
 
-        return [input_emb]
+        item_label = fluid.data(
+            name="item_label",
+            shape=[None, 1],
+            dtype="int64", )
+
+        return user_input + [item_label]
 
     def get_layer_list(self):
         """get layer list from layer_list.txt"""
@@ -307,6 +383,7 @@ class Model(ModelBase):
         self.first_layer_idx = first_layer_id
         node_list = []
         mask_list = []
+        print("self.batch_size {}".format(self.batch_size))
         for id in first_layer_node:
             node_list.append(
                 fluid.layers.fill_constant(
@@ -315,6 +392,7 @@ class Model(ModelBase):
                 fluid.layers.fill_constant(
                     [self.batch_size, 1], value=0, dtype='int64'))
         self.first_layer_node = fluid.layers.concat(node_list, axis=1)
+        fluid.layers.Print(self.first_layer_node, message="first_layer_node")
         self.first_layer_node_mask = fluid.layers.concat(mask_list, axis=1)
 
     def tdm_infer_net(self, input):
@@ -326,13 +404,16 @@ class Model(ModelBase):
         3、循环1、2步骤，遍历完所有层，得到每一层筛选结果的集合
         4、将筛选结果集合中的叶子节点，拿出来再做一次topK，得到最终的召回输出
         """
-        input_emb = input[0]
+        print("in infer net")
+        user_feature = input[0:-1]
+        item_label = input[-1]
         node_score = []
         node_list = []
 
         current_layer_node = self.first_layer_node
         current_layer_node_mask = self.first_layer_node_mask
-        input_trans_emb = self.input_fc_infer(input_emb)
+
+        user_feature_emb = self.get_user_emb(user_feature)
 
         for layer_idx in range(self.first_layer_idx, self.max_layers):
             # 确定当前层的需要计算的节点数
@@ -351,15 +432,33 @@ class Model(ModelBase):
                 size=[self.node_nums, self.node_emb_size],
                 param_attr=fluid.ParamAttr(name="TDM_Tree_Emb"))
 
-            input_fc_out = self.layer_fc_infer(input_trans_emb, layer_idx)
+            user_feature_emb = self.get_user_emb(user_feature)
 
-            # 过每一层的分类器
-            layer_classifier_res = self.classifier_layer_infer(
-                input_fc_out, node_emb, layer_idx)
+            # TDM原始论文 各层共享一个分类器, 因此将同一个batch的所有采样节点拼到一起 [batch_size, node_nums, node_emb_dim]
+            sample_nodes_emb = fluid.layers.reshape(
+                node_emb, [-1, current_layer_node_num, self.node_emb_size])
+
+            # expand一下uesr feature的维度，与node数量相等 [batch_size, node_nums, feature_emb_dim * feature_nums]
+            user_feature_emb = fluid.layers.expand(
+                user_feature_emb,
+                expand_times=[1, sample_nodes_emb.shape[1], 1])
+
+            # cocat user与node的emb
+            user_node_emb = fluid.layers.concat(
+                [user_feature_emb, sample_nodes_emb], axis=2)
+
+            # 过3层分类器
+            fcs = [user_node_emb]
+            print("self.hidden_layers {}".format(self.hidden_layers))
+            for index, size in enumerate(self.hidden_layers):
+                print("index: {}".format(index))
+                output = self.dnn_layer(fcs[-1], size, fcs[-1].shape[2],
+                                        str(index), True)
+                fcs.append(output)
 
             # 过最终的判别分类器
             tdm_fc = fluid.layers.fc(
-                input=layer_classifier_res,
+                input=fcs[-1],
                 size=2,
                 act=None,
                 num_flatten_dims=2,
@@ -384,7 +483,8 @@ class Model(ModelBase):
             _, topk_i = fluid.layers.topk(prob_re, k)
 
             # index_sample op根据下标索引tensor对应位置的值
-            # 若paddle版本>2.0，调用方式为paddle.index_sample
+            # 若paddle版本 1.8.x, 调用方式为paddle.layers.index_sample
+            # 若paddle版本 >= 2.0, 调用方式为paddle.index_sample
             top_node = fluid.contrib.layers.index_sample(current_layer_node,
                                                          topk_i)
             prob_re_mask = prob_re * current_layer_node_mask  # 过滤掉非叶子节点
@@ -397,13 +497,12 @@ class Model(ModelBase):
             if layer_idx < self.max_layers - 1:
                 # tdm_child op 根据输入返回其 child 及 child_mask
                 # 若child是叶子节点，则child_mask=1，否则为0
-                current_layer_node, current_layer_node_mask = \
-                    fluid.contrib.layers.tdm_child(x=top_node,
-                                                   node_nums=self.node_nums,
-                                                   child_nums=self.child_nums,
-                                                   param_attr=fluid.ParamAttr(
-                                                       name="TDM_Tree_Info"),
-                                                   dtype='int64')
+                current_layer_node, current_layer_node_mask = fluid.contrib.layers.tdm_child(
+                    x=top_node,
+                    node_nums=self.node_nums,
+                    child_nums=self.child_nums,
+                    param_attr=fluid.ParamAttr(name="TDM_Tree_Info"),
+                    dtype='int64')
 
         total_node_score = fluid.layers.concat(node_score, axis=1)
         total_node = fluid.layers.concat(node_list, axis=1)
@@ -422,56 +521,6 @@ class Model(ModelBase):
             res_node_emb, axes=[2], starts=[0], ends=[1])
         self.res_item_re = fluid.layers.reshape(res_item, [-1, self.topK])
         self._infer_results["item"] = self.res_item_re
-
-    def input_fc_infer(self, input_emb):
-        """
-        输入侧预测组网第一部分，将input转换为node同维度
-        """
-        # 组网与训练时保持一致
-        input_fc_out = fluid.layers.fc(
-            input=input_emb,
-            size=self.node_emb_size,
-            act=None,
-            param_attr=fluid.ParamAttr(name="trans.input_fc.weight"),
-            bias_attr=fluid.ParamAttr(name="trans.input_fc.bias"), )
-        return input_fc_out
-
-    def layer_fc_infer(self, input_fc_out, layer_idx):
-        """
-        输入侧预测组网第二部分，将input映射到不同层次的向量空间
-        """
-        # 组网与训练保持一致，通过layer_idx指定不同层的FC
-        input_layer_fc_out = fluid.layers.fc(
-            input=input_fc_out,
-            size=self.node_emb_size,
-            act=self.act,
-            param_attr=fluid.ParamAttr(
-                name="trans.layer_fc.weight." + str(layer_idx)),
-            bias_attr=fluid.ParamAttr(
-                name="trans.layer_fc.bias." + str(layer_idx)), )
-        return input_layer_fc_out
-
-    def classifier_layer_infer(self, input, node, layer_idx):
-        # 为infer组网提供的简化版classifier，通过给定layer_idx调用不同层的分类器
-
-        # 同样需要保持input与node的维度匹配
-        input_expand = self._expand_layer(input, node, layer_idx)
-
-        # 与训练网络相同的concat逻辑
-        input_node_concat = fluid.layers.concat(
-            input=[input_expand, node], axis=2)
-
-        # 根据参数名param_attr调用不同的层的FC
-        hidden_states_fc = fluid.layers.fc(
-            input=input_node_concat,
-            size=self.node_emb_size,
-            num_flatten_dims=2,
-            act=self.act,
-            param_attr=fluid.ParamAttr(
-                name="cls.concat_fc.weight." + str(layer_idx)),
-            bias_attr=fluid.ParamAttr(
-                name="cls.concat_fc.bias." + str(layer_idx)))
-        return hidden_states_fc
 
     def check_version(self):
         """
