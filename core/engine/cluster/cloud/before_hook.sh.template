@@ -1,0 +1,9 @@
+echo "Run before_hook.sh ..."
+
+pip install paddle-rec
+
+pip uninstall -y paddlepaddle
+
+pip install paddlepaddle==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
+
+echo "End before_hook.sh ..."

@@ -1,0 +1,56 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+workspace: "./"
+
+backend: "PaddleCloud"
+cluster_type: mpi # k8s 可选
+
+config:
+  fs_name: ""
+  fs_ugi: ""
+  output_path: ""
+  # for k8s
+  afs_remote_mount_point: "" 
+  # for mpi
+  train_data_path: "" 
+  test_data_path: "" 
+  thirdparty_path: "" 
+  paddle_version: "1.7.2"
+  # paddle分布式底层超参，无特殊需求不改
+  communicator:
+    FLAGS_communicator_is_sgd_optimizer: 0
+    FLAGS_communicator_send_queue_size: 5
+    FLAGS_communicator_thread_pool_size: 32
+    FLAGS_communicator_max_merge_var_num: 5
+    FLAGS_communicator_max_send_grad_num_before_recv: 5
+    FLAGS_communicator_fake_rpc: 0
+    FLAGS_rpc_retry_times: 3
+  
+submit:
+  sk: "2907445932295c57bffab28676fc5a66"
+  ak: "55cb2027d7a05b9f8b213de483698cc8"
+  priority: "high"
+  jobname: ""
+  group: "paddle_benchmark"
+  nodes: 1  
+  start_cmd: "python -m paddlerec.run -m ./config.yaml"
+  files:  "{workspace}/*.py, {workspace}/*.sh"
+  # for k8s gpu
+  k8s_gpu_card: 1
+  k8s_cpu_cores: 4
+  # for k8s ps-cpu
+  k8s_image_addr: "registry.baidu.com/paddlepaddle-public/paddle_ubuntu1604:cuda10.0-cudnn7-dev"
+  

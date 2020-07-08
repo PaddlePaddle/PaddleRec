@@ -16,7 +16,7 @@
 
 ###################################################
 # Usage: submit.sh
-# Description: run mpi submit client implement
+# Description: run paddlecloud submit client implement
 ###################################################
 
 # ---------------------------------------------------------------------------- #
@@ -24,13 +24,35 @@
 # ---------------------------------------------------------------------------- #
 
 #-----------------------------------------------------------------------------------------------------------------
-#fun : package
+#fun : paddlecloud_check
 #param : N/A
 #return : 0 -- success; not 0 -- failure
 #-----------------------------------------------------------------------------------------------------------------
-function package_hook() {
-  g_run_stage="package"
-  package
+function paddlecloud_check() {
+
+  { 
+    # try
+    paddlecloud -h > /tmp/test_paddlecloud.log
+  } || {
+    # catch
+    echo "Install PaddleCloud Client Begin ~"
+    wget ftp://10.89.160.42:8099/paddlecloud-cli.tar.gz && \
+      tar zxf paddlecloud-cli.tar.gz && \
+      cd paddlecloud-cli && python setup.py install
+      cd ..
+
+    {
+      # try
+      paddlecloud -h > /tmp/test_paddlecloud.log
+    } || {
+      # catch
+      echo "PaddleCloud Client install failed! please view http://wiki.baidu.com/pages/viewpage.action?pageId=1017488941"
+      exit -1
+    }
+  }
+
+  echo "PaddleCloud Exist, Version: "
+  paddlecloud -v
 }
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -40,8 +62,96 @@ function package_hook() {
 #-----------------------------------------------------------------------------------------------------------------
 function _before_submit() {
   echo "before_submit"
-  before_submit_hook
+  cd
+  if [ ${DISTRIBUTE_MODE} == "PS_CPU_MPI" ]; then
+    _gen_before_hook
+    _gen_mpi_config
+    _gen_mpi_job
+    _gen_end_hook
+  elif [ ${DISTRIBUTE_MODE} == "COLLECTIVE_GPU_K8S" ]; then
+    _gen_before_hook
+    _gen_k8s_config
+    _gen_k8s_job
+    _gen_end_hook
+  fi
+  
 }
+
+function _gen_mpi_config() {
+  echo "gen mpi_config.ini"
+  sed -e "s#<$ FS_NAME $>#$FS_NAME#g" \
+    -e "s#<$ FS_UGI $>#$FS_UGI#g" \
+    -e "s#<$ TRAIN_DATA_PATH $>#$TRAIN_DATA_PATH#g" \
+    -e "s#<$ TEST_DATA_PATH $>#$TEST_DATA_PATH#g" \
+    -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
+    -e "s#<$ THIRDPARTY_PATH $>#$THIRDPARTY_PATH#g" \
+    -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
+    -e "s#<$ GLOG_V $>#$GLOG_V#g" \
+    -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
+    -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
+    -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
+    -e "s#<$ FLAGS_communicator_max_merge_var_num $>#$FLAGS_communicator_max_merge_var_num#g" \
+    -e "s#<$ FLAGS_communicator_max_send_grad_num_before_recv $>#$FLAGS_communicator_max_send_grad_num_before_recv#g" \
+    -e "s#<$ FLAGS_communicator_fake_rpc $>#$FLAGS_communicator_fake_rpc#g" \
+    -e "s#<$ FLAGS_rpc_retry_times $>#$FLAGS_rpc_retry_times#g" \
+    ${abs_dir}/cloud/mpi_config.ini.template >${PWD}/config.ini
+}
+
+function _gen_k8s_config() {
+  echo "gen k8s_config.ini"
+  sed -e "s#<$ FS_NAME $>#$FS_NAME#g" \
+    -e "s#<$ FS_UGI $>#$FS_UGI#g" \
+    -e "s#<$ AFS_REMOTE_MOUNT_POINT $>#$AFS_REMOTE_MOUNT_POINT#g" \
+    -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
+    -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
+    -e "s#<$ GLOG_V $>#$GLOG_V#g" \
+    -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
+    -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
+    -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
+    -e "s#<$ FLAGS_communicator_max_merge_var_num $>#$FLAGS_communicator_max_merge_var_num#g" \
+    -e "s#<$ FLAGS_communicator_max_send_grad_num_before_recv $>#$FLAGS_communicator_max_send_grad_num_before_recv#g" \
+    -e "s#<$ FLAGS_communicator_fake_rpc $>#$FLAGS_communicator_fake_rpc#g" \
+    -e "s#<$ FLAGS_rpc_retry_times $>#$FLAGS_rpc_retry_times#g" \
+    ${abs_dir}/cloud/k8s_config.ini.template >${PWD}/config.ini
+}
+
+function _gen_before_hook() {
+  echo "gen before_hook.sh"
+  sed -e "s#<$ FS_NAME $>#$FS_NAME#g" \
+    ${abs_dir}/cloud/before_hook.sh.template >${PWD}/before_hook.sh
+}
+
+function _gen_end_hook() {
+  echo "gen end_hook.sh"
+  cp  ${abs_dir}/cloud/end_hook.sh.template >${PWD}/end_hook.sh
+}
+
+function _gen_mpi_job() {
+  echo "gen mpi_job.sh"
+  sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
+    -e "s#<$ AK $>#$AK#g" \
+    -e "s#<$ SK $>#$SK#g" \
+    -e "s#<$ MPI_PRIORITY $>#$MPI_PRIORITY#g" \
+    -e "s#<$ MPI_NODES $>#$MPI_NODES#g" \ 
+    -e "s#<$ START_CMD $>#$START_CMD#g" \
+    ${abs_dir}/cloud/mpi_job.sh.template >${PWD}/job.sh
+}
+
+function _gen_k8s_job() {
+  echo "gen k8s_job.sh"
+  sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
+    -e "s#<$ AK $>#$AK#g" \
+    -e "s#<$ SK $>#$SK#g" \
+    -e "s#<$ MPI_PRIORITY $>#$K8S_PRIORITY#g" \
+    -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
+    -e "s#<$ K8S_GPU_CARD $>#$K8S_GPU_CARD#g" \
+    -e "s#<$ K8S_CPU_CORES $>#$K8S_CPU_CORES#g" \
+    -e "s#<$ IMAGE_ADDR $>#$IMAGE_ADDR#g" \
+    -e "s#<$ START_CMD $>#$START_CMD#g" \
+    ${abs_dir}/cloud/mpi_job.sh.template >${PWD}/job.sh
+}
+
+
 
 #-----------------------------------------------------------------------------------------------------------------
 #fun : after hook submit to cluster
@@ -49,8 +159,7 @@ function _before_submit() {
 #return : 0 -- success; not 0 -- failure
 #-----------------------------------------------------------------------------------------------------------------
 function _after_submit() {
-  echo "after_submit"
-  after_submit_hook
+  echo "end submit"
 }
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -60,34 +169,23 @@ function _after_submit() {
 #-----------------------------------------------------------------------------------------------------------------
 function _submit() {
   g_run_stage="submit"
+  sh job.sh
+}
 
-  cd ${engine_temp_path}
-
-  paddlecloud job --ak ${engine_submit_ak} --sk ${engine_submit_sk} train --cluster-name ${engine_submit_cluster} \
-    --job-version ${engine_submit_version} \
-    --mpi-priority ${engine_submit_priority} \
-    --mpi-wall-time 300:59:00 \
-    --mpi-nodes ${engine_submit_nodes} --is-standalone 0 \
-    --mpi-memory 110Gi \
-    --job-name ${engine_submit_jobname} \
-    --start-cmd "${g_run_cmd}" \
-    --group-name ${engine_submit_group} \
-    --job-conf ${engine_submit_config} \
-    --files ${g_submitfiles} \
-    --json
-
-  cd -
+function package_hook() {
+  mkdir ${engine_temp_path}
+  cp $FILES ${engine_temp_path}/
 }
 
 function submit_hook() {
+  cd ${engine_temp_path}
   _before_submit
   _submit
   _after_submit
 }
 
 function main() {
-  source ${engine_submit_scrpit}
-
+  paddlecloud_check
   package_hook
   submit_hook
 }
