@@ -16,20 +16,23 @@
 workspace: "./"
 
 backend: "PaddleCloud"
-cluster_type: mpi # k8s 可选
+cluster_type: k8s # k8s 可选
 
 config:
-  fs_name: ""
-  fs_ugi: ""
-  output_path: ""
-  # for k8s
-  afs_remote_mount_point: "" 
+  fs_name: "afs://xxx.com"
+  fs_ugi: "usr,pwd"
+  output_path: "" # 填远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  
   # for mpi
-  train_data_path: "" 
-  test_data_path: "" 
-  thirdparty_path: "" 
-  paddle_version: "1.7.2"
-  # paddle分布式底层超参，无特殊需求不改
+  train_data_path: "" # 填远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  test_data_path: "" # 填远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  thirdparty_path: "" # 填远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  paddle_version: "1.7.2" # 填写paddle官方版本号 >= 1.7.2
+
+  # for k8s
+  afs_remote_mount_point: "" # 填远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+
+  # paddle分布式底层超参，无特殊需求不理不改
   communicator:
     FLAGS_communicator_is_sgd_optimizer: 0
     FLAGS_communicator_send_queue_size: 5
@@ -40,17 +43,19 @@ config:
     FLAGS_rpc_retry_times: 3
   
 submit:
-  sk: "2907445932295c57bffab28676fc5a66"
-  ak: "55cb2027d7a05b9f8b213de483698cc8"
+  ak: ""
+  sk: ""
   priority: "high"
-  jobname: ""
-  group: "paddle_benchmark"
-  nodes: 1  
+  job_name: "PaddleRec_CTR"
+  group: ""
   start_cmd: "python -m paddlerec.run -m ./config.yaml"
-  files:  "{workspace}/*.py, {workspace}/*.sh"
-  # for k8s gpu
+  files: ./*.py ./*.yaml
+
+  # for mpi ps-cpu
+  nodes: 2
+  
+  # for k8s gpu        
+  k8s_trainers: 2
   k8s_gpu_card: 1
-  k8s_cpu_cores: 4
-  # for k8s ps-cpu
-  k8s_image_addr: "registry.baidu.com/paddlepaddle-public/paddle_ubuntu1604:cuda10.0-cudnn7-dev"
+  
   

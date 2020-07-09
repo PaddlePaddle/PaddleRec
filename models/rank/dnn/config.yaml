@@ -51,7 +51,7 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
-mode: [cluster_test]
+mode: [collective_cluster]
 # mode: [single_cpu_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
@@ -81,11 +81,23 @@ runner:
   init_model_path: "increment_dnn" # load model path
   phases: [phase2]
 
-- name: cluster_test
+- name: ps_cluster
   class: cluster_train
   epochs: 2
   device: cpu
-  save_checkpoint_interval: 2 # save model interval of epochs
+  fleet_mode: ps
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: [phase1]
+
+- name: collective_cluster
+  class: cluster_train
+  epochs: 2
+  device: gpu
+  fleet_mode: collective
+  save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "increment_dnn" # save checkpoint path
   init_model_path: "" # load model path
   print_interval: 1
