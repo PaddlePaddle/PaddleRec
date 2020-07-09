@@ -1,6 +1,6 @@
 echo "Run before_hook.sh ..."
 
-wget yq01-hpc-bdl161.yq01.baidu.com:8000/PaddleRec.tar.gz
+wget paddlerec
 
 tar -xf PaddleRec.tar.gz
 
