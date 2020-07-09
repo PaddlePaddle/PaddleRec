@@ -16,8 +16,9 @@ test_data_path=<$ TEST_DATA_PATH $>
 output_path=<$ OUTPUT_PATH $>
 thirdparty_path=<$ THIRDPARTY_PATH $>
 
+PADDLE_PADDLEREC_ROLE=WORKER
 CPU_NUM=<$ CPU_NUM $>
-GLOG_v=<$ GLOG_V $>
+GLOG_v=0
 
 FLAGS_communicator_is_sgd_optimizer=<$ FLAGS_communicator_is_sgd_optimizer $>
 FLAGS_communicator_send_queue_size=<$ FLAGS_communicator_send_queue_size $>

@@ -64,12 +64,12 @@ function _before_submit() {
   echo "before_submit"
   
   if [ ${DISTRIBUTE_MODE} == "PS_CPU_MPI" ]; then
-    _gen_before_hook
+    _gen_cpu_before_hook
     _gen_mpi_config
     _gen_mpi_job
     _gen_end_hook
   elif [ ${DISTRIBUTE_MODE} == "COLLECTIVE_GPU_K8S" ]; then
-    _gen_before_hook
+    _gen_gpu_before_hook
     _gen_k8s_config
     _gen_k8s_job
     _gen_end_hook
@@ -85,8 +85,7 @@ function _gen_mpi_config() {
       -e "s#<$ TEST_DATA_PATH $>#$TEST_DATA_PATH#g" \
       -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
       -e "s#<$ THIRDPARTY_PATH $>#$THIRDPARTY_PATH#g" \
-      -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
-      -e "s#<$ GLOG_V $>#$GLOG_V#g" \
+      -e "s#<$ CPU_NUM $>#$max_thread_num#g" \
       -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
       -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
       -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
@@ -103,8 +102,7 @@ function _gen_k8s_config() {
       -e "s#<$ FS_UGI $>#$FS_UGI#g" \
       -e "s#<$ AFS_REMOTE_MOUNT_POINT $>#$AFS_REMOTE_MOUNT_POINT#g" \
       -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
-      -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
-      -e "s#<$ GLOG_V $>#$GLOG_V#g" \
+      -e "s#<$ CPU_NUM $>#$max_thread_num#g" \
       -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
       -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
       -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
@@ -115,10 +113,16 @@ function _gen_k8s_config() {
       ${abs_dir}/cloud/k8s_config.ini.template >${PWD}/config.ini
 }
 
-function _gen_before_hook() {
-  echo "gen before_hook.sh"
+function _gen_cpu_before_hook() {
+  echo "gen cpu before_hook.sh"
   sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
-    ${abs_dir}/cloud/before_hook.sh.template >${PWD}/before_hook.sh
+    ${abs_dir}/cloud/before_hook_cpu.sh.template >${PWD}/before_hook.sh
+}
+
+function _gen_gpu_before_hook() {
+  echo "gen gpu before_hook.sh"
+  sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
+    ${abs_dir}/cloud/before_hook_gpu.sh.template >${PWD}/before_hook.sh
 }
 
 function _gen_end_hook() {
@@ -142,10 +146,9 @@ function _gen_k8s_job() {
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
       -e "s#<$ AK $>#$AK#g" \
       -e "s#<$ SK $>#$SK#g" \
-      -e "s#<$ MPI_PRIORITY $>#$PRIORITY#g" \
+      -e "s#<$ K8S_PRIORITY $>#$PRIORITY#g" \
       -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
       -e "s#<$ K8S_GPU_CARD $>#$K8S_GPU_CARD#g" \
-      -e "s#<$ K8S_CPU_CORES $>#$K8S_CPU_CORES#g" \
       -e "s#<$ START_CMD $>#$START_CMD#g" \
       ${abs_dir}/cloud/k8s_job.sh.template >${PWD}/job.sh
 }

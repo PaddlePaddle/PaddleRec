@@ -15,8 +15,6 @@ wall_time="2:00:00"
 ak=<$ AK $>
 sk=<$ SK $>
 
-
-echo ${start_cmd}
 paddlecloud job --ak ${ak} --sk ${sk} \
     train \
     --job-name ${job_name} \

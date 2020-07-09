@@ -15,12 +15,12 @@ AFS_REMOTE_MOUNT_POINT=<$ AFS_REMOTE_MOUNT_POINT $>
 
 # 作业运行环境的本地挂载点，/root/paddlejob/workspace/env_run/是一个固定路径，是平台运行时workspace的路径
 afs_local_mount_point="/root/paddlejob/workspace/env_run/afs/"
-
+# 可以访问运行时默认文件夹下的 ./afs/ 目录拿到挂载目录的文件
 # 新k8s afs挂载帮助文档: http://wiki.baidu.com/pages/viewpage.action?pageId=906443193
 
 PADDLE_PADDLEREC_ROLE=WORKER
-CPU_NUM=<$ CPU_NUM>
-GLOG_v=<$ GLOG_V>
+CPU_NUM=<$ CPU_NUM $>
+GLOG_v=0
 
 FLAGS_communicator_is_sgd_optimizer=<$ FLAGS_communicator_is_sgd_optimizer $>
 FLAGS_communicator_send_queue_size=<$ FLAGS_communicator_send_queue_size $>

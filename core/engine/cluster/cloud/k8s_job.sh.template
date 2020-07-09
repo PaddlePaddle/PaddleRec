@@ -6,7 +6,7 @@
 job_name=${JOB_NAME}
 
 # 作业参数
-group_name=<$ GROUP_NAME $>               
+group_name="<$ GROUP_NAME $>"               
 job_version="paddle-fluid-v1.7.1"
 start_cmd="<$ START_CMD $>"
 wall_time="10:00:00"
@@ -14,7 +14,6 @@ wall_time="10:00:00"
 k8s_priority=<$ K8S_PRIORITY $>
 k8s_trainers=<$ K8S_TRAINERS $>
 k8s_gpu_cards=<$ K8S_GPU_CARD $>
-k8s_cpu_cores=<$ K8S_CPU_CORES $>
 
 # 你的ak/sk（可在paddlecloud web页面【个人中心】处获取）
 ak=<$ AK $>
@@ -28,9 +27,9 @@ paddlecloud job --ak ${ak} --sk ${sk} \
         --files ./*  \
         --job-version ${job_version}  \
         --k8s-trainers ${k8s_trainers} \
-        --k8s_cpu_cores ${k8s_cpu_cores} \
         --k8s-gpu-cards ${k8s_gpu_cards} \
         --k8s-priority ${k8s_priority} \
         --wall-time ${wall_time} \
         --is-standalone 0 \
-        --distribute-job-type "NCCL2"
+        --distribute-job-type "NCCL2" \
+        --json
