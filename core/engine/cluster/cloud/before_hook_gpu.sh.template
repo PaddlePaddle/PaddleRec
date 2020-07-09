@@ -1,6 +1,6 @@
 echo "Run before_hook.sh ..."
 
-wget paddlerec
+wget https://paddlerec.bj.bcebos.com/whl/PaddleRec.tar.gz
 
 tar -xf PaddleRec.tar.gz
 

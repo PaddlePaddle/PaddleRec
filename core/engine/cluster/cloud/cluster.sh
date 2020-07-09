@@ -24,38 +24,6 @@
 # ---------------------------------------------------------------------------- #
 
 #-----------------------------------------------------------------------------------------------------------------
-#fun : paddlecloud_check
-#param : N/A
-#return : 0 -- success; not 0 -- failure
-#-----------------------------------------------------------------------------------------------------------------
-function paddlecloud_check() {
-
-  { 
-    # try
-    paddlecloud -h > /tmp/test_paddlecloud.log
-  } || {
-    # catch
-    echo "Install PaddleCloud Client Begin ~"
-    wget ftp://10.89.160.42:8099/paddlecloud-cli.tar.gz && \
-      tar zxf paddlecloud-cli.tar.gz && \
-      cd paddlecloud-cli && python setup.py install
-      cd ..
-
-    {
-      # try
-      paddlecloud -h > /tmp/test_paddlecloud.log
-    } || {
-      # catch
-      echo "PaddleCloud Client install failed! please view http://wiki.baidu.com/pages/viewpage.action?pageId=1017488941"
-      exit -1
-    }
-  }
-
-  echo "PaddleCloud Exist, Version: "
-  paddlecloud -v
-}
-
-#-----------------------------------------------------------------------------------------------------------------
 #fun : before hook submit to cluster
 #param : N/A
 #return : 0 -- success; not 0 -- failure
@@ -192,7 +160,6 @@ function submit_hook() {
 }
 
 function main() {
-  paddlecloud_check
   package_hook
   submit_hook
 }
