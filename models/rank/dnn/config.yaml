@@ -51,7 +51,7 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
-mode: [collective_cluster]
+mode: [single_cpu_train, single_cpu_infer]
 # mode: [single_cpu_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
