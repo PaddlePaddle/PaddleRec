@@ -1,4 +1,5 @@
-# coding=utf8
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,7 +70,7 @@ def build(dirname):
         'Criteo_data/sample_data/train/*'
     ]
 
-    engine_copy = ['*/*.sh']
+    engine_copy = ['*/*.sh', '*/*.template']
     for package in packages:
         if package.startswith("paddlerec.models."):
             package_data[package] = models_copy
@@ -96,7 +97,7 @@ dirname = tempfile.mktemp()
 build(dirname)
 shutil.rmtree(dirname)
 
-print(u'''
+print('''
 \033[32m
 ██████╗  █████╗ ██████╗ ██████╗ ██╗     ███████╗██████╗ ███████╗ ██████╗
 ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝██╔════╝

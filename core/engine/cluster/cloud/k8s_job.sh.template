@@ -3,21 +3,18 @@
 ##                  注意-- 注意--注意                          ##
 ##                 K8S NCCL2多机作业作业示例                    ##
 ###############################################################
-cur_time=`date  +"%Y%m%d%H%M"`
-job_name="${JOB_NAME}_${cur_time}"
+job_name=${JOB_NAME}
 
 # 作业参数
 group_name=<$ GROUP_NAME $>               
 job_version="paddle-fluid-v1.7.1"
-start_cmd=<$ START_CMD $>
+start_cmd="<$ START_CMD $>"
 wall_time="10:00:00"
 
 k8s_priority=<$ K8S_PRIORITY $>
 k8s_trainers=<$ K8S_TRAINERS $>
 k8s_gpu_cards=<$ K8S_GPU_CARD $>
 k8s_cpu_cores=<$ K8S_CPU_CORES $>
-
-image_addr=<$ IMAGE_ADDR $>
 
 # 你的ak/sk（可在paddlecloud web页面【个人中心】处获取）
 ak=<$ AK $>

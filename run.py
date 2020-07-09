@@ -111,8 +111,8 @@ def get_engine(args, running_config, mode):
 
     engine = running_config.get(engine_class, None)
     if engine is None:
-        raise ValueError("not find {} in yaml, please check".format(
-            mode, engine_class))
+        raise ValueError("not find {} in engine_class , please check".format(
+            engine))
     device = running_config.get(engine_device, None)
 
     engine = engine.upper()
@@ -302,8 +302,8 @@ def cluster_engine(args):
         flattens["max_thread_num"] = max_thread_num
         flattens["fleet_mode"] = fleet_mode
         flattens["device"] = device
+        flattens["backend_yaml"] = args.backend
         envs.set_runtime_environs(flattens)
-        print(envs.pretty_print_envs(flattens, ("Submit Envs", "Value")))
 
         launch = ClusterEngine(None, args.model)
         return launch

@@ -62,7 +62,7 @@ function paddlecloud_check() {
 #-----------------------------------------------------------------------------------------------------------------
 function _before_submit() {
   echo "before_submit"
-  cd
+  
   if [ ${DISTRIBUTE_MODE} == "PS_CPU_MPI" ]; then
     _gen_before_hook
     _gen_mpi_config
@@ -80,75 +80,74 @@ function _before_submit() {
 function _gen_mpi_config() {
   echo "gen mpi_config.ini"
   sed -e "s#<$ FS_NAME $>#$FS_NAME#g" \
-    -e "s#<$ FS_UGI $>#$FS_UGI#g" \
-    -e "s#<$ TRAIN_DATA_PATH $>#$TRAIN_DATA_PATH#g" \
-    -e "s#<$ TEST_DATA_PATH $>#$TEST_DATA_PATH#g" \
-    -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
-    -e "s#<$ THIRDPARTY_PATH $>#$THIRDPARTY_PATH#g" \
-    -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
-    -e "s#<$ GLOG_V $>#$GLOG_V#g" \
-    -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
-    -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
-    -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
-    -e "s#<$ FLAGS_communicator_max_merge_var_num $>#$FLAGS_communicator_max_merge_var_num#g" \
-    -e "s#<$ FLAGS_communicator_max_send_grad_num_before_recv $>#$FLAGS_communicator_max_send_grad_num_before_recv#g" \
-    -e "s#<$ FLAGS_communicator_fake_rpc $>#$FLAGS_communicator_fake_rpc#g" \
-    -e "s#<$ FLAGS_rpc_retry_times $>#$FLAGS_rpc_retry_times#g" \
-    ${abs_dir}/cloud/mpi_config.ini.template >${PWD}/config.ini
+      -e "s#<$ FS_UGI $>#$FS_UGI#g" \
+      -e "s#<$ TRAIN_DATA_PATH $>#$TRAIN_DATA_PATH#g" \
+      -e "s#<$ TEST_DATA_PATH $>#$TEST_DATA_PATH#g" \
+      -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
+      -e "s#<$ THIRDPARTY_PATH $>#$THIRDPARTY_PATH#g" \
+      -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
+      -e "s#<$ GLOG_V $>#$GLOG_V#g" \
+      -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
+      -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
+      -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
+      -e "s#<$ FLAGS_communicator_max_merge_var_num $>#$FLAGS_communicator_max_merge_var_num#g" \
+      -e "s#<$ FLAGS_communicator_max_send_grad_num_before_recv $>#$FLAGS_communicator_max_send_grad_num_before_recv#g" \
+      -e "s#<$ FLAGS_communicator_fake_rpc $>#$FLAGS_communicator_fake_rpc#g" \
+      -e "s#<$ FLAGS_rpc_retry_times $>#$FLAGS_rpc_retry_times#g" \
+      ${abs_dir}/cloud/mpi_config.ini.template >${PWD}/config.ini
 }
 
 function _gen_k8s_config() {
   echo "gen k8s_config.ini"
   sed -e "s#<$ FS_NAME $>#$FS_NAME#g" \
-    -e "s#<$ FS_UGI $>#$FS_UGI#g" \
-    -e "s#<$ AFS_REMOTE_MOUNT_POINT $>#$AFS_REMOTE_MOUNT_POINT#g" \
-    -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
-    -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
-    -e "s#<$ GLOG_V $>#$GLOG_V#g" \
-    -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
-    -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
-    -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
-    -e "s#<$ FLAGS_communicator_max_merge_var_num $>#$FLAGS_communicator_max_merge_var_num#g" \
-    -e "s#<$ FLAGS_communicator_max_send_grad_num_before_recv $>#$FLAGS_communicator_max_send_grad_num_before_recv#g" \
-    -e "s#<$ FLAGS_communicator_fake_rpc $>#$FLAGS_communicator_fake_rpc#g" \
-    -e "s#<$ FLAGS_rpc_retry_times $>#$FLAGS_rpc_retry_times#g" \
-    ${abs_dir}/cloud/k8s_config.ini.template >${PWD}/config.ini
+      -e "s#<$ FS_UGI $>#$FS_UGI#g" \
+      -e "s#<$ AFS_REMOTE_MOUNT_POINT $>#$AFS_REMOTE_MOUNT_POINT#g" \
+      -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
+      -e "s#<$ CPU_NUM $>#$CPU_NUM#g" \
+      -e "s#<$ GLOG_V $>#$GLOG_V#g" \
+      -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
+      -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
+      -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
+      -e "s#<$ FLAGS_communicator_max_merge_var_num $>#$FLAGS_communicator_max_merge_var_num#g" \
+      -e "s#<$ FLAGS_communicator_max_send_grad_num_before_recv $>#$FLAGS_communicator_max_send_grad_num_before_recv#g" \
+      -e "s#<$ FLAGS_communicator_fake_rpc $>#$FLAGS_communicator_fake_rpc#g" \
+      -e "s#<$ FLAGS_rpc_retry_times $>#$FLAGS_rpc_retry_times#g" \
+      ${abs_dir}/cloud/k8s_config.ini.template >${PWD}/config.ini
 }
 
 function _gen_before_hook() {
   echo "gen before_hook.sh"
-  sed -e "s#<$ FS_NAME $>#$FS_NAME#g" \
+  sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
     ${abs_dir}/cloud/before_hook.sh.template >${PWD}/before_hook.sh
 }
 
 function _gen_end_hook() {
   echo "gen end_hook.sh"
-  cp  ${abs_dir}/cloud/end_hook.sh.template >${PWD}/end_hook.sh
+  cp ${abs_dir}/cloud/end_hook.sh.template ${PWD}/end_hook.sh
 }
 
 function _gen_mpi_job() {
   echo "gen mpi_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
-    -e "s#<$ AK $>#$AK#g" \
-    -e "s#<$ SK $>#$SK#g" \
-    -e "s#<$ MPI_PRIORITY $>#$MPI_PRIORITY#g" \
-    -e "s#<$ MPI_NODES $>#$MPI_NODES#g" \ 
-    -e "s#<$ START_CMD $>#$START_CMD#g" \
-    ${abs_dir}/cloud/mpi_job.sh.template >${PWD}/job.sh
+      -e "s#<$ AK $>#$AK#g" \
+      -e "s#<$ SK $>#$SK#g" \
+      -e "s#<$ MPI_PRIORITY $>#$PRIORITY#g" \
+      -e "s#<$ MPI_NODES $>#$MPI_NODES#g" \
+      -e "s#<$ START_CMD $>#$START_CMD#g" \
+      ${abs_dir}/cloud/mpi_job.sh.template >${PWD}/job.sh
 }
 
 function _gen_k8s_job() {
   echo "gen k8s_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
-    -e "s#<$ AK $>#$AK#g" \
-    -e "s#<$ SK $>#$SK#g" \
-    -e "s#<$ MPI_PRIORITY $>#$K8S_PRIORITY#g" \
-    -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
-    -e "s#<$ K8S_GPU_CARD $>#$K8S_GPU_CARD#g" \
-    -e "s#<$ K8S_CPU_CORES $>#$K8S_CPU_CORES#g" \
-    -e "s#<$ IMAGE_ADDR $>#$IMAGE_ADDR#g" \
-    -e "s#<$ START_CMD $>#$START_CMD#g" \
-    ${abs_dir}/cloud/mpi_job.sh.template >${PWD}/job.sh
+      -e "s#<$ AK $>#$AK#g" \
+      -e "s#<$ SK $>#$SK#g" \
+      -e "s#<$ MPI_PRIORITY $>#$PRIORITY#g" \
+      -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
+      -e "s#<$ K8S_GPU_CARD $>#$K8S_GPU_CARD#g" \
+      -e "s#<$ K8S_CPU_CORES $>#$K8S_CPU_CORES#g" \
+      -e "s#<$ START_CMD $>#$START_CMD#g" \
+      ${abs_dir}/cloud/k8s_job.sh.template >${PWD}/job.sh
 }
 
 
@@ -173,12 +172,17 @@ function _submit() {
 }
 
 function package_hook() {
-  mkdir ${engine_temp_path}
-  cp $FILES ${engine_temp_path}/
+  cur_time=`date  +"%Y%m%d%H%M"`
+  new_job_name="${JOB_NAME}_${cur_time}"
+  export JOB_NAME=${new_job_name}
+  export job_file_path="${PWD}/${new_job_name}"
+  mkdir ${job_file_path}
+  cp $FILES ${job_file_path}/
+  cd ${job_file_path}
+  echo "The task submission folder is generated at ${job_file_path}"
 }
 
 function submit_hook() {
-  cd ${engine_temp_path}
   _before_submit
   _submit
   _after_submit
