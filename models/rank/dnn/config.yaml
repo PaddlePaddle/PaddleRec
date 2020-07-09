@@ -80,6 +80,28 @@ runner:
   init_model_path: "increment_dnn" # load model path
   phases: [phase2]
 
+- name: ps_cluster
+  class: cluster_train
+  epochs: 2
+  device: cpu
+  fleet_mode: ps
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: [phase1]
+
+- name: collective_cluster
+  class: cluster_train
+  epochs: 2
+  device: gpu
+  fleet_mode: collective
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: [phase1]
+
 # runner will run all the phase in each epoch
 phase:
 - name: phase1
