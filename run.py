@@ -276,7 +276,7 @@ def cluster_engine(args):
         if fleet_mode == "COLLECTIVE" and device != "GPU":
             raise ValueError("COLLECTIVE can not be used without GPU")
 
-        # Get Thread num
+        # Get Thread nums
         model_envs = envs.load_yaml(args.model)
         phases_class = ".".join(["runner", mode, "phases"])
         phase_names = run_extras.get(phases_class)

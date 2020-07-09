@@ -43,8 +43,8 @@ class ClusterEngine(Engine):
         elif self.backend == "KUBERNETES":
             self.submit_script = os.path.join(abs_dir, "k8s/cluster.sh")
         else:
-            raise ValueError(
-                "{} can not be supported now".format(self.backend))
+            raise ValueError("{} can not be supported now".format(
+                self.backend))
 
     def start_worker_procs(self):
         trainer = TrainerFactory.create(self.trainer)
@@ -98,22 +98,25 @@ class ClusterEngine(Engine):
                 cluster_env_check_tool = PaddleCloudMpiEnv()
             else:
                 raise ValueError(
-                    "Paddlecloud with Mpi don't support GPU training, check your config")
+                    "Paddlecloud with Mpi don't support GPU training, check your config"
+                )
         elif cluster_type.upper() == "K8S":
             if fleet_mode == "PS":
                 if device == "CPU":
-                    #cluster_env_check_tool = CloudPsCpuEnv()
                     raise ValueError(
-                        "PS-CPU on paddlecloud is not supported at this time, comming soon")
+                        "PS-CPU on paddlecloud is not supported at this time, comming soon"
+                    )
                 elif device == "GPU":
                     raise ValueError(
-                        "PS-GPU on paddlecloud is not supported at this time, comming soon")
+                        "PS-GPU on paddlecloud is not supported at this time, comming soon"
+                    )
             if fleet_mode == "COLLECTIVE":
                 if device == "GPU":
                     cluster_env_check_tool = CloudCollectiveEnv()
                 elif device == "CPU":
                     raise ValueError(
-                        "Unexpected config -> device: CPU with fleet_mode: Collective, check your config")
+                        "Unexpected config -> device: CPU with fleet_mode: Collective, check your config"
+                    )
         else:
             raise ValueError("cluster_type {} error, must in MPI/K8S".format(
                 cluster_type))
@@ -136,12 +139,14 @@ class ClusterEnvBase(object):
     def env_check(self):
         # check common env
         # fs_name & fs_ugi
-        self.cluster_env["FS_NAME"] = self.backend_env.get(
-            "config.fs_name", "")
+        self.cluster_env["FS_NAME"] = self.backend_env.get("config.fs_name",
+                                                           "")
         self.cluster_env["FS_UGI"] = self.backend_env.get("config.fs_ugi", "")
-        if self.cluster_env["FS_NAME"] == "" or self.cluster_env["FS_UGI"] == "":
+        if self.cluster_env["FS_NAME"] == "" or self.cluster_env[
+                "FS_UGI"] == "":
             raise ValueError(
-                "No -- FS_UGI or FS_NAME -- found in your backend.yaml, please check.")
+                "No -- FS_UGI or FS_NAME -- found in your backend.yaml, please check."
+            )
 
         # output_path
         self.cluster_env["OUTPUT_PATH"] = self.backend_env.get(
@@ -157,16 +162,22 @@ class ClusterEnvBase(object):
             "config.paddle_version", "1.7.2")
 
         # communicator
-        self.cluster_env["FLAGS_communicator_is_sgd_optimizer"] = self.backend_env.get(
-            "config.communicator.FLAGS_communicator_is_sgd_optimizer", 0)
-        self.cluster_env["FLAGS_communicator_send_queue_size"] = self.backend_env.get(
-            "config.communicator.FLAGS_communicator_send_queue_size", 5)
-        self.cluster_env["FLAGS_communicator_thread_pool_size"] = self.backend_env.get(
-            "config.communicator.FLAGS_communicator_thread_pool_size", 32)
-        self.cluster_env["FLAGS_communicator_max_merge_var_num"] = self.backend_env.get(
-            "config.communicator.FLAGS_communicator_max_merge_var_num", 5)
-        self.cluster_env["FLAGS_communicator_max_send_grad_num_before_recv"] = self.backend_env.get(
-            "config.communicator.FLAGS_communicator_max_send_grad_num_before_recv", 5)
+        self.cluster_env[
+            "FLAGS_communicator_is_sgd_optimizer"] = self.backend_env.get(
+                "config.communicator.FLAGS_communicator_is_sgd_optimizer", 0)
+        self.cluster_env[
+            "FLAGS_communicator_send_queue_size"] = self.backend_env.get(
+                "config.communicator.FLAGS_communicator_send_queue_size", 5)
+        self.cluster_env[
+            "FLAGS_communicator_thread_pool_size"] = self.backend_env.get(
+                "config.communicator.FLAGS_communicator_thread_pool_size", 32)
+        self.cluster_env[
+            "FLAGS_communicator_max_merge_var_num"] = self.backend_env.get(
+                "config.communicator.FLAGS_communicator_max_merge_var_num", 5)
+        self.cluster_env[
+            "FLAGS_communicator_max_send_grad_num_before_recv"] = self.backend_env.get(
+                "config.communicator.FLAGS_communicator_max_send_grad_num_before_recv",
+                5)
         self.cluster_env["FLAGS_communicator_fake_rpc"] = self.backend_env.get(
             "config.communicator.FLAGS_communicator_fake_rpc", 0)
         self.cluster_env["FLAGS_rpc_retry_times"] = self.backend_env.get(
@@ -180,24 +191,23 @@ class ClusterEnvBase(object):
                 "No -- AK or SK -- found in your backend.yaml, please check.")
 
         # priority
-        self.cluster_env["PRIORITY"] = self.backend_env.get(
-            "submit.priority", "high")
+        self.cluster_env["PRIORITY"] = self.backend_env.get("submit.priority",
+                                                            "high")
 
         # job name
         self.cluster_env["JOB_NAME"] = self.backend_env.get(
             "submit.job_name", "PaddleRecClusterJob")
 
         # group
-        self.cluster_env["GROUP_NAME"] = self.backend_env.get(
-            "submit.group", "paddle")
+        self.cluster_env["GROUP_NAME"] = self.backend_env.get("submit.group",
+                                                              "paddle")
 
         # start_cmd
         self.cluster_env["START_CMD"] = self.backend_env.get(
             "submit.start_cmd", "python -m paddlerec.run -m config.yaml")
 
         # files
-        self.cluster_env["FILES"] = self.backend_env.get(
-            "submit.files", "")
+        self.cluster_env["FILES"] = self.backend_env.get("submit.files", "")
         if self.cluster_env["FILES"] == "":
             raise ValueError(
                 "No -- files -- found in your backend.yaml, please check.")
@@ -224,7 +234,8 @@ class PaddleCloudMpiEnv(ClusterEnvBase):
             "config.train_data_path", "")
         if self.cluster_env["TRAIN_DATA_PATH"] == "":
             raise ValueError(
-                "No -- TRAIN_DATA_PATH -- found in your backend.yaml, please check.")
+                "No -- TRAIN_DATA_PATH -- found in your backend.yaml, please check."
+            )
         # test_data_path
         self.cluster_env["TEST_DATA_PATH"] = self.backend_env.get(
             "config.test_data_path", "")
@@ -244,8 +255,7 @@ class PaddleCloudMpiEnv(ClusterEnvBase):
                 stacklevel=2)
 
         # nodes
-        self.cluster_env["MPI_NODES"] = self.backend_env.get(
-            "submit.nodes", 1)
+        self.cluster_env["MPI_NODES"] = self.backend_env.get("submit.nodes", 1)
 
 
 class PaddleCloudK8sEnv(ClusterEnvBase):
@@ -267,18 +277,6 @@ class PaddleCloudK8sEnv(ClusterEnvBase):
             "The remote mount point will be mounted to the ./afs/",
             category=UserWarning,
             stacklevel=2)
-
-        # check k8s_image_addr
-        # self.cluster_env["K8S_IMAGE_ADDR"] = self.backend_env.get(
-        #     "submit.k8s_image_addr", "registry.baidu.com/paddlepaddle-public/paddle_ubuntu1604:cuda10.0-cudnn7-dev")
-
-
-# class CloudPsCpuEnv(PaddleCloudK8sEnv):
-#     def env_check(self):
-#         pass
-
-#     def env_set(self):
-#         pass
 
 
 class CloudCollectiveEnv(PaddleCloudK8sEnv):
