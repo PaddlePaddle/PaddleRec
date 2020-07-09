@@ -42,7 +42,7 @@ def dataloader_by_name(readerclass,
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-        print("file_list : {}".format(files))
+    print("file_list : {}".format(files))
 
     reader = reader_class(yaml_file)
     reader.init()
