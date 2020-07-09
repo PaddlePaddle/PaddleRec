@@ -55,6 +55,8 @@ class Model(ModelBase):
 
         sparse_embed_seq = list(map(embedding_layer, sparse_var))
         weight = fluid.layers.concat(sparse_embed_seq, axis=0)
+        if is_infer:
+            fluid.layers.Print(weight)
         weight_sum = fluid.layers.reduce_sum(weight)
         b_linear = fluid.layers.create_parameter(
             shape=[1],

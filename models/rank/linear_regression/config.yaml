@@ -14,7 +14,7 @@
 
 # global settings 
 debug: false
-workspace: "/home/aistudio/PaddleRec-master/models/rank/linear_regression"
+workspace: "paddlerec.models.rank.linear_regression"
 
 
 dataset:
@@ -53,7 +53,7 @@ runner:
     save_inference_interval: 1
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
-    print_interval: 100
+    print_interval: 1
   - name: infer_runner
     class: infer
     device: cpu
@@ -68,5 +68,5 @@ phase:
   thread_num: 12
 #- name: infer_phase
 #  model: "{workspace}/model.py"
-#  dataset_name: infer_sample
+#  dataset_name: dataset_infer
 #  thread_num: 1

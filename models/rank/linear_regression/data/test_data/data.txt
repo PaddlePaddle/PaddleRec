@@ -1,0 +1,10 @@
+logid:406201811 time:959974725 userid:782959 gender:713968 age:367871 occupation:887870 movieid:593474 title:389382 title:420426 title:697263 title:759044 genres:220363 label:2
+logid:731667808 time:957756905 userid:317013 gender:715500 age:959669 occupation:956770 movieid:436098 title:195371 genres:43405 genres:22907 label:5
+logid:914109775 time:956936565 userid:466839 gender:713968 age:655161 occupation:113614 movieid:495392 title:304668 title:924099 title:819199 genres:893545 genres:750128 label:4
+logid:130407756 time:956926305 userid:845353 gender:713968 age:367871 occupation:113678 movieid:278462 title:631279 title:75815 title:683892 genres:697846 genres:893545 genres:803235 label:4
+logid:162344002 time:956945570 userid:467391 gender:713968 age:930457 occupation:113614 movieid:757292 title:437909 title:67566 title:663931 title:622433 title:973752 genres:455809 label:2
+logid:172473319 time:956934181 userid:263429 gender:713968 age:655161 occupation:113862 movieid:889490 title:186300 title:677155 title:937049 title:622433 title:855502 genres:220363 label:2
+logid:814895539 time:956890758 userid:734503 gender:715500 age:930457 occupation:113614 movieid:312477 title:594818 title:491338 title:234546 genres:220363 genres:532872 label:3
+logid:721088277 time:973289822 userid:278745 gender:713968 age:367871 occupation:300174 movieid:673898 title:774924 title:61321 title:755193 genres:891961 genres:455809 label:5
+logid:487566723 time:956907971 userid:192959 gender:713968 age:367871 occupation:113614 movieid:722671 title:677184 title:108182 title:974616 title:797604 genres:697846 genres:893545 genres:220363 genres:803235 label:5
+logid:960590831 time:978252470 userid:297629 gender:715500 age:292885 occupation:113738 movieid:301175 title:508793 title:829566 title:199430 title:158723 title:467516 genres:43405 label:3
