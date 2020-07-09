@@ -130,6 +130,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 ### Introductory Project
 * [Get start of PaddleRec in ten minutes](https://aistudio.baidu.com/aistudio/projectdetail/559336)
+* [Tutorial of Linear Regression and Analysis of Feature Importance](https://aistudio.baidu.com/aistudio/projectdetail/618918)
 
 ### Introductory tutorial
 * [Data](doc/slot_reader.md)

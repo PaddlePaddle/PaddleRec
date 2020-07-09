@@ -135,6 +135,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 
 ### 快速开始
 * [十分钟上手PaddleRec](https://aistudio.baidu.com/aistudio/projectdetail/559336)
+* [乘风破浪的调参侠！玩转特征重要性～从此精通LR](https://aistudio.baidu.com/aistudio/projectdetail/618918)
 
 ### 入门教程
 * [数据准备](doc/slot_reader.md)
