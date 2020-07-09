@@ -58,4 +58,3 @@ submit:
   k8s_trainers: 2
   k8s_gpu_card: 1
   
-  
