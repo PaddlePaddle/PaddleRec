@@ -35,7 +35,7 @@
 分布式运行首先需要更改`config.yaml`，主要调整以下内容：
 
 - workspace: 调整为在节点运行时的工作目录
-- runner_class: 从单价"train"调整为"cluster_train"
+- runner_class: 从单机的"train"调整为"cluster_train"
 - fleet_mode: 选则参数服务器模式，抑或GPU Collective模式
 - distribute_strategy: 可选项，选择分布式训练的策略
 
@@ -94,8 +94,8 @@ runner:
 ```
 
 除此之外，还需关注数据及模型加载的路径，一般而言：
-- PaddleCloud MPI模式下，训练数据会下载到节点运行目录的`./train_data/`，测试数据位于`./test_data/`，其他数据及文件可以通过上传到hdfs配置的`thirdparty`后，自动下载到节点运行目录的`./thirdparty/`文件夹下。
-- PaddleCloud K8S模式下，hdfs的指定目录会挂载到节点工作目录的`./afs/`
+- PaddleCloud MPI集群下，训练数据会下载到节点运行目录的`./train_data/`，测试数据位于`./test_data/`，其他数据及文件可以通过上传到hdfs配置的`thirdparty`后，自动下载到节点运行目录的`./thirdparty/`文件夹下。
+- PaddleCloud K8S集群下，hdfs的指定目录会挂载到节点工作目录的`./afs/`
 
 ### 第三步：增加集群运行`backend.yaml`配置
 
