@@ -139,7 +139,8 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 ### 入门教程
 * [数据准备](doc/slot_reader.md)
 * [模型调参](doc/model.md)
-* [启动训练](doc/train.md)
+* [启动单机训练](doc/train.md)
+* [启动分布式训练](doc/distributed_train.md)
 * [启动预测](doc/predict.md)
 * [快速部署](doc/serving.md)
 
