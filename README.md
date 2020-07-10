@@ -134,7 +134,8 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 ### Introductory tutorial
 * [Data](doc/slot_reader.md)
 * [Model](doc/model.md)
-* [Train](doc/train.md)
+* [Loacl Train](doc/train.md)
+* [Distributed Train](doc/distributed_train.md)
 * [Predict](doc/predict.md)
 * [Serving](doc/serving.md)
 
