@@ -138,7 +138,6 @@ function _gen_k8s_cpu_job() {
       -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
       -e "s#<$ K8S_PS_NUM $>#$K8S_PS_NUM#g" \
       -e "s#<$ K8S_PS_CORES $>#$K8S_PS_CORES#g" \
-      -e "s#<$ K8S_PS_MEMORY $>#$K8S_PS_MEMORY#g" \
       -e "s#<$ START_CMD $>#$START_CMD#g" \
       ${abs_dir}/cloud/k8s_cpu_job.sh.template >${PWD}/job.sh
 }

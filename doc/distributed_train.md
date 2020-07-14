@@ -181,7 +181,6 @@ submit:
   k8s_trainers: 2
   k8s_ps_num: 2
   k8s_ps_cores: 4
-  k8s_ps_memory: 10Gi
   
 ```
 
@@ -439,7 +438,6 @@ submit:
   k8s_trainers: 2
   k8s_ps_num: 2
   k8s_ps_cores: 4
-  k8s_ps_memory: 10Gi
 ```
 
 ### 第四步：任务提交

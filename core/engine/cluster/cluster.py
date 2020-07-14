@@ -305,7 +305,5 @@ class CloudPsCpuEnv(PaddleCloudK8sEnv):
             "submit.k8s_trainers", 1)
         self.cluster_env["K8S_PS_NUM"] = self.backend_env.get(
             "submit.k8s_ps_num", 1)
-        self.cluster_env["K8S_PS_MEMORY"] = self.backend_env.get(
-            "submit.k8s_ps_memory", "10Gi")
         self.cluster_env["K8S_PS_CORES"] = self.backend_env.get(
             "submit.k8s_ps_cores", 2)
