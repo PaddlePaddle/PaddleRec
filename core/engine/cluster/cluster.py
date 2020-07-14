@@ -98,7 +98,7 @@ class ClusterEngine(Engine):
                 cluster_env_check_tool = PaddleCloudMpiEnv()
             else:
                 raise ValueError(
-                    "Paddlecloud with Mpi don't support GPU training, check your backend.yaml"
+                    "Paddlecloud with Mpi don't support GPU training, check your config.yaml & backend.yaml"
                 )
         elif cluster_type.upper() == "K8S":
             if fleet_mode == "PS":
