@@ -20,7 +20,7 @@ dataset:
   batch_size: 1
   type: DataLoader
   data_path: "{workspace}/data/test"
-  data_converter: "{workspace}/synthetic_evaluate_reader.py"
+  data_converter: "{workspace}/test_reader.py"
 
 hyper_parameters:
   optimizer:
