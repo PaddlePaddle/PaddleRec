@@ -37,4 +37,3 @@ class Reader(ReaderBase):
             yield zip(features_name, [doc1] + [doc2])
 
         return reader
-                        

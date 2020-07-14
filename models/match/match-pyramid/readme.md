@@ -72,7 +72,7 @@ data/embed_wiki-pdc_d50_norm
 
 ## 一键训练
 执行命令开始训练： python -m paddlerec.run -m ./config_train.yaml  
-paddlerec可以通过config_train.yaml规定模型的训练参数，通过model.py规定模型的组网，使用synthetic_reader.py读取训练集中的数据。如需详细了解请参考https://github.com/PaddlePaddle/PaddleRec/blob/master/README_CN.md 页面下方的教程。
+paddlerec可以通过config_train.yaml规定模型的训练参数，通过model.py规定模型的组网，使用synthetic_reader.py读取训练集中的数据。如需详细了解请参考https://github.com/PaddlePaddle/PaddleRec/blob/master/README_CN.md 页面下方的教程。  
 
 ## 一键测试并评估
 本文提供了一键执行测试和评估的脚本，您可以直接一键运行：bash test.sh  
@@ -84,4 +84,3 @@ paddlerec可以通过config_train.yaml规定模型的训练参数，通过model.
 336
 ('map=', 0.420878322843591)
 ```
-

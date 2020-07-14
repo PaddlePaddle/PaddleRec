@@ -15,35 +15,37 @@
 import random
 import numpy as np
 
+
 def eval_MAP(pred, gt):
     map_value = 0.0
     r = 0.0
     c = list(zip(pred, gt))
     random.shuffle(c)
-    c = sorted(c, key = lambda x:x[0], reverse=True)
+    c = sorted(c, key=lambda x: x[0], reverse=True)
     for j, (p, g) in enumerate(c):
         if g != 0:
             r += 1
-            map_value += r/(j+1.0)
+            map_value += r / (j + 1.0)
     if r == 0:
         return 0.0
     else:
-        return map_value/r
+        return map_value / r
 
-filename= './data/relation.test.fold1.txt'
+
+filename = './data/relation.test.fold1.txt'
 gt = []
 qid = []
-f = open(filename,"r")
+f = open(filename, "r")
 f.readline()
 num = 0
 for line in f.readlines():
-    num = num +1
+    num = num + 1
     line = line.strip().split()
     gt.append(int(line[0]))
     qid.append(line[1])
 f.close()
 print(num)
-filename= './result.txt'
+filename = './result.txt'
 pred = []
 for line in open(filename):
     line = line.strip().split(",")
@@ -56,15 +58,15 @@ for line in open(filename):
 result_dict = {}
 for i in range(len(qid)):
     if qid[i] not in result_dict:
-           result_dict[qid[i]] = []
-    result_dict[qid[i]].append([gt[i],pred[i]])
+        result_dict[qid[i]] = []
+    result_dict[qid[i]].append([gt[i], pred[i]])
 print(len(result_dict))
 
 map = 0
 for qid in result_dict:
-    gt = np.array(result_dict[qid])[:,0]
-    pred = np.array(result_dict[qid])[:,1]
-    map += eval_MAP(pred,gt)
-map = map/len(result_dict)
+    gt = np.array(result_dict[qid])[:, 0]
+    pred = np.array(result_dict[qid])[:, 1]
+    map += eval_MAP(pred, gt)
+map = map / len(result_dict)
 
-print("map=",map)
+print("map=", map)
