@@ -9,6 +9,7 @@
     - [第三步：增加集群运行`backend.yaml`配置](#第三步增加集群运行backendyaml配置)
       - [MPI集群的Parameter Server模式配置](#mpi集群的parameter-server模式配置)
       - [K8S集群的Collective模式配置](#k8s集群的collective模式配置)
+      - [K8S集群的PS-CPU模式配置](#k8s集群的ps-cpu模式配置)
     - [第四步：任务提交](#第四步任务提交)
   - [使用PaddleCloud Client提交](#使用paddlecloud-client提交)
     - [第一步：在`before_hook.sh`里手动安装PaddleRec](#第一步在before_hooksh里手动安装paddlerec)
@@ -34,10 +35,10 @@
 
 分布式运行首先需要更改`config.yaml`，主要调整以下内容：
 
-- workspace: 调整为在节点运行时的工作目录
-- runner_class: 从单机的"train"调整为"cluster_train"
-- fleet_mode: 选则参数服务器模式，抑或GPU Collective模式
-- distribute_strategy: 可选项，选择分布式训练的策略
+- workspace: 调整为在远程点运行时的工作目录，一般设置为`"./"`即可
+- runner_class: 从单机的"train"调整为"cluster_train"，单机训练->分布式训练（例外情况，k8s上单机单卡训练仍然为train）
+- fleet_mode: 选则参数服务器模式(ps)，抑或GPU的all-reduce模式(collective)
+- distribute_strategy: 可选项，选择分布式训练的策略，目前只在参数服务器模式下生效，可选项:`sync、asycn、half_async、geo`
 
 配置选项具体参数，可以参考[yaml配置说明](./yaml.md)
 
@@ -50,47 +51,56 @@
 workspace: "paddlerec.models.rank.dnn"
 
 mode: [single_cpu_train]
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: single_cpu_train
   class: train
-  # num of epochs
   epochs: 4
-  # device to run training or infer
   device: cpu
-  save_checkpoint_interval: 2 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
+  save_checkpoint_interval: 2 
+  save_checkpoint_path: "increment_dnn" 
+  init_model_path: "" 
   print_interval: 10
   phases: [phase1]
+
+dataset:
+- name: dataloader_train 
+  batch_size: 2
+  type: DataLoader 
+  data_path: "{workspace}/data/sample_data/train"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
 ```
 
 分布式的训练配置可以改为：
 ```yaml
-# workspace
-# 改变一：代码上传至节点后，与运行shell同在一个默认目录下
+# 改变一：代码上传至节点后，在默认目录下
 workspace: "./" 
 
 mode: [ps_cluster]
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: ps_cluster
   # 改变二：调整runner的class
   class: cluster_train
-  # num of epochs
   epochs: 4
-  # device to run training or infer
   device: cpu
   # 改变三 & 四： 指定fleet_mode 与 distribute_strategy
   fleet_mode: ps
   distribute_strategy: async
-  save_checkpoint_interval: 2 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
+  save_checkpoint_interval: 2 
+  save_checkpoint_path: "increment_dnn" 
+  init_model_path: "" 
   print_interval: 10
   phases: [phase1]
+
+dataset:
+- name: dataloader_train 
+  batch_size: 2
+  type: DataLoader 
+  # 改变五： 改变数据的读取目录
+  # 通常而言，mpi模式下，数据会下载到远程节点执行目录的'./train_data'下， k8s则与挂载位置有关
+  data_path: "{workspace}/train_data"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
 ```
 
 除此之外，还需关注数据及模型加载的路径，一般而言：
@@ -165,7 +175,14 @@ submit:
   # for k8s gpu        
   # k8s gpu 模式下，训练节点数，及每个节点上的GPU卡数
   k8s_trainers: 2
+  k8s-cpu-cores: 4
   k8s_gpu_card: 1
+
+  # for k8s ps-cpu
+  k8s_trainers: 2
+  k8s-cpu-cores: 4
+  k8s_ps_num: 2
+  k8s_ps_cores: 4
   
 ```
 
@@ -173,18 +190,51 @@ submit:
 
 除此之外，我们还需要关注上传到工作目录的文件(`files选项`)的路径问题，在示例中是`./*.py`，说明我们执行任务提交时，与这些py文件在同一目录。若不在同一目录，则需要适当调整files路径，或改为这些文件的绝对路径。
 
-不建议利用`files`上传数据文件，可以通过指定`train_data_path`自动下载，或指定`afs_remote_mount_point`挂载实现数据到节点的转移。
+不建议利用`files`上传过大的数据文件，可以通过指定`train_data_path`自动下载，或在k8s模式下指定`afs_remote_mount_point`挂载实现数据到节点的转移。
 
 #### MPI集群的Parameter Server模式配置
 
 下面是一个利用PaddleCloud提交MPI参数服务器模式任务的`backend.yaml`示例
 
+首先调整`config.yaml`:
+```yaml
+workspace: "./"
+mode: [ps_cluster]
+
+dataset:
+- name: dataloader_train 
+  batch_size: 2
+  type: DataLoader 
+  data_path: "{workspace}/train_data"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
+
+runner:
+- name: ps_cluster
+  class: cluster_train
+  epochs: 2
+  device: cpu
+  fleet_mode: ps
+  save_checkpoint_interval: 1 
+  save_checkpoint_path: "increment_dnn" 
+  init_model_path: "" 
+  print_interval: 1
+  phases: [phase1]
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: dataloader_train 
+  thread_num: 1
+```
+
+
+再新增`backend.yaml`
 ```yaml
 backend: "PaddleCloud"
-cluster_type: mpi # k8s 可选
+cluster_type: mpi 
 
 config:
-  # 填写任务运行的paddle官方版本号 >= 1.7.2， 默认1.7.2
   paddle_version: "1.7.2" 
 
   # hdfs/afs的配置信息填写
@@ -229,9 +279,45 @@ submit:
 
 下面是一个利用PaddleCloud提交K8S集群进行GPU训练的`backend.yaml`示例
 
+首先调整`config.yaml`
+
+```yaml
+workspace: "./"
+mode: [collective_cluster]
+
+dataset:
+- name: dataloader_train 
+  batch_size: 2
+  type: DataLoader 
+  data_path: "{workspace}/train_data"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
+
+runner:
+- name: collective_cluster
+  class: cluster_train
+  epochs: 2
+  device: gpu
+  fleet_mode: collective
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: [phase1]
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: dataloader_train 
+  thread_num: 1
+```
+
+
+再增加`backend.yaml`
+
 ```yaml
 backend: "PaddleCloud"
-cluster_type: mpi # k8s 可选
+cluster_type: k8s # k8s 可选
 
 config:
   # 填写任务运行的paddle官方版本号 >= 1.7.2， 默认1.7.2
@@ -271,7 +357,91 @@ submit:
   # for k8s gpu        
   # k8s gpu 模式下，训练节点数，及每个节点上的GPU卡数
   k8s_trainers: 2
+  k8s-cpu-cores: 4
   k8s_gpu_card: 1
+```
+
+#### K8S集群的PS-CPU模式配置
+下面是一个利用PaddleCloud提交K8S集群进行参数服务器CPU训练的`backend.yaml`示例
+
+首先调整`config.yaml`:
+```yaml
+workspace: "./"
+mode: [ps_cluster]
+
+dataset:
+- name: dataloader_train 
+  batch_size: 2
+  type: DataLoader 
+  data_path: "{workspace}/train_data"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_var:13"
+
+runner:
+- name: ps_cluster
+  class: cluster_train
+  epochs: 2
+  device: cpu
+  fleet_mode: ps
+  save_checkpoint_interval: 1 
+  save_checkpoint_path: "increment_dnn" 
+  init_model_path: "" 
+  print_interval: 1
+  phases: [phase1]
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: dataloader_train 
+  thread_num: 1
+```
+
+再新增`backend.yaml`
+```yaml
+backend: "PaddleCloud"
+cluster_type: k8s # k8s 可选
+
+config:
+  # 填写任务运行的paddle官方版本号 >= 1.7.2， 默认1.7.2
+  paddle_version: "1.7.2" 
+
+  # hdfs/afs的配置信息填写
+  fs_name: "afs://xxx.com"
+  fs_ugi: "usr,pwd"
+
+  # 填任务输出目录的远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  output_path: "" 
+  
+  # for k8s
+  # 填远程挂载地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  afs_remote_mount_point: "" 
+  
+submit:
+  # PaddleCloud 个人信息 AK 及 SK
+  ak: ""
+  sk: ""
+  
+  # 任务运行优先级，默认high
+  priority: "high"
+  
+  # 任务名称
+  job_name: "PaddleRec_CTR"
+
+  # 训练资源所在组
+  group: ""
+
+  # 节点上的任务启动命令
+  start_cmd: "python -m paddlerec.run -m ./config.yaml"
+  
+  # 本地需要上传到节点工作目录的文件
+  files: ./*.py ./*.yaml
+  
+  # for k8s gpu        
+  # k8s ps-cpu 模式下，训练节点数，参数服务器节点数，及每个节点上的cpu核心数及内存限制
+  k8s_trainers: 2
+  k8s-cpu-cores: 4
+  k8s_ps_num: 2
+  k8s_ps_cores: 4
 ```
 
 ### 第四步：任务提交
