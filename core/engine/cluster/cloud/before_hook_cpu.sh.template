@@ -10,6 +10,6 @@ python setup.py install
 
 pip uninstall -y paddlepaddle
 
-pip install paddlepaddle-gpu==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
+pip install paddlepaddle==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
 
 echo "End before_hook.sh ..."

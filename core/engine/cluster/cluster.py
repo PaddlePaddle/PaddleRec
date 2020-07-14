@@ -295,10 +295,10 @@ class CloudCollectiveEnv(PaddleCloudK8sEnv):
 
 class CloudPsCpuEnv(PaddleCloudK8sEnv):
     def __init__(self):
-        super(CloudCollectiveEnv, self).__init__()
+        super(CloudPsCpuEnv, self).__init__()
 
     def env_check(self):
-        super(CloudCollectiveEnv, self).env_check()
+        super(CloudPsCpuEnv, self).env_check()
 
         self.cluster_env["DISTRIBUTE_MODE"] = "PS_CPU_K8S"
         self.cluster_env["K8S_TRAINERS"] = self.backend_env.get(
