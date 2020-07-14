@@ -27,6 +27,7 @@ hyper_parameters:
     class: adam
     learning_rate: 0.001
     strategy: async
+  emb_path: "./data/embedding.npy"
   sentence_left_size: 20
   sentence_right_size: 500
   vocab_size: 193368

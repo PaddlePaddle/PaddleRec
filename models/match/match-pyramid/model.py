@@ -21,14 +21,17 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 
+
 class Model(ModelBase):
     def __init__(self, config):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.embedding_array = np.load("./embedding.npy")
-        self.sentence_left_size = envs.get_global_env("hyper_parameters.sentence_left_size")
-        self.sentence_right_size = envs.get_global_env("hyper_parameters.sentence_right_size")
+        self.emb_path = envs.get_global_env("hyper_parameters.emb_path")
+        self.sentence_left_size = envs.get_global_env(
+            "hyper_parameters.sentence_left_size")
+        self.sentence_right_size = envs.get_global_env(
+            "hyper_parameters.sentence_right_size")
         self.vocab_size = envs.get_global_env("hyper_parameters.vocab_size")
         self.emb_size = envs.get_global_env("hyper_parameters.emb_size")
         self.kernel_num = envs.get_global_env("hyper_parameters.kernel_num")
@@ -41,7 +44,8 @@ class Model(ModelBase):
         self.pool_size = envs.get_global_env("hyper_parameters.pool_size")
         self.pool_stride = envs.get_global_env("hyper_parameters.pool_stride")
         self.pool_type = envs.get_global_env("hyper_parameters.pool_type")
-        self.pool_padding = envs.get_global_env("hyper_parameters.pool_padding")
+        self.pool_padding = envs.get_global_env(
+            "hyper_parameters.pool_padding")
 
     def input_data(self, is_infer=False, **kwargs):
         sentence_left = fluid.data(
@@ -60,13 +64,25 @@ class Model(ModelBase):
         """
         embedding layer
         """
-        emb = fluid.embedding(
-            input=input,
-            size=[self.vocab_size, self.emb_size],
-            padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                name="word_embedding",
-                initializer=fluid.initializer.NumpyArrayInitializer(self.embedding_array)))
+        if os.path.isfile(self.emb_path):
+            embedding_array = np.load(self.emb_path)
+            emb = fluid.embedding(
+                input=input,
+                size=[self.vocab_size, self.emb_size],
+                padding_idx=0,
+                param_attr=fluid.ParamAttr(
+                    name="word_embedding",
+                    initializer=fluid.initializer.NumpyArrayInitializer(
+                        embedding_array)))
+        else:
+            emb = fluid.embedding(
+                input=input,
+                size=[self.vocab_size, self.emb_size],
+                padding_idx=0,
+                param_attr=fluid.ParamAttr(
+                    name="word_embedding",
+                    initializer=fluid.initializer.Xavier()))
+
         return emb
 
     def conv_pool_layer(self, input):
@@ -81,45 +97,45 @@ class Model(ModelBase):
             stride=1,
             padding="SAME",
             filter_size=self.conv_filter,
-            act =self.conv_act)
+            act=self.conv_act)
         pool = fluid.layers.pool2d(
             input=conv,
             pool_size=self.pool_size,
             pool_stride=self.pool_stride,
             pool_type=self.pool_type,
-            pool_padding=self.pool_padding )
+            pool_padding=self.pool_padding)
         return pool
 
     def net(self, inputs, is_infer=False):
         left_emb = self.embedding_layer(inputs[0])
         right_emb = self.embedding_layer(inputs[1])
         cross = fluid.layers.matmul(left_emb, right_emb, transpose_y=True)
-        cross = fluid.layers.reshape(cross,[-1,1,cross.shape[1],cross.shape[2]])
+        cross = fluid.layers.reshape(cross,
+                                     [-1, 1, cross.shape[1], cross.shape[2]])
         conv_pool = self.conv_pool_layer(input=cross)
         relu_hid = fluid.layers.fc(input=conv_pool,
-                                    size=self.hidden_size,
-                                    act=self.hidden_act)
-        prediction = fluid.layers.fc(input=relu_hid,
-                               size=self.out_size,)
+                                   size=self.hidden_size,
+                                   act=self.hidden_act)
+        prediction = fluid.layers.fc(
+            input=relu_hid,
+            size=self.out_size, )
 
         if is_infer:
-           self._infer_results["prediction"] = prediction
-           return 
+            self._infer_results["prediction"] = prediction
+            return
 
-        pos = fluid.layers.slice(prediction,axes=[0,1],starts=[0,0],ends=[64,1])
-        neg = fluid.layers.slice(prediction,axes=[0,1],starts=[64,0],ends=[128,1])
+        pos = fluid.layers.slice(
+            prediction, axes=[0, 1], starts=[0, 0], ends=[64, 1])
+        neg = fluid.layers.slice(
+            prediction, axes=[0, 1], starts=[64, 0], ends=[128, 1])
         loss_part1 = fluid.layers.elementwise_sub(
             fluid.layers.fill_constant(
-                shape=[64, 1],
-                value=1.0,
-                dtype='float32'),
+                shape=[64, 1], value=1.0, dtype='float32'),
             pos)
         loss_part2 = fluid.layers.elementwise_add(loss_part1, neg)
         loss_part3 = fluid.layers.elementwise_max(
             fluid.layers.fill_constant(
-                shape=[64, 1],
-                value=0.0,
-                dtype='float32'),
+                shape=[64, 1], value=0.0, dtype='float32'),
             loss_part2)
 
         avg_cost = fluid.layers.mean(loss_part3)
