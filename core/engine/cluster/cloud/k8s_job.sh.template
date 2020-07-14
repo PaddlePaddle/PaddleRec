@@ -13,6 +13,7 @@ wall_time="10:00:00"
 
 k8s_priority=<$ K8S_PRIORITY $>
 k8s_trainers=<$ K8S_TRAINERS $>
+k8s_cpu_cores=<$ K8S_CPU_CORES $>
 k8s_gpu_cards=<$ K8S_GPU_CARD $>
 
 is_stand_alone=0
@@ -38,6 +39,7 @@ paddlecloud job --ak ${ak} --sk ${sk} \
         --files ./*  \
         --job-version ${job_version}  \
         --k8s-trainers ${k8s_trainers} \
+        --k8s-cpu-cores ${k8s_cpu_cores} \
         --k8s-gpu-cards ${k8s_gpu_cards} \
         --k8s-priority ${k8s_priority} \
         --wall-time ${wall_time} \

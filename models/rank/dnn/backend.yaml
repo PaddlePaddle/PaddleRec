@@ -52,10 +52,12 @@ submit:
   
   # for k8s gpu        
   k8s_trainers: 2
+  k8s_cpu_cores: 2
   k8s_gpu_card: 1
 
   # for k8s ps-cpu
   k8s_trainers: 2
+  k8s_cpu_cores: 4
   k8s_ps_num: 2
   k8s_ps_cores: 4
   
