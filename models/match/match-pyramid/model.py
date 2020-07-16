@@ -50,12 +50,12 @@ class Model(ModelBase):
     def input_data(self, is_infer=False, **kwargs):
         sentence_left = fluid.data(
             name="sentence_left",
-            shape=[-1, self.sentence_left_size],
+            shape=[-1, self.sentence_left_size, 1],
             dtype='int64',
             lod_level=0)
         sentence_right = fluid.data(
             name="sentence_right",
-            shape=[-1, self.sentence_right_size],
+            shape=[-1, self.sentence_right_size, 1],
             dtype='int64',
             lod_level=0)
         return [sentence_left, sentence_right]
@@ -66,7 +66,7 @@ class Model(ModelBase):
         """
         if os.path.isfile(self.emb_path):
             embedding_array = np.load(self.emb_path)
-            emb = fluid.embedding(
+            emb = fluid.layers.embedding(
                 input=input,
                 size=[self.vocab_size, self.emb_size],
                 padding_idx=0,
@@ -75,7 +75,7 @@ class Model(ModelBase):
                     initializer=fluid.initializer.NumpyArrayInitializer(
                         embedding_array)))
         else:
-            emb = fluid.embedding(
+            emb = fluid.layers.embedding(
                 input=input,
                 size=[self.vocab_size, self.emb_size],
                 padding_idx=0,

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import numpy as np
 import random
 
@@ -64,11 +65,12 @@ def read_relation(filename):
     return data
 
 
-Letor07Path = "."
-word_dict = read_word_dict(filename=Letor07Path + '/word_dict.txt')
-query_data = read_data(filename=Letor07Path + '/qid_query.txt')
-doc_data = read_data(filename=Letor07Path + '/docid_doc.txt')
-embed_dict = read_embedding(filename=Letor07Path + '/embed_wiki-pdc_d50_norm')
+Letor07Path = "./data"
+word_dict = read_word_dict(filename=os.path.join(Letor07Path, 'word_dict.txt'))
+query_data = read_data(filename=os.path.join(Letor07Path, 'qid_query.txt'))
+doc_data = read_data(filename=os.path.join(Letor07Path, 'docid_doc.txt'))
+embed_dict = read_embedding(filename=os.path.join(Letor07Path,
+                                                  'embed_wiki-pdc_d50_norm'))
 
 _PAD_ = len(word_dict)  #193367
 embed_dict[_PAD_] = np.zeros((50, ), dtype=np.float32)
@@ -87,7 +89,8 @@ train_iters = 2500
 def make_train():
     rel_set = {}
     pair_list = []
-    rel = read_relation(filename=Letor07Path + '/relation.train.fold1.txt')
+    rel = read_relation(filename=os.path.join(Letor07Path,
+                                              'relation.train.fold1.txt'))
     for label, d1, d2 in rel:
         if d1 not in rel_set:
             rel_set[d1] = {}
@@ -103,7 +106,7 @@ def make_train():
                         pair_list.append((d1, high_d2, low_d2))
     print('Pair Instance Count:', len(pair_list))
 
-    f = open("./train/train.txt", "w")
+    f = open("./data/train/train.txt", "w")
     for batch in range(800):
         X1 = np.zeros((batch_size * 2, data1_maxlen), dtype=np.int32)
         X2 = np.zeros((batch_size * 2, data2_maxlen), dtype=np.int32)
@@ -126,8 +129,9 @@ def make_train():
 
 
 def make_test():
-    rel = read_relation(filename=Letor07Path + '/relation.test.fold1.txt')
-    f = open("./test/test.txt", "w")
+    rel = read_relation(filename=os.path.join(Letor07Path,
+                                              'relation.test.fold1.txt'))
+    f = open("./data/test/test.txt", "w")
     for label, d1, d2 in rel:
         X1 = np.zeros(data1_maxlen, dtype=np.int32)
         X2 = np.zeros(data2_maxlen, dtype=np.int32)
