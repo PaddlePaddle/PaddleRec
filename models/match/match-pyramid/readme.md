@@ -89,6 +89,6 @@ paddlerec可以：
 使用test_reader.py读取测试集中的数据。  
 本文额外提供：  
 data_process.sh用来一键处理数据
-run.sh用来一键启动训练，直接得出测试结果
-eval.py通过保存的测试结果，计算map指标
+run.sh用来一键启动训练，直接得出测试结果  
+eval.py通过保存的测试结果，计算map指标  
 如需详细了解paddlerec的使用方法请参考https://github.com/PaddlePaddle/PaddleRec/blob/master/README_CN.md 页面下方的教程。  
