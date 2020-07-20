@@ -192,12 +192,12 @@ submit:
   # for k8s gpu        
   # k8s gpu 模式下，训练节点数，及每个节点上的GPU卡数
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_gpu_card: 1
 
   # for k8s ps-cpu
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_ps_num: 2
   k8s_ps_cores: 4
   
@@ -374,7 +374,7 @@ submit:
   # for k8s gpu        
   # k8s gpu 模式下，训练节点数，及每个节点上的GPU卡数
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_gpu_card: 1
 ```
 
@@ -456,7 +456,7 @@ submit:
   # for k8s gpu        
   # k8s ps-cpu 模式下，训练节点数，参数服务器节点数，及每个节点上的cpu核心数及内存限制
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_ps_num: 2
   k8s_ps_cores: 4
 ```
