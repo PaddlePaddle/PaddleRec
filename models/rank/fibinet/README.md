@@ -96,9 +96,20 @@ CPU环境
 python -m paddlerec.run -m paddlerec.models.rank.fibinet
 ```
 
-## 模型效果
+## 复现论文&模型效果
 
-在样例数据上测试模型
+用原论文的大数据复现论文效果需要在config.py中修改batch_size=1000, thread_num=8, epoch_num=4
+
+修改后运行有两种方案：
+```
+python setup.py install  # 安装到python  
+python -m paddlerec.run -m paddlerec.models.rank.fibinet #运行 
+```
+第二种方案是修改config.py中'workspace'为config.py的目录位置，执行
+```
+python -m paddlerec.run -m /home/your/dir/config.py #调试模式 直接指定本地config的绝对路径
+```
+
 
 训练：
 
