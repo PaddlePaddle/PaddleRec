@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import abc
+import paddle.fluid as fluid
+import numpy as np
 
 
 class Metric(object):
@@ -24,14 +26,23 @@ class Metric(object):
         """ """
         pass
 
-    def clear(self, scope, params):
+    def clear(self, scope=None, **kwargs):
         """
         clear current value
         Args:
             scope: value container
             params: extend varilable for clear
         """
-        pass
+        if scope is None:
+            scope = fluid.global_scope()
+
+        place = fluid.CPUPlace()
+        for (varname, dtype) in self._need_clear_list:
+            if scope.find_var(varname) is None:
+                continue
+            var = scope.var(varname).get_tensor()
+            data_array = np.zeros(var._get_dims()).astype(dtype)
+            var.set(data_array, place)
 
     def calculate(self, scope, params):
         """

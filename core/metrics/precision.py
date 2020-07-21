@@ -99,6 +99,8 @@ class Precision(Metric):
 
         self.accuracy = local_pos_num / local_ins_num
 
+        self._need_clear_list = [("local_ins_num", "float32"),
+                                 ("local_pos_num", "float32")]
         self.metrics = dict()
         metric_varname = "P@%d" % kwargs.get("k")
         self.metrics[metric_varname] = self.accuracy
