@@ -24,7 +24,6 @@ class Metric(object):
         """ """
         pass
 
-    @abc.abstractmethod
     def clear(self, scope, params):
         """
         clear current value
@@ -34,7 +33,6 @@ class Metric(object):
         """
         pass
 
-    @abc.abstractmethod
     def calculate(self, scope, params):
         """
         calculate result
@@ -52,7 +50,6 @@ class Metric(object):
         """
         pass
 
-    @abc.abstractmethod
     def __str__(self):
         """
         Return:
