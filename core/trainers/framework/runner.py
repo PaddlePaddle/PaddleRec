@@ -20,7 +20,6 @@ import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
-from paddle.fluid.data_feeder import convert_dtype
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -222,9 +221,6 @@ class RunnerBase(object):
         program = context["model"][model_name]["main_program"].clone()
         _exe_strategy, _build_strategy = self._get_strategy(model_dict,
                                                             context)
-        with open("program.proto", 'w') as fout:
-            fout.write(str(program))
-
         program = fluid.compiler.CompiledProgram(program).with_data_parallel(
             loss_name=model_class.get_avg_cost().name,
             build_strategy=_build_strategy,
