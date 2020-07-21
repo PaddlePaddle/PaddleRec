@@ -15,7 +15,9 @@
 import abc
 import os
 import paddle.fluid as fluid
+from paddle.fluid.framework import Variable
 
+from paddlerec.core.metric import Metric
 from paddlerec.core.utils import envs
 
 
@@ -120,7 +122,13 @@ class ModelBase(object):
     def get_metrics(self):
         """R
         """
-        return self._metrics
+        res = dict()
+        for key in self._metrics:
+            if isinstance(self._metrics[key], Metric):
+                res.update(self._metrics[key].get_result())
+            elif isinstance(self._metrics[key], Variable):
+                res[key] = self._metrics[key]
+        return res
 
     def get_fetch_period(self):
         return self._fetch_interval
