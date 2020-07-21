@@ -17,17 +17,18 @@ workspace: "paddlerec.models.recall.gru4rec"
 dataset:
 - name: dataset_train
   batch_size: 5
-  type: QueueDataset
+  type: DataLoader # QueueDataset
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/rsc15_reader.py"
 - name: dataset_infer
   batch_size: 5
-  type: QueueDataset
+  type: DataLoader #QueueDataset
   data_path: "{workspace}/data/test"
   data_converter: "{workspace}/rsc15_reader.py"
 
 hyper_parameters:
-  vocab_size: 1000
+  recall_k: 20
+  vocab_size: 37483
   hid_size: 100
   emb_lr_x: 10.0
   gru_lr_x: 1.0
@@ -47,15 +48,15 @@ runner:
 - name: train_runner
   class: train
   device: cpu
-  epochs: 3
+  epochs: 10
   save_checkpoint_interval: 2
   save_inference_interval: 4
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
+  save_checkpoint_path: "increment_gru4rec"
+  save_inference_path: "inference_gru4rec"
   print_interval: 10
 - name: infer_runner
   class: infer
-  init_model_path: "increment/0"
+  init_model_path: "increment_gru4rec"
   device: cpu
 
 phase:
