@@ -1,0 +1,49 @@
+#!/bin/bash
+###############################################################
+##                  注意-- 注意--注意                          ##
+##                 K8S NCCL2多机作业作业示例                    ##
+###############################################################
+job_name=<$ JOB_NAME $>
+
+# 作业参数
+group_name="<$ GROUP_NAME $>"               
+job_version="paddle-fluid-v1.7.1"
+start_cmd="<$ START_CMD $>"
+wall_time="10:00:00"
+
+k8s_priority=<$ K8S_PRIORITY $>
+k8s_trainers=<$ K8S_TRAINERS $>
+k8s_cpu_cores=<$ K8S_CPU_CORES $>
+k8s_gpu_cards=<$ K8S_GPU_CARD $>
+
+is_stand_alone=0
+nccl="--distribute-job-type "NCCL2""
+if [ ${k8s_trainers} == 1 ];then
+    is_stand_alone=1
+    nccl="--job-remark single-trainer"
+    if [ ${k8s_gpu_cards} == 1];then
+        nccl="--job-remark single-gpu"
+        echo "Attention: Use single GPU card for PaddleRec distributed training, please set runner class from 'cluster_train' to 'train' in config.yaml."
+    fi
+fi
+
+# 你的ak/sk（可在paddlecloud web页面【个人中心】处获取）
+ak=<$ AK $>
+sk=<$ SK $>
+
+paddlecloud job --ak ${ak} --sk ${sk} \
+        train --job-name ${job_name} \
+        --group-name ${group_name} \
+        --job-conf config.ini \
+        --start-cmd "${start_cmd}" \
+        --files ./*  \
+        --job-version ${job_version}  \
+        --k8s-trainers ${k8s_trainers} \
+        --k8s-cpu-cores ${k8s_cpu_cores} \
+        --k8s-gpu-cards ${k8s_gpu_cards} \
+        --k8s-priority ${k8s_priority} \
+        --wall-time ${wall_time} \
+        --is-standalone ${is_stand_alone} \
+        --json \
+        ${nccl} 
+        
