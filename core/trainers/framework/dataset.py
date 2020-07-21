@@ -118,6 +118,7 @@ class QueueDataset(DatasetBase):
         dataset.set_batch_size(batch_size)
         dataset.set_pipe_command(pipe_cmd)
         train_data_path = envs.get_global_env(name + "data_path")
+
         file_list = [
             os.path.join(train_data_path, x)
             for x in os.listdir(train_data_path)
@@ -125,7 +126,7 @@ class QueueDataset(DatasetBase):
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
             file_list = split_files(file_list, context["fleet"].worker_index(),
                                     context["fleet"].worker_num())
-
+        print("File_list: {}".format(file_list))
         dataset.set_filelist(file_list)
         for model_dict in context["phases"]:
             if model_dict["dataset_name"] == dataset_name:
