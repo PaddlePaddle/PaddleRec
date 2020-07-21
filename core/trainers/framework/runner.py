@@ -221,6 +221,7 @@ class RunnerBase(object):
         program = context["model"][model_name]["main_program"].clone()
         _exe_strategy, _build_strategy = self._get_strategy(model_dict,
                                                             context)
+
         program = fluid.compiler.CompiledProgram(program).with_data_parallel(
             loss_name=model_class.get_avg_cost().name,
             build_strategy=_build_strategy,
@@ -497,6 +498,10 @@ class SingleInferRunner(RunnerBase):
             with fluid.program_guard(train_prog, startup_prog):
                 fluid.io.load_persistables(
                     context["exe"], model_path, main_program=train_prog)
+            clear_metrics = context["model"][model_dict["name"]][
+                "model"].get_clear_metrics()
+            for var in clear_metrics:
+                var.clear()
 
     def _dir_check(self, context):
         dirname = envs.get_global_env(
