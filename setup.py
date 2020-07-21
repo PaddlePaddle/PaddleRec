@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 import shutil
 import tempfile
 
-requires = ["paddlepaddle == 1.7.2", "PyYAML >= 5.1.1", "rarfile == 3.0"]
+requires = ["paddlepaddle == 1.7.2", "PyYAML >= 5.1.1"]
 
 about = {}
 about["__title__"] = "paddle-rec"
