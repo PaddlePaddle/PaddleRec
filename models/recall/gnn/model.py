@@ -20,6 +20,7 @@ import paddle.fluid.layers as layers
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+from paddlerec.core.metrics import Precision
 
 
 class Model(ModelBase):
@@ -235,16 +236,16 @@ class Model(ModelBase):
         softmax = layers.softmax_with_cross_entropy(
             logits=logits, label=inputs[6])  # [batch_size, 1]
         self.loss = layers.reduce_mean(softmax)  # [1]
-        self.acc = layers.accuracy(input=logits, label=inputs[6], k=20)
-
+        acc = Precision(input=logits, label=inputs[6], k=20)
         self._cost = self.loss
+
         if is_infer:
-            self._infer_results['acc'] = self.acc
-            self._infer_results['loss'] = self.loss
+            self._infer_results['P@20'] = acc
+            self._infer_results['LOSS'] = self.loss
             return
 
         self._metrics["LOSS"] = self.loss
-        self._metrics["train_acc"] = self.acc
+        self._metrics["Train_P@20"] = acc
 
     def optimizer(self):
         step_per_epoch = self.corpus_size // self.train_batch_size
