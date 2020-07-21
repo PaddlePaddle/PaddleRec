@@ -19,40 +19,39 @@ dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 100
   type: QueueDataset # or QueueDataset 
-  data_path: "{workspace}/data/"
-  data_converter: "{workspace}/user_behavoir_reader.py"
+  data_path: "{workspace}/train_data/"
+  data_converter: "{workspace}/user_behavior_reader.py"
 
 # hyper parameters of user-defined network
 hyper_parameters:
   # optimizer config
   optimizer:
     class: Adam
-    learning_rate: 0.0005
+    learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
   hidden_layers: [128, 64, 24]
-  max_layers: 22
+  max_layers: 8
   node_nums: 8324047
   leaf_node_nums: 4162024
-  layer_node_num_list: [2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4129744]
-  child_nums: 2
+  layer_node_num_list: [8, 64, 512, 4096, 32768, 262144, 2097152, 4129744]
+  child_nums: 8
   fea_group: [20,20,10,10,2,2,2,1,1,1]
   item_nums: 69
   node_emb_size: 24
-  neg_sampling_list: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,19,22,25,30,76,200]
+  neg_sampling_list: [1, 2, 4, 8, 16, 20, 20, 20]
   output_positive: True
   topK: 100
-  learning_rate: 0.001
   tree:
     # 单机训练建议tree只load一次，保存为paddle tensor，之后从paddle模型热启
     # 分布式训练trainer需要独立load 
     # 预测时也改为从paddle模型加载
     load_tree_from_numpy: True # only once
     load_paddle_model: False # train & infer need
-    id2nodeid_path: "{workspace}/thirdparty/new_id2nodeid.txt"
+    id2nodeid_path: "{workspace}/thirdparty/id2nodeid.txt"
     tree_layer_path: "{workspace}/thirdparty/layer_list.txt"
     tree_travel_path: "{workspace}/thirdparty/travel_list.npy"
-    tree_info_path: "{workspace}/thirdparty/tree_node_info.npy"
+    tree_info_path: "{workspace}/thirdparty/tree_info.npy"
     tree_emb_path: "{workspace}/thirdparty/tree_emb.npy"
 
 # select runner by name

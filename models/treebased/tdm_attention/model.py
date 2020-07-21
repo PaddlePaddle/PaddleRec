@@ -75,10 +75,25 @@ class Model(ModelBase):
         self.tdm_infer_net(input)
 
     def input_data(self, is_infer=False, **kwargs):
-        if not is_infer:
-            return self.train_input()
-        else:
-            return self.infer_input()
+        user_input = [
+            fluid.data(
+                name="item_" + str(i + 1), shape=[None, 1], dtype="int64")
+            for i in range(self.item_nums)
+        ]
+
+        user_input_mask = [
+            fluid.data(
+                name="item_mask_" + str(i + 1),
+                shape=[None, 1],
+                dtype="float32") for i in range(self.item_nums)
+        ]
+
+        item_label = fluid.data(
+            name="item_label",
+            shape=[None, 1],
+            dtype="int64", )
+
+        return user_input + user_input_mask + [item_label]
 
     """ -------- Train network detail ------- """
 
@@ -171,7 +186,7 @@ class Model(ModelBase):
         sample_nodes_emb = fluid.layers.concat(sample_nodes_emb, axis=1)
 
         # 过Attention结构，得到若干fea_group(time_window)的特征与sample_node组合成的输入
-        user_node_concat = self.attention_layer(
+        user_node_concat = self.attention_interactive_layer(
             user_feature_emb, sample_nodes_emb, user_feature_mask)
 
         # 过3层分类器
@@ -237,8 +252,8 @@ class Model(ModelBase):
 
         return user_feature_emb
 
-    def attention_layer(self, user_feature_emb, sample_nodes_emb,
-                        user_feature_mask):
+    def attention_interactive_layer(self, user_feature_emb, sample_nodes_emb,
+                                    user_feature_mask):
         # user_feature_emb: list[ [batch_size, emb] ..{item_nums}.. [batch_size, emb]]
         # sample_nodes_emb: [batch_size, node_nums, emb]
 
@@ -344,7 +359,7 @@ class Model(ModelBase):
 
         fea_grouo_concat = fluid.layers.concat(
             fea_group_output + [sample_nodes_emb], axis=2)
-        # fea_grouo_concat: [batch_size, node_nums, emb * len(fea_group)]
+        # fea_grouo_concat: [batch_size, node_nums, emb * len(fea_group) + emb]
 
         return fea_grouo_concat
 
