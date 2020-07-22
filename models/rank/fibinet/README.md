@@ -120,7 +120,7 @@ python -m paddlerec.run -m paddlerec.models.rank.fibinet #运行
 ```
 第二种方案是修改config.py中'workspace'为config.py的目录位置，执行
 ```
-python -m paddlerec.run -m /home/your/dir/config.py #调试模式 直接指定本地config的绝对路径
+python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
 ```
 
 ## 结果展示
