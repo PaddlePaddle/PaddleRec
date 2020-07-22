@@ -170,13 +170,15 @@ class ClusterEnvBase(object):
                 "config.communicator.FLAGS_communicator_is_sgd_optimizer", 0)
         self.cluster_env[
             "FLAGS_communicator_send_queue_size"] = self.backend_env.get(
-                "config.communicator.FLAGS_communicator_send_queue_size", max_thread_num)
+                "config.communicator.FLAGS_communicator_send_queue_size",
+                max_thread_num)
         self.cluster_env[
             "FLAGS_communicator_thread_pool_size"] = self.backend_env.get(
                 "config.communicator.FLAGS_communicator_thread_pool_size", 32)
         self.cluster_env[
             "FLAGS_communicator_max_merge_var_num"] = self.backend_env.get(
-                "config.communicator.FLAGS_communicator_max_merge_var_num", max_thread_num)
+                "config.communicator.FLAGS_communicator_max_merge_var_num",
+                max_thread_num)
         self.cluster_env[
             "FLAGS_communicator_max_send_grad_num_before_recv"] = self.backend_env.get(
                 "config.communicator.FLAGS_communicator_max_send_grad_num_before_recv",
