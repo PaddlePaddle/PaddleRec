@@ -111,7 +111,7 @@ python -m paddlerec.run -m paddlerec.models.rank.fibinet
 
 用原论文的完整数据复现论文效果需要在config.py中修改batch_size=1000, thread_num=8, epoch_num=4
 
-使用gpu单卡训练26h 测试auc:0.79
+使用gpu p100 单卡训练60h 测试auc:0.79
 
 修改后运行有两种方案：
 ```
