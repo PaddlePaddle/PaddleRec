@@ -36,6 +36,17 @@
 sh run.sh
 ```
 
+原始的数据格式为13个dense部分特征+离散化特征，用'\t'切分
+```
+0   1   1   5   0   1382    4   15  2   181 1   2       2   68fd1e64    80e26c9b    fb936136    7b4723c4    25c83c98    7e0ccccf    de7995b8    1f89b562    a73ee510    a8cd5504    b2cb9c98    37c9c164    2824a5f6    1adce6ef    8ba8b39a    891b62e7    e5ba7672    f54016b9    21ddcdc9    b1252a9d    07b5194c        3a171ecb    c5c50484    e8b83407    9727dd16
+```
+
+经过get_slot_data.py处理后，得到如下数据, dense_feature中的值会merge在一起，对应net.py中的self._dense_data_var, '1:715353'表示net.py中的self._sparse_data_var[1] = 715353
+```
+click:0 dense_feature:0.05 dense_feature:0.00663349917081 dense_feature:0.05 dense_feature:0.0 dense_feature:0.02159375 dense_feature:0.008 dense_feature:0.15 dense_feature:0.04 dense_feature:0.362 dense_feature:0.1 dense_feature:0.2 dense_feature:0.0 dense_feature:0.04 1:715353 2:817085 3:851010 4:833725 5:286835 6:948614 7:881652 8:507110 9:27346 10:646986 11:643076 12:200960 13:18464 14:202774 15:532679 16:729573 17:342789 18:562805 19:880474 20:984402 21:666449 22:26235 23:700326 24:452909 25:884722 26:787527
+```
+
+
 ## 环境
 
 PaddlePaddle 1.7.2
@@ -98,7 +109,9 @@ python -m paddlerec.run -m paddlerec.models.rank.fibinet
 
 ## 复现论文&模型效果
 
-用原论文的大数据复现论文效果需要在config.py中修改batch_size=1000, thread_num=8, epoch_num=4
+用原论文的完整数据复现论文效果需要在config.py中修改batch_size=1000, thread_num=8, epoch_num=4
+
+使用gpu单卡训练26h 测试auc:0.79
 
 修改后运行有两种方案：
 ```
@@ -110,8 +123,9 @@ python -m paddlerec.run -m paddlerec.models.rank.fibinet #运行
 python -m paddlerec.run -m /home/your/dir/config.py #调试模式 直接指定本地config的绝对路径
 ```
 
+## 结果展示
 
-训练：
+样例数据训练结果展示：
 
 ```
 Running SingleStartup.
@@ -133,7 +147,7 @@ batch: 1800, AUC: [0.85260467], BATCH_AUC: [0.92847032]
 epoch 3 done, use time: 1618.1106688976288
 ```
 
-预测
+样例数据预测结果展示
 
 ```
 load persistables from increment_model/3
