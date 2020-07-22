@@ -168,6 +168,9 @@ class RunnerBase(object):
             except fluid.core.EOFException:
                 reader.reset()
 
+        if batch_id > 0:
+            print(metrics_format.format(*metrics))
+
     def _get_dataloader_program(self, model_dict, context):
         model_name = model_dict["name"]
         if context["model"][model_name]["compiled_program"] == None:
