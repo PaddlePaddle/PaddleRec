@@ -16,11 +16,23 @@
 ├── config.yaml #配置文件
 ```
 
+注：在阅读该示例前，建议您先了解以下内容：
+
+[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+
+
+
 ## 简介
 
 [《FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction》]( https://arxiv.org/pdf/1905.09433.pdf)是新浪微博机器学习团队发表在RecSys19上的一篇论文，文章指出当前的许多通过特征组合进行CTR预估的工作主要使用特征向量的内积或哈达玛积来计算交叉特征，这种方法忽略了特征本身的重要程度。提出通过使用Squeeze-Excitation network (SENET) 结构动态学习特征的重要性以及使用一个双线性函数来更好的建模交叉特征。
 
-本项目在paddlepaddle上实现FibiNET的网络结构，并在开源数据集Criteo上验证模型效果。
+本项目在paddlepaddle上实现FibiNET的网络结构，并在开源数据集Criteo上验证模型效果, 本模型配置默认使用demo数据集，若进行精度验证，请参考[论文复现](#论文复现)部分。
+
+本项目支持功能
+
+训练：单机CPU、单机单卡GPU、单机多卡GPU、本地模拟参数服务器训练、增量训练，配置请参考 [启动训练](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/train.md)   
+
+预测：单机CPU、单机单卡GPU ；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/predict.md) 
 
 ## 数据下载及预处理
 
@@ -36,24 +48,28 @@
 sh run.sh
 ```
 
-原始的数据格式为13个dense部分特征+离散化特征，用'\t'切分
+原始的数据格式为13个dense部分特征+离散化特征，用'\t'切分, 对应的数据是data/train_data_full data/test_data_full
 ```
 0   1   1   5   0   1382    4   15  2   181 1   2       2   68fd1e64    80e26c9b    fb936136    7b4723c4    25c83c98    7e0ccccf    de7995b8    1f89b562    a73ee510    a8cd5504    b2cb9c98    37c9c164    2824a5f6    1adce6ef    8ba8b39a    891b62e7    e5ba7672    f54016b9    21ddcdc9    b1252a9d    07b5194c        3a171ecb    c5c50484    e8b83407    9727dd16
 ```
 
-经过get_slot_data.py处理后，得到如下数据, dense_feature中的值会merge在一起，对应net.py中的self._dense_data_var, '1:715353'表示net.py中的self._sparse_data_var[1] = 715353
+经过get_slot_data.py处理后，得到如下数据, dense_feature中的值会merge在一起，对应net.py中的self._dense_data_var, '1:715353'表示net.py中的self._sparse_data_var[1] = 715353, 对应的数据是data/slot_train_data_full, data/slot_test_data_full
 ```
 click:0 dense_feature:0.05 dense_feature:0.00663349917081 dense_feature:0.05 dense_feature:0.0 dense_feature:0.02159375 dense_feature:0.008 dense_feature:0.15 dense_feature:0.04 dense_feature:0.362 dense_feature:0.1 dense_feature:0.2 dense_feature:0.0 dense_feature:0.04 1:715353 2:817085 3:851010 4:833725 5:286835 6:948614 7:881652 8:507110 9:27346 10:646986 11:643076 12:200960 13:18464 14:202774 15:532679 16:729573 17:342789 18:562805 19:880474 20:984402 21:666449 22:26235 23:700326 24:452909 25:884722 26:787527
 ```
 
 
+
 ## 环境
 
-PaddlePaddle 1.7.2
+PaddlePaddle>=1.7.2 
 
-python3.7 
+python 2.7/3.5/3.6/3.7
 
-PaddleRec
+PaddleRec >=0.1
+
+os : windows/linux/macos
+
 
 ## 单机训练
 
@@ -107,11 +123,11 @@ CPU环境
 python -m paddlerec.run -m paddlerec.models.rank.fibinet
 ```
 
-## 复现论文&模型效果
+## 论文复现
 
 用原论文的完整数据复现论文效果需要在config.py中修改batch_size=1000, thread_num=8, epoch_num=4
 
-使用gpu p100 单卡训练60h 测试auc:0.79
+使用gpu p100 单卡训练 60h 测试auc:0.79
 
 修改后运行有两种方案：
 ```
