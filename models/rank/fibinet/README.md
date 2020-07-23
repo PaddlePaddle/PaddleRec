@@ -130,7 +130,7 @@ python -m paddlerec.run -m paddlerec.models.rank.fibinet
 使用gpu p100 单卡训练 60h 测试auc:0.79
 
 
-修改后运行方案：修改config.py中'workspace'为config.py的目录位置，执行
+修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 ```
 python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
 ```
