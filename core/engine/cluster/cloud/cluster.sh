@@ -59,6 +59,7 @@ function _gen_mpi_config() {
       -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
       -e "s#<$ THIRDPARTY_PATH $>#$THIRDPARTY_PATH#g" \
       -e "s#<$ CPU_NUM $>#$max_thread_num#g" \
+      -e "s#<$ USE_PYTHON3 $>#$USE_PYTHON3#g" \
       -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
       -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
       -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
@@ -76,6 +77,7 @@ function _gen_k8s_config() {
       -e "s#<$ AFS_REMOTE_MOUNT_POINT $>#$AFS_REMOTE_MOUNT_POINT#g" \
       -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
       -e "s#<$ CPU_NUM $>#$max_thread_num#g" \
+      -e "s#<$ USE_PYTHON3 $>#$USE_PYTHON3#g" \
       -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
       -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
       -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
