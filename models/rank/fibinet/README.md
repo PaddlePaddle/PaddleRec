@@ -21,8 +21,18 @@
 [paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
 
 
+---
+## 内容
 
-## 简介
+- [模型简介](#模型简介)
+- [数据准备](#数据准备)
+- [运行环境](#运行环境)
+- [快速开始](#快速开始)
+- [论文复现](#论文复现)
+- [进阶使用](#进阶使用)
+- [FAQ](#FAQ)
+
+## 模型简介
 
 [《FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction》]( https://arxiv.org/pdf/1905.09433.pdf)是新浪微博机器学习团队发表在RecSys19上的一篇论文，文章指出当前的许多通过特征组合进行CTR预估的工作主要使用特征向量的内积或哈达玛积来计算交叉特征，这种方法忽略了特征本身的重要程度。提出通过使用Squeeze-Excitation network (SENET) 结构动态学习特征的重要性以及使用一个双线性函数来更好的建模交叉特征。
 
@@ -34,7 +44,7 @@
 
 预测：单机CPU、单机单卡GPU ；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/predict.md) 
 
-## 数据下载及预处理
+## 数据准备
 
 数据地址：[Criteo]( https://fleet.bj.bcebos.com/ctr_data.tar.gz)
 
@@ -60,7 +70,7 @@ click:0 dense_feature:0.05 dense_feature:0.00663349917081 dense_feature:0.05 den
 
 
 
-## 环境
+## 运行环境
 
 PaddlePaddle>=1.7.2 
 
@@ -71,7 +81,10 @@ PaddleRec >=0.1
 os : windows/linux/macos
 
 
-## 单机训练
+
+## 快速开始
+
+### 单机训练
 
 CPU环境
 
@@ -100,7 +113,7 @@ runner:
   phases: [phase1]
 ```
 
-## 单机预测
+### 单机预测
 
 CPU环境
 
@@ -117,25 +130,13 @@ CPU环境
   phases: [phase2]
 ```
 
-## 运行
-
+### 运行
 ```
 python -m paddlerec.run -m paddlerec.models.rank.fibinet
 ```
 
-## 论文复现
 
-用原论文的完整数据复现论文效果需要在config.py中修改batch_size=1000, thread_num=8, epoch_num=4
-
-使用gpu p100 单卡训练 60h 测试auc:0.79
-
-
-修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
-```
-python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
-```
-
-## 结果展示
+### 结果展示
 
 样例数据训练结果展示：
 
@@ -173,3 +174,18 @@ batch: 1800, AUC: [0.86633785], BATCH_AUC: [0.96900967]
 batch: 1820, AUC: [0.86662365], BATCH_AUC: [0.96759972]
 ```
 
+## 论文复现
+
+用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=1000, thread_num=8, epoch_num=4
+
+使用gpu p100 单卡训练 60h 测试auc:0.79
+
+
+修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
+```
+python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
+```
+
+## 进阶使用
+
+## FAQ
