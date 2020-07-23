@@ -69,6 +69,12 @@ dataset:
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: dataloader_train 
+  thread_num: 1
 ```
 
 分布式的训练配置可以改为：
@@ -101,6 +107,13 @@ dataset:
   data_path: "{workspace}/train_data"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
+
+phase:
+- name: phase1
+  model: "{workspace}/model.py"
+  dataset_name: dataloader_train 
+  # 分布式训练节点的CPU_NUM环境变量与thread_num相等，多个phase时，取最大的thread_num
+  thread_num: 1
 ```
 
 除此之外，还需关注数据及模型加载的路径，一般而言：
@@ -120,6 +133,8 @@ cluster_type: mpi # k8s 可选
 config:
   # 填写任务运行的paddle官方版本号 >= 1.7.2， 默认1.7.2
   paddle_version: "1.7.2" 
+  # 是否使用PaddleCloud运行环境下的Python3，默认使用python2
+  use_python3: 1
 
   # hdfs/afs的配置信息填写
   fs_name: "afs://xxx.com"
@@ -140,11 +155,13 @@ config:
 
   # paddle参数服务器分布式底层超参，无特殊需求不理不改
   communicator:
+    # 使用SGD优化器时，建议设置为1
     FLAGS_communicator_is_sgd_optimizer: 0
+    # 以下三个变量默认都等于训练时的线程数：CPU_NUM
     FLAGS_communicator_send_queue_size: 5
-    FLAGS_communicator_thread_pool_size: 32
     FLAGS_communicator_max_merge_var_num: 5
     FLAGS_communicator_max_send_grad_num_before_recv: 5
+    FLAGS_communicator_thread_pool_size: 32
     FLAGS_communicator_fake_rpc: 0
     FLAGS_rpc_retry_times: 3
   
@@ -175,12 +192,12 @@ submit:
   # for k8s gpu        
   # k8s gpu 模式下，训练节点数，及每个节点上的GPU卡数
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_gpu_card: 1
 
   # for k8s ps-cpu
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_ps_num: 2
   k8s_ps_cores: 4
   
@@ -232,7 +249,7 @@ phase:
 再新增`backend.yaml`
 ```yaml
 backend: "PaddleCloud"
-cluster_type: mpi 
+cluster_type: mpi # k8s可选
 
 config:
   paddle_version: "1.7.2" 
@@ -317,7 +334,7 @@ phase:
 
 ```yaml
 backend: "PaddleCloud"
-cluster_type: k8s # k8s 可选
+cluster_type: k8s # mpi 可选
 
 config:
   # 填写任务运行的paddle官方版本号 >= 1.7.2， 默认1.7.2
@@ -357,7 +374,7 @@ submit:
   # for k8s gpu        
   # k8s gpu 模式下，训练节点数，及每个节点上的GPU卡数
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_gpu_card: 1
 ```
 
@@ -399,7 +416,7 @@ phase:
 再新增`backend.yaml`
 ```yaml
 backend: "PaddleCloud"
-cluster_type: k8s # k8s 可选
+cluster_type: k8s # mpi 可选
 
 config:
   # 填写任务运行的paddle官方版本号 >= 1.7.2， 默认1.7.2
@@ -439,7 +456,7 @@ submit:
   # for k8s gpu        
   # k8s ps-cpu 模式下，训练节点数，参数服务器节点数，及每个节点上的cpu核心数及内存限制
   k8s_trainers: 2
-  k8s-cpu-cores: 4
+  k8s_cpu_cores: 4
   k8s_ps_num: 2
   k8s_ps_cores: 4
 ```
