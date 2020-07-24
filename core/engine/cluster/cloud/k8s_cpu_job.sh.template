@@ -9,7 +9,7 @@ job_name=<$ JOB_NAME $>
 group_name="<$ GROUP_NAME $>"               
 job_version="paddle-fluid-v1.7.1"
 start_cmd="<$ START_CMD $>"
-wall_time="10:00:00"
+wall_time="2000:00:00"
 
 k8s_priority=<$ K8S_PRIORITY $>
 k8s_trainers=<$ K8S_TRAINERS $>
