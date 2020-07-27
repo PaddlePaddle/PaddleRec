@@ -25,10 +25,14 @@ class TestAUC(unittest.TestCase):
     def setUp(self):
         self.ins_num = 64
         self.batch_nums = 3
-        self.probs = np.random.uniform(0, 1.0,
-                                       (self.ins_num, 2)).astype('float32')
-        self.labels = np.random.choice(range(2), self.ins_num).reshape(
-            (self.ins_num, 1)).astype('int64')
+
+        self.datas = []
+        for i in range(self.batch_nums):
+            probs = np.random.uniform(0, 1.0,
+                                      (self.ins_num, 2)).astype('float32')
+            labels = np.random.choice(range(2), self.ins_num).reshape(
+                (self.ins_num, 1)).astype('int64')
+            self.datas.append((probs, labels))
 
         self.place = fluid.core.CPUPlace()
 
@@ -37,7 +41,7 @@ class TestAUC(unittest.TestCase):
                                        curve='ROC',
                                        num_thresholds=self.num_thresholds)
         for i in range(self.batch_nums):
-            python_auc.update(self.probs, self.labels)
+            python_auc.update(self.datas[i][0], self.datas[i][1])
 
         self.auc = np.array(python_auc.eval())
 
@@ -65,14 +69,20 @@ class TestAUC(unittest.TestCase):
         exe = fluid.Executor(self.place)
         exe.run(fluid.default_startup_program())
         for i in range(self.batch_nums):
-            outs = exe.run(fluid.default_main_program(),
-                           feed={'predict': self.probs,
-                                 'label': self.labels},
-                           fetch_list=fetch_vars,
-                           return_numpy=True)
+            outs = exe.run(
+                fluid.default_main_program(),
+                feed={'predict': self.datas[i][0],
+                      'label': self.datas[i][1]},
+                fetch_list=fetch_vars,
+                return_numpy=True)
 
         outs = dict(zip(metric_keys, outs))
         self.assertTrue(np.allclose(outs['AUC'], self.auc))
+
+    def test_exception(self):
+        self.assertRaises(Exception, AUC)
+        self.assertRaises(
+            Exception, AUC, input=self.datas[0][0], label=self.datas[0][1]),
 
 
 if __name__ == '__main__':
