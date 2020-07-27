@@ -21,6 +21,7 @@ from paddlerec.core.metric import Metric
 from paddle.fluid.layers import nn, accuracy
 from paddle.fluid.initializer import Constant
 from paddle.fluid.layer_helper import LayerHelper
+from paddle.fluid.layers.tensor import Variable
 
 
 class PosNegRatio(Metric):
@@ -31,8 +32,18 @@ class PosNegRatio(Metric):
     def __init__(self, **kwargs):
         """ """
         helper = LayerHelper("PaddleRec_PosNegRatio", **kwargs)
+        if "pos_score" not in kwargs or "neg_score" not in kwargs:
+            raise ValueError(
+                "PosNegRatio expect pos_score and neg_score as inputs.")
         pos_score = kwargs.get('pos_score')
         neg_score = kwargs.get('neg_score')
+
+        if not isinstance(pos_score, Variable):
+            raise ValueError("pos_score must be Variable, but received %s" %
+                             type(pos_score))
+        if not isinstance(neg_score, Variable):
+            raise ValueError("neg_score must be Variable, but received %s" %
+                             type(neg_score))
 
         wrong = fluid.layers.cast(
             fluid.layers.less_equal(pos_score, neg_score), dtype='float32')

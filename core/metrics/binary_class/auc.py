@@ -21,6 +21,7 @@ from paddlerec.core.metric import Metric
 from paddle.fluid.layers import nn, accuracy
 from paddle.fluid.initializer import Constant
 from paddle.fluid.layer_helper import LayerHelper
+from paddle.fluid.layers.tensor import Variable
 
 
 class AUC(Metric):
@@ -30,12 +31,22 @@ class AUC(Metric):
 
     def __init__(self, **kwargs):
         """ """
+        if "input" not in kwargs or "label" not in kwargs:
+            raise ValueError("AUC expect input and label as inputs.")
         predict = kwargs.get("input")
         label = kwargs.get("label")
         curve = kwargs.get("curve", 'ROC')
         num_thresholds = kwargs.get("num_thresholds", 2**12 - 1)
         topk = kwargs.get("topk", 1)
         slide_steps = kwargs.get("slide_steps", 1)
+
+        if not isinstance(predict, Variable):
+            raise ValueError("input must be Variable, but received %s" %
+                             type(predict))
+        if not isinstance(label, Variable):
+            raise ValueError("label must be Variable, but received %s" %
+                             type(label))
+
         auc_out, batch_auc_out, [
             batch_stat_pos, batch_stat_neg, stat_pos, stat_neg
         ] = fluid.layers.auc(predict,

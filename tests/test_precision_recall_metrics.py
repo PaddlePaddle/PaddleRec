@@ -148,6 +148,15 @@ class TestPrecisionRecall(unittest.TestCase):
         self.assertTrue(np.allclose(outs['accum_states'], self.states))
         self.assertTrue(np.allclose(outs['precision_recall_f1'], self.metrics))
 
+    def test_exception(self):
+        self.assertRaises(Exception, PrecisionRecall)
+        self.assertRaises(
+            Exception,
+            PrecisionRecall,
+            input=self.datas[0][0],
+            label=self.datas[0][1],
+            class_num=self.cls_num)
+
 
 if __name__ == '__main__':
     unittest.main()

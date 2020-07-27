@@ -21,12 +21,12 @@ import paddle
 import paddle.fluid as fluid
 
 
-class TestAUC(unittest.TestCase):
+class TestPosNegRatio(unittest.TestCase):
     def setUp(self):
         self.ins_num = 64
         self.batch_nums = 3
 
-        self.probs = []
+        self.datas = []
         self.right_cnt = 0.0
         self.wrong_cnt = 0.0
         for i in range(self.batch_nums):
@@ -40,7 +40,7 @@ class TestAUC(unittest.TestCase):
                 'int32')
             self.right_cnt += float(right_cnt)
             self.wrong_cnt += float(wrong_cnt)
-            self.probs.append((pos_score, neg_score))
+            self.datas.append((pos_score, neg_score))
 
         self.place = fluid.core.CPUPlace()
 
@@ -68,8 +68,8 @@ class TestAUC(unittest.TestCase):
         for i in range(self.batch_nums):
             outs = exe.run(fluid.default_main_program(),
                            feed={
-                               'pos_score': self.probs[i][0],
-                               'neg_score': self.probs[i][1]
+                               'pos_score': self.datas[i][0],
+                               'neg_score': self.datas[i][1]
                            },
                            fetch_list=fetch_vars,
                            return_numpy=True)
@@ -81,6 +81,14 @@ class TestAUC(unittest.TestCase):
             np.allclose(outs['pos_neg_ratio'],
                         np.array((self.right_cnt + 1.0) / (self.wrong_cnt + 1.0
                                                            ))))
+
+    def test_exception(self):
+        self.assertRaises(Exception, PosNegRatio)
+        self.assertRaises(
+            Exception,
+            PosNegRatio,
+            pos_score=self.datas[0][0],
+            neg_score=self.datas[0][1]),
 
 
 if __name__ == '__main__':

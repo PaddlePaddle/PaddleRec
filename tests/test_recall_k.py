@@ -85,6 +85,12 @@ class TestRecallK(unittest.TestCase):
                         np.array(self.match_num / (self.ins_num *
                                                    self.batch_nums))))
 
+    def test_exception(self):
+        self.assertRaises(Exception, RecallK)
+        self.assertRaises(
+            Exception, RecallK, input=self.datas[0][0],
+            label=self.datas[0][1]),
+
 
 if __name__ == '__main__':
     unittest.main()
