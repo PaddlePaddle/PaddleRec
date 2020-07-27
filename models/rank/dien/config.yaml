@@ -19,14 +19,14 @@ workspace: "paddlerec.models.rank.dien"
 dataset:
   - name: sample_1
     type: DataLoader
-    batch_size: 5
+    batch_size: 32
     data_path: "{workspace}/data/train_data"
     data_converter: "{workspace}/reader.py"
   - name: infer_sample
     type: DataLoader
-    batch_size: 5
+    batch_size: 32
     data_path: "{workspace}/data/train_data"
-    data_converter: "{workspace}/reader.py"
+    data_converter: "{workspace}/infer_reader.py"
 
 hyper_parameters:
     optimizer:
