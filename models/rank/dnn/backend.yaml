@@ -11,12 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-workspace: "./"
-
 backend: "PaddleCloud"
-cluster_type: k8s # k8s 可选
+cluster_type: k8s # mpi 可选
 
 config:
   fs_name: "afs://xxx.com"
@@ -56,5 +52,12 @@ submit:
   
   # for k8s gpu        
   k8s_trainers: 2
+  k8s_cpu_cores: 2
   k8s_gpu_card: 1
+
+  # for k8s ps-cpu
+  k8s_trainers: 2
+  k8s_cpu_cores: 4
+  k8s_ps_num: 2
+  k8s_ps_cores: 4
   
