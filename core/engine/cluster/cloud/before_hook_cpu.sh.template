@@ -1,6 +1,6 @@
 echo "Run before_hook.sh ..."
 
-wget https://paddlerec.bj.bcebos.com/whl/PaddleRec.tar.gz
+wget https://paddlerec.bj.bcebos.com/whl/PaddleRec.tar.gz --no-check-certificate 
 
 tar -xf PaddleRec.tar.gz
 
@@ -10,6 +10,6 @@ python setup.py install
 
 pip uninstall -y paddlepaddle
 
-pip install paddlepaddle-gpu==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
+pip install paddlepaddle==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
 
 echo "End before_hook.sh ..."
