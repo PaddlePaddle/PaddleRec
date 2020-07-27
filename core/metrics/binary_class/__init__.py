@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .recall_k import RecallK
-from .pairwise_pn import PosNegRatio
-import binary_class
+from .auc import AUC
+from .precision_recall import PrecisionRecall
 
-__all__ = ['RecallK', 'PosNegRatio'] + binary_class.__all__
+__all__ = ['PrecisionRecall', 'AUC']
