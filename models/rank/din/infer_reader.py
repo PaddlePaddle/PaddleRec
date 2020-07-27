@@ -30,13 +30,9 @@ from paddlerec.core.utils import envs
 class Reader(ReaderBase):
     def init(self):
         self.train_data_path = envs.get_global_env(
-            "dataset.sample_1.data_path", None)
+            "dataset.infer_sample.data_path", None)
         self.res = []
         self.max_len = 0
-        self.neg_candidate_item = []
-        self.neg_candidate_cat = []
-        self.max_neg_item = 10000
-        self.max_neg_cat = 1000
 
         data_file_list = os.listdir(self.train_data_path)
         for i in range(0, len(data_file_list)):
@@ -50,8 +46,8 @@ class Reader(ReaderBase):
         fo = open("tmp.txt", "w")
         fo.write(str(self.max_len))
         fo.close()
-        self.batch_size = envs.get_global_env("dataset.sample_1.batch_size",
-                                              32, None)
+        self.batch_size = envs.get_global_env(
+            "dataset.infer_sample.batch_size", 32, None)
         self.group_size = self.batch_size * 20
 
     def _process_line(self, line):
@@ -80,44 +76,8 @@ class Reader(ReaderBase):
 
     def make_data(self, b):
         max_len = max(len(x[0]) for x in b)
-        # item = self.pad_batch_data([x[0] for x in b], max_len)
-        # cat = self.pad_batch_data([x[1] for x in b], max_len)
-        item = [x[0] for x in b]
-        cat = [x[1] for x in b]
-        neg_item = [None] * len(item)
-        neg_cat = [None] * len(cat)
-
-        for i in range(len(b)):
-            neg_item[i] = []
-            neg_cat[i] = []
-            if len(self.neg_candidate_item) < self.max_neg_item:
-                self.neg_candidate_item.extend(b[i][0])
-                if len(self.neg_candidate_item) > self.max_neg_item:
-                    self.neg_candidate_item = self.neg_candidate_item[
-                        0:self.max_neg_item]
-            else:
-                len_seq = len(b[i][0])
-                start_idx = random.randint(0, self.max_neg_item - len_seq - 1)
-                self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
-                    i][0]
-
-            if len(self.neg_candidate_cat) < self.max_neg_cat:
-                self.neg_candidate_cat.extend(b[i][1])
-                if len(self.neg_candidate_cat) > self.max_neg_cat:
-                    self.neg_candidate_cat = self.neg_candidate_cat[
-                        0:self.max_neg_cat]
-            else:
-                len_seq = len(b[i][1])
-                start_idx = random.randint(0, self.max_neg_cat - len_seq - 1)
-                self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
-                    i][1]
-            for _ in range(len(b[i][0])):
-                neg_item[i].append(self.neg_candidate_item[random.randint(
-                    0, len(self.neg_candidate_item) - 1)])
-            for _ in range(len(b[i][1])):
-                neg_cat[i].append(self.neg_candidate_cat[random.randint(
-                    0, len(self.neg_candidate_cat) - 1)])
-
+        item = self.pad_batch_data([x[0] for x in b], max_len)
+        cat = self.pad_batch_data([x[1] for x in b], max_len)
         len_array = [len(x[0]) for x in b]
         mask = np.array(
             [[0] * x + [-1e9] * (max_len - x) for x in len_array]).reshape(
@@ -132,7 +92,7 @@ class Reader(ReaderBase):
         for i in range(len(b)):
             res.append([
                 item[i], cat[i], b[i][2], b[i][3], b[i][4], mask[i],
-                target_item_seq[i], target_cat_seq[i], neg_item[i], neg_cat[i]
+                target_item_seq[i], target_cat_seq[i]
             ])
         return res
 
