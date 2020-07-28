@@ -74,13 +74,26 @@ class PosNegRatio(Metric):
             outputs={"Out": [global_wrong_cnt]})
         self.pn = (global_right_cnt + 1.0) / (global_wrong_cnt + 1.0)
 
-        self._need_clear_list = [("right_cnt", "float32"),
-                                 ("wrong_cnt", "float32")]
+        self._global_communicate_var = dict()
+        self._global_communicate_var['right_cnt'] = (global_right_cnt.name,
+                                                     "float32")
+        self._global_communicate_var['wrong_cnt'] = (global_wrong_cnt.name,
+                                                     "float32")
 
         self.metrics = dict()
-        self.metrics['wrong_cnt'] = global_wrong_cnt
-        self.metrics['right_cnt'] = global_right_cnt
-        self.metrics['pos_neg_ratio'] = self.pn
+        self.metrics['WrongCnt'] = global_wrong_cnt
+        self.metrics['RightCnt'] = global_right_cnt
+        self.metrics['PN'] = self.pn
+
+    def calculate(self, global_metrics):
+        for key in self._global_communicate_var:
+            if key not in global_metrics:
+                raise ValueError("%s not existed" % key)
+        pn = (global_metrics['right_cnt'][0] + 1.0) / (
+            global_metrics['wrong_cnt'][0] + 1.0)
+        return "RightCnt=%s WrongCnt=%s PN=%s" % (
+            str(global_metrics['right_cnt'][0]),
+            str(global_metrics['wrong_cnt'][0]), str(pn))
 
     def get_result(self):
         return self.metrics

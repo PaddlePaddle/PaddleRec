@@ -20,6 +20,7 @@ import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
+from paddlerec.core.metric import Metric
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -344,17 +345,27 @@ class SingleRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["phases"]:
+                model_class = context["model"][model_dict["name"]]["model"]
+                metrics = model_class._metric
+
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
                 seconds = end_time - begin_time
                 message = "epoch {} done, use time: {}".format(epoch, seconds)
-                if not result is None:
-                    for key in result:
-                        if key.upper().startswith("BATCH_"):
-                            continue
-                        message += ", {}: {}".format(key, result[key])
+                metrics_result = []
+                for key in metrics:
+                    if isinstance(metrics[key], Metric):
+                        _str = metrics[key].cal_global_metrics(
+                            None,
+                            context["model"][model_dict["name"]]["scope"])
+                    elif result is not None:
+                        _str = "{}={}".format(key, result[key])
+                    metrics_result.append(_str)
+                if len(metrics_result) > 0:
+                    message += ", global metrics: " + ", ".join(metrics_result)
                 print(message)
+
                 with fluid.scope_guard(context["model"][model_dict["name"]][
                         "scope"]):
                     train_prog = context["model"][model_dict["name"]][
@@ -376,12 +387,26 @@ class PSRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
+        model_class = context["model"][model_dict["name"]]["model"]
+        metrics = model_class._metrics
         for epoch in range(epochs):
             begin_time = time.time()
-            self._run(context, model_dict)
+            result = self._run(context, model_dict)
             end_time = time.time()
             seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
+            message = "epoch {} done, use time: {}".format(epoch, seconds)
+            metrics_result = []
+            for key in metrics:
+                if isinstance(metrics[key], Metric):
+                    _str = metrics[key].cal_global_metrics(
+                        context["fleet"],
+                        context["model"][model_dict["name"]]["scope"])
+                elif result is not None:
+                    _str = "{}={}".format(key, result[key])
+                metrics_result.append(_str)
+            if len(metrics_result) > 0:
+                message += ", global metrics: " + ", ".join(metrics_result)
+            print(message)
             with fluid.scope_guard(context["model"][model_dict["name"]][
                     "scope"]):
                 train_prog = context["model"][model_dict["name"]][
@@ -491,6 +516,8 @@ class SingleInferRunner(RunnerBase):
         self.epoch_model_name_list.sort()
         for index, epoch_name in enumerate(self.epoch_model_name_list):
             for model_dict in context["phases"]:
+                model_class = context["model"][model_dict["name"]]["model"]
+                metrics = model_class._infer_results
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
                 begin_time = time.time()
@@ -499,11 +526,17 @@ class SingleInferRunner(RunnerBase):
                 seconds = end_time - begin_time
                 message = "Infer {} of epoch {} done, use time: {}".format(
                     model_dict["name"], epoch_name, seconds)
-                if not result is None:
-                    for key in result:
-                        if key.upper().startswith("BATCH_"):
-                            continue
-                        message += ", {}: {}".format(key, result[key])
+                metrics_result = []
+                for key in metrics:
+                    if isinstance(metrics[key], Metric):
+                        _str = metrics[key].cal_global_metrics(
+                            None,
+                            context["model"][model_dict["name"]]["scope"])
+                    elif result is not None:
+                        _str = "{}={}".format(key, result[key])
+                    metrics_result.append(_str)
+                if len(metrics_result) > 0:
+                    message += ", global metrics: " + ", ".join(metrics_result)
                 print(message)
 
         context["status"] = "terminal_pass"

@@ -14,6 +14,6 @@
 
 from .recall_k import RecallK
 from .pairwise_pn import PosNegRatio
-import binary_class
+from .binary_class import *
 
 __all__ = ['RecallK', 'PosNegRatio'] + binary_class.__all__
