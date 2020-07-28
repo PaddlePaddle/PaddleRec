@@ -346,7 +346,7 @@ class SingleRunner(RunnerBase):
         for epoch in range(epochs):
             for model_dict in context["phases"]:
                 model_class = context["model"][model_dict["name"]]["model"]
-                metrics = model_class._metric
+                metrics = model_class._metrics
 
                 begin_time = time.time()
                 result = self._run(context, model_dict)
