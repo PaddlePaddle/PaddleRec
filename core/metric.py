@@ -26,7 +26,7 @@ class Metric(object):
         """ """
         pass
 
-    def clear(self, scope=None, **kwargs):
+    def clear(self, scope=None):
         """
         clear current value
         Args:
@@ -37,20 +37,49 @@ class Metric(object):
             scope = fluid.global_scope()
 
         place = fluid.CPUPlace()
-        for (varname, dtype) in self._need_clear_list:
+        for key in self._global_communicate_var:
+            varname, dtype = self._global_communicate_var[key]
             if scope.find_var(varname) is None:
                 continue
             var = scope.var(varname).get_tensor()
             data_array = np.zeros(var._get_dims()).astype(dtype)
             var.set(data_array, place)
 
-    def calculate(self, scope, params):
+    def get_global_metric(self, fleet, scope, metric_name, mode="sum"):
+        """
+        reduce metric named metric_name from all worker
+        Return:
+            metric reduce result
+        """
+        input = np.array(scope.find_var(metric_name).get_tensor())
+        if fleet is None:
+            return input
+        fleet._role_maker._barrier_worker()
+        old_shape = np.array(input.shape)
+        input = input.reshape(-1)
+        output = np.copy(input) * 0
+        fleet._role_maker._all_reduce(input, output, mode=mode)
+        output = output.reshape(old_shape)
+        return output
+
+    def cal_global_metrics(self, fleet, scope=None):
         """
         calculate result
         Args:
             scope: value container
             params: extend varilable for clear
         """
+        if scope is None:
+            scope = fluid.global_scope()
+
+        global_metrics = dict()
+        for key in self._global_communicate_var:
+            varname, dtype = self._global_communicate_var[key]
+            global_metrics[key] = self.get_global_metric(fleet, scope, varname)
+
+        return self.calculate(global_metrics)
+
+    def calculate(self, global_metrics):
         pass
 
     @abc.abstractmethod

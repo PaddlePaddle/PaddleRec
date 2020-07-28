@@ -36,7 +36,7 @@ class PrecisionRecall(Metric):
                 "PrecisionRecall expect input, label and class_num as inputs.")
         predict = kwargs.get("input")
         label = kwargs.get("label")
-        num_cls = kwargs.get("class_num")
+        self.num_cls = kwargs.get("class_num")
 
         if not isinstance(predict, Variable):
             raise ValueError("input must be Variable, but received %s" %
@@ -56,7 +56,7 @@ class PrecisionRecall(Metric):
             name="states_info",
             persistable=True,
             dtype='float32',
-            shape=[num_cls, 4])
+            shape=[self.num_cls, 4])
         states_info.stop_gradient = True
 
         helper.set_variable_initializer(
@@ -75,12 +75,12 @@ class PrecisionRecall(Metric):
             shape=[6])
 
         batch_states = fluid.layers.fill_constant(
-            shape=[num_cls, 4], value=0.0, dtype="float32")
+            shape=[self.num_cls, 4], value=0.0, dtype="float32")
         batch_states.stop_gradient = True
 
         helper.append_op(
             type="precision_recall",
-            attrs={'class_number': num_cls},
+            attrs={'class_number': self.num_cls},
             inputs={
                 'MaxProbs': [max_probs],
                 'Indices': [indices],
@@ -100,13 +100,61 @@ class PrecisionRecall(Metric):
         batch_states.stop_gradient = True
         states_info.stop_gradient = True
 
-        self._need_clear_list = [("states_info", "float32")]
+        self._global_communicate_var = dict()
+        self._global_communicate_var['states_info'] = (states_info.name,
+                                                       "float32")
 
         self.metrics = dict()
         self.metrics["precision_recall_f1"] = accum_metrics
-        self.metrics["accum_states"] = states_info
+        self.metrics["[TP FP TN FN]"] = states_info
 
     # self.metrics["batch_metrics"] = batch_metrics
+
+    def calculate(self, global_metrics):
+        for key in self._global_communicate_var:
+            if key not in global_metrics:
+                raise ValueError("%s not existed" % key)
+
+        def calc_precision(tp_count, fp_count):
+            if tp_count > 0.0 or fp_count > 0.0:
+                return tp_count / (tp_count + fp_count)
+            return 1.0
+
+        def calc_recall(tp_count, fn_count):
+            if tp_count > 0.0 or fn_count > 0.0:
+                return tp_count / (tp_count + fn_count)
+            return 1.0
+
+        def calc_f1_score(precision, recall):
+            if precision > 0.0 or recall > 0.0:
+                return 2 * precision * recall / (precision + recall)
+            return 0.0
+
+        states = global_metrics["states_info"]
+        total_tp_count = 0.0
+        total_fp_count = 0.0
+        total_fn_count = 0.0
+        macro_avg_precision = 0.0
+        macro_avg_recall = 0.0
+        for i in range(self.num_cls):
+            total_tp_count += states[i][0]
+            total_fp_count += states[i][1]
+            total_fn_count += states[i][3]
+            macro_avg_precision += calc_precision(states[i][0], states[i][1])
+            macro_avg_recall += calc_recall(states[i][0], states[i][3])
+        metrics = []
+        macro_avg_precision /= self.num_cls
+        macro_avg_recall /= self.num_cls
+        metrics.append(macro_avg_precision)
+        metrics.append(macro_avg_recall)
+        metrics.append(calc_f1_score(macro_avg_precision, macro_avg_recall))
+        micro_avg_precision = calc_precision(total_tp_count, total_fp_count)
+        metrics.append(micro_avg_precision)
+        micro_avg_recall = calc_recall(total_tp_count, total_fn_count)
+        metrics.append(micro_avg_recall)
+        metrics.append(calc_f1_score(micro_avg_precision, micro_avg_recall))
+        return "total metrics: [TP, FP, TN, FN]=%s; precision_recall_f1=%s" % (
+            str(states), str(np.array(metrics).astype('float32')))
 
     def get_result(self):
         return self.metrics

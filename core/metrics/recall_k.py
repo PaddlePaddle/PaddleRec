@@ -35,7 +35,7 @@ class RecallK(Metric):
             raise ValueError("RecallK expect input and label as inputs.")
         predict = kwargs.get('input')
         label = kwargs.get('label')
-        k = kwargs.get("k", 20)
+        self.k = kwargs.get("k", 20)
 
         if not isinstance(predict, Variable):
             raise ValueError("input must be Variable, but received %s" %
@@ -45,7 +45,7 @@ class RecallK(Metric):
                              type(label))
 
         helper = LayerHelper("PaddleRec_RecallK", **kwargs)
-        batch_accuracy = accuracy(predict, label, k)
+        batch_accuracy = accuracy(predict, label, self.k)
         global_ins_cnt, _ = helper.create_or_get_global_variable(
             name="ins_cnt", persistable=True, dtype='float32', shape=[1])
         global_pos_cnt, _ = helper.create_or_get_global_variable(
@@ -75,14 +75,31 @@ class RecallK(Metric):
 
         self.acc = global_pos_cnt / global_ins_cnt
 
-        self._need_clear_list = [("ins_cnt", "float32"),
-                                 ("pos_cnt", "float32")]
+        self._global_communicate_var = dict()
+        self._global_communicate_var['ins_cnt'] = (global_ins_cnt.name,
+                                                   "float32")
+        self._global_communicate_var['pos_cnt'] = (global_pos_cnt.name,
+                                                   "float32")
 
-        metric_name = "Recall@%d_ACC" % k
+        metric_name = "Acc(Recall@%d)" % self.k
         self.metrics = dict()
-        self.metrics["ins_cnt"] = global_ins_cnt
-        self.metrics["pos_cnt"] = global_pos_cnt
+        self.metrics["InsCnt"] = global_ins_cnt
+        self.metrics["RecallCnt"] = global_pos_cnt
         self.metrics[metric_name] = self.acc
+
+    # self.metrics["batch_metrics"] = batch_metrics
+    def calculate(self, global_metrics):
+        for key in self._global_communicate_var:
+            if key not in global_metrics:
+                raise ValueError("%s not existed" % key)
+        ins_cnt = global_metrics['ins_cnt'][0]
+        pos_cnt = global_metrics['pos_cnt'][0]
+        if ins_cnt == 0:
+            acc = 0
+        else:
+            acc = float(pos_cnt) / ins_cnt
+        return "InsCnt=%s RecallCnt=%s Acc(Recall@%d)=%s" % (
+            str(ins_cnt), str(pos_cnt), self.k, str(acc))
 
     def get_result(self):
         return self.metrics
