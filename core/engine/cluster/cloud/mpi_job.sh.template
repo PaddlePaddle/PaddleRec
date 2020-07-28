@@ -9,7 +9,7 @@ job_name=<$ JOB_NAME $>
 group_name=<$ GROUP_NAME $>
 job_version="paddle-fluid-v1.7.1"
 start_cmd="<$ START_CMD $>"
-wall_time="2:00:00"
+wall_time="2000:00:00"
 
 # 你的ak/sk（可在paddlecloud web页面【个人中心】处获取）
 ak=<$ AK $>
