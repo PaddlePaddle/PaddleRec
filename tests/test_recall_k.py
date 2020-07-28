@@ -78,10 +78,10 @@ class TestRecallK(unittest.TestCase):
 
         outs = dict(zip(metric_keys, outs))
         self.assertTrue(
-            np.allclose(outs['ins_cnt'], self.ins_num * self.batch_nums))
-        self.assertTrue(np.allclose(outs['pos_cnt'], self.match_num))
+            np.allclose(outs['InsCnt'], self.ins_num * self.batch_nums))
+        self.assertTrue(np.allclose(outs['RecallCnt'], self.match_num))
         self.assertTrue(
-            np.allclose(outs['Recall@%d_ACC' % (self.topk)],
+            np.allclose(outs['Acc(Recall@%d)' % (self.topk)],
                         np.array(self.match_num / (self.ins_num *
                                                    self.batch_nums))))
 

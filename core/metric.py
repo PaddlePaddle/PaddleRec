@@ -27,12 +27,7 @@ class Metric(object):
         pass
 
     def clear(self, scope=None):
-        """
-        clear current value
-        Args:
-            scope: value container
-            params: extend varilable for clear
-        """
+        """ """
         if scope is None:
             scope = fluid.global_scope()
 
@@ -46,11 +41,7 @@ class Metric(object):
             var.set(data_array, place)
 
     def get_global_metric(self, fleet, scope, metric_name, mode="sum"):
-        """
-        reduce metric named metric_name from all worker
-        Return:
-            metric reduce result
-        """
+        """ """
         input = np.array(scope.find_var(metric_name).get_tensor())
         if fleet is None:
             return input
@@ -63,12 +54,7 @@ class Metric(object):
         return output
 
     def cal_global_metrics(self, fleet, scope=None):
-        """
-        calculate result
-        Args:
-            scope: value container
-            params: extend varilable for clear
-        """
+        """ """
         if scope is None:
             scope = fluid.global_scope()
 
