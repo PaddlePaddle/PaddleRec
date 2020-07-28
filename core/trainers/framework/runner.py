@@ -395,17 +395,22 @@ class PSRunner(RunnerBase):
             end_time = time.time()
             seconds = end_time - begin_time
             message = "epoch {} done, use time: {}".format(epoch, seconds)
-            metrics_result = []
-            for key in metrics:
-                if isinstance(metrics[key], Metric):
-                    _str = metrics[key].cal_global_metrics(
-                        context["fleet"],
-                        context["model"][model_dict["name"]]["scope"])
-                elif result is not None:
-                    _str = "{}={}".format(key, result[key])
-                metrics_result.append(_str)
-            if len(metrics_result) > 0:
-                message += ", global metrics: " + ", ".join(metrics_result)
+
+            # TODO, wait for PaddleCloudRoleMaker supports gloo
+            from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
+            if context["fleet"] is not None and isinstance(context["fleet"],
+                                                           GeneralRoleMaker):
+                metrics_result = []
+                for key in metrics:
+                    if isinstance(metrics[key], Metric):
+                        _str = metrics[key].cal_global_metrics(
+                            context["fleet"],
+                            context["model"][model_dict["name"]]["scope"])
+                    elif result is not None:
+                        _str = "{}={}".format(key, result[key])
+                    metrics_result.append(_str)
+                if len(metrics_result) > 0:
+                    message += ", global metrics: " + ", ".join(metrics_result)
             print(message)
             with fluid.scope_guard(context["model"][model_dict["name"]][
                     "scope"]):
