@@ -41,29 +41,39 @@ with open(dataset, "r") as f:
     curdate = None
     for data in reader:
         sessid = data['session_id']
-        date = ''
+        if curdate and not curid == sessid:
+            date = ''
+            if opt.dataset == 'yoochoose':
+                date = time.mktime(
+                    time.strptime(curdate[:19], '%Y-%m-%dT%H:%M:%S'))
+            else:
+                date = time.mktime(time.strptime(curdate, '%Y-%m-%d'))
+            sess_date[curid] = date
+        curid = sessid
         if opt.dataset == 'yoochoose':
             item = data['item_id']
-            date = time.mktime(
-                time.strptime(data['timestamp'][:19], '%Y-%m-%dT%H:%M:%S'))
         else:
             item = data['item_id'], int(data['timeframe'])
-            date = time.mktime(time.strptime(data['eventdate'], '%Y-%m-%d'))
-
-        if sessid not in sess_date:
-            sess_date[sessid] = date
-        elif date > sess_date[sessid]:
-            sess_date[sessid] = date
+        curdate = ''
+        if opt.dataset == 'yoochoose':
+            curdate = data['timestamp']
+        else:
+            curdate = data['eventdate']
 
         if sessid in sess_clicks:
             sess_clicks[sessid] += [item]
         else:
             sess_clicks[sessid] = [item]
         ctr += 1
-    if opt.dataset != 'yoochoose':
+    date = ''
+    if opt.dataset == 'yoochoose':
+        date = time.mktime(time.strptime(curdate[:19], '%Y-%m-%dT%H:%M:%S'))
+    else:
+        date = time.mktime(time.strptime(curdate, '%Y-%m-%d'))
         for i in list(sess_clicks):
             sorted_clicks = sorted(sess_clicks[i], key=operator.itemgetter(1))
             sess_clicks[i] = [c[0] for c in sorted_clicks]
+    sess_date[curid] = date
 print("-- Reading data @ %ss" % datetime.datetime.now())
 
 # Filter out length 1 sessions
@@ -150,7 +160,7 @@ def obtian_tra():
         train_dates += [date]
         train_seqs += [outseq]
     print(item_ctr)  # 43098, 37484
-    with open("./config.txt", "w") as fout:
+    with open("./diginetica/config.txt", "w") as fout:
         fout.write(str(item_ctr) + "\n")
     return train_ids, train_dates, train_seqs
 

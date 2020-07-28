@@ -49,31 +49,31 @@ runner:
 - name: train_runner
   class: train
   # num of epochs
-  epochs: 5
+  epochs: 2
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 1 # save inference
-  save_checkpoint_path: "increment_gnn" # save checkpoint path
-  save_inference_path: "inference_gnn" # save inference path
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  print_interval: 10
+  print_interval: 1
 - name: infer_runner
   class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment_gnn" # load model path
+  init_model_path: "increment/0" # load model path
 
 # runner will run all the phase in each epoch
 phase:
-- name: phase_train
+- name: phase1
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
-# - name: phase_infer
+# - name: phase2
 #   model: "{workspace}/model.py" # user-defined model
 #   dataset_name: dataset_infer # select dataset by name
 #   thread_num: 1

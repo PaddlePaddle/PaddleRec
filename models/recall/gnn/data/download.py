@@ -57,10 +57,5 @@ def _download_file(url, savepath, print_progress):
             progress("[%-50s] %.2f%%" % ('=' * 50, 100), end=True)
 
 
-if sys.argv[1] == "diginetica":
-    _download_file("https://sr-gnn.bj.bcebos.com/train-item-views.csv",
-                   "./train-item-views.csv", True)
-elif sys.argv[1] == "yoochoose":
-    _download_file(
-        "https://paddlerec.bj.bcebos.com/gnn%2Fyoochoose-clicks.dat",
-        "./yoochoose-clicks.dat", True)
+_download_file("https://sr-gnn.bj.bcebos.com/train-item-views.csv",
+               "./train-item-views.csv", True)
