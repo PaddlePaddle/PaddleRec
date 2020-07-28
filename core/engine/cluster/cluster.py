@@ -67,10 +67,10 @@ class ClusterEngine(Engine):
 
     @staticmethod
     def workspace_replace():
-        workspace = envs.get_runtime_environ("workspace")
+        remote_workspace = envs.get_runtime_environ("remote_workspace")
 
         for k, v in os.environ.items():
-            v = v.replace("{workspace}", workspace)
+            v = v.replace("{workspace}", remote_workspace)
             os.environ[k] = str(v)
 
     def run(self):
@@ -98,14 +98,12 @@ class ClusterEngine(Engine):
                 cluster_env_check_tool = PaddleCloudMpiEnv()
             else:
                 raise ValueError(
-                    "Paddlecloud with Mpi don't support GPU training, check your config"
+                    "Paddlecloud with Mpi don't support GPU training, check your config.yaml & backend.yaml"
                 )
         elif cluster_type.upper() == "K8S":
             if fleet_mode == "PS":
                 if device == "CPU":
-                    raise ValueError(
-                        "PS-CPU on paddlecloud is not supported at this time, comming soon"
-                    )
+                    cluster_env_check_tool = CloudPsCpuEnv()
                 elif device == "GPU":
                     raise ValueError(
                         "PS-GPU on paddlecloud is not supported at this time, comming soon"
@@ -115,7 +113,7 @@ class ClusterEngine(Engine):
                     cluster_env_check_tool = CloudCollectiveEnv()
                 elif device == "CPU":
                     raise ValueError(
-                        "Unexpected config -> device: CPU with fleet_mode: Collective, check your config"
+                        "Unexpected config -> device: CPU with fleet_mode: Collective, check your config.yaml"
                     )
         else:
             raise ValueError("cluster_type {} error, must in MPI/K8S".format(
@@ -161,23 +159,30 @@ class ClusterEnvBase(object):
         self.cluster_env["PADDLE_VERSION"] = self.backend_env.get(
             "config.paddle_version", "1.7.2")
 
+        # python_version
+        self.cluster_env["USE_PYTHON3"] = self.backend_env.get(
+            "config.use_python3", "0")
+
         # communicator
+        max_thread_num = int(envs.get_runtime_environ("max_thread_num"))
         self.cluster_env[
             "FLAGS_communicator_is_sgd_optimizer"] = self.backend_env.get(
                 "config.communicator.FLAGS_communicator_is_sgd_optimizer", 0)
         self.cluster_env[
             "FLAGS_communicator_send_queue_size"] = self.backend_env.get(
-                "config.communicator.FLAGS_communicator_send_queue_size", 5)
+                "config.communicator.FLAGS_communicator_send_queue_size",
+                max_thread_num)
         self.cluster_env[
             "FLAGS_communicator_thread_pool_size"] = self.backend_env.get(
                 "config.communicator.FLAGS_communicator_thread_pool_size", 32)
         self.cluster_env[
             "FLAGS_communicator_max_merge_var_num"] = self.backend_env.get(
-                "config.communicator.FLAGS_communicator_max_merge_var_num", 5)
+                "config.communicator.FLAGS_communicator_max_merge_var_num",
+                max_thread_num)
         self.cluster_env[
             "FLAGS_communicator_max_send_grad_num_before_recv"] = self.backend_env.get(
                 "config.communicator.FLAGS_communicator_max_send_grad_num_before_recv",
-                5)
+                max_thread_num)
         self.cluster_env["FLAGS_communicator_fake_rpc"] = self.backend_env.get(
             "config.communicator.FLAGS_communicator_fake_rpc", 0)
         self.cluster_env["FLAGS_rpc_retry_times"] = self.backend_env.get(
@@ -234,7 +239,7 @@ class PaddleCloudMpiEnv(ClusterEnvBase):
             "config.train_data_path", "")
         if self.cluster_env["TRAIN_DATA_PATH"] == "":
             raise ValueError(
-                "No -- TRAIN_DATA_PATH -- found in your backend.yaml, please check."
+                "No -- TRAIN_DATA_PATH -- found in your backend.yaml, please add train_data_path in your backend yaml."
             )
         # test_data_path
         self.cluster_env["TEST_DATA_PATH"] = self.backend_env.get(
@@ -274,7 +279,7 @@ class PaddleCloudK8sEnv(ClusterEnvBase):
                 category=UserWarning,
                 stacklevel=2)
         warnings.warn(
-            "The remote mount point will be mounted to the ./afs/",
+            "The remote afs path will be mounted to the ./afs/",
             category=UserWarning,
             stacklevel=2)
 
@@ -293,3 +298,21 @@ class CloudCollectiveEnv(PaddleCloudK8sEnv):
             "submit.k8s_gpu_card", 1)
         self.cluster_env["K8S_CPU_CORES"] = self.backend_env.get(
             "submit.k8s_cpu_cores", 1)
+
+
+class CloudPsCpuEnv(PaddleCloudK8sEnv):
+    def __init__(self):
+        super(CloudPsCpuEnv, self).__init__()
+
+    def env_check(self):
+        super(CloudPsCpuEnv, self).env_check()
+
+        self.cluster_env["DISTRIBUTE_MODE"] = "PS_CPU_K8S"
+        self.cluster_env["K8S_TRAINERS"] = self.backend_env.get(
+            "submit.k8s_trainers", 1)
+        self.cluster_env["K8S_CPU_CORES"] = self.backend_env.get(
+            "submit.k8s_cpu_cores", 2)
+        self.cluster_env["K8S_PS_NUM"] = self.backend_env.get(
+            "submit.k8s_ps_num", 1)
+        self.cluster_env["K8S_PS_CORES"] = self.backend_env.get(
+            "submit.k8s_ps_cores", 2)
