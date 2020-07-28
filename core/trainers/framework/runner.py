@@ -359,9 +359,10 @@ class SingleRunner(RunnerBase):
                         _str = metrics[key].cal_global_metrics(
                             None,
                             context["model"][model_dict["name"]]["scope"])
+                        metrics_result.append(_str)
                     elif result is not None:
                         _str = "{}={}".format(key, result[key])
-                    metrics_result.append(_str)
+                        metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
                 print(message)
@@ -406,9 +407,10 @@ class PSRunner(RunnerBase):
                         _str = metrics[key].cal_global_metrics(
                             context["fleet"],
                             context["model"][model_dict["name"]]["scope"])
+                        metrics_result.append(_str)
                     elif result is not None:
                         _str = "{}={}".format(key, result[key])
-                    metrics_result.append(_str)
+                        metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
             print(message)
@@ -537,9 +539,10 @@ class SingleInferRunner(RunnerBase):
                         _str = metrics[key].cal_global_metrics(
                             None,
                             context["model"][model_dict["name"]]["scope"])
+                        metrics_result.append(_str)
                     elif result is not None:
                         _str = "{}={}".format(key, result[key])
-                    metrics_result.append(_str)
+                        metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
                 print(message)
