@@ -21,13 +21,13 @@
 
 ## 内容
 
-- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#模型简介)
-- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#数据准备)
-- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#运行环境)
-- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#快速开始)
-- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#论文复现)
-- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#进阶使用)
-- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#FAQ)
+- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#模型简介)
+- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#数据准备)
+- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#运行环境)
+- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#快速开始)
+- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#论文复现)
+- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#进阶使用)
+- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#FAQ)
 
 ## 模型简介
 
@@ -47,7 +47,7 @@
 >
 > mean_mmoe_test_auc_marital：0.99324
 
-若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#论文复现)部分。
+若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/mmoe#论文复现)部分。
 
 本项目支持功能
 

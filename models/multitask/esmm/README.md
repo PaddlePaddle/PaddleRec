@@ -20,13 +20,13 @@
 
 ## 内容
 
-- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#模型简介)
-- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#数据准备)
-- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#运行环境)
-- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#快速开始)
-- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#论文复现)
-- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#进阶使用)
-- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#FAQ)
+- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#模型简介)
+- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#数据准备)
+- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#运行环境)
+- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#快速开始)
+- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#论文复现)
+- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#进阶使用)
+- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#FAQ)
 
 ## 模型简介
 
@@ -37,7 +37,7 @@
 
 ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate》](  https://arxiv.org/abs/1804.07931  )文章基于 Multi-Task Learning 的思路，提出一种新的CVR预估模型——ESMM，有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题
 
-本项目在paddlepaddle上实现ESMM的网络结构，并在开源数据集[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )上验证模型效果, 本模型配置默认使用demo数据集，若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#论文复现)部分。
+本项目在paddlepaddle上实现ESMM的网络结构，并在开源数据集[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )上验证模型效果, 本模型配置默认使用demo数据集，若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#论文复现)部分。
 
 本项目支持功能
 

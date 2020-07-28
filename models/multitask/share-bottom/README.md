@@ -20,13 +20,13 @@
 
 ## 内容
 
-- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#模型简介)
-- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#数据准备)
-- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#运行环境)
-- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#快速开始)
-- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#论文复现)
-- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#进阶使用)
-- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#FAQ)
+- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#模型简介)
+- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#数据准备)
+- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#运行环境)
+- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#快速开始)
+- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#论文复现)
+- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#进阶使用)
+- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#FAQ)
 
 ## 模型简介
 
@@ -46,7 +46,7 @@ share_bottom是多任务学习的基本框架，其特点是对于不同的任�
 >
 > mean_sb_test_auc_marital：0.99256
 
-本项目在paddlepaddle上实现share_bottom的网络结构，并在开源数据集 [Census-income Data](https://archive.ics.uci.edu/ml/datasets/Census-Income+(KDD) )上验证模型效果, 本模型配置默认使用demo数据集，若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fibinet#论文复现)部分。
+本项目在paddlepaddle上实现share_bottom的网络结构，并在开源数据集 [Census-income Data](https://archive.ics.uci.edu/ml/datasets/Census-Income+(KDD) )上验证模型效果, 本模型配置默认使用demo数据集，若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share-bottom#论文复现)部分。
 
 本项目支持功能
 
