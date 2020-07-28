@@ -18,9 +18,6 @@ import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.metric import Metric
-from paddle.fluid.layers import nn, accuracy
-from paddle.fluid.initializer import Constant
-from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.layers.tensor import Variable
 
 

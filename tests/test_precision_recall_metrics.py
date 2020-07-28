@@ -145,7 +145,7 @@ class TestPrecisionRecall(unittest.TestCase):
                 return_numpy=True)
 
         outs = dict(zip(metric_keys, outs))
-        self.assertTrue(np.allclose(outs['accum_states'], self.states))
+        self.assertTrue(np.allclose(outs['[TP FP TN FN]'], self.states))
         self.assertTrue(np.allclose(outs['precision_recall_f1'], self.metrics))
 
     def test_exception(self):

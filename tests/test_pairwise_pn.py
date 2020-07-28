@@ -75,10 +75,10 @@ class TestPosNegRatio(unittest.TestCase):
                            return_numpy=True)
 
         outs = dict(zip(metric_keys, outs))
-        self.assertTrue(np.allclose(outs['right_cnt'], self.right_cnt))
-        self.assertTrue(np.allclose(outs['wrong_cnt'], self.wrong_cnt))
+        self.assertTrue(np.allclose(outs['RightCnt'], self.right_cnt))
+        self.assertTrue(np.allclose(outs['WrongCnt'], self.wrong_cnt))
         self.assertTrue(
-            np.allclose(outs['pos_neg_ratio'],
+            np.allclose(outs['PN'],
                         np.array((self.right_cnt + 1.0) / (self.wrong_cnt + 1.0
                                                            ))))
 
