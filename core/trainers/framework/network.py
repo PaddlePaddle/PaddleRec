@@ -75,9 +75,6 @@ class SingleNetwork(NetworkBase):
                                                ".type") == "DataLoader":
                             model._init_dataloader(
                                 is_infer=context["is_infer"])
-                            data_loader = DataLoader(context)
-                            data_loader.get_dataloader(context, dataset_name,
-                                                       model._data_loader)
 
                         if context["is_infer"]:
                             model.net(model._infer_data_var,
@@ -99,7 +96,11 @@ class SingleNetwork(NetworkBase):
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
             type = envs.get_global_env("dataset." + dataset["name"] + ".type")
-            if type != "DataLoader":
+            if type == "DataLoader":
+                data_loader = DataLoader(context)
+                data_loader.get_dataloader(context, dataset_name,
+                                           model._data_loader)
+            elif type == "QueueDataset":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
@@ -133,9 +134,7 @@ class PSNetwork(NetworkBase):
         if envs.get_global_env("dataset." + dataset_name +
                                ".type") == "DataLoader":
             model._init_dataloader(is_infer=False)
-            data_loader = DataLoader(context)
-            data_loader.get_dataloader(context, dataset_name,
-                                       model._data_loader)
+
         model.net(model._data_var, False)
         optimizer = model.optimizer()
         strategy = self._build_strategy(context)
@@ -160,7 +159,11 @@ class PSNetwork(NetworkBase):
             for dataset in context["env"]["dataset"]:
                 type = envs.get_global_env("dataset." + dataset["name"] +
                                            ".type")
-                if type != "DataLoader":
+                if type == "DataLoader":
+                    data_loader = DataLoader(context)
+                    data_loader.get_dataloader(context, dataset_name,
+                                               model._data_loader)
+                elif type == "QueueDataset":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
@@ -229,9 +232,6 @@ class PslibNetwork(NetworkBase):
                     if envs.get_global_env("dataset." + dataset_name +
                                            ".type") == "DataLoader":
                         model._init_dataloader(is_infer=False)
-                        data_loader = DataLoader(context)
-                        data_loader.get_dataloader(context, dataset_name,
-                                                   model._data_loader)
                     model.net(model._data_var, False)
                     optimizer = model.optimizer()
 
@@ -257,7 +257,11 @@ class PslibNetwork(NetworkBase):
             for dataset in context["env"]["dataset"]:
                 type = envs.get_global_env("dataset." + dataset["name"] +
                                            ".type")
-                if type != "DataLoader":
+                if type == "DataLoader":
+                    data_loader = DataLoader(context)
+                    data_loader.get_dataloader(context, dataset_name,
+                                               model._data_loader)
+                elif type == "QueueDataset":
                     dataset_class = QueueDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
@@ -300,9 +304,6 @@ class CollectiveNetwork(NetworkBase):
                 if envs.get_global_env("dataset." + dataset_name +
                                        ".type") == "DataLoader":
                     model._init_dataloader(is_infer=False)
-                    data_loader = DataLoader(context)
-                    data_loader.get_dataloader(context, dataset_name,
-                                               model._data_loader)
                 model.net(model._data_var, False)
                 optimizer = model.optimizer()
                 strategy = self._build_strategy(context)
@@ -323,7 +324,11 @@ class CollectiveNetwork(NetworkBase):
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
             type = envs.get_global_env("dataset." + dataset["name"] + ".type")
-            if type != "DataLoader":
+            if type == "DataLoader":
+                data_loader = DataLoader(context)
+                data_loader.get_dataloader(context, dataset_name,
+                                           model._data_loader)
+            elif type == "QueueDataset":
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
