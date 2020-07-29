@@ -32,15 +32,16 @@ class Metric(object):
             scope = fluid.global_scope()
 
         place = fluid.CPUPlace()
-        for key in self._global_communicate_var:
-            varname, dtype = self._global_communicate_var[key]
-            if scope.find_var(varname) is None:
+        for key in self._global_metric_state_vars:
+            varname, dtype = self._global_metric_state_vars[key]
+            var = scope.find_var(varname)
+            if not var:
                 continue
-            var = scope.var(varname).get_tensor()
+            var = var.get_tensor()
             data_array = np.zeros(var._get_dims()).astype(dtype)
             var.set(data_array, place)
 
-    def get_global_metric(self, fleet, scope, metric_name, mode="sum"):
+    def get_global_metric_state(self, fleet, scope, metric_name, mode="sum"):
         """ """
         input = np.array(scope.find_var(metric_name).get_tensor())
         if fleet is None:
@@ -59,9 +60,10 @@ class Metric(object):
             scope = fluid.global_scope()
 
         global_metrics = dict()
-        for key in self._global_communicate_var:
-            varname, dtype = self._global_communicate_var[key]
-            global_metrics[key] = self.get_global_metric(fleet, scope, varname)
+        for key in self._global_metric_state_vars:
+            varname, dtype = self._global_metric_state_vars[key]
+            global_metrics[key] = self.get_global_metric_state(fleet, scope,
+                                                               varname)
 
         return self.calculate(global_metrics)
 

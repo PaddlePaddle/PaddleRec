@@ -75,11 +75,11 @@ class RecallK(Metric):
 
         self.acc = global_pos_cnt / global_ins_cnt
 
-        self._global_communicate_var = dict()
-        self._global_communicate_var['ins_cnt'] = (global_ins_cnt.name,
-                                                   "float32")
-        self._global_communicate_var['pos_cnt'] = (global_pos_cnt.name,
-                                                   "float32")
+        self._global_metric_state_vars = dict()
+        self._global_metric_state_vars['ins_cnt'] = (global_ins_cnt.name,
+                                                     "float32")
+        self._global_metric_state_vars['pos_cnt'] = (global_pos_cnt.name,
+                                                     "float32")
 
         metric_name = "Acc(Recall@%d)" % self.k
         self.metrics = dict()
@@ -89,7 +89,7 @@ class RecallK(Metric):
 
     # self.metrics["batch_metrics"] = batch_metrics
     def calculate(self, global_metrics):
-        for key in self._global_communicate_var:
+        for key in self._global_metric_state_vars:
             if key not in global_metrics:
                 raise ValueError("%s not existed" % key)
         ins_cnt = global_metrics['ins_cnt'][0]
