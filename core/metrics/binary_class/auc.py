@@ -59,15 +59,16 @@ class AUC(Metric):
         sqrerr, abserr, prob, q, pos, total = \
             fluid.contrib.layers.ctr_metric_bundle(prob, label_cast)
 
-        self._global_communicate_var = dict()
-        self._global_communicate_var['stat_pos'] = (stat_pos.name, "float32")
-        self._global_communicate_var['stat_neg'] = (stat_neg.name, "float32")
-        self._global_communicate_var['total_ins_num'] = (total.name, "float32")
-        self._global_communicate_var['pos_ins_num'] = (pos.name, "float32")
-        self._global_communicate_var['q'] = (q.name, "float32")
-        self._global_communicate_var['prob'] = (prob.name, "float32")
-        self._global_communicate_var['abserr'] = (abserr.name, "float32")
-        self._global_communicate_var['sqrerr'] = (sqrerr.name, "float32")
+        self._global_metric_state_vars = dict()
+        self._global_metric_state_vars['stat_pos'] = (stat_pos.name, "float32")
+        self._global_metric_state_vars['stat_neg'] = (stat_neg.name, "float32")
+        self._global_metric_state_vars['total_ins_num'] = (total.name,
+                                                           "float32")
+        self._global_metric_state_vars['pos_ins_num'] = (pos.name, "float32")
+        self._global_metric_state_vars['q'] = (q.name, "float32")
+        self._global_metric_state_vars['prob'] = (prob.name, "float32")
+        self._global_metric_state_vars['abserr'] = (abserr.name, "float32")
+        self._global_metric_state_vars['sqrerr'] = (sqrerr.name, "float32")
 
         self.metrics = dict()
         self.metrics["AUC"] = auc_out
@@ -149,7 +150,7 @@ class AUC(Metric):
 
     def calculate(self, global_metrics):
         result = dict()
-        for key in self._global_communicate_var:
+        for key in self._global_metric_state_vars:
             if key not in global_metrics:
                 raise ValueError("%s not existed" % key)
             result[key] = global_metrics[key][0]

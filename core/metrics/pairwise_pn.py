@@ -73,11 +73,11 @@ class PosNegRatio(Metric):
             outputs={"Out": [global_wrong_cnt]})
         self.pn = (global_right_cnt + 1.0) / (global_wrong_cnt + 1.0)
 
-        self._global_communicate_var = dict()
-        self._global_communicate_var['right_cnt'] = (global_right_cnt.name,
-                                                     "float32")
-        self._global_communicate_var['wrong_cnt'] = (global_wrong_cnt.name,
-                                                     "float32")
+        self._global_metric_state_vars = dict()
+        self._global_metric_state_vars['right_cnt'] = (global_right_cnt.name,
+                                                       "float32")
+        self._global_metric_state_vars['wrong_cnt'] = (global_wrong_cnt.name,
+                                                       "float32")
 
         self.metrics = dict()
         self.metrics['WrongCnt'] = global_wrong_cnt
