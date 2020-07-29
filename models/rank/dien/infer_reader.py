@@ -30,7 +30,7 @@ from paddlerec.core.utils import envs
 class Reader(ReaderBase):
     def init(self):
         self.train_data_path = envs.get_global_env(
-            "dataset.sample_1.data_path", None)
+            "dataset.infer_sample.data_path", None)
         self.res = []
         self.max_len = 0
         self.neg_candidate_item = []
@@ -50,8 +50,8 @@ class Reader(ReaderBase):
         fo = open("tmp.txt", "w")
         fo.write(str(self.max_len))
         fo.close()
-        self.batch_size = envs.get_global_env("dataset.sample_1.batch_size",
-                                              32, None)
+        self.batch_size = envs.get_global_env(
+            "dataset.infer_sample.batch_size", 32, None)
         self.group_size = self.batch_size * 20
 
     def _process_line(self, line):
