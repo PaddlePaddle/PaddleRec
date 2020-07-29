@@ -70,11 +70,6 @@ def build(dirname):
         'Criteo_data/sample_data/train/*'
     ]
 
-    # models_copy = [
-    #     '*.yaml', '*.sh', '*.py', 'tree/*.npy', 'tree/*.txt',
-    #     'data/sample_data/train/*', 'data/sample_data/test/*',
-    # ]
-
     engine_copy = ['*/*.sh', '*/*.template']
     for package in packages:
         if package.startswith("paddlerec.models."):
