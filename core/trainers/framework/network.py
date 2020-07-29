@@ -327,10 +327,10 @@ class CollectiveNetwork(NetworkBase):
         context["dataset"] = {}
         for dataset in context["env"]["dataset"]:
             type = envs.get_global_env("dataset." + dataset["name"] + ".type")
-            raise ValueError(
-                "Collective don't support QueueDataset training, please use DataLoader."
-            )
             if type == "QueueDataset":
+                raise ValueError(
+                    "Collective don't support QueueDataset training, please use DataLoader."
+                )
                 dataset_class = QueueDataset(context)
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
