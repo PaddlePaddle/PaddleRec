@@ -39,7 +39,12 @@ function _before_submit() {
   elif [ ${DISTRIBUTE_MODE} == "COLLECTIVE_GPU_K8S" ]; then
     _gen_gpu_before_hook
     _gen_k8s_config
-    _gen_k8s_job
+    _gen_k8s_gpu_job
+    _gen_end_hook
+  elif [ ${DISTRIBUTE_MODE} == "PS_CPU_K8S" ]; then
+    _gen_cpu_before_hook
+    _gen_k8s_config
+    _gen_k8s_cpu_job
     _gen_end_hook
   fi
   
@@ -54,6 +59,7 @@ function _gen_mpi_config() {
       -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
       -e "s#<$ THIRDPARTY_PATH $>#$THIRDPARTY_PATH#g" \
       -e "s#<$ CPU_NUM $>#$max_thread_num#g" \
+      -e "s#<$ USE_PYTHON3 $>#$USE_PYTHON3#g" \
       -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
       -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
       -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
@@ -71,6 +77,7 @@ function _gen_k8s_config() {
       -e "s#<$ AFS_REMOTE_MOUNT_POINT $>#$AFS_REMOTE_MOUNT_POINT#g" \
       -e "s#<$ OUTPUT_PATH $>#$OUTPUT_PATH#g" \
       -e "s#<$ CPU_NUM $>#$max_thread_num#g" \
+      -e "s#<$ USE_PYTHON3 $>#$USE_PYTHON3#g" \
       -e "s#<$ FLAGS_communicator_is_sgd_optimizer $>#$FLAGS_communicator_is_sgd_optimizer#g" \
       -e "s#<$ FLAGS_communicator_send_queue_size $>#$FLAGS_communicator_send_queue_size#g" \
       -e "s#<$ FLAGS_communicator_thread_pool_size $>#$FLAGS_communicator_thread_pool_size#g" \
@@ -101,6 +108,7 @@ function _gen_end_hook() {
 function _gen_mpi_job() {
   echo "gen mpi_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
+      -e "s#<$ JOB_NAME $>#$OLD_JOB_NAME#g" \
       -e "s#<$ AK $>#$AK#g" \
       -e "s#<$ SK $>#$SK#g" \
       -e "s#<$ MPI_PRIORITY $>#$PRIORITY#g" \
@@ -109,18 +117,34 @@ function _gen_mpi_job() {
       ${abs_dir}/cloud/mpi_job.sh.template >${PWD}/job.sh
 }
 
-function _gen_k8s_job() {
+function _gen_k8s_gpu_job() {
   echo "gen k8s_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
+      -e "s#<$ JOB_NAME $>#$OLD_JOB_NAME#g" \
       -e "s#<$ AK $>#$AK#g" \
       -e "s#<$ SK $>#$SK#g" \
       -e "s#<$ K8S_PRIORITY $>#$PRIORITY#g" \
       -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
+      -e "s#<$ K8S_CPU_CORES $>#$K8S_CPU_CORES#g" \
       -e "s#<$ K8S_GPU_CARD $>#$K8S_GPU_CARD#g" \
       -e "s#<$ START_CMD $>#$START_CMD#g" \
       ${abs_dir}/cloud/k8s_job.sh.template >${PWD}/job.sh
 }
 
+function _gen_k8s_cpu_job() {
+  echo "gen k8s_job.sh"
+  sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
+      -e "s#<$ JOB_NAME $>#$OLD_JOB_NAME#g" \
+      -e "s#<$ AK $>#$AK#g" \
+      -e "s#<$ SK $>#$SK#g" \
+      -e "s#<$ K8S_PRIORITY $>#$PRIORITY#g" \
+      -e "s#<$ K8S_TRAINERS $>#$K8S_TRAINERS#g" \
+      -e "s#<$ K8S_PS_NUM $>#$K8S_PS_NUM#g" \
+      -e "s#<$ K8S_PS_CORES $>#$K8S_PS_CORES#g" \
+      -e "s#<$ K8S_CPU_CORES $>#$K8S_CPU_CORES#g" \
+      -e "s#<$ START_CMD $>#$START_CMD#g" \
+      ${abs_dir}/cloud/k8s_cpu_job.sh.template >${PWD}/job.sh
+}
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -145,6 +169,7 @@ function _submit() {
 function package_hook() {
   cur_time=`date  +"%Y%m%d%H%M"`
   new_job_name="${JOB_NAME}_${cur_time}"
+  export OLD_JOB_NAME=${JOB_NAME}
   export JOB_NAME=${new_job_name}
   export job_file_path="${PWD}/${new_job_name}"
   mkdir ${job_file_path}

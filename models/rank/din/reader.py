@@ -47,7 +47,7 @@ class Reader(ReaderBase):
         fo.write(str(self.max_len))
         fo.close()
         self.batch_size = envs.get_global_env("dataset.sample_1.batch_size",
-                                              32, "train.reader")
+                                              32, None)
         self.group_size = self.batch_size * 20
 
     def _process_line(self, line):
