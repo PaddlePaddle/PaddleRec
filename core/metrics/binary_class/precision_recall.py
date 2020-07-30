@@ -29,7 +29,8 @@ class PrecisionRecall(Metric):
     """
 
     def __init__(self, **kwargs):
-        """ """
+        """R
+        """
         if "input" not in kwargs or "label" not in kwargs or "class_num" not in kwargs:
             raise ValueError(
                 "PrecisionRecall expect input, label and class_num as inputs.")
@@ -107,9 +108,7 @@ class PrecisionRecall(Metric):
         self.metrics["precision_recall_f1"] = accum_metrics
         self.metrics["[TP FP TN FN]"] = states_info
 
-    # self.metrics["batch_metrics"] = batch_metrics
-
-    def calculate(self, global_metrics):
+    def _calculate(self, global_metrics):
         for key in self._global_metric_state_vars:
             if key not in global_metrics:
                 raise ValueError("%s not existed" % key)

@@ -84,7 +84,7 @@ class PosNegRatio(Metric):
         self.metrics['RightCnt'] = global_right_cnt
         self.metrics['PN'] = self.pn
 
-    def calculate(self, global_metrics):
+    def _calculate(self, global_metrics):
         for key in self._global_communicate_var:
             if key not in global_metrics:
                 raise ValueError("%s not existed" % key)

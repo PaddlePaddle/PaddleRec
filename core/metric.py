@@ -23,11 +23,13 @@ class Metric(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
-        """ """
+        """R
+        """
         pass
 
     def clear(self, scope=None):
-        """ """
+        """R
+        """
         if scope is None:
             scope = fluid.global_scope()
 
@@ -41,9 +43,13 @@ class Metric(object):
             data_array = np.zeros(var._get_dims()).astype(dtype)
             var.set(data_array, place)
 
-    def get_global_metric_state(self, fleet, scope, metric_name, mode="sum"):
-        """ """
-        input = np.array(scope.find_var(metric_name).get_tensor())
+    def _get_global_metric_state(self, fleet, scope, metric_name, mode="sum"):
+        """R
+        """
+        var = scope.find_var(metric_name)
+        if not var:
+            return None
+        input = np.array(var.get_tensor())
         if fleet is None:
             return input
         fleet._role_maker._barrier_worker()
@@ -54,8 +60,9 @@ class Metric(object):
         output = output.reshape(old_shape)
         return output
 
-    def cal_global_metrics(self, fleet, scope=None):
-        """ """
+    def calc_global_metrics(self, fleet, scope=None):
+        """R
+        """
         if scope is None:
             scope = fluid.global_scope()
 
@@ -65,9 +72,9 @@ class Metric(object):
             global_metrics[key] = self.get_global_metric_state(fleet, scope,
                                                                varname)
 
-        return self.calculate(global_metrics)
+        return self._calculate(global_metrics)
 
-    def calculate(self, global_metrics):
+    def _calculate(self, global_metrics):
         pass
 
     @abc.abstractmethod

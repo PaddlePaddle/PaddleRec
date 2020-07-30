@@ -356,7 +356,7 @@ class SingleRunner(RunnerBase):
                 metrics_result = []
                 for key in metrics:
                     if isinstance(metrics[key], Metric):
-                        _str = metrics[key].cal_global_metrics(
+                        _str = metrics[key].calc_global_metrics(
                             None,
                             context["model"][model_dict["name"]]["scope"])
                         metrics_result.append(_str)
@@ -404,7 +404,7 @@ class PSRunner(RunnerBase):
                 metrics_result = []
                 for key in metrics:
                     if isinstance(metrics[key], Metric):
-                        _str = metrics[key].cal_global_metrics(
+                        _str = metrics[key].calc_global_metrics(
                             context["fleet"],
                             context["model"][model_dict["name"]]["scope"])
                         metrics_result.append(_str)
@@ -536,7 +536,7 @@ class SingleInferRunner(RunnerBase):
                 metrics_result = []
                 for key in metrics:
                     if isinstance(metrics[key], Metric):
-                        _str = metrics[key].cal_global_metrics(
+                        _str = metrics[key].calc_global_metrics(
                             None,
                             context["model"][model_dict["name"]]["scope"])
                         metrics_result.append(_str)

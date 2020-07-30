@@ -88,7 +88,7 @@ class RecallK(Metric):
         self.metrics[metric_name] = self.acc
 
     # self.metrics["batch_metrics"] = batch_metrics
-    def calculate(self, global_metrics):
+    def _calculate(self, global_metrics):
         for key in self._global_metric_state_vars:
             if key not in global_metrics:
                 raise ValueError("%s not existed" % key)
