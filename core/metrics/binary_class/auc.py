@@ -74,7 +74,7 @@ class AUC(Metric):
         self.metrics["AUC"] = auc_out
         self.metrics["BATCH_AUC"] = batch_auc_out
 
-    def calculate_bucket_error(self, global_pos, global_neg):
+    def _calculate_bucket_error(self, global_pos, global_neg):
         """R
         """
         num_bucket = len(global_pos)
@@ -122,7 +122,7 @@ class AUC(Metric):
         bucket_error = error_sum / error_count if error_count > 0 else 0.0
         return bucket_error
 
-    def calculate_auc(self, global_pos, global_neg):
+    def _calculate_auc(self, global_pos, global_neg):
         """R
         """
         num_bucket = len(global_pos)
@@ -148,7 +148,7 @@ class AUC(Metric):
             auc_value = area / (pos * neg)
         return auc_value
 
-    def calculate(self, global_metrics):
+    def _calculate(self, global_metrics):
         result = dict()
         for key in self._global_metric_state_vars:
             if key not in global_metrics:
@@ -165,10 +165,10 @@ class AUC(Metric):
             result['copc'] = 0
             result['mean_q'] = 0
         else:
-            result['auc'] = self.calculate_auc(result['stat_pos'],
-                                               result['stat_neg'])
-            result['bucket_error'] = self.calculate_auc(result['stat_pos'],
-                                                        result['stat_neg'])
+            result['auc'] = self._calculate_auc(result['stat_pos'],
+                                                result['stat_neg'])
+            result['bucket_error'] = self._calculate_bucket_error(
+                result['stat_pos'], result['stat_neg'])
             result['actual_ctr'] = result['pos_ins_num'] / result[
                 'total_ins_num']
             result['mae'] = result['abserr'] / result['total_ins_num']
