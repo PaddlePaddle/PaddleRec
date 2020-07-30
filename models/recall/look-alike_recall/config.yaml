@@ -14,32 +14,29 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.dien"
+workspace: "paddlerec.models.recall.look-alike_recall"
 
 dataset:
-  - name: sample_1
-    type: DataLoader
-    batch_size: 32
-    data_path: "{workspace}/data/train_data"
-    data_converter: "{workspace}/reader.py"
-  - name: infer_sample
-    type: DataLoader
-    batch_size: 32
-    data_path: "{workspace}/data/train_data"
-    data_converter: "{workspace}/infer_reader.py"
+- name: sample_1
+  type: DataLoader
+  batch_size: 32
+  data_path: "{workspace}/data/train_data"
+  sparse_slots: "label user_seeds target_user"
+- name: infer_sample
+  type: DataLoader
+  batch_size: 32
+  data_path: "{workspace}/data/train_data"
+  sparse_slots: "label user_seed target_user"
 
 hyper_parameters:
     optimizer:
         class: SGD
         learning_rate: 0.0001
     use_DataLoader: True
-    item_emb_size: 64
-    cat_emb_size: 64
-    is_sparse: False
-    item_count: 63001
-    cat_count: 801
-
-    act: "sigmoid"
+    user_emb_size: 96
+    user_count: 100000
+    seeds_num: 20
+    transformed_size: 96
 
 
 mode: train_runner

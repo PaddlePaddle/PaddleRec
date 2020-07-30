@@ -35,9 +35,9 @@
 
 分布式运行首先需要更改`config.yaml`，主要调整以下内容：
 
-- workspace: 调整为在远程点运行时的工作目录，一般设置为`"./"`即可
-- runner_class: 从单机的"train"调整为"cluster_train"，单机训练->分布式训练（例外情况，k8s上单机单卡训练仍然为train）
-- fleet_mode: 选则参数服务器模式(ps)，抑或GPU的all-reduce模式(collective)
+- workspace: 调整为在远程节点运行时的工作目录，一般设置为`"./"`即可
+- runner_class: 从单机的"train"调整为"cluster_train"，单机训练->分布式训练（例外情况，k8s上单机单卡训练仍然为train，后续支持）
+- fleet_mode: 选择参数服务器模式(ps)，或者GPU的all-reduce模式(collective)
 - distribute_strategy: 可选项，选择分布式训练的策略，目前只在参数服务器模式下生效，可选项:`sync、asycn、half_async、geo`
 
 配置选项具体参数，可以参考[yaml配置说明](./yaml.md)
@@ -306,7 +306,7 @@ dataset:
 - name: dataloader_train 
   batch_size: 2
   type: DataLoader 
-  data_path: "{workspace}/train_data"
+  data_path: "{workspace}/afs/挂载数据文件夹的路径"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
 
@@ -390,7 +390,7 @@ dataset:
 - name: dataloader_train 
   batch_size: 2
   type: DataLoader 
-  data_path: "{workspace}/train_data"
+  data_path: "{workspace}/afs/挂载数据文件夹的路径"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_var:13"
 
