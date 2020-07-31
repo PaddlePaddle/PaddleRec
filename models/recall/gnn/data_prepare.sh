@@ -15,21 +15,31 @@
 # limitations under the License.
 
 set -e
-echo "begin to download data"
 
-cd data && python download.py
-mkdir diginetica
-python preprocess.py --dataset diginetica
+dataset=$1
+src=$1
+
+if [[ $src == "yoochoose1_4" || $src == "yoochoose1_64" ]];then
+    src="yoochoose"
+elif [[ $src == "diginetica" ]];then
+    src="diginetica"
+else
+    echo "Usage: sh data_prepare.sh [diginetica|yoochoose1_4|yoochoose1_64]"
+    exit 1
+fi
+
+echo "begin to download data"
+cd data && python download.py $src
+mkdir $dataset
+python preprocess.py --dataset $src
 
 echo "begin to convert data (binary -> txt)"
-python convert_data.py --data_dir diginetica
+python convert_data.py --data_dir $dataset
 
-cat diginetica/train.txt | wc -l >> diginetica/config.txt
+cat ${dataset}/train.txt | wc -l >> config.txt
 
 rm -rf train && mkdir train
-mv diginetica/train.txt train
+mv ${dataset}/train.txt train
 
 rm -rf test && mkdir test
-mv diginetica/test.txt test
-
-mv diginetica/config.txt ./config.txt
+mv ${dataset}/test.txt test
