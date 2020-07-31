@@ -28,19 +28,17 @@ class PrecisionRecall(Metric):
     Metric For Fluid Model
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, input, label, class_num):
         """R
         """
-        if "input" not in kwargs or "label" not in kwargs or "class_num" not in kwargs:
-            raise ValueError(
-                "PrecisionRecall expect input, label and class_num as inputs.")
-        predict = kwargs.get("input")
-        label = kwargs.get("label")
-        self.num_cls = kwargs.get("class_num")
+        kwargs = locals()
+        del kwargs['self']
 
-        if not isinstance(predict, Variable):
+        self.num_cls = class_num
+
+        if not isinstance(input, Variable):
             raise ValueError("input must be Variable, but received %s" %
-                             type(predict))
+                             type(input))
         if not isinstance(label, Variable):
             raise ValueError("label must be Variable, but received %s" %
                              type(label))
@@ -48,7 +46,7 @@ class PrecisionRecall(Metric):
         helper = LayerHelper("PaddleRec_PrecisionRecall", **kwargs)
         label = fluid.layers.cast(label, dtype="int32")
         label.stop_gradient = True
-        max_probs, indices = fluid.layers.nn.topk(predict, k=1)
+        max_probs, indices = fluid.layers.nn.topk(input, k=1)
         indices = fluid.layers.cast(indices, dtype="int32")
         indices.stop_gradient = True
 

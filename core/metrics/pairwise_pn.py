@@ -28,8 +28,11 @@ class PosNegRatio(Metric):
     Metric For Fluid Model
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, pos_score, neg_score):
         """ """
+        kwargs = locals()
+        del kwargs['self']
+
         helper = LayerHelper("PaddleRec_PosNegRatio", **kwargs)
         if "pos_score" not in kwargs or "neg_score" not in kwargs:
             raise ValueError(

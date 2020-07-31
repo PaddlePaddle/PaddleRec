@@ -26,34 +26,31 @@ class AUC(Metric):
     Metric For Fluid Model
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 input,
+                 label,
+                 curve='ROC',
+                 num_thresholds=2**12 - 1,
+                 topk=1,
+                 slide_steps=1):
         """ """
-        if "input" not in kwargs or "label" not in kwargs:
-            raise ValueError("AUC expect input and label as inputs.")
-        predict = kwargs.get("input")
-        label = kwargs.get("label")
-        curve = kwargs.get("curve", 'ROC')
-        num_thresholds = kwargs.get("num_thresholds", 2**12 - 1)
-        topk = kwargs.get("topk", 1)
-        slide_steps = kwargs.get("slide_steps", 1)
-
-        if not isinstance(predict, Variable):
+        if not isinstance(input, Variable):
             raise ValueError("input must be Variable, but received %s" %
-                             type(predict))
+                             type(input))
         if not isinstance(label, Variable):
             raise ValueError("label must be Variable, but received %s" %
                              type(label))
 
         auc_out, batch_auc_out, [
             batch_stat_pos, batch_stat_neg, stat_pos, stat_neg
-        ] = fluid.layers.auc(predict,
+        ] = fluid.layers.auc(input,
                              label,
                              curve=curve,
                              num_thresholds=num_thresholds,
                              topk=topk,
                              slide_steps=slide_steps)
 
-        prob = fluid.layers.slice(predict, axes=[1], starts=[1], ends=[2])
+        prob = fluid.layers.slice(input, axes=[1], starts=[1], ends=[2])
         label_cast = fluid.layers.cast(label, dtype="float32")
         label_cast.stop_gradient = True
         sqrerr, abserr, prob, q, pos, total = \
