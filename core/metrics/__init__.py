@@ -14,6 +14,7 @@
 
 from .recall_k import RecallK
 from .pairwise_pn import PosNegRatio
-from .binary_class import *
+from .precision_recall import PrecisionRecall
+from .auc import AUC
 
-__all__ = ['RecallK', 'PosNegRatio'] + binary_class.__all__
+__all__ = ['RecallK', 'PosNegRatio', 'AUC', 'PrecisionRecall']

@@ -29,23 +29,21 @@ class RecallK(Metric):
     Metric For Fluid Model
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, input, label, k=20):
         """ """
-        if "input" not in kwargs or "label" not in kwargs:
-            raise ValueError("RecallK expect input and label as inputs.")
-        predict = kwargs.get('input')
-        label = kwargs.get('label')
-        self.k = kwargs.get("k", 20)
+        kwargs = locals()
+        del kwargs['self']
+        self.k = k
 
-        if not isinstance(predict, Variable):
+        if not isinstance(input, Variable):
             raise ValueError("input must be Variable, but received %s" %
-                             type(predict))
+                             type(input))
         if not isinstance(label, Variable):
             raise ValueError("label must be Variable, but received %s" %
                              type(label))
 
         helper = LayerHelper("PaddleRec_RecallK", **kwargs)
-        batch_accuracy = accuracy(predict, label, self.k)
+        batch_accuracy = accuracy(input, label, self.k)
         global_ins_cnt, _ = helper.create_or_get_global_variable(
             name="ins_cnt", persistable=True, dtype='float32', shape=[1])
         global_pos_cnt, _ = helper.create_or_get_global_variable(
