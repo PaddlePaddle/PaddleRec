@@ -79,12 +79,12 @@ CPU环境
 ```sh
 dataset:
 - name: dataset_train
-  batch_size: 1
+  batch_size: 5
   type: QueueDataset
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/census_reader.py"
 - name: dataset_infer
-  batch_size: 1
+  batch_size: 5
   type: QueueDataset
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/census_reader.py"
@@ -103,17 +103,11 @@ CPU环境
   device: cpu
 ```
 
-## 结果展示
-
-样例数据训练结果展示
-
-样例数据预测结果展示
-
 ## 论文复现
 
 用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=32, thread_num=8, epoch_num=100
 
-使用gpu p100 单卡训练 h 测试auc
+使用gpu p100 单卡训练 4.5h 100轮， 测试auc:best: 0.9939,mean:0.9931 
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 

@@ -70,12 +70,12 @@ CPU环境
 ```
 dataset:
   - name: dataset_train
-    batch_size: 1
+    batch_size: 5
     type: QueueDataset
     data_path: "{workspace}/data/train"
     data_converter: "{workspace}/esmm_reader.py"
   - name: dataset_infer
-    batch_size: 1
+    batch_size: 5
     type: QueueDataset
     data_path: "{workspace}/data/test"
     data_converter: "{workspace}/esmm_reader.py"
@@ -96,32 +96,11 @@ CPU环境
     phases: [infer]
 ```
 
-### 结果展示
-
-样例数据训练结果展示
-
-样例数据预测结果展示
-
-```
-load persistables from increment/1
-batch: 1, AUC_ctr: [0.225], AUC_ctcvr: [0.]
-batch: 2, AUC_ctr: [0.18333333], AUC_ctcvr: [0.]
-batch: 3, AUC_ctr: [0.22727273], AUC_ctcvr: [0.]
-batch: 4, AUC_ctr: [0.26388889], AUC_ctcvr: [0.]
-batch: 5, AUC_ctr: [0.29487179], AUC_ctcvr: [0.]
-batch: 6, AUC_ctr: [0.32142857], AUC_ctcvr: [0.]
-batch: 7, AUC_ctr: [0.34444444], AUC_ctcvr: [0.]
-batch: 8, AUC_ctr: [0.36458333], AUC_ctcvr: [0.]
-batch: 9, AUC_ctr: [0.38235294], AUC_ctcvr: [0.]
-Infer infer of increment/1 done, use time: 0.12578845024108887
-PaddleRec Finish
-```
 
 ## 论文复现
 
 用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=1000, thread_num=8, epoch_num=4
 
-使用gpu p100 单卡训练 h 测试auc
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 

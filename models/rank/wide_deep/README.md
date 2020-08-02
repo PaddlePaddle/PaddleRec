@@ -105,21 +105,10 @@ CPU环境
     init_model_path: "increment/0"
 ```
 
-### 结果展示
-
-样例数据训练结果展示
-
-样例数据预测结果展示
-
-```
-
-```
 
 ## 论文复现
 
 用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=40, thread_num=8, epoch_num=40
-
-使用gpu p100 单卡训练 h 测试auc
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 
