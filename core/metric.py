@@ -69,8 +69,8 @@ class Metric(object):
         global_metrics = dict()
         for key in self._global_metric_state_vars:
             varname, dtype = self._global_metric_state_vars[key]
-            global_metrics[key] = self.get_global_metric_state(fleet, scope,
-                                                               varname)
+            global_metrics[key] = self._get_global_metric_state(fleet, scope,
+                                                                varname)
 
         return self._calculate(global_metrics)
 
