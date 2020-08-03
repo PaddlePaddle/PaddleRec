@@ -25,6 +25,7 @@
 | NCF | Neural Collaborative Filtering | [WWW 2017][Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf) |
 | GNN | SR-GNN | [AAAI 2019][Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855) |
 | Fasttext | fasttext | [EACL 2017][Bag of Tricks for Efficient Text Classification](https://www.aclweb.org/anthology/E17-2068.pdf)  |
+| RALM | Real-time Attention Based Look-alike Model | [KDD 2019][Real-time Attention Based Look-alike Model for Recommender System](https://arxiv.org/pdf/1906.05022.pdf)  |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
