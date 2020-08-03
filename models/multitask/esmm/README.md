@@ -8,7 +8,7 @@
 		├──small.txt
 	├── test  #测试数据
 		├── small.txt
-	├── run.sh
+	├── run.sh
 ├── __init__.py 
 ├── config.yaml #配置文件
 ├── esmm_reader.py #数据读取文件
