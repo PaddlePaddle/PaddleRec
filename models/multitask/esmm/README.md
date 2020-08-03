@@ -8,6 +8,7 @@
 		├──small.txt
 	├── test  #测试数据
 		├── small.txt
+	├── run.sh
 ├── __init__.py 
 ├── config.yaml #配置文件
 ├── esmm_reader.py #数据读取文件
@@ -48,6 +49,14 @@ ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An E�
 ## 数据准备
 
 数据地址：[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )
+
+```
+cd data 
+sh run.sh
+```
+
+数据格式参见demo数据：data/train
+
 
 ## 运行环境
 

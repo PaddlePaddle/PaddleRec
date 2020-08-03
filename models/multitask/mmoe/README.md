@@ -9,6 +9,7 @@
 	├── test  #测试数据
 		├── test_data.txt
 	├── run.sh
+	├── data_preparation.py
 ├── __init__.py 
 ├── config.yaml #配置文件
 ├── census_reader.py #数据读取文件
@@ -52,12 +53,39 @@
 本项目支持功能
 
 训练：单机CPU、单机单卡GPU、单机多卡GPU、本地模拟参数服务器训练、增量训练，配置请参考 [启动训练](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/train.md)
-
-预测：单机CPU、单机单卡GPU ；配置请参考[PaddleRec 离线预测](
+预测：单机CPU、单机单卡GPU ；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/predict.md)
 
 ## 数据准备
 
 数据地址： [Census-income Data](https://archive.ics.uci.edu/ml/machine-learning-databases/census-income-mld/census.tar.gz )
+
+数据解压后， 在run.sh脚本文件中添加文件的路径，并运行脚本。
+
+```sh
+mkdir train_data
+mkdir test_data
+mkdir data
+train_path="data/census-income.data"
+test_path="data/census-income.test"
+train_data_path="train_data/"
+test_data_path="test_data/"
+pip install -r requirements.txt
+wget -P data/ https://archive.ics.uci.edu/ml/machine-learning-databases/census-income-mld/census.tar.gz
+tar -zxvf data/census.tar.gz -C data/
+
+python data_preparation.py --train_path ${train_path} \
+                           --test_path ${test_path} \
+                           --train_data_path ${train_data_path}\
+                           --test_data_path ${test_data_path}
+
+```
+
+生成的格式以逗号为分割点
+
+```
+0,0,73,0,0,0,0,1700.09,0,0
+```
+
 
 ## 运行环境
 
