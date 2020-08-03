@@ -20,6 +20,7 @@ import numpy as np
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
+from paddlerec.core.metric import Metric
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -77,9 +78,10 @@ class RunnerBase(object):
         name = "dataset." + reader_name + "."
 
         if envs.get_global_env(name + "type") == "DataLoader":
-            self._executor_dataloader_train(model_dict, context)
+            return self._executor_dataloader_train(model_dict, context)
         else:
             self._executor_dataset_train(model_dict, context)
+            return None
 
     def _executor_dataset_train(self, model_dict, context):
         reader_name = model_dict["dataset_name"]
@@ -137,8 +139,10 @@ class RunnerBase(object):
 
         metrics_varnames = []
         metrics_format = []
+        metrics_names = ["total_batch"]
         metrics_format.append("{}: {{}}".format("batch"))
         for name, var in metrics.items():
+            metrics_names.append(name)
             metrics_varnames.append(var.name)
             metrics_format.append("{}: {{}}".format(name))
         metrics_format = ", ".join(metrics_format)
@@ -147,6 +151,7 @@ class RunnerBase(object):
         reader.start()
         batch_id = 0
         scope = context["model"][model_name]["scope"]
+        result = None
         with fluid.scope_guard(scope):
             try:
                 while True:
@@ -167,6 +172,10 @@ class RunnerBase(object):
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+
+        if batch_id > 0:
+            result = dict(zip(metrics_names, metrics))
+        return result
 
     def _get_dataloader_program(self, model_dict, context):
         model_name = model_dict["name"]
@@ -221,6 +230,7 @@ class RunnerBase(object):
         program = context["model"][model_name]["main_program"].clone()
         _exe_strategy, _build_strategy = self._get_strategy(model_dict,
                                                             context)
+
         program = fluid.compiler.CompiledProgram(program).with_data_parallel(
             loss_name=model_class.get_avg_cost().name,
             build_strategy=_build_strategy,
@@ -335,11 +345,28 @@ class SingleRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["phases"]:
+                model_class = context["model"][model_dict["name"]]["model"]
+                metrics = model_class._metrics
+
                 begin_time = time.time()
-                self._run(context, model_dict)
+                result = self._run(context, model_dict)
                 end_time = time.time()
                 seconds = end_time - begin_time
-                print("epoch {} done, use time: {}".format(epoch, seconds))
+                message = "epoch {} done, use time: {}".format(epoch, seconds)
+                metrics_result = []
+                for key in metrics:
+                    if isinstance(metrics[key], Metric):
+                        _str = metrics[key].calc_global_metrics(
+                            None,
+                            context["model"][model_dict["name"]]["scope"])
+                        metrics_result.append(_str)
+                    elif result is not None:
+                        _str = "{}={}".format(key, result[key])
+                        metrics_result.append(_str)
+                if len(metrics_result) > 0:
+                    message += ", global metrics: " + ", ".join(metrics_result)
+                print(message)
+
                 with fluid.scope_guard(context["model"][model_dict["name"]][
                         "scope"]):
                     train_prog = context["model"][model_dict["name"]][
@@ -361,12 +388,32 @@ class PSRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
+        model_class = context["model"][model_dict["name"]]["model"]
+        metrics = model_class._metrics
         for epoch in range(epochs):
             begin_time = time.time()
-            self._run(context, model_dict)
+            result = self._run(context, model_dict)
             end_time = time.time()
             seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
+            message = "epoch {} done, use time: {}".format(epoch, seconds)
+
+            # TODO, wait for PaddleCloudRoleMaker supports gloo
+            from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
+            if context["fleet"] is not None and isinstance(context["fleet"],
+                                                           GeneralRoleMaker):
+                metrics_result = []
+                for key in metrics:
+                    if isinstance(metrics[key], Metric):
+                        _str = metrics[key].calc_global_metrics(
+                            context["fleet"],
+                            context["model"][model_dict["name"]]["scope"])
+                        metrics_result.append(_str)
+                    elif result is not None:
+                        _str = "{}={}".format(key, result[key])
+                        metrics_result.append(_str)
+                if len(metrics_result) > 0:
+                    message += ", global metrics: " + ", ".join(metrics_result)
+            print(message)
             with fluid.scope_guard(context["model"][model_dict["name"]][
                     "scope"]):
                 train_prog = context["model"][model_dict["name"]][
@@ -473,16 +520,33 @@ class SingleInferRunner(RunnerBase):
     def run(self, context):
         self._dir_check(context)
 
+        self.epoch_model_name_list.sort()
         for index, epoch_name in enumerate(self.epoch_model_name_list):
             for model_dict in context["phases"]:
+                model_class = context["model"][model_dict["name"]]["model"]
+                metrics = model_class._infer_results
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
                 begin_time = time.time()
-                self._run(context, model_dict)
+                result = self._run(context, model_dict)
                 end_time = time.time()
                 seconds = end_time - begin_time
-                print("Infer {} of {} done, use time: {}".format(model_dict[
-                    "name"], epoch_name, seconds))
+                message = "Infer {} of epoch {} done, use time: {}".format(
+                    model_dict["name"], epoch_name, seconds)
+                metrics_result = []
+                for key in metrics:
+                    if isinstance(metrics[key], Metric):
+                        _str = metrics[key].calc_global_metrics(
+                            None,
+                            context["model"][model_dict["name"]]["scope"])
+                        metrics_result.append(_str)
+                    elif result is not None:
+                        _str = "{}={}".format(key, result[key])
+                        metrics_result.append(_str)
+                if len(metrics_result) > 0:
+                    message += ", global metrics: " + ", ".join(metrics_result)
+                print(message)
+
         context["status"] = "terminal_pass"
 
     def _load(self, context, model_dict, model_path):
@@ -497,6 +561,10 @@ class SingleInferRunner(RunnerBase):
             with fluid.program_guard(train_prog, startup_prog):
                 fluid.io.load_persistables(
                     context["exe"], model_path, main_program=train_prog)
+            clear_metrics = context["model"][model_dict["name"]][
+                "model"].get_clear_metrics()
+            for var in clear_metrics:
+                var.clear()
 
     def _dir_check(self, context):
         dirname = envs.get_global_env(
