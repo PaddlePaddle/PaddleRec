@@ -108,7 +108,13 @@ CPU环境
 
 ## 论文复现
 
+
 用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=40, thread_num=8, epoch_num=40
+
+本例在paddlepaddle上实现wide&deep并在开源数据集Census-income Data上验证模型效果，在测试集上的平均acc和auc分别为：
+
+mean_acc: 0.76195 , mean_auc: 0.90577
+
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 
