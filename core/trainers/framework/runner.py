@@ -17,6 +17,7 @@ from __future__ import print_function
 import os
 import time
 import numpy as np
+from datetime import datetime
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -137,7 +138,14 @@ class RunnerBase(object):
 
         metrics_varnames = []
         metrics_format = []
-        metrics_format.append("{}: {{}}".format("batch"))
+
+        if context["is_infer"]:
+            metrics_format.append("{{}}\t[Infer]\t{}: {{}}".format("batch"))
+        else:
+            metrics_format.append("{{}}\t[Train]\t{}: {{}}".format("batch"))
+
+        metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
+
         for name, var in metrics.items():
             metrics_varnames.append(var.name)
             metrics_format.append("{}: {{}}".format(name))
@@ -146,6 +154,7 @@ class RunnerBase(object):
         reader = context["model"][model_dict["name"]]["model"]._data_loader
         reader.start()
         batch_id = 0
+        begin_time = time.time()
         scope = context["model"][model_name]["scope"]
         with fluid.scope_guard(scope):
             try:
@@ -154,15 +163,23 @@ class RunnerBase(object):
                         program=program,
                         fetch_list=metrics_varnames,
                         return_numpy=False)
-                    metrics = [batch_id]
-
-                    metrics_rets = [
-                        as_numpy(metrics_tensor)
-                        for metrics_tensor in metrics_tensors
-                    ]
-                    metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
+                        metrics = [
+                            datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        ]
+                        metrics.extend([batch_id])
+                        end_time = time.time()
+                        seconds = end_time - begin_time
+                        metrics.extend([seconds])
+                        begin_time = end_time
+
+                        metrics_rets = [
+                            as_numpy(metrics_tensor)
+                            for metrics_tensor in metrics_tensors
+                        ]
+                        metrics.extend(metrics_rets)
+
                         print(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
