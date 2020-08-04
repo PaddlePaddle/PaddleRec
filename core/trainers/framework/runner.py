@@ -520,7 +520,6 @@ class SingleInferRunner(RunnerBase):
     def run(self, context):
         self._dir_check(context)
 
-        self.epoch_model_name_list.sort()
         for index, epoch_name in enumerate(self.epoch_model_name_list):
             for model_dict in context["phases"]:
                 model_class = context["model"][model_dict["name"]]["model"]
