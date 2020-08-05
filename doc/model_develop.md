@@ -113,6 +113,8 @@ def input_data(self, is_infer=False, **kwargs):
 
 可以参考官方模型的示例学习net的构造方法。
 
+除可以使用Paddle的Metrics接口外，PaddleRec也统一封装了一些常见的Metrics评价指标，并允许开发者定义自己的Metrics类，相关文件参考[Metrics开发文档](metrics.md)。
+
 ## 如何运行自定义模型
 
 记录`model.py`,`config.yaml`及数据读取`reader.py`的文件路径，建议置于同一文件夹下，如`/home/custom_model`下，更改`config.yaml`中的配置选项

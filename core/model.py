@@ -15,7 +15,9 @@
 import abc
 import os
 import paddle.fluid as fluid
+from paddle.fluid.framework import Variable
 
+from paddlerec.core.metric import Metric
 from paddlerec.core.utils import envs
 
 
@@ -39,6 +41,7 @@ class ModelBase(object):
         self._init_hyper_parameters()
         self._env = config
         self._slot_inited = False
+        self._clear_metrics = None
 
     def _init_hyper_parameters(self):
         pass
@@ -109,8 +112,23 @@ class ModelBase(object):
     def get_infer_inputs(self):
         return self._infer_data_var
 
+    def get_clear_metrics(self):
+        if self._clear_metrics is not None:
+            return self._clear_metrics
+        self._clear_metrics = []
+        for key in self._infer_results:
+            if isinstance(self._infer_results[key], Metric):
+                self._clear_metrics.append(self._infer_results[key])
+        return self._clear_metrics
+
     def get_infer_results(self):
-        return self._infer_results
+        res = dict()
+        for key in self._infer_results:
+            if isinstance(self._infer_results[key], Metric):
+                res.update(self._infer_results[key].get_result())
+            elif isinstance(self._infer_results[key], Variable):
+                res[key] = self._infer_results[key]
+        return res
 
     def get_avg_cost(self):
         """R
@@ -120,7 +138,13 @@ class ModelBase(object):
     def get_metrics(self):
         """R
         """
-        return self._metrics
+        res = dict()
+        for key in self._metrics:
+            if isinstance(self._metrics[key], Metric):
+                res.update(self._metrics[key].get_result())
+            elif isinstance(self._metrics[key], Variable):
+                res[key] = self._metrics[key]
+        return res
 
     def get_fetch_period(self):
         return self._fetch_interval
