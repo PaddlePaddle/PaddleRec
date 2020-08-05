@@ -14,7 +14,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.BST"
+workspace: "models/rank/BST"
 
 dataset:
 - name: sample_1

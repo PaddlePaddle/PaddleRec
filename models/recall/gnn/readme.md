@@ -165,7 +165,7 @@ CPU环境
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.gnn
+python -m paddlerec.run -m models/recall/gnn
 ```
 
 ### 结果展示

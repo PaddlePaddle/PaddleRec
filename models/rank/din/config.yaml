@@ -14,7 +14,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.din"
+workspace: "models/rank/din"
 
 dataset:
   - name: sample_1
