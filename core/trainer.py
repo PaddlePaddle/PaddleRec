@@ -146,6 +146,7 @@ class Trainer(object):
         elif engine.upper() == "CLUSTER":
             self.engine = EngineMode.CLUSTER
             self.is_fleet = True
+            self.which_cluster_type()
         else:
             raise ValueError("Not Support Engine {}".format(engine))
         self._context["is_fleet"] = self.is_fleet
@@ -164,6 +165,13 @@ class Trainer(object):
 
         self._context["is_pslib"] = (fleet_mode.upper() == "PSLIB")
         self._context["fleet_mode"] = fleet_mode
+
+    def which_cluster_type(self):
+        cluster_type = envs.get_runtime_environ("PADDLEREC_CLUSTER_TYPE")
+        if cluster_type and cluster_type.upper() == "K8S":
+            self._context["cluster_type"] = "K8S"
+        else:
+            self._context["cluster_type"] = "MPI"
 
     def which_executor_mode(self):
         executor_mode = envs.get_runtime_environ("train.trainer.executor_mode")
