@@ -17,11 +17,14 @@ from __future__ import print_function
 import os
 import time
 import numpy as np
-from datetime import datetime
+import logging
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 from paddlerec.core.metric import Metric
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -142,9 +145,9 @@ class RunnerBase(object):
         metrics_format = []
 
         if context["is_infer"]:
-            metrics_format.append("{{}}\t[Infer]\t{}: {{}}".format("batch"))
+            metrics_format.append("\t[Infer]\t{}: {{}}".format("batch"))
         else:
-            metrics_format.append("{{}}\t[Train]\t{}: {{}}".format("batch"))
+            metrics_format.append("\t[Train]\t{}: {{}}".format("batch"))
 
         metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
 
@@ -170,10 +173,7 @@ class RunnerBase(object):
                         return_numpy=False)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
-                        metrics = [
-                            datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        ]
-                        metrics.extend([batch_id])
+                        metrics = [batch_id]
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics.extend([seconds])
@@ -184,8 +184,7 @@ class RunnerBase(object):
                             for metrics_tensor in metrics_tensors
                         ]
                         metrics.extend(metrics_rets)
-
-                        print(metrics_format.format(*metrics))
+                        logging.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
