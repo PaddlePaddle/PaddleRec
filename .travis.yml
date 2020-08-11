@@ -16,6 +16,8 @@ before_install:
   # For pylint dockstring checker
   - sudo apt-get update 
   - sudo apt-get install -y python-pip libpython-dev
+  - sudo apt-get remove python-urllib3
+  - sudo apt-get purge python-urllib3
   - sudo pip install -U pip
   - sudo pip install --upgrade setuptools
   - sudo pip install six --upgrade --ignore-installed six
