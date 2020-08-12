@@ -39,6 +39,7 @@ def engine_registry():
     engines["TRANSPILER"]["SINGLE"] = single_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER"] = cluster_engine
+    engines["TRANSPILER"]["ONLINE_LEARNING"] = online_learning
 
     engines["PSLIB"]["SINGLE"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER"] = local_mpi_engine
@@ -118,6 +119,19 @@ def single_engine(args):
     single_envs["train.trainer.trainer"] = trainer
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.engine"] = "single"
+    single_envs["train.trainer.platform"] = envs.get_platform()
+    print("use {} engine to run model: {}".format(trainer, args.model))
+
+    set_runtime_envs(single_envs, args.model)
+    trainer = TrainerFactory.create(args.model)
+    return trainer
+
+def online_learning(args):
+    trainer = "OnlineLearningTrainer"
+    single_envs = {}
+    single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.threads"] = "2"
+    single_envs["train.trainer.engine"] = "online_learning"
     single_envs["train.trainer.platform"] = envs.get_platform()
     print("use {} engine to run model: {}".format(trainer, args.model))
 

@@ -37,7 +37,8 @@ def trainer_registry():
         trainer_abs, "tdm_single_trainer.py")
     trainers["TDMClusterTrainer"] = os.path.join(
         trainer_abs, "tdm_cluster_trainer.py")
-
+    trainers["OnlineLearningTrainer"] = os.path.join(
+        trainer_abs, "online_learning_trainer.py")
 
 trainer_registry()
 
