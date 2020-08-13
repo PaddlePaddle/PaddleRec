@@ -129,7 +129,7 @@ CPU环境
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.look-alike_recall
+python -m paddlerec.run -m models/recall/look-alike_recall/config.yaml
 ```
 
 
