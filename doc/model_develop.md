@@ -92,7 +92,7 @@ def input_data(self, is_infer=False, **kwargs):
         return train_inputs
 ```
 
-更多数据读取教程，请参考[自定义数据集及Reader](custom_dataset_reader.md)
+更多数据读取教程，请参考[自定义数据集及Reader](custom_reader.md)
 
 
 ### 组网的定义

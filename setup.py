@@ -38,15 +38,18 @@ readme = ""
 
 def build(dirname):
     package_dir = os.path.dirname(os.path.abspath(__file__))
+
     shutil.copytree(
-        package_dir, dirname, ignore=shutil.ignore_patterns(".git"))
+        package_dir,
+        dirname,
+        ignore=shutil.ignore_patterns(".git", "models", "build", "dist",
+                                      "*.md"))
+
     os.mkdir(os.path.join(dirname, "paddlerec"))
     shutil.move(
         os.path.join(dirname, "core"), os.path.join(dirname, "paddlerec"))
     shutil.move(
         os.path.join(dirname, "doc"), os.path.join(dirname, "paddlerec"))
-    shutil.move(
-        os.path.join(dirname, "models"), os.path.join(dirname, "paddlerec"))
     shutil.move(
         os.path.join(dirname, "tests"), os.path.join(dirname, "paddlerec"))
     shutil.move(
@@ -63,17 +66,8 @@ def build(dirname):
     package_dir = {'': dirname}
     package_data = {}
 
-    models_copy = [
-        'data/*.txt', 'data/*/*.txt', '*.yaml', '*.sh', 'tree/*.npy',
-        'tree/*.txt', 'data/sample_data/*', 'data/sample_data/train/*',
-        'data/sample_data/infer/*', 'data/*/*.csv', 'Criteo_data/*',
-        'Criteo_data/sample_data/train/*'
-    ]
-
     engine_copy = ['*/*.sh', '*/*.template']
     for package in packages:
-        if package.startswith("paddlerec.models."):
-            package_data[package] = models_copy
         if package.startswith("paddlerec.core.engine"):
             package_data[package] = engine_copy
 
@@ -98,16 +92,6 @@ build(dirname)
 shutil.rmtree(dirname)
 
 print(u'''
-\033[32m
-██████╗  █████╗ ██████╗ ██████╗ ██╗     ███████╗██████╗ ███████╗ ██████╗
-██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝██╔════╝
-██████╔╝███████║██║  ██║██║  ██║██║     █████╗  ██████╔╝█████╗  ██║
-██╔═══╝ ██╔══██║██║  ██║██║  ██║██║     ██╔══╝  ██╔══██╗██╔══╝  ██║
-██║     ██║  ██║██████╔╝██████╔╝███████╗███████╗██║  ██║███████╗╚██████╗
-╚═╝     ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝ ╚═════╝
-\033[0m
-\033[34m
 Installation Complete. Congratulations!
 How to use it ? Please visit our webside: https://github.com/PaddlePaddle/PaddleRec
-\033[0m
 ''')
