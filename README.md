@@ -124,7 +124,10 @@
 
 ```bash
 # 使用CPU进行单机训练
-python -m paddlerec.run -m paddlerec.models.rank.dnn  
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/rank/dnn/config.yaml  
 ```
 
 
