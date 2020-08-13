@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "paddlerec.models.multitask.mmoe"
+workspace: "models/multitask/mmoe"
 
 dataset:
 - name: dataset_train

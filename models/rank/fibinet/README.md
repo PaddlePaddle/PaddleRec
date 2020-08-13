@@ -132,7 +132,7 @@ CPU环境
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.rank.fibinet
+python -m paddlerec.run -m models/rank/fibinet
 ```
 
 

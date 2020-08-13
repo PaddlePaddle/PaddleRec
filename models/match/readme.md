@@ -34,8 +34,11 @@
 ## 使用教程(快速开始)
 ### 训练
 ```shell
-python -m paddlerec.run -m paddlerec.models.match.dssm # dssm
-python -m paddlerec.run -m paddlerec.models.match.multiview-simnet # multiview-simnet
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/match/dssm/config.yaml # dssm
+python -m paddlerec.run -m models/match/multiview-simnet/config.yaml # multiview-simnet
 ```
 
 ### 预测

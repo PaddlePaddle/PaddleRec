@@ -107,7 +107,7 @@ sh run.sh
 ### 训练
 ```
 cd modles/rank/dnn # 进入选定好的排序模型的目录 以DNN为例
-python -m paddlerec.run -m paddlerec.models.rank.dnn # 使用内置配置
+python -m paddlerec.run -m models/rank/dnn/config.yaml # 使用内置配置
 # 如果需要使用自定义配置，config.yaml中workspace需要使用改模型目录的绝对路径
 # 自定义修改超参后，指定配置文件，使用自定义配置
 python -m paddlerec.run -m ./config.yaml
