@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # workspace
-workspace: "paddlerec.models.match.multiview-simnet"
+workspace: "models/match/multiview-simnet"
 
 # list of dataset
 dataset:

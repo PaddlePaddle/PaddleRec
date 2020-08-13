@@ -28,7 +28,10 @@
 
 ## 使用教程(快速开始)
 ```shell
-python -m paddlerec.run -m paddlerec.models.rerank.listwise # listwise
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/rerank/listwise/config.yaml # listwise
 ```
 
 ## 使用教程（复现论文）

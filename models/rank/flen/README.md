@@ -110,7 +110,7 @@ CPU环境
 ### 运行
 
 ```
-python -m paddlerec.run -m paddlerec.models.rank.flen
+python -m paddlerec.run -m models/rank/flen
 ```
 
 ## 论文复现
