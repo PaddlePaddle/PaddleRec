@@ -26,7 +26,6 @@ from paddlerec.core.engine.engine import Engine
 class LocalMPIEngine(Engine):
     def start_procs(self):
         logs_dir = self.envs["log_dir"]
-
         default_env = os.environ.copy()
         current_env = copy.copy(default_env)
         current_env.pop("http_proxy", None)
@@ -42,7 +41,8 @@ class LocalMPIEngine(Engine):
             os.system("mkdir -p {}".format(logs_dir))
             fn = open("%s/job.log" % logs_dir, "w")
             log_fns.append(fn)
-            proc = subprocess.Popen(cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
+            proc = subprocess.Popen(
+                cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
         else:
             proc = subprocess.Popen(cmd, env=current_env, cwd=os.getcwd())
         procs.append(proc)
@@ -51,7 +51,9 @@ class LocalMPIEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].wait()
-        print("all workers and parameter servers already completed", file=sys.stderr)
+        print(
+            "all workers and parameter servers already completed",
+            file=sys.stderr)
 
     def run(self):
         self.start_procs()

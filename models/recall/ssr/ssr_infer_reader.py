@@ -16,13 +16,14 @@ from __future__ import print_function
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
-        self.vocab_size = envs.get_global_env("vocab_size", 10, "train.model.hyper_parameters")
+        self.vocab_size = envs.get_global_env("vocab_size", 10,
+                                              "train.model.hyper_parameters")
 
     def generate_sample(self, line):
         """
@@ -39,6 +40,9 @@ class EvaluateReader(Reader):
             src = conv_ids[:boundary]
             pos_tgt = [conv_ids[boundary]]
             feature_name = ["user", "all_item", "p_item"]
-            yield zip(feature_name, [src] + [np.arange(self.vocab_size).astype("int64").tolist()] + [pos_tgt])
+            yield list(
+                zip(feature_name, [src] + [
+                    np.arange(self.vocab_size).astype("int64").tolist()
+                ] + [pos_tgt]))
 
         return reader

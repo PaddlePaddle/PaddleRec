@@ -16,7 +16,7 @@ import io
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
@@ -38,12 +38,14 @@ class NumpyRandomInt(object):
         return result
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
-        dict_path = envs.get_global_env("word_count_dict_path", None, "train.reader")
-        self.window_size = envs.get_global_env("hyper_parameters.window_size", None, "train.model")
-        self.neg_num = envs.get_global_env("hyper_parameters.neg_num", None, "train.model")
-        self.with_shuffle_batch = envs.get_global_env("hyper_parameters.with_shuffle_batch", None, "train.model")
+        dict_path = envs.get_global_env(
+            "dataset.dataset_train.word_count_dict_path")
+        self.window_size = envs.get_global_env("hyper_parameters.window_size")
+        self.neg_num = envs.get_global_env("hyper_parameters.neg_num")
+        self.with_shuffle_batch = envs.get_global_env(
+            "hyper_parameters.with_shuffle_batch")
         self.random_generator = NumpyRandomInt(1, self.window_size + 1)
 
         self.cs = None
@@ -70,7 +72,8 @@ class TrainReader(Reader):
         window_size: window size
         """
         target_window = self.random_generator()
-        start_point = idx - target_window  # if (idx - target_window) > 0 else 0
+        # if (idx - target_window) > 0 else 0
+        start_point = idx - target_window
         if start_point < 0:
             start_point = 0
         end_point = idx + target_window
@@ -81,13 +84,15 @@ class TrainReader(Reader):
         def reader():
             word_ids = [w for w in line.split()]
             for idx, target_id in enumerate(word_ids):
-                context_word_ids = self.get_context_words(
-                    word_ids, idx)
+                context_word_ids = self.get_context_words(word_ids, idx)
                 for context_id in context_word_ids:
-                    output = [('input_word', [int(target_id)]), ('true_label', [int(context_id)])]
+                    output = [('input_word', [int(target_id)]),
+                              ('true_label', [int(context_id)])]
                     if not self.with_shuffle_batch:
-                        neg_array = self.cs.searchsorted(np.random.sample(self.neg_num))
-                        output += [('neg_label', [int(str(i)) for i in neg_array])]
+                        neg_array = self.cs.searchsorted(
+                            np.random.sample(self.neg_num))
+                        output += [('neg_label',
+                                    [int(str(i)) for i in neg_array])]
                     yield output
 
         return reader

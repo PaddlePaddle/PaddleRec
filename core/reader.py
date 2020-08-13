@@ -11,35 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
 
-import sys
+from __future__ import print_function
 import abc
 import os
-
+from functools import reduce
 import paddle.fluid.incubate.data_generator as dg
-import yaml
-
 from paddlerec.core.utils import envs
 
 
-class Reader(dg.MultiSlotDataGenerator):
+class ReaderBase(dg.MultiSlotDataGenerator):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
-
+        _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
-        envs.update_workspace()
 
     @abc.abstractmethod
     def init(self):
+        """init """
         pass
 
     @abc.abstractmethod
@@ -52,19 +43,24 @@ class SlotReader(dg.MultiSlotDataGenerator):
 
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
+        _config = envs.load_yaml(config)
         envs.set_global_envs(_config)
-        envs.update_workspace()
 
     def init(self, sparse_slots, dense_slots, padding=0):
         from operator import mul
-        self.sparse_slots = sparse_slots.strip().split(" ")
-        self.dense_slots = dense_slots.strip().split(" ")
-        self.dense_slots_shape = [reduce(mul, [int(j) for j in i.split(":")[1].strip("[]").split(",")]) for i in self.dense_slots]
+        self.sparse_slots = []
+        if sparse_slots.strip() != "#" and sparse_slots.strip(
+        ) != "?" and sparse_slots.strip() != "":
+            self.sparse_slots = sparse_slots.strip().split(" ")
+        self.dense_slots = []
+        if dense_slots.strip() != "#" and dense_slots.strip(
+        ) != "?" and dense_slots.strip() != "":
+            self.dense_slots = dense_slots.strip().split(" ")
+        self.dense_slots_shape = [
+            reduce(mul,
+                   [int(j) for j in i.split(":")[1].strip("[]").split(",")])
+            for i in self.dense_slots
+        ]
         self.dense_slots = [i.split(":")[0] for i in self.dense_slots]
         self.slots = self.dense_slots + self.sparse_slots
         self.slot2index = {}
@@ -93,10 +89,13 @@ class SlotReader(dg.MultiSlotDataGenerator):
                 slot = i
                 if not self.visit[slot]:
                     if i in self.dense_slots:
-                        output[self.slot2index[i]][1].extend([self.padding] * self.dense_slots_shape[self.slot2index[i]])
+                        output[self.slot2index[i]][1].extend(
+                            [self.padding] *
+                            self.dense_slots_shape[self.slot2index[i]])
                     else:
                         output[self.slot2index[i]][1].extend([self.padding])
                 else:
                     self.visit[slot] = False
             yield output
+
         return reader

@@ -14,10 +14,10 @@
 
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         pass
 
@@ -37,6 +37,6 @@ class TrainReader(Reader):
             trg_seq = l[1:]
             trg_seq = [int(e) for e in trg_seq]
             feature_name = ["src_wordseq", "dst_wordseq"]
-            yield zip(feature_name, [src_seq] + [trg_seq])
+            yield list(zip(feature_name, [src_seq] + [trg_seq]))
 
         return reader

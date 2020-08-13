@@ -17,13 +17,14 @@ import random
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
-        self.batch_size = envs.get_global_env("batch_size", None, "evaluate.reader")
+        self.batch_size = envs.get_global_env(
+            "dataset.dataset_infer.batch_size")
 
         self.input = []
         self.length = None
@@ -34,7 +35,9 @@ class EvaluateReader(Reader):
             with open(f, "r") as fin:
                 for line in fin:
                     line = line.strip().split('\t')
-                    res.append(tuple([map(int, line[0].split(',')), int(line[1])]))
+                    res.append(
+                        tuple([[int(l)
+                                for l in line[0].split(',')], int(line[1])]))
         return res
 
     def make_data(self, cur_batch, batch_size):
@@ -75,10 +78,8 @@ class EvaluateReader(Reader):
             u_deg_out[np.where(u_deg_out == 0)] = 1
             adj_out.append(np.divide(adj.transpose(), u_deg_out).transpose())
 
-            seq_index.append(
-                [[id, np.where(node == i)[0][0]] for i in e[0]])
-            last_index.append(
-                [id, np.where(node == e[0][last_id[id]])[0][0]])
+            seq_index.append([[id, np.where(node == i)[0][0]] for i in e[0]])
+            last_index.append([id, np.where(node == e[0][last_id[id]])[0][0]])
             label.append(e[1] - 1)
             mask.append([[1] * (last_id[id] + 1) + [0] *
                          (max_seq_len - last_id[id] - 1)])
@@ -95,16 +96,20 @@ class EvaluateReader(Reader):
             (batch_size, max_uniq_len, max_uniq_len))
         mask = np.array(mask).astype("float32").reshape((batch_size, -1, 1))
         label = np.array(label).astype("int64").reshape((batch_size, 1))
-        return zip(items, seq_index, last_index, adj_in, adj_out, mask, label)
+        return list(
+            zip(items, seq_index, last_index, adj_in, adj_out, mask, label))
 
     def batch_reader(self, batch_size, batch_group_size, train=True):
         def _reader():
             random.shuffle(self.input)
             group_remain = self.length % batch_group_size
-            for bg_id in range(0, self.length - group_remain, batch_group_size):
-                cur_bg = copy.deepcopy(self.input[bg_id:bg_id + batch_group_size])
+            for bg_id in range(0, self.length - group_remain,
+                               batch_group_size):
+                cur_bg = copy.deepcopy(self.input[bg_id:bg_id +
+                                                  batch_group_size])
                 if train:
-                    cur_bg = sorted(cur_bg, key=lambda x: len(x[0]), reverse=True)
+                    cur_bg = sorted(
+                        cur_bg, key=lambda x: len(x[0]), reverse=True)
                 for i in range(0, batch_group_size, batch_size):
                     cur_batch = cur_bg[i:i + batch_size]
                     yield self.make_data(cur_batch, batch_size)

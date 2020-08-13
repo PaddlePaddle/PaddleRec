@@ -13,10 +13,10 @@
 # limitations under the License.
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         pass
 
@@ -30,8 +30,8 @@ class EvaluateReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = line.rstrip('\n').split('\t')
-            query = map(float, features[0].split(','))
-            pos_doc = map(float, features[1].split(','))
+            query = [float(feature) for feature in features[0].split(',')]
+            pos_doc = [float(feature) for feature in features[1].split(',')]
             feature_names = ['query', 'doc_pos']
 
             yield zip(feature_names, [query] + [pos_doc])

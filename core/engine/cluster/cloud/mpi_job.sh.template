@@ -1,0 +1,31 @@
+#!/bin/bash
+###############################################################
+##                  注意--注意--注意                         ##
+##                  MPI 类型作业演示                         ##
+###############################################################
+job_name=<$ JOB_NAME $>
+
+# 作业参数
+group_name=<$ GROUP_NAME $>
+job_version="paddle-fluid-v1.7.1"
+start_cmd="<$ START_CMD $>"
+wall_time="2000:00:00"
+
+# 你的ak/sk（可在paddlecloud web页面【个人中心】处获取）
+ak=<$ AK $>
+sk=<$ SK $>
+
+paddlecloud job --ak ${ak} --sk ${sk} \
+    train \
+    --job-name ${job_name} \
+    --mpi-priority <$ MPI_PRIORITY $> \
+    --group-name ${group_name} \
+    --mpi-wall-time ${wall_time} \
+    --mpi-nodes <$ MPI_NODES $> \
+    --is-standalone 0 \
+    --permission group \
+    --job-version ${job_version} \
+    --job-conf config.ini \
+    --start-cmd "${start_cmd}" \
+    --files ./*  \
+    --json

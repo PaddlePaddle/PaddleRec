@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import sys
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         pass
 

@@ -16,8 +16,8 @@
 
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
-| DSSM | Deep Structured Semantic Models | [Learning Deep Structured Semantic Models for Web Search using Clickthrough Data](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf)(2013) |
-| MultiView-Simnet | Multi-view Simnet for Personalized recommendation | [A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf)(2015) |
+| DSSM | Deep Structured Semantic Models | [CIKM 2013][Learning Deep Structured Semantic Models for Web Search using Clickthrough Data](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf) |
+| MultiView-Simnet | Multi-view Simnet for Personalized recommendation | [WWW 2015][A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
@@ -31,10 +31,21 @@
 <img align="center" src="../../doc/imgs/multiview-simnet.png">
 <p>
 
-## 使用教程
-### 训练&预测
+## 使用教程(快速开始)
+### 训练
 ```shell
 python -m paddlerec.run -m paddlerec.models.match.dssm # dssm
 python -m paddlerec.run -m paddlerec.models.match.multiview-simnet # multiview-simnet
 ```
 
+### 预测
+```shell
+# 修改对应模型的config.yaml, workspace配置为当前目录的绝对路径
+# 修改对应模型的config.yaml，mode配置infer_runner
+# 示例: mode: train_runner -> mode: infer_runner
+# infer_runner中 class配置为 class: infer
+# 修改phase阶段为infer的配置，参照config注释
+
+# 修改完config.yaml后 执行:
+python -m paddlerec.run -m ./config.yaml # 以dssm为例
+```

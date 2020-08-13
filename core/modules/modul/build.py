@@ -31,9 +31,15 @@ def create(config):
         Model Instance
     """
     model = None
+
     if config['mode'] == 'fluid':
-        model = YamlModel(config)
-        model.train_net()
+        if config['layer_file'].endswith(".py"):
+            model_class = envs.lazy_instance_by_fliename(config['layer_file'],
+                                                         "Model")
+            model = model_class(config)
+        else:
+            model = YamlModel(config)
+            model.train()
     return model
 
 
@@ -50,7 +56,12 @@ class YamlModel(Model):
         f = open(config['layer_file'], 'r')
         self._build_nodes = yaml.safe_load(f.read())
         self._build_phase = ['input', 'param', 'summary', 'layer']
-        self._build_param = {'layer': {}, 'inner_layer': {}, 'layer_extend': {}, 'model': {}}
+        self._build_param = {
+            'layer': {},
+            'inner_layer': {},
+            'layer_extend': {},
+            'model': {}
+        }
         self._inference_meta = {'dependency': {}, 'params': {}}
 
     def train_net(self):
@@ -76,10 +87,12 @@ class YamlModel(Model):
                     if self._build_nodes[phase] is None:
                         continue
                     for node in self._build_nodes[phase]:
-                        exec("""layer=layer.{}(node)""".format(node['class']))
-                        layer_output, extend_output = layer.generate(self._config['mode'], self._build_param)
+                        exec ("""layer=layer.{}(node)""".format(node['class']))
+                        layer_output, extend_output = layer.generate(
+                            self._config['mode'], self._build_param)
                         self._build_param['layer'][node['name']] = layer_output
-                        self._build_param['layer_extend'][node['name']] = extend_output
+                        self._build_param['layer_extend'][node[
+                            'name']] = extend_output
                         if extend_output is None:
                             continue
                         if 'loss' in extend_output:
@@ -89,17 +102,24 @@ class YamlModel(Model):
                                 self._cost += extend_output['loss']
                         if 'data_var' in extend_output:
                             self._data_var += extend_output['data_var']
-                        if 'metric_label' in extend_output and extend_output['metric_label'] is not None:
-                            self._metrics[extend_output['metric_label']] = extend_output['metric_dict']
+                        if 'metric_label' in extend_output and extend_output[
+                                'metric_label'] is not None:
+                            self._metrics[extend_output[
+                                'metric_label']] = extend_output['metric_dict']
 
                         if 'inference_param' in extend_output:
                             inference_param = extend_output['inference_param']
                             param_name = inference_param['name']
                             if param_name not in self._build_param['table']:
-                                self._build_param['table'][param_name] = {'params': []}
-                                table_meta = table.TableMeta.alloc_new_table(inference_param['table_id'])
-                                self._build_param['table'][param_name]['_meta'] = table_meta
-                            self._build_param['table'][param_name]['params'] += inference_param['params']
+                                self._build_param['table'][param_name] = {
+                                    'params': []
+                                }
+                                table_meta = table.TableMeta.alloc_new_table(
+                                    inference_param['table_id'])
+                                self._build_param['table'][param_name][
+                                    '_meta'] = table_meta
+                            self._build_param['table'][param_name][
+                                'params'] += inference_param['params']
         pass
 
     @classmethod
@@ -114,20 +134,25 @@ class YamlModel(Model):
             metrics = params['metrics']
             for name in metrics:
                 model_metrics = metrics[name]
-                stat_var_names += [model_metrics[metric]['var'].name for metric in model_metrics]
+                stat_var_names += [
+                    model_metrics[metric]['var'].name
+                    for metric in model_metrics
+                ]
             strategy['stat_var_names'] = list(set(stat_var_names))
         optimizer_generator = 'optimizer = fluid.optimizer.' + optimizer_conf['class'] + \
                               '(learning_rate=' + str(optimizer_conf['learning_rate']) + ')'
-        exec(optimizer_generator)
+        exec (optimizer_generator)
         optimizer = fleet.distributed_optimizer(optimizer, strategy=strategy)
         return optimizer
 
     def dump_model_program(self, path):
         """R
         """
-        with open(path + '/' + self._name + '_main_program.pbtxt', "w") as fout:
+        with open(path + '/' + self._name + '_main_program.pbtxt',
+                  "w") as fout:
             print >> fout, self._build_param['model']['train_program']
-        with open(path + '/' + self._name + '_startup_program.pbtxt', "w") as fout:
+        with open(path + '/' + self._name + '_startup_program.pbtxt',
+                  "w") as fout:
             print >> fout, self._build_param['model']['startup_program']
         pass
 
@@ -137,7 +162,8 @@ class YamlModel(Model):
         scope = params['scope']
         decay = params['decay']
         for param_table in self._build_param['table']:
-            table_id = self._build_param['table'][param_table]['_meta']._table_id
+            table_id = self._build_param['table'][param_table][
+                '_meta']._table_id
             fleet.shrink_dense_table(decay, scope=scope, table_id=table_id)
 
     def dump_inference_program(self, inference_layer, path):
@@ -152,17 +178,25 @@ class YamlModel(Model):
         executor = params['executor']
         program = self._build_param['model']['train_program']
         for table_name, table in self._build_param['table'].items():
-            fleet._fleet_ptr.pull_dense(scope, table['_meta']._table_id, table['params'])
+            fleet._fleet_ptr.pull_dense(scope, table['_meta']._table_id,
+                                        table['params'])
         for infernce_item in params['inference_list']:
-            params_name_list = self.inference_params(infernce_item['layer_name'])
-            params_var_list = [program.global_block().var(i) for i in params_name_list]
+            params_name_list = self.inference_params(infernce_item[
+                'layer_name'])
+            params_var_list = [
+                program.global_block().var(i) for i in params_name_list
+            ]
             params_file_name = infernce_item['save_file_name']
             with fluid.scope_guard(scope):
                 if params['save_combine']:
                     fluid.io.save_vars(executor, "./", \
                                        program, vars=params_var_list, filename=params_file_name)
                 else:
-                    fluid.io.save_vars(executor, params_file_name, program, vars=params_var_list)
+                    fluid.io.save_vars(
+                        executor,
+                        params_file_name,
+                        program,
+                        vars=params_var_list)
 
     def inference_params(self, inference_layer):
         """
@@ -177,11 +211,13 @@ class YamlModel(Model):
             return self._inference_meta['params'][layer]
 
         self._inference_meta['params'][layer] = []
-        self._inference_meta['dependency'][layer] = self.get_dependency(self._build_param['inner_layer'], layer)
+        self._inference_meta['dependency'][layer] = self.get_dependency(
+            self._build_param['inner_layer'], layer)
         for node in self._build_nodes['layer']:
             if node['name'] not in self._inference_meta['dependency'][layer]:
                 continue
-            if 'inference_param' in self._build_param['layer_extend'][node['name']]:
+            if 'inference_param' in self._build_param['layer_extend'][node[
+                    'name']]:
                 self._inference_meta['params'][layer] += \
                     self._build_param['layer_extend'][node['name']]['inference_param']['params']
         return self._inference_meta['params'][layer]
@@ -199,5 +235,6 @@ class YamlModel(Model):
             dependencys = copy.deepcopy(layer_graph[dest_layer]['input'])
             dependency_list = copy.deepcopy(dependencys)
             for dependency in dependencys:
-                dependency_list = dependency_list + self.get_dependency(layer_graph, dependency)
+                dependency_list = dependency_list + self.get_dependency(
+                    layer_graph, dependency)
         return list(set(dependency_list))

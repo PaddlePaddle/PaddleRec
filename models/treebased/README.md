@@ -1,5 +1,6 @@
 # Paddle-TDM
-本代码库提供了基于PaddlePaddle实现的TreeBased推荐搜索算法，主要包含以下组成：
+
+TDM召回方法来源于阿里妈妈团队在`KDD2018`发表的论文[Learning Tree-based Deep Model for Recommender Systems](https://arxiv.org/pdf/1801.02294.pdf)，本示例代码提供了基于PaddlePaddle实现的TreeBased推荐搜索算法，主要包含以下组成：
 
 - 基于fake数据集，适用于快速调试的paddle-tdm模型。主要用于理解paddle-tdm的设计原理，高效上手设计适合您的使用场景的模型。
 

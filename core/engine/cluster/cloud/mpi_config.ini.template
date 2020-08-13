@@ -1,0 +1,30 @@
+#type of storage cluster
+storage_type="hdfs"
+
+#attention: files for training should be put on hdfs
+force_reuse_output_path="True"
+
+# 可以替换成自己的hdfs集群
+fs_name=<$ FS_NAME $>
+fs_ugi=<$ FS_UGI $>
+
+FLAGS_rpc_deadline=300000
+
+##train data path on hdfs
+train_data_path=<$ TRAIN_DATA_PATH $>
+test_data_path=<$ TEST_DATA_PATH $>
+output_path=<$ OUTPUT_PATH $>
+thirdparty_path=<$ THIRDPARTY_PATH $>
+
+PADDLE_PADDLEREC_ROLE=WORKER
+use_python3=<$ USE_PYTHON3 $>
+CPU_NUM=<$ CPU_NUM $>
+GLOG_v=0
+
+FLAGS_communicator_is_sgd_optimizer=<$ FLAGS_communicator_is_sgd_optimizer $>
+FLAGS_communicator_send_queue_size=<$ FLAGS_communicator_send_queue_size $>
+FLAGS_communicator_thread_pool_size=<$ FLAGS_communicator_thread_pool_size $>
+FLAGS_communicator_max_merge_var_num=<$ FLAGS_communicator_max_merge_var_num $>
+FLAGS_communicator_max_send_grad_num_before_recv=<$ FLAGS_communicator_max_send_grad_num_before_recv $>
+FLAGS_communicator_fake_rpc=<$ FLAGS_communicator_fake_rpc $>
+FLAGS_rpc_retry_times=<$ FLAGS_rpc_retry_times $>

@@ -13,12 +13,17 @@
 # limitations under the License.
 
 from contextlib import closing
+import yaml
 import copy
 import os
 import socket
 import sys
+import six
+import traceback
+import six
 
 global_envs = {}
+global_envs_flatten = {}
 
 
 def flatten_environs(envs, separator="."):
@@ -59,6 +64,11 @@ def get_trainer():
     return train_mode
 
 
+def get_fleet_mode():
+    fleet_mode = get_runtime_environ("fleet_mode")
+    return fleet_mode
+
+
 def set_global_envs(envs):
     assert isinstance(envs, dict)
 
@@ -68,12 +78,36 @@ def set_global_envs(envs):
                 nests = copy.deepcopy(namespace_nests)
                 nests.append(k)
                 fatten_env_namespace(nests, v)
+            elif (k == "dataset" or k == "phase" or
+                  k == "runner") and isinstance(v, list):
+                for i in v:
+                    if i.get("name") is None:
+                        raise ValueError("name must be in dataset list ", v)
+                    nests = copy.deepcopy(namespace_nests)
+                    nests.append(k)
+                    nests.append(i["name"])
+                    fatten_env_namespace(nests, i)
             else:
                 global_k = ".".join(namespace_nests + [k])
                 global_envs[global_k] = v
 
-    for k, v in envs.items():
-        fatten_env_namespace([k], v)
+    fatten_env_namespace([], envs)
+
+    for name, value in global_envs.items():
+        if isinstance(value, str):
+            value = os_path_adapter(workspace_adapter(value))
+            global_envs[name] = value
+
+    if get_platform() != "LINUX":
+        for dataset in envs["dataset"]:
+            name = ".".join(["dataset", dataset["name"], "type"])
+            global_envs[name] = "DataLoader"
+
+    if get_platform() == "LINUX" and six.PY3:
+        print("QueueDataset can not support PY3, change to DataLoader")
+        for dataset in envs["dataset"]:
+            name = ".".join(["dataset", dataset["name"], "type"])
+            global_envs[name] = "DataLoader"
 
 
 def get_global_env(env_name, default_value=None, namespace=None):
@@ -89,33 +123,41 @@ def get_global_envs():
     return global_envs
 
 
-def path_adapter(path):
+def paddlerec_adapter(path):
     if path.startswith("paddlerec."):
         package = get_runtime_environ("PACKAGE_BASE")
         l_p = path.split("paddlerec.")[1].replace(".", "/")
         return os.path.join(package, l_p)
     else:
-        return path 
+        return path
 
 
-def windows_path_converter(path):
+def os_path_adapter(value):
     if get_platform() == "WINDOWS":
-        return path.replace("/", "\\")
+        value = value.replace("/", "\\")
     else:
-        return path.replace("\\", "/")
+        value = value.replace("\\", "/")
+    return value
 
 
-def update_workspace():
-    workspace = global_envs.get("train.workspace", None)
-    if not workspace:
+def workspace_adapter(value):
+    workspace = global_envs.get("workspace")
+    return workspace_adapter_by_specific(value, workspace)
+
+
+def workspace_adapter_by_specific(value, workspace):
+    workspace = paddlerec_adapter(workspace)
+    value = value.replace("{workspace}", workspace)
+    return value
+
+
+def reader_adapter():
+    if get_platform() != "WINDOWS":
         return
-    workspace = path_adapter(workspace)
 
-    for name, value in global_envs.items():
-        if isinstance(value, str):
-            value = value.replace("{workspace}", workspace)
-            value = windows_path_converter(value)
-            global_envs[name] = value
+    datasets = global_envs.get("dataset")
+    for dataset in datasets:
+        dataset["type"] = "DataLoader"
 
 
 def pretty_print_envs(envs, header=None):
@@ -158,22 +200,31 @@ def pretty_print_envs(envs, header=None):
 
 
 def lazy_instance_by_package(package, class_name):
-    models = get_global_env("train.model.models")
-    model_package = __import__(
-        package, globals(), locals(), package.split("."))
-    instance = getattr(model_package, class_name)
-    return instance
+    try:
+        model_package = __import__(package,
+                                   globals(), locals(), package.split("."))
+        instance = getattr(model_package, class_name)
+        return instance
+    except Exception as err:
+        traceback.print_exc()
+        print('Catch Exception:%s' % str(err))
+        return None
 
 
 def lazy_instance_by_fliename(abs, class_name):
-    dirname = os.path.dirname(abs)
-    sys.path.append(dirname)
-    package = os.path.splitext(os.path.basename(abs))[0]
+    try:
+        dirname = os.path.dirname(abs)
+        sys.path.append(dirname)
+        package = os.path.splitext(os.path.basename(abs))[0]
 
-    model_package = __import__(
-        package, globals(), locals(), package.split("."))
-    instance = getattr(model_package, class_name)
-    return instance
+        model_package = __import__(package,
+                                   globals(), locals(), package.split("."))
+        instance = getattr(model_package, class_name)
+        return instance
+    except Exception as err:
+        traceback.print_exc()
+        print('Catch Exception:%s' % str(err))
+        return None
 
 
 def get_platform():
@@ -189,10 +240,40 @@ def get_platform():
 
 def find_free_port():
     def __free_port():
-        with closing(socket.socket(socket.AF_INET,
-                                   socket.SOCK_STREAM)) as s:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
             s.bind(('', 0))
             return s.getsockname()[1]
 
     new_port = __free_port()
     return new_port
+
+
+def load_yaml(config):
+    vs = [int(i) for i in yaml.__version__.split(".")]
+    if vs[0] < 5:
+        use_full_loader = False
+    elif vs[0] > 5:
+        use_full_loader = True
+    else:
+        if vs[1] >= 1:
+            use_full_loader = True
+        else:
+            use_full_loader = False
+
+    if os.path.isfile(config):
+        if six.PY2:
+            with open(config, 'r') as rb:
+                if use_full_loader:
+                    _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+                else:
+                    _config = yaml.load(rb.read())
+                return _config
+        else:
+            with open(config, 'r', encoding="utf-8") as rb:
+                if use_full_loader:
+                    _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
+                else:
+                    _config = yaml.load(rb.read())
+                return _config
+    else:
+        raise ValueError("config {} can not be supported".format(config))

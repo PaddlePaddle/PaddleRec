@@ -43,6 +43,45 @@ function check_style() {
   exit 0
 }
 
+function model_test() {
+  set -e
+  export PATH=/usr/bin:$PATH
+  
+  root_dir=`pwd`
+  all_model=$(find ${root_dir} -name config.yaml)
+  special_models=("demo" "pnn" "fgcnn" "gru4rec" "tagspace")
+
+  for model in ${all_model}
+  do
+    skip_flag=false
+    for special in ${special_models[*]}
+    do
+      if [[ $model == *$special* ]]
+        then
+        echo "Skip "$model
+        skip_flag=true
+        continue
+      fi
+    done
+    if [[ ${skip_flag} == true ]]
+    then
+      continue
+    fi
+    echo "Running "$model
+    python -m paddlerec.run -m ${model}
+
+    status=$(echo $?)
+    if [[ ${status} -ne 0 ]]
+      then
+        echo "Test Failed! "$model  
+        exit 1  
+    fi
+    echo "Model Passed "$model
+  done
+  echo "All Model Test Passed!"
+  exit 0
+}
+
 function main() {
   local CMD=$1
   init
@@ -50,10 +89,13 @@ function main() {
     check_style)
     check_style
     ;;
-      *)
+    model_test)
+    model_test
+    ;;
+    *)
     echo "build failed"
     exit 1
-        ;;
+    ;;
     esac
     echo "check_style finished as expected"
 }

@@ -20,14 +20,6 @@ repos:
     -   id: end-of-file-fixer
 -   repo: local
     hooks:
-    -   id: pylint-doc-string
-        name: pylint
-        description: Check python docstring style using docstring_checker.
-        entry: bash ./tools/codestyle/pylint_pre_commit.hook
-        language: system
-        files: \.(py)$
--   repo: local
-    hooks:
     -   id: copyright_checker
         name: copyright_checker
         entry: python ./tools/codestyle/copyright.hook

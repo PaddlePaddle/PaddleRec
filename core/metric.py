@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import abc
+import paddle.fluid as fluid
+import numpy as np
 
 
 class Metric(object):
@@ -21,27 +23,58 @@ class Metric(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
-        """ """
-        pass
-
-    @abc.abstractmethod
-    def clear(self, scope, params):
-        """
-        clear current value
-        Args:
-            scope: value container
-            params: extend varilable for clear
+        """R
         """
         pass
 
-    @abc.abstractmethod
-    def calculate(self, scope, params):
+    def clear(self, scope=None):
+        """R
         """
-        calculate result
-        Args:
-            scope: value container
-            params: extend varilable for clear
+        if scope is None:
+            scope = fluid.global_scope()
+
+        place = fluid.CPUPlace()
+        for key in self._global_metric_state_vars:
+            varname, dtype = self._global_metric_state_vars[key]
+            var = scope.find_var(varname)
+            if not var:
+                continue
+            var = var.get_tensor()
+            data_array = np.zeros(var._get_dims()).astype(dtype)
+            var.set(data_array, place)
+
+    def _get_global_metric_state(self, fleet, scope, metric_name, mode="sum"):
+        """R
         """
+        var = scope.find_var(metric_name)
+        if not var:
+            return None
+        input = np.array(var.get_tensor())
+        if fleet is None:
+            return input
+        fleet._role_maker._barrier_worker()
+        old_shape = np.array(input.shape)
+        input = input.reshape(-1)
+        output = np.copy(input) * 0
+        fleet._role_maker._all_reduce(input, output, mode=mode)
+        output = output.reshape(old_shape)
+        return output
+
+    def calc_global_metrics(self, fleet, scope=None):
+        """R
+        """
+        if scope is None:
+            scope = fluid.global_scope()
+
+        global_metrics = dict()
+        for key in self._global_metric_state_vars:
+            varname, dtype = self._global_metric_state_vars[key]
+            global_metrics[key] = self._get_global_metric_state(fleet, scope,
+                                                                varname)
+
+        return self._calculate(global_metrics)
+
+    def _calculate(self, global_metrics):
         pass
 
     @abc.abstractmethod
@@ -52,7 +85,6 @@ class Metric(object):
         """
         pass
 
-    @abc.abstractmethod
     def __str__(self):
         """
         Return:

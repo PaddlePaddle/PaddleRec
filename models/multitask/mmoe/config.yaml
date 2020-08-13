@@ -12,43 +12,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-evaluate:
-  reader:
-    batch_size: 1
-    class: "{workspace}/census_infer_reader.py"
-    test_data_path: "{workspace}/data/train"
+workspace: "paddlerec.models.multitask.mmoe"
 
-train:
-  trainer:
-    # for cluster training
-    strategy: "async"
+dataset:
+- name: dataset_train
+  batch_size: 1
+  type: QueueDataset
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/census_reader.py"
+- name: dataset_infer
+  batch_size: 1
+  type: QueueDataset
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/census_reader.py"
 
+hyper_parameters:
+  feature_size: 499
+  expert_num: 8
+  gate_num: 2
+  expert_size: 16
+  tower_size: 8
+  optimizer: 
+    class: adam
+    learning_rate: 0.001
+    strategy: async
+
+#use infer_runner mode and modify 'phase' below if infer
+mode: train_runner
+#mode: infer_runner
+
+runner:
+- name: train_runner
+  class: train
+  device: cpu
   epochs: 3
-  workspace: "paddlerec.models.multitask.mmoe"
+  save_checkpoint_interval: 2
+  save_inference_interval: 4
+  save_checkpoint_path: "increment"
+  save_inference_path: "inference"
+  print_interval: 10
+- name: infer_runner
+  class: infer
+  init_model_path: "increment/0"
   device: cpu
 
-  reader:
-    batch_size: 1
-    class: "{workspace}/census_reader.py"
-    train_data_path: "{workspace}/data/train"
-
-  model:
-    models: "{workspace}/model.py"
-    hyper_parameters:
-      feature_size: 499
-      expert_num: 8
-      gate_num: 2
-      expert_size: 16
-      tower_size: 8
-      learning_rate: 0.001
-      optimizer: adam
-
-  save:
-    increment:
-      dirname: "increment"
-      epoch_interval: 2
-      save_last: True
-    inference:
-      dirname: "inference"
-      epoch_interval: 4
-      save_last: True
+phase:
+- name: train
+  model: "{workspace}/model.py"
+  dataset_name: dataset_train
+  thread_num: 1
+    #- name: infer
+    #  model: "{workspace}/model.py"
+    #  dataset_name: dataset_infer
+    #  thread_num: 1

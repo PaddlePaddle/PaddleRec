@@ -23,19 +23,21 @@ except ImportError:
 
 import numpy as np
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
-        self.train_data_path = envs.get_global_env("train_data_path", None, "train.reader")
+        self.train_data_path = envs.get_global_env(
+            "dataset.sample_1.data_path", None)
         self.res = []
         self.max_len = 0
 
         data_file_list = os.listdir(self.train_data_path)
         for i in range(0, len(data_file_list)):
-            train_data_file = os.path.join(self.train_data_path, data_file_list[i])
+            train_data_file = os.path.join(self.train_data_path,
+                                           data_file_list[i])
             with open(train_data_file, "r") as fin:
                 for line in fin:
                     line = line.strip().split(';')
@@ -44,7 +46,8 @@ class TrainReader(Reader):
         fo = open("tmp.txt", "w")
         fo.write(str(self.max_len))
         fo.close()
-        self.batch_size = envs.get_global_env("batch_size", 32, "train.reader")
+        self.batch_size = envs.get_global_env("dataset.sample_1.batch_size",
+                                              32, None)
         self.group_size = self.batch_size * 20
 
     def _process_line(self, line):
@@ -78,11 +81,13 @@ class TrainReader(Reader):
         len_array = [len(x[0]) for x in b]
         mask = np.array(
             [[0] * x + [-1e9] * (max_len - x) for x in len_array]).reshape(
-            [-1, max_len, 1])
+                [-1, max_len, 1])
         target_item_seq = np.array(
-            [[x[2]] * max_len for x in b]).astype("int64").reshape([-1, max_len])
+            [[x[2]] * max_len for x in b]).astype("int64").reshape(
+                [-1, max_len])
         target_cat_seq = np.array(
-            [[x[3]] * max_len for x in b]).astype("int64").reshape([-1, max_len])
+            [[x[3]] * max_len for x in b]).astype("int64").reshape(
+                [-1, max_len])
         res = []
         for i in range(len(b)):
             res.append([
@@ -127,4 +132,5 @@ class TrainReader(Reader):
     def generate_batch_from_trainfiles(self, files):
         data_set = self.base_read(files)
         random.shuffle(data_set)
-        return self.batch_reader(data_set, self.batch_size, self.batch_size * 20)
+        return self.batch_reader(data_set, self.batch_size,
+                                 self.batch_size * 20)
