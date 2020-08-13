@@ -152,6 +152,7 @@ class RunnerBase(object):
         metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
 
         metrics_names = ["total_batch"]
+
         for name, var in metrics.items():
             metrics_names.append(name)
             metrics_varnames.append(var.name)
