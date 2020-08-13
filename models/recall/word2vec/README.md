@@ -38,11 +38,15 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-本例实现了skip-gram模式的word2vector模型，如下图中的skip-gram部分：
-![](https://ai-studio-static-online.cdn.bcebos.com/bf0217bcb42e455284290a100670072989d432939b7e43e38b78eea6b60732c0)  
+本例实现了skip-gram模式的word2vector模型，如下图所示：
+<p align="center">
+<img align="center" src="../../../doc/imgs/word2vec.png">
+<p>
 以每一个词为中心词X，然后在窗口内和临近的词Y组成样本对（X,Y）用于网络训练。在实际训练过程中还会根据自定义的负采样率生成负样本来加强训练的效果  
 具体的训练思路如下：  
-![](https://ai-studio-static-online.cdn.bcebos.com/ad45d6dfff2f4fa69c639a6b5d2bbe46c79ac67658464aa0a069a04eb2800cb6)
+<p align="center">
+<img align="center" src="../../../doc/imgs/w2v_train.png">
+<p>
 
 推荐用户参考[ IPython Notebook demo](https://aistudio.baidu.com/aistudio/projectDetail/124377)教程获取更详细的信息。
 
