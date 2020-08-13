@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "paddlerec.models.treebased.tdm"
+workspace: "models/treebased/tdm"
 
 # list of dataset
 dataset:

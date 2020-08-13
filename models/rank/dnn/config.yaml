@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # workspace
-workspace: "paddlerec.models.rank.dnn"
+workspace: "models/rank/dnn"
 
 # list of dataset
 dataset:
