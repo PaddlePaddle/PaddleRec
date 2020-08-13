@@ -105,6 +105,8 @@ CPU环境
 
 由于原论文的数据太大，我们选取了部分数据作为训练和测试数据, 建议使用gpu训练。
 
+我们的测试ctr auc为0.79+，ctcvr auc为0.82+。
+
 ```
 wget https://paddlerec.bj.bcebos.com/esmm/traindata_10w.csv  
 wget https://paddlerec.bj.bcebos.com/esmm/testdata_10w.csv 
