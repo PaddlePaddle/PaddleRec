@@ -16,13 +16,14 @@ import io
 
 import six
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
-        dict_path = envs.get_global_env("word_id_dict_path", None, "evaluate.reader")
+        dict_path = envs.get_global_env(
+            "dataset.dataset_infer.word_id_dict_path")
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:
@@ -68,14 +69,19 @@ class EvaluateReader(Reader):
         a unicode string - a space-delimited sequence of words.
       """
         return u" ".join([
-            word if word in original_vocab else u"<UNK>" for word in line.split()
+            word if word in original_vocab else u"<UNK>"
+            for word in line.split()
         ])
 
     def generate_sample(self, line):
         def reader():
+            if ':' in line:
+                pass
             features = self.strip_lines(line.lower(), self.word_to_id)
             features = features.split()
-            yield [('analogy_a', [self.word_to_id[features[0]]]), ('analogy_b', [self.word_to_id[features[1]]]),
-                   ('analogy_c', [self.word_to_id[features[2]]]), ('analogy_d', [self.word_to_id[features[3]]])]
+            yield [('analogy_a', [self.word_to_id[features[0]]]),
+                   ('analogy_b', [self.word_to_id[features[1]]]),
+                   ('analogy_c', [self.word_to_id[features[2]]]),
+                   ('analogy_d', [self.word_to_id[features[3]]])]
 
         return reader

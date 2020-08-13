@@ -13,13 +13,13 @@
 # limitations under the License.
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 from collections import defaultdict
 import numpy as np
 
 
-class EvaluateReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         pass
 
@@ -33,7 +33,9 @@ class EvaluateReader(Reader):
             This function needs to be implemented by the user, based on data format
             """
             features = line.strip().split(',')
-            
+
             feature_name = ["user_input", "item_input"]
-            yield zip(feature_name, [[int(features[0])]] + [[int(features[1])]])
+            yield list(
+                zip(feature_name, [[int(features[0])]] + [[int(features[1])]]))
+
         return reader

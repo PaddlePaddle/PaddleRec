@@ -14,16 +14,17 @@
 
 from __future__ import print_function
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         pass
 
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
+
         """
 
         def reader():

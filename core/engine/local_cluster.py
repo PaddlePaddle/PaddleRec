@@ -26,6 +26,7 @@ from paddlerec.core.utils import envs
 
 class LocalClusterEngine(Engine):
     def start_procs(self):
+        fleet_mode = self.envs["fleet_mode"]
         worker_num = self.envs["worker_num"]
         server_num = self.envs["server_num"]
         ports = [self.envs["start_port"]]
@@ -39,51 +40,98 @@ class LocalClusterEngine(Engine):
         procs = []
         log_fns = []
 
-        for i in range(server_num - 1):
-            while True:
-                new_port = envs.find_free_port()
-                if new_port not in ports:
-                    ports.append(new_port)
-                    break
-        user_endpoints = ",".join(["127.0.0.1:" + str(x) for x in ports])
-        user_endpoints_ips = [x.split(":")[0]
-                              for x in user_endpoints.split(",")]
-        user_endpoints_port = [x.split(":")[1]
-                               for x in user_endpoints.split(",")]
+        if fleet_mode.upper() == "PS":
+            for i in range(server_num - 1):
+                while True:
+                    new_port = envs.find_free_port()
+                    if new_port not in ports:
+                        ports.append(new_port)
+                        break
+            user_endpoints = ",".join(["127.0.0.1:" + str(x) for x in ports])
 
-        factory = "paddlerec.core.factory"
-        cmd = [sys.executable, "-u", "-m", factory, self.trainer]
+            user_endpoints_ips = [
+                x.split(":")[0] for x in user_endpoints.split(",")
+            ]
+            user_endpoints_port = [
+                x.split(":")[1] for x in user_endpoints.split(",")
+            ]
 
-        for i in range(server_num):
-            current_env.update({
-                "PADDLE_PSERVERS_IP_PORT_LIST": user_endpoints,
-                "PADDLE_PORT": user_endpoints_port[i],
-                "TRAINING_ROLE": "PSERVER",
-                "PADDLE_TRAINERS_NUM": str(worker_num),
-                "POD_IP": user_endpoints_ips[i]
-            })
+            factory = "paddlerec.core.factory"
+            cmd = [sys.executable, "-u", "-m", factory, self.trainer]
 
-            os.system("mkdir -p {}".format(logs_dir))
-            fn = open("%s/server.%d" % (logs_dir, i), "w")
-            log_fns.append(fn)
-            proc = subprocess.Popen(
-                cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
-            procs.append(proc)
+            for i in range(server_num):
+                current_env.update({
+                    "PADDLE_PSERVERS_IP_PORT_LIST": user_endpoints,
+                    "PADDLE_PORT": user_endpoints_port[i],
+                    "TRAINING_ROLE": "PSERVER",
+                    "PADDLE_TRAINERS_NUM": str(worker_num),
+                    "POD_IP": user_endpoints_ips[i]
+                })
 
-        for i in range(worker_num):
-            current_env.update({
-                "PADDLE_PSERVERS_IP_PORT_LIST": user_endpoints,
-                "PADDLE_TRAINERS_NUM": str(worker_num),
-                "TRAINING_ROLE": "TRAINER",
-                "PADDLE_TRAINER_ID": str(i)
-            })
+                os.system("mkdir -p {}".format(logs_dir))
+                fn = open("%s/server.%d" % (logs_dir, i), "w")
+                log_fns.append(fn)
+                proc = subprocess.Popen(
+                    cmd,
+                    env=current_env,
+                    stdout=fn,
+                    stderr=fn,
+                    cwd=os.getcwd())
+                procs.append(proc)
 
-            os.system("mkdir -p {}".format(logs_dir))
-            fn = open("%s/worker.%d" % (logs_dir, i), "w")
-            log_fns.append(fn)
-            proc = subprocess.Popen(
-                cmd, env=current_env, stdout=fn, stderr=fn, cwd=os.getcwd())
-            procs.append(proc)
+            for i in range(worker_num):
+                current_env.update({
+                    "PADDLE_PSERVERS_IP_PORT_LIST": user_endpoints,
+                    "PADDLE_TRAINERS_NUM": str(worker_num),
+                    "TRAINING_ROLE": "TRAINER",
+                    "PADDLE_TRAINER_ID": str(i)
+                })
+
+                os.system("mkdir -p {}".format(logs_dir))
+                fn = open("%s/worker.%d" % (logs_dir, i), "w")
+                log_fns.append(fn)
+                proc = subprocess.Popen(
+                    cmd,
+                    env=current_env,
+                    stdout=fn,
+                    stderr=fn,
+                    cwd=os.getcwd())
+                procs.append(proc)
+        elif fleet_mode.upper() == "COLLECTIVE":
+            selected_gpus = self.envs["selected_gpus"].split(",")
+            selected_gpus_num = len(selected_gpus)
+
+            for i in range(selected_gpus_num - 1):
+                while True:
+                    new_port = envs.find_free_port()
+                    if new_port not in ports:
+                        ports.append(new_port)
+                        break
+            user_endpoints = ",".join(["127.0.0.1:" + str(x) for x in ports])
+
+            factory = "paddlerec.core.factory"
+            cmd = [sys.executable, "-u", "-m", factory, self.trainer]
+
+            for i in range(selected_gpus_num):
+                current_env.update({
+                    "PADDLE_TRAINER_ENDPOINTS": user_endpoints,
+                    "PADDLE_CURRENT_ENDPOINTS": user_endpoints[i],
+                    "PADDLE_TRAINERS_NUM": str(worker_num),
+                    "TRAINING_ROLE": "TRAINER",
+                    "PADDLE_TRAINER_ID": str(i),
+                    "FLAGS_selected_gpus": str(selected_gpus[i])
+                })
+
+                os.system("mkdir -p {}".format(logs_dir))
+                fn = open("%s/worker.%d" % (logs_dir, i), "w")
+                log_fns.append(fn)
+                proc = subprocess.Popen(
+                    cmd,
+                    env=current_env,
+                    stdout=fn,
+                    stderr=fn,
+                    cwd=os.getcwd())
+                procs.append(proc)
 
         # only wait worker to finish here
         for i, proc in enumerate(procs):
@@ -97,8 +145,10 @@ class LocalClusterEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].terminate()
-        print("all workers already completed, you can view logs under the `{}` directory".format(logs_dir),
-              file=sys.stderr)
+        print(
+            "all workers already completed, you can view logs under the `{}` directory".
+            format(logs_dir),
+            file=sys.stderr)
 
     def run(self):
         self.start_procs()

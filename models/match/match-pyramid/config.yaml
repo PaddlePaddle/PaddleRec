@@ -1,0 +1,89 @@
+# Copyrigh t(c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+workspace: "paddlerec.models.match.match-pyramid"
+
+dataset:
+- name: dataset_train
+  batch_size: 128
+  type: DataLoader
+  data_path: "{workspace}/data/train" 
+  data_converter: "{workspace}/train_reader.py"
+- name: dataset_infer
+  batch_size: 1
+  type: DataLoader
+  data_path: "{workspace}/data/test"
+  data_converter: "{workspace}/test_reader.py"
+
+
+hyper_parameters:
+  optimizer:
+    class: adam
+    learning_rate: 0.001
+    strategy: async
+  emb_path: "./data/embedding.npy"
+  sentence_left_size: 20
+  sentence_right_size: 500
+  vocab_size: 193368
+  emb_size: 50
+  kernel_num: 8
+  hidden_size: 20
+  hidden_act: "relu"
+  out_size: 1
+  channels: 1
+  conv_filter: [2,10]
+  conv_act: "relu"
+  pool_size: [6,50]
+  pool_stride: [6,50]
+  pool_type: "max"
+  pool_padding: "VALID"
+
+mode: [train_runner , infer_runner]
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: train_runner
+  class: train
+  # num of epochs
+  epochs: 2
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 1 # save inference
+  save_checkpoint_path: "inference" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 2
+  phases: phase_train
+- name: infer_runner
+  class: infer
+  # device to run training or infer
+  device: cpu
+  print_interval: 1
+  init_model_path: "inference/1" # load model path
+  phases: phase_infer
+
+# runner will run all the phase in each epoch
+phase:
+- name: phase_train
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+- name: phase_infer
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
+  thread_num: 1

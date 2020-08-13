@@ -12,23 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
-from paddlerec.core.reader import Reader
-from paddlerec.core.utils import envs
+import os
+import paddle.fluid.incubate.data_generator as dg
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-class TrainReader(dg.MultiSlotDataGenerator):
 
+import paddle.fluid.incubate.data_generator as dg
+
+
+class Reader(dg.MultiSlotDataGenerator):
     def __init__(self, config):
         dg.MultiSlotDataGenerator.__init__(self)
-
-        if os.path.isfile(config):
-            with open(config, 'r') as rb:
-                _config = yaml.load(rb.read(), Loader=yaml.FullLoader)
-        else:
-            raise ValueError("reader config only support yaml")
 
     def init(self):
         self.cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -42,9 +38,9 @@ class TrainReader(dg.MultiSlotDataGenerator):
         ]
         self.continuous_range_ = range(1, 14)
         self.categorical_range_ = range(14, 40)
-        # load preprocessed feature dict 
-        self.feat_dict_name = "aid_data/feat_dict_10.pkl2"
-        self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb')) 
+        # load preprocessed feature dict
+        self.feat_dict_name = "sample_data/feat_dict_10.pkl2"
+        self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
     def _process_line(self, line):
         features = line.rstrip('\n').split('\t')
@@ -77,15 +73,18 @@ class TrainReader(dg.MultiSlotDataGenerator):
         def data_iter():
             feat_idx, feat_value, label = self._process_line(line)
             s = ""
-            for i in [('feat_idx', feat_idx), ('feat_value', feat_value), ('label', label)]:
+            for i in [('feat_idx', feat_idx), ('feat_value', feat_value),
+                      ('label', label)]:
                 k = i[0]
                 v = i[1]
                 for j in v:
                     s += " " + k + ":" + str(j)
-            print s.strip()
+            print(s.strip())
             yield None
+
         return data_iter
 
-reader = TrainReader("../config.yaml")
+
+reader = Reader("../config.yaml")
 reader.init()
 reader.run_from_stdin()

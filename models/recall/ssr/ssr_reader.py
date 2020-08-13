@@ -16,10 +16,10 @@ from __future__ import print_function
 
 import random
 
-from paddlerec.core.reader import Reader
+from paddlerec.core.reader import ReaderBase
 
 
-class TrainReader(Reader):
+class Reader(ReaderBase):
     def init(self):
         pass
 
@@ -42,6 +42,6 @@ class TrainReader(Reader):
             pos_tgt = [conv_ids[boundary]]
             neg_tgt = [self.sample_neg_from_seq(src)]
             feature_name = ["user", "p_item", "n_item"]
-            yield zip(feature_name, [src] + [pos_tgt] + [neg_tgt])
+            yield list(zip(feature_name, [src] + [pos_tgt] + [neg_tgt]))
 
         return reader
