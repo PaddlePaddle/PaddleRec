@@ -15,7 +15,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.fnn"
+workspace: "models/rank/fnn"
 
 dataset:
   - name: train_sample

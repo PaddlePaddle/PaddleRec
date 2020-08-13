@@ -62,12 +62,15 @@
 ## 使用教程(快速开始)
 ### 
 ```shell
-python -m paddlerec.run -m paddlerec.models.recall.word2vec # word2vec
-python -m paddlerec.run -m paddlerec.models.recall.ssr # ssr
-python -m paddlerec.run -m paddlerec.models.recall.gru4rec # gru4rec
-python -m paddlerec.run -m paddlerec.models.recall.gnn # gnn
-python -m paddlerec.run -m paddlerec.models.recall.ncf # ncf
-python -m paddlerec.run -m paddlerec.models.recall.youtube_dnn # youtube_dnn
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/recall/word2vec/config.yaml # word2vec
+python -m paddlerec.run -m models/recall/ssr/config.yaml # ssr
+python -m paddlerec.run -m models/recall/gru4rec/config.yaml # gru4rec
+python -m paddlerec.run -m models/recall/gnn/config.yaml # gnn
+python -m paddlerec.run -m models/recall/ncf/config.yaml # ncf
+python -m paddlerec.run -m models/recall/youtube_dnn/config.yaml # youtube_dnn
 ```
 
 ## 使用教程（复现论文）
@@ -87,6 +90,9 @@ sh data_prepare.sh
 
 ### 训练
 ```bash
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
 cd modles/recall/gnn # 进入选定好的召回模型的目录 以gnn为例
 python -m paddlerec.run -m ./config.yaml # 自定义修改超参后，指定配置文件，使用自定义配置
 ```
