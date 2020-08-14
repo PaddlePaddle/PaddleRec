@@ -38,7 +38,27 @@ def dataloader_by_name(readerclass,
         assert package_base is not None
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
-    files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    def check_filelist(file_list, train_data_path):
+        for root, dirs, files in os.walk(train_data_path):
+            files = [f for f in files if not f[0] == '.']
+            dirs[:] = [d for d in dirs if not d[0] == '.']
+            if (files == None and dirs == None):
+                return None
+            else:
+                # use files and dirs
+                for file_name in files:
+                    file_list.append(os.path.join(train_data_path, file_name))
+                    print(os.path.join(train_data_path, file_name))
+                for dirs_name in dirs:
+                    dir_root.append(os.path.join(train_data_path, dirs_name))
+                    check_filelist(file_list,
+                                   os.path.join(train_data_path, dirs_name))
+                    print(os.path.join(train_data_path, dirs_name))
+                return file_list
+
+    #files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    files = []
+    files = check_filelist(files, data_path)
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
@@ -80,7 +100,27 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
         assert package_base is not None
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
-    files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    def check_filelist(file_list, train_data_path):
+        for root, dirs, files in os.walk(train_data_path):
+            files = [f for f in files if not f[0] == '.']
+            dirs[:] = [d for d in dirs if not d[0] == '.']
+            if (files == None and dirs == None):
+                return None
+            else:
+                # use files and dirs
+                for file_name in files:
+                    file_list.append(os.path.join(train_data_path, file_name))
+                    print(os.path.join(train_data_path, file_name))
+                for dirs_name in dirs:
+                    dir_root.append(os.path.join(train_data_path, dirs_name))
+                    check_filelist(file_list,
+                                   os.path.join(train_data_path, dirs_name))
+                    print(os.path.join(train_data_path, dirs_name))
+                return file_list
+
+    #files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    files = []
+    files = check_filelist(files, data_path)
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
