@@ -333,7 +333,7 @@ class RunnerBase(object):
                     "Save inference model in cluster training is not recommended! Using save checkpoint instead.",
                     category=UserWarning,
                     stacklevel=2)
-                if context["fleet"].is_first_worker():
+                if context["fleet"].worker_index() == 0:
                     context["fleet"].save_inference_model(
                         context["exe"], dirname, feed_varnames, fetch_vars)
             else:
