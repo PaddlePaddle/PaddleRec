@@ -128,8 +128,9 @@ class QueueDataset(DatasetBase):
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
             # for local cluster: split files for multi process
             need_split_files = True
-        elif context["engine"] == EngineMode.CLUSTER and context["cluster_type"] == "K8S":
-            # for k8s mount mode, split files for every node
+        elif context["engine"] == EngineMode.CLUSTER and context[
+                "cluster_type"] == "K8S":
+            # for k8s mount afs, split files for every node
             need_split_files = True
 
         if need_split_files:
