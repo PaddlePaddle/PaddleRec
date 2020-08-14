@@ -301,19 +301,27 @@ class RunnerBase(object):
 
             # check feed var exist
             for var_name in feed_varnames:
-                if var_name not in fluid.default_main_program().global_block().vars:
+                if var_name not in fluid.default_main_program().global_block(
+                ).vars:
                     raise ValueError(
-                        "Feed variable: {} not in default_main_program, global block has follow vars: {}".format(var_name, fluid.default_main_program().global_block().vars.keys()))
+                        "Feed variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               fluid.default_main_program().global_block()
+                               .vars.keys()))
 
             # check fetch var exist
             fetch_vars = []
             for var_name in fetch_varnames:
-                if var_name not in fluid.default_main_program().global_block().vars:
+                if var_name not in fluid.default_main_program().global_block(
+                ).vars:
                     raise ValueError(
-                        "Fetch variable: {} not in default_main_program, global block has follow vars: {}".format(var_name, fluid.default_main_program().global_block().vars.keys()))
+                        "Fetch variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               fluid.default_main_program().global_block()
+                               .vars.keys()))
                 else:
-                    fetch_vars.append(
-                        fluid.default_main_program().global_block().vars[var_name])
+                    fetch_vars.append(fluid.default_main_program()
+                                      .global_block().vars[var_name])
 
             dirname = envs.get_global_env(name + "save_inference_path", None)
 
@@ -343,7 +351,7 @@ class RunnerBase(object):
                 return
             dirname = os.path.join(dirname, str(epoch_id))
             if is_fleet:
-                if context["fleet"].is_first_worker():
+                if context["fleet"].worker_index() == 0:
                     context["fleet"].save_persistables(context["exe"], dirname)
             else:
                 fluid.io.save_persistables(context["exe"], dirname)

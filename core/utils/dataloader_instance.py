@@ -42,13 +42,16 @@ def dataloader_by_name(readerclass,
     files.sort()
 
     need_split_files = False
+    print("context[engine] {}, context[cluster_type] {}".format(context[
+        "engine"], context["cluster_type"]))
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         # for local cluster: split files for multi process
         need_split_files = True
-    elif context["engine"] == EngineMode.CLUSTER and context["cluster_type"] == "K8S":
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
         # for k8s mount mode, split files for every node
         need_split_files = True
-
+    print("need_split_files: {}".format(need_split_files))
     if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
@@ -98,7 +101,8 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         # for local cluster: split files for multi process
         need_split_files = True
-    elif context["engine"] == EngineMode.CLUSTER and context["cluster_type"] == "K8S":
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
         # for k8s mount mode, split files for every node
         need_split_files = True
 
@@ -161,7 +165,8 @@ def slotdataloader(readerclass, train, yaml_file, context):
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         # for local cluster: split files for multi process
         need_split_files = True
-    elif context["engine"] == EngineMode.CLUSTER and context["cluster_type"] == "K8S":
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
         # for k8s mount mode, split files for every node
         need_split_files = True
 
