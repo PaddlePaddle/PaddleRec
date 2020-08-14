@@ -42,8 +42,6 @@ def dataloader_by_name(readerclass,
     files.sort()
 
     need_split_files = False
-    print("context[engine] {}, context[cluster_type] {}".format(context[
-        "engine"], context["cluster_type"]))
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         # for local cluster: split files for multi process
         need_split_files = True
