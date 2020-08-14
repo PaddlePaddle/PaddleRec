@@ -89,6 +89,24 @@ class QueueDataset(DatasetBase):
         else:
             return self._get_dataset(dataset_name, context)
 
+    def check_filelist(self, file_list, train_data_path):
+        for root, dirs, files in os.walk(train_data_path):
+            files = [f for f in files if not f[0] == '.']
+            dirs[:] = [d for d in dirs if not d[0] == '.']
+            if (files == None and dirs == None):
+                 return None
+            else:
+                # use files and dirs
+                for file_name in files:
+                    file_list.append(os.path.join(train_data_path, file_name))
+                    print(os.path.join(train_data_path, file_name))
+                for dirs_name in dirs:
+                    dir_root.append(os.path.join(train_data_path, dirs_name))
+                    check_filelist(file_list, os.path.join(
+                        train_data_path, dirs_name))
+                    print(os.path.join(train_data_path, dirs_name))
+                return file_list
+
     def _get_dataset(self, dataset_name, context):
         name = "dataset." + dataset_name + "."
         reader_class = envs.get_global_env(name + "data_converter")
@@ -119,10 +137,13 @@ class QueueDataset(DatasetBase):
         dataset.set_pipe_command(pipe_cmd)
         train_data_path = envs.get_global_env(name + "data_path")
 
-        file_list = [
-            os.path.join(train_data_path, x)
-            for x in os.listdir(train_data_path)
-        ]
+        # file_list = [
+        #     os.path.join(train_data_path, x)
+        #     for x in os.listdir(train_data_path)
+        # ]
+        file_list=[]
+        file_list = self.check_filelist(file_list,train_data_path)
+        
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
             file_list = split_files(file_list, context["fleet"].worker_index(),
                                     context["fleet"].worker_num())
