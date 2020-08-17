@@ -67,6 +67,10 @@ def dataloader_by_name(readerclass,
 
     if hasattr(reader, 'generate_batch_from_trainfiles'):
         return gen_batch_reader()
+
+    if hasattr(reader, "batch_tensor_creator"):
+        return reader.batch_tensor_creator(gen_reader)
+
     return gen_reader
 
 
