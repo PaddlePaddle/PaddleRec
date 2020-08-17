@@ -16,7 +16,6 @@ import os
 import subprocess
 import sys
 import argparse
-import tempfile
 import warnings
 
 import copy
@@ -39,6 +38,7 @@ def engine_registry():
     engines["TRANSPILER"]["INFER"] = single_infer_engine
     engines["TRANSPILER"]["LOCAL_CLUSTER_TRAIN"] = local_cluster_engine
     engines["TRANSPILER"]["CLUSTER_TRAIN"] = cluster_engine
+    engines["TRANSPILER"]["ONLINE_LEARNING"] = online_learning
     engines["PSLIB"]["TRAIN"] = local_mpi_engine
     engines["PSLIB"]["LOCAL_CLUSTER_TRAIN"] = local_mpi_engine
     engines["PSLIB"]["CLUSTER_TRAIN"] = cluster_mpi_engine
@@ -253,6 +253,20 @@ def single_infer_engine(args):
     single_envs["train.trainer.threads"] = "2"
     single_envs["train.trainer.platform"] = envs.get_platform()
     single_envs["train.trainer.engine"] = "single"
+
+    set_runtime_envs(single_envs, args.model)
+    trainer = TrainerFactory.create(args.model)
+    return trainer
+
+
+def online_learning(args):
+    trainer = "OnlineLearningTrainer"
+    single_envs = {}
+    single_envs["train.trainer.trainer"] = trainer
+    single_envs["train.trainer.threads"] = "2"
+    single_envs["train.trainer.engine"] = "online_learning"
+    single_envs["train.trainer.platform"] = envs.get_platform()
+    print("use {} engine to run model: {}".format(trainer, args.model))
 
     set_runtime_envs(single_envs, args.model)
     trainer = TrainerFactory.create(args.model)
