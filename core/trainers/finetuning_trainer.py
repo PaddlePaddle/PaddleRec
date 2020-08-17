@@ -24,7 +24,7 @@ from paddlerec.core.trainer import Trainer, EngineMode, FleetMode
 
 class FineTuningTrainer(Trainer):
     """
-    Trainer for various situations.
+    Trainer for various situations
     """
 
     def __init__(self, config=None):
