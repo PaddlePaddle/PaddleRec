@@ -25,7 +25,7 @@ mv 1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tok
 python preprocess.py --build_dict --build_dict_corpus_dir raw_data/training-monolingual.tokenized.shuffled --dict_path raw_data/word_count_dict.txt
 python preprocess.py --filter_corpus --dict_path raw_data/word_count_dict.txt --input_corpus_dir raw_data/training-monolingual.tokenized.shuffled --output_corpus_dir raw_data/convert_text8 --min_count 5 --downsample 0.001
 mv raw_data/word_count_dict.txt data/dict/
-mv raw_data/word_id_dict.txt data/dict/
+mv raw_data/word_count_dict.txt_word_to_id_ data/dict/word_id_dict.txt
 
 rm -rf data/train/*
 rm -rf data/test/*

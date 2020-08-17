@@ -22,7 +22,7 @@ dataset:
   word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
   data_converter: "{workspace}/w2v_reader.py"
 - name: dataset_infer # name
-  batch_size: 50
+  batch_size: 2000
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/test"
   word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
@@ -59,7 +59,7 @@ runner:
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  print_interval: 1
+  print_interval: 1000
   phases: [phase1]
 - name: single_cpu_infer
   class: infer

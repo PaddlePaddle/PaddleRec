@@ -68,6 +68,8 @@ class DataLoader(DatasetBase):
             reader_ins = SlotReader(context["config_yaml"])
         if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
             dataloader.set_sample_list_generator(reader)
+        elif hasattr(reader_ins, 'batch_tensor_creator'):
+            dataloader.set_batch_generator(reader)
         else:
             dataloader.set_sample_generator(reader, batch_size)
         return dataloader

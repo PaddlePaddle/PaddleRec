@@ -19,6 +19,8 @@
 ├── data_prepare.sh #一键数据处理脚本
 ├── w2v_reader.py #训练数据reader
 ├── w2v_evaluate_reader.py # 预测数据reader
+├── infer.py # 自定义预测脚本
+├── utils.py # 自定义预测中用到的reader等工具
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -154,8 +156,11 @@ runner:
   phases: [phase1]
 ```
 ### 单机预测
+我们通过词类比（Word Analogy）任务来检验word2vec模型的训练效果。输入四个词A，B，C，D，假设存在一种关系relation, 使得relation(A, B) = relation(C， D)，然后通过A，B，C去预测D，emb(D) = emb(B) - emb(A) + emb(C)。
 
 CPU环境
+
+PaddleRec预测配置：
 
 在config.yaml文件中设置好epochs、device等参数。
 
@@ -167,6 +172,10 @@ CPU环境
   init_model_path: "increment_w2v" # load model path
   print_interval: 1
   phases: [phase2]
+```
+为复现论文效果，我们提供了一个自定义预测脚本，自定义预测中，我们会跳过预测结果是输入A，B，C的情况，计算预测准确率。执行命令如下：
+```
+python infer.py --test_dir ./data/test --dict_path ./data/dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
 ```
 
 ### 运行
@@ -212,13 +221,12 @@ Infer phase2 of epoch 3 done, use time: 4.43099021912, global metrics: acc=[1.]
 - batch_size: 修改config.yaml中dataset_train数据集的batch_size为100。
 - epochs: 修改config.yaml中runner的epochs为5。
 
-使用cpu训练 5轮 测试Recall@20:0.540
-
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 ```
 python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
 ```
 
+使用cpu训练5轮，自定义测试（跳过输入）准确率为0.540。
 ## 进阶使用
 
 ## FAQ
