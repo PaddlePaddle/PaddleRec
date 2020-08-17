@@ -47,26 +47,6 @@
 
 数据地址： [Census-income Data](https://archive.ics.uci.edu/ml/machine-learning-databases/census-income-mld/census.tar.gz )
 
-数据解压后， 在run.sh脚本文件中添加文件的路径，并运行脚本。
-
-```sh
-mkdir train_data
-mkdir test_data
-mkdir data
-train_path="data/census-income.data"
-test_path="data/census-income.test"
-train_data_path="train_data/"
-test_data_path="test_data/"
-pip install -r requirements.txt
-wget -P data/ https://archive.ics.uci.edu/ml/machine-learning-databases/census-income-mld/census.tar.gz
-tar -zxvf data/census.tar.gz -C data/
-
-python data_preparation.py --train_path ${train_path} \
-                           --test_path ${test_path} \
-                           --train_data_path ${train_data_path}\
-                           --test_data_path ${test_data_path}
-
-```
 
 生成的格式以逗号为分割点
 
@@ -74,6 +54,7 @@ python data_preparation.py --train_path ${train_path} \
 0,0,73,0,0,0,0,1700.09,0,0
 ```
 
+完整的大数据参考论文复现部分。
 
 ## 运行环境
 
