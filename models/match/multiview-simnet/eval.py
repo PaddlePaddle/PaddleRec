@@ -1,5 +1,3 @@
-#! /bin/bash
-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
+import numpy as np
+import sklearn.metrics
 
-set -e
-echo "begin to prepare data"
+label = []
+filename = './data/label.txt'
+f = open(filename, "r")
+f.readline()
+num = 0
+for line in f.readlines():
+    num = num + 1
+    line = line.strip()
+    label.append(float(line))
+f.close()
+print(num)
 
-mkdir -p data/train
-mkdir -p data/test
+filename = './result.txt'
+sim = []
+for line in open(filename):
+    line = line.strip().split(",")
+    line[1] = line[1].split(":")
+    line = line[1][1].strip(" ")
+    line = line.strip("[")
+    line = line.strip("]")
+    sim.append(float(line))
 
-python generate_synthetic_data.py 
+auc = sklearn.metrics.roc_auc_score(label, sim)
+print("auc = ", auc)
