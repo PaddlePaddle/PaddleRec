@@ -147,6 +147,7 @@ python -m paddlerec.run -m models/rank/dnn/config.yaml
 * [启动分布式训练](doc/distributed_train.md)
 * [启动预测](doc/predict.md)
 * [快速部署](doc/serving.md)
+* [预训练模型](doc/pre_train_model.md)
 
 
 ### 进阶教程

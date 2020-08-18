@@ -23,7 +23,7 @@ from paddlerec.core.trainers.framework.dataset import DataLoader, QueueDataset
 
 __all__ = [
     "NetworkBase", "SingleNetwork", "PSNetwork", "PslibNetwork",
-    "CollectiveNetwork"
+    "CollectiveNetwork", "FineTuningNetwork"
 ]
 
 
@@ -86,6 +86,88 @@ class SingleNetwork(NetworkBase):
                             model.net(model._data_var, context["is_infer"])
                             optimizer = model.optimizer()
                             optimizer.minimize(model._cost)
+            context["model"][model_dict["name"]][
+                "main_program"] = train_program
+            context["model"][model_dict["name"]][
+                "startup_program"] = startup_program
+            context["model"][model_dict["name"]]["scope"] = scope
+            context["model"][model_dict["name"]]["model"] = model
+            context["model"][model_dict["name"]][
+                "default_main_program"] = train_program.clone()
+            context["model"][model_dict["name"]]["compiled_program"] = None
+
+        context["dataset"] = {}
+        for dataset in context["env"]["dataset"]:
+            type = envs.get_global_env("dataset." + dataset["name"] + ".type")
+
+            if type == "QueueDataset":
+                dataset_class = QueueDataset(context)
+                context["dataset"][dataset[
+                    "name"]] = dataset_class.create_dataset(dataset["name"],
+                                                            context)
+
+        context["status"] = "startup_pass"
+
+
+class FineTuningNetwork(NetworkBase):
+    """R
+    """
+
+    def __init__(self, context):
+        print("Running FineTuningNetwork.")
+
+    def build_network(self, context):
+        context["model"] = {}
+        for model_dict in context["phases"]:
+            context["model"][model_dict["name"]] = {}
+            train_program = fluid.Program()
+            startup_program = fluid.Program()
+            scope = fluid.Scope()
+            dataset_name = model_dict["dataset_name"]
+
+            with fluid.program_guard(train_program, startup_program):
+                with fluid.unique_name.guard():
+                    with fluid.scope_guard(scope):
+                        model_path = envs.os_path_adapter(
+                            envs.workspace_adapter(model_dict["model"]))
+                        model = envs.lazy_instance_by_fliename(
+                            model_path, "Model")(context["env"])
+
+                        model._data_var = model.input_data(
+                            dataset_name=model_dict["dataset_name"])
+
+                        if envs.get_global_env("dataset." + dataset_name +
+                                               ".type") == "DataLoader":
+                            model._init_dataloader(
+                                is_infer=context["is_infer"])
+                            data_loader = DataLoader(context)
+                            data_loader.get_dataloader(context, dataset_name,
+                                                       model._data_loader)
+
+                        model.net(model._data_var, context["is_infer"])
+
+                        finetuning_varnames = envs.get_global_env(
+                            "runner." + context["runner_name"] +
+                            ".finetuning_aspect_varnames",
+                            default_value=[])
+
+                        if len(finetuning_varnames) == 0:
+                            raise ValueError(
+                                "nothing need to be fine tuning, you may use other traning mode"
+                            )
+
+                        if len(finetuning_varnames) != 1:
+                            raise ValueError(
+                                "fine tuning mode can only accept one varname now"
+                            )
+
+                        varname = finetuning_varnames[0]
+                        finetuning_vars = train_program.global_block().vars[
+                            varname]
+                        finetuning_vars.stop_gradient = True
+                        optimizer = model.optimizer()
+                        optimizer.minimize(model._cost)
+
             context["model"][model_dict["name"]][
                 "main_program"] = train_program
             context["model"][model_dict["name"]][
