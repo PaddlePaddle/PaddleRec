@@ -67,7 +67,6 @@ runner:
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
-  init_model_path: "" # load model path
   print_interval: 10
   phases: [phase1]
 
