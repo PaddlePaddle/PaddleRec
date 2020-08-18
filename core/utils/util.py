@@ -201,6 +201,28 @@ def split_files(files, trainer_id, trainers):
     return trainer_files[trainer_id]
 
 
+def check_filelist(hidden_file_list, data_file_list, train_data_path):
+    for root, dirs, files in os.walk(train_data_path):
+        if (files == None and dirs == None):
+            return None, None
+        else:
+            # use files and dirs
+            for file_name in files:
+                file_path = os.path.join(train_data_path, file_name)
+                if file_name[0] == '.':
+                    hidden_file_list.append(file_path)
+                else:
+                    data_file_list.append(file_path)
+            for dirs_name in dirs:
+                dirs_path = os.path.join(train_data_path, dirs_name)
+                if dirs_name[0] == '.':
+                    hidden_file_list.append(dirs_path)
+                else:
+                    #train_data_path = os.path.join(train_data_path, dirs_name)
+                    check_filelist(hidden_file_list, data_file_list, dirs_path)
+            return hidden_file_list, data_file_list
+
+
 class CostPrinter(object):
     """
     For count cost time && print cost log
