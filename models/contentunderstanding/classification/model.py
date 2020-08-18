@@ -23,9 +23,12 @@ class Model(ModelBase):
         self.dict_dim = envs.get_global_env("hyper_parameters.dict_dim")
         self.max_len = envs.get_global_env("hyper_parameters.max_len")
         self.cnn_dim = envs.get_global_env("hyper_parameters.cnn_dim")
-        self.cnn_filter_size1 = envs.get_global_env("hyper_parameters.cnn_filter_size1")
-        self.cnn_filter_size2 = envs.get_global_env("hyper_parameters.cnn_filter_size2")
-        self.cnn_filter_size3 = envs.get_global_env("hyper_parameters.cnn_filter_size3")
+        self.cnn_filter_size1 = envs.get_global_env(
+            "hyper_parameters.cnn_filter_size1")
+        self.cnn_filter_size2 = envs.get_global_env(
+            "hyper_parameters.cnn_filter_size2")
+        self.cnn_filter_size3 = envs.get_global_env(
+            "hyper_parameters.cnn_filter_size3")
         self.emb_dim = envs.get_global_env("hyper_parameters.emb_dim")
         self.hid_dim = envs.get_global_env("hyper_parameters.hid_dim")
         self.class_dim = envs.get_global_env("hyper_parameters.class_dim")
@@ -36,14 +39,13 @@ class Model(ModelBase):
             name="input", shape=[None, self.max_len], dtype='int64')
         seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
         label = fluid.data(name="label", shape=[None, 1], dtype='int64')
-        return [data, seq_len ,label]
+        return [data, seq_len, label]
 
     def net(self, input, is_infer=False):
         """ network definition """
         data = input[0]
         seq_len = input[1]
         label = input[2]
-        
 
         # embedding layer
         emb = fluid.embedding(
@@ -73,7 +75,7 @@ class Model(ModelBase):
             act="tanh",
             pool_type="max")
 
-        convs_out = fluid.layers.concat(input=[conv1,conv2,conv3], axis=1)
+        convs_out = fluid.layers.concat(input=[conv1, conv2, conv3], axis=1)
 
         # full connect layer
         fc_1 = fluid.layers.fc(input=convs_out, size=self.hid_dim, act="tanh")
@@ -92,4 +94,3 @@ class Model(ModelBase):
         else:
             self._metrics["acc"] = acc
             self._metrics["loss"] = avg_cost
-

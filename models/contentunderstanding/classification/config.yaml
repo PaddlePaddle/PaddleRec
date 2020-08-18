@@ -65,6 +65,7 @@ runner:
   init_model_path: "increment/14" # load model path
   phases: phase_infer
 
+  
 phase:
 - name: phase_train
   model: "{workspace}/model.py"

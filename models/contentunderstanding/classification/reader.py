@@ -26,6 +26,7 @@ class Reader(ReaderBase):
         data = l[0:100]
         seq_len = l[100:101]
         label = l[101:]
+
         return data, label, seq_len
 
     def generate_sample(self, line):

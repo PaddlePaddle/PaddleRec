@@ -108,6 +108,7 @@ cd ..
 ```
 python -m paddlerec.run -m ./config.yaml
 ```
+
 7. 运行结果：
 ```
 PaddleRec: Runner infer_runner Begin
