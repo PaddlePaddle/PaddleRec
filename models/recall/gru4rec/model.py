@@ -16,7 +16,7 @@ import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
-from paddlerec.core.metrics import Precision
+from paddlerec.core.metrics import RecallK
 
 
 class Model(ModelBase):
@@ -82,15 +82,13 @@ class Model(ModelBase):
                                      high=self.init_high_bound),
                                  learning_rate=self.fc_lr_x))
         cost = fluid.layers.cross_entropy(input=fc, label=dst_wordseq)
-        # acc = fluid.layers.accuracy(
-        #     input=fc, label=dst_wordseq, k=self.recall_k)
-        acc = Precision(input=fc, label=dst_wordseq, k=self.recall_k)
+        acc = RecallK(input=fc, label=dst_wordseq, k=self.recall_k)
 
         if is_infer:
-            self._infer_results['P@20'] = acc
+            self._infer_results['Recall@20'] = acc
             return
         avg_cost = fluid.layers.mean(x=cost)
 
         self._cost = avg_cost
         self._metrics["cost"] = avg_cost
-        self._metrics["P@20"] = acc
+        self._metrics["Recall@20"] = acc
