@@ -14,7 +14,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.logistic_regression"
+workspace: "models/rank/logistic_regression"
 
 
 dataset:

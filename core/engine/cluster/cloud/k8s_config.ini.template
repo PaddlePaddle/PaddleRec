@@ -19,6 +19,8 @@ afs_local_mount_point="/root/paddlejob/workspace/env_run/afs/"
 # 新k8s afs挂载帮助文档: http://wiki.baidu.com/pages/viewpage.action?pageId=906443193
 
 PADDLE_PADDLEREC_ROLE=WORKER
+PADDLEREC_CLUSTER_TYPE=K8S
+use_python3=<$ USE_PYTHON3 $>
 CPU_NUM=<$ CPU_NUM $>
 GLOG_v=0
 

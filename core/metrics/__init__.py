@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from precision import Precision
+from .recall_k import RecallK
+from .pairwise_pn import PosNegRatio
+from .precision_recall import PrecisionRecall
+from .auc import AUC
 
-__all__ = ['Precision']
+__all__ = ['RecallK', 'PosNegRatio', 'AUC', 'PrecisionRecall']
