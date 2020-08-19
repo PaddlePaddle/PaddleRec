@@ -23,34 +23,58 @@ class Metric(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, config):
-        """ """
+        """R
+        """
         pass
 
-    def clear(self, scope=None, **kwargs):
-        """
-        clear current value
-        Args:
-            scope: value container
-            params: extend varilable for clear
+    def clear(self, scope=None):
+        """R
         """
         if scope is None:
             scope = fluid.global_scope()
 
         place = fluid.CPUPlace()
-        for (varname, dtype) in self._need_clear_list:
-            if scope.find_var(varname) is None:
+        for key in self._global_metric_state_vars:
+            varname, dtype = self._global_metric_state_vars[key]
+            var = scope.find_var(varname)
+            if not var:
                 continue
-            var = scope.var(varname).get_tensor()
+            var = var.get_tensor()
             data_array = np.zeros(var._get_dims()).astype(dtype)
             var.set(data_array, place)
 
-    def calculate(self, scope, params):
+    def _get_global_metric_state(self, fleet, scope, metric_name, mode="sum"):
+        """R
         """
-        calculate result
-        Args:
-            scope: value container
-            params: extend varilable for clear
+        var = scope.find_var(metric_name)
+        if not var:
+            return None
+        input = np.array(var.get_tensor())
+        if fleet is None:
+            return input
+        fleet._role_maker._barrier_worker()
+        old_shape = np.array(input.shape)
+        input = input.reshape(-1)
+        output = np.copy(input) * 0
+        fleet._role_maker._all_reduce(input, output, mode=mode)
+        output = output.reshape(old_shape)
+        return output
+
+    def calc_global_metrics(self, fleet, scope=None):
+        """R
         """
+        if scope is None:
+            scope = fluid.global_scope()
+
+        global_metrics = dict()
+        for key in self._global_metric_state_vars:
+            varname, dtype = self._global_metric_state_vars[key]
+            global_metrics[key] = self._get_global_metric_state(fleet, scope,
+                                                                varname)
+
+        return self._calculate(global_metrics)
+
+    def _calculate(self, global_metrics):
         pass
 
     @abc.abstractmethod

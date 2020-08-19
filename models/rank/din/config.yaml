@@ -14,7 +14,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.din"
+workspace: "models/rank/din"
 
 dataset:
   - name: sample_1
@@ -26,7 +26,7 @@ dataset:
     type: DataLoader
     batch_size: 5
     data_path: "{workspace}/data/train_data"
-    data_converter: "{workspace}/reader.py"
+    data_converter: "{workspace}/infer_reader.py"
 
 hyper_parameters:
     optimizer:

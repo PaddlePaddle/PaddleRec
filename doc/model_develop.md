@@ -92,7 +92,7 @@ def input_data(self, is_infer=False, **kwargs):
         return train_inputs
 ```
 
-更多数据读取教程，请参考[自定义数据集及Reader](custom_dataset_reader.md)
+更多数据读取教程，请参考[自定义数据集及Reader](custom_reader.md)
 
 
 ### 组网的定义
@@ -112,6 +112,8 @@ def input_data(self, is_infer=False, **kwargs):
   ```
 
 可以参考官方模型的示例学习net的构造方法。
+
+除可以使用Paddle的Metrics接口外，PaddleRec也统一封装了一些常见的Metrics评价指标，并允许开发者定义自己的Metrics类，相关文件参考[Metrics开发文档](metrics.md)。
 
 ## 如何运行自定义模型
 

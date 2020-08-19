@@ -17,6 +17,8 @@ output_path=<$ OUTPUT_PATH $>
 thirdparty_path=<$ THIRDPARTY_PATH $>
 
 PADDLE_PADDLEREC_ROLE=WORKER
+PADDLEREC_CLUSTER_TYPE=MPI
+use_python3=<$ USE_PYTHON3 $>
 CPU_NUM=<$ CPU_NUM $>
 GLOG_v=0
 

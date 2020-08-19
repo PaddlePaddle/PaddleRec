@@ -123,10 +123,21 @@ class QueueDataset(DatasetBase):
             os.path.join(train_data_path, x)
             for x in os.listdir(train_data_path)
         ]
+        file_list.sort()
+        need_split_files = False
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
+            # for local cluster: split files for multi process
+            need_split_files = True
+        elif context["engine"] == EngineMode.CLUSTER and context[
+                "cluster_type"] == "K8S":
+            # for k8s mount afs, split files for every node
+            need_split_files = True
+
+        if need_split_files:
             file_list = split_files(file_list, context["fleet"].worker_index(),
                                     context["fleet"].worker_num())
         print("File_list: {}".format(file_list))
+
         dataset.set_filelist(file_list)
         for model_dict in context["phases"]:
             if model_dict["dataset_name"] == dataset_name:

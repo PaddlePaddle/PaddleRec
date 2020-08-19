@@ -44,9 +44,12 @@
 
 ## 使用教程(快速开始)
 ```shell
-python -m paddlerec.run -m paddlerec.models.multitask.mmoe # mmoe
-python -m paddlerec.run -m paddlerec.models.multitask.share-bottom # share-bottom
-python -m paddlerec.run -m paddlerec.models.multitask.esmm # esmm
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/multitask/mmoe/config.yaml # mmoe
+python -m paddlerec.run -m models/multitask/share-bottom/config.yaml # share-bottom
+python -m paddlerec.run -m models/multitask/esmm/config.yaml # esmm
 ```
 
 ## 使用教程（复现论文）

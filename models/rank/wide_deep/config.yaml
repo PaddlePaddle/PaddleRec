@@ -14,7 +14,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.wide_deep"
+workspace: "models/rank/wide_deep"
 
 
 dataset:

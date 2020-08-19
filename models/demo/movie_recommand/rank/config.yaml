@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "paddlerec.models.demo.movie_recommand"
+workspace: "models/demo/movie_recommand"
 
 # list of dataset
 dataset:

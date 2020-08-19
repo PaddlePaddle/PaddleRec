@@ -13,33 +13,34 @@
 # limitations under the License.
 
 
-workspace: "paddlerec.models.rerank.listwise"
+workspace: "models/rerank/listwise"
 
 dataset:
 - name: dataset_train
+  batch_size: 5
   type: DataLoader
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/random_reader.py"
 - name: dataset_infer
+  batch_size: 5
   type: DataLoader
   data_path: "{workspace}/data/test"
   data_converter: "{workspace}/random_reader.py"
 
 hyper_parameters:
+  optimizer: 
+    class: sgd
+    learning_rate: 0.01
+    strategy: async
   hidden_size: 128
   user_vocab: 200
   item_vocab: 1000
   item_len: 5
   embed_size: 16
   batch_size: 1
-  optimizer: 
-    class: sgd
-    learning_rate: 0.01
-    strategy: async
 
 #use infer_runner mode and modify 'phase' below if infer
-mode: train_runner
-#mode: infer_runner
+mode: [train_runner, infer_runner]
 
 runner:
 - name: train_runner
@@ -48,19 +49,22 @@ runner:
   epochs: 3
   save_checkpoint_interval: 2
   save_inference_interval: 4
-  save_checkpoint_path: "increment"
+  save_checkpoint_path: "increment_listwise"
   save_inference_path: "inference"
+  print_interval: 1
+  phases: [train]
 - name: infer_runner
   class: infer
-  init_model_path: "increment/0"
+  init_model_path: "increment_listwise/2"
   device: cpu
+  phases: [infer]
 
 phase:
 - name: train
   model: "{workspace}/model.py"
   dataset_name: dataset_train
   thread_num: 1
-    #- name: infer
-    #  model: "{workspace}/model.py"
-    #  dataset_name: dataset_infer
-    #  thread_num: 1
+- name: infer
+  model: "{workspace}/model.py"
+  dataset_name: dataset_infer
+  thread_num: 1

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # workspace
-workspace: "paddlerec.models.recall.gnn"
+workspace: "models/recall/gnn"
 
 # list of dataset
 dataset:
@@ -42,11 +42,11 @@ hyper_parameters:
   gnn_propogation_steps: 1
 
 # select runner by name
-mode: train_runner
+mode: [single_cpu_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: train_runner
+- name: single_cpu_train
   class: train
   # num of epochs
   epochs: 5
@@ -59,21 +59,23 @@ runner:
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  print_interval: 10
-- name: infer_runner
+  print_interval: 1
+  phases: [phase1]
+- name: single_cpu_infer
   class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
   init_model_path: "increment_gnn" # load model path
+  phases: [phase2]
 
 # runner will run all the phase in each epoch
 phase:
-- name: phase_train
+- name: phase1
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
-# - name: phase_infer
-#   model: "{workspace}/model.py" # user-defined model
-#   dataset_name: dataset_infer # select dataset by name
-#   thread_num: 1
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
+  thread_num: 1

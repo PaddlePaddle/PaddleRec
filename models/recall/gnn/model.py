@@ -20,7 +20,7 @@ import paddle.fluid.layers as layers
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
-from paddlerec.core.metrics import Precision
+from paddlerec.core.metrics import RecallK
 
 
 class Model(ModelBase):
@@ -236,7 +236,7 @@ class Model(ModelBase):
         softmax = layers.softmax_with_cross_entropy(
             logits=logits, label=inputs[6])  # [batch_size, 1]
         self.loss = layers.reduce_mean(softmax)  # [1]
-        acc = Precision(input=logits, label=inputs[6], k=20)
+        acc = RecallK(input=logits, label=inputs[6], k=20)
         self._cost = self.loss
 
         if is_infer:
