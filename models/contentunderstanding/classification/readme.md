@@ -60,10 +60,13 @@ tar -zxvf sentiment_classification-dataset-1.0.0.tar.gz
 ```
 
 ## 运行环境
-PaddlePaddle>=1.7.2  
-python 2.7  
-PaddleRec >=0.1  
-os : linux  
+PaddlePaddle>=1.7.2
+
+python 2.7/3.5/3.6/3.7
+
+PaddleRec >=0.1
+
+os : windows/linux/macos
 
 
 ## 快速开始
