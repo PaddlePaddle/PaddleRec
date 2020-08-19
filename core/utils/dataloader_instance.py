@@ -45,10 +45,20 @@ def dataloader_by_name(readerclass,
             "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
             format(hidden_file_list))
 
+    files.sort()
+
+    need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
+        # for local cluster: split files for multi process
+        need_split_files = True
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
+        # for k8s mount mode, split files for every node
+        need_split_files = True
+    print("need_split_files: {}".format(need_split_files))
+    if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-    print("file_list : {}".format(files))
 
     reader = reader_class(yaml_file)
     reader.init()
@@ -93,10 +103,20 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
             "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
             format(hidden_file_list))
 
+    files.sort()
+
+    need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
+        # for local cluster: split files for multi process
+        need_split_files = True
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
+        # for k8s mount mode, split files for every node
+        need_split_files = True
+
+    if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-        print("file_list: {}".format(files))
 
     sparse = get_global_env(name + "sparse_slots", "#")
     if sparse == "":
@@ -146,11 +166,27 @@ def slotdataloader(readerclass, train, yaml_file, context):
         assert package_base is not None
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
-    files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    hidden_file_list, files = check_filelist(
+        hidden_file_list=[], data_file_list=[], train_data_path=data_path)
+    if (hidden_file_list is not None):
+        print(
+            "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
+            format(hidden_file_list))
+
+    files.sort()
+
+    need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
+        # for local cluster: split files for multi process
+        need_split_files = True
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
+        # for k8s mount mode, split files for every node
+        need_split_files = True
+
+    if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-        print("file_list: {}".format(files))
 
     sparse = get_global_env("sparse_slots", "#", namespace)
     if sparse == "":
