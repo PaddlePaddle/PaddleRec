@@ -42,17 +42,19 @@ tagspace模型是一种对文本打标签的方法，它主要学习从短文到
 ## 数据准备
 [数据地址](https://github.com/mhjabreel/CharCNN/tree/master/data/) , [备份数据地址](https://paddle-tagspace.bj.bcebos.com/data.tar)
 
-数据格式如下
+数据格式如下：  
 ```
 "3","Wall St. Bears Claw Back Into the Black (Reuters)","Reuters - Short-sellers, Wall Street's dwindling\band of ultra-cynics, are seeing green again."
 ```
 
 ## 运行环境
 PaddlePaddle>=1.7.2  
-python 2.7  
-python3
+
+python 2.7/3.5/3.6/3.7  
+
 PaddleRec >=0.1  
-os : linux  
+
+os : windows/linux/macos    
 
 
 ## 快速开始
