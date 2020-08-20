@@ -19,7 +19,7 @@ import warnings
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
-from paddlerec.core.trainers.framework.dataset import DataLoader, QueueDataset
+from paddlerec.core.trainers.framework.dataset import DataLoader, QueueDataset, InMemoryDataset
 
 __all__ = [
     "NetworkBase", "SingleNetwork", "PSNetwork", "PslibNetwork",
@@ -105,7 +105,11 @@ class SingleNetwork(NetworkBase):
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
                                                             context)
-
+            elif type == "InMemoryDataset":
+                dataset_class = InMemoryDataset(context)
+                context["dataset"][dataset[
+                    "name"]] = dataset_class.create_dataset(dataset["name"],
+                                                            context)
         context["status"] = "startup_pass"
 
 
@@ -187,7 +191,11 @@ class FineTuningNetwork(NetworkBase):
                 context["dataset"][dataset[
                     "name"]] = dataset_class.create_dataset(dataset["name"],
                                                             context)
-
+            elif type == "InMemoryDataset":
+                dataset_class = InMemoryDataset(context)
+                context["dataset"][dataset[
+                    "name"]] = dataset_class.create_dataset(dataset["name"],
+                                                            context)
         context["status"] = "startup_pass"
 
 
@@ -247,6 +255,11 @@ class PSNetwork(NetworkBase):
                                                model._data_loader)
                 elif type == "QueueDataset":
                     dataset_class = QueueDataset(context)
+                    context["dataset"][dataset[
+                        "name"]] = dataset_class.create_dataset(
+                            dataset["name"], context)
+                elif type == "InMemoryDataset":
+                    dataset_class = InMemoryDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
                             dataset["name"], context)
@@ -345,6 +358,11 @@ class PslibNetwork(NetworkBase):
                         "model"][model_dict["name"]]["model"]._data_loader)
                 elif type == "QueueDataset":
                     dataset_class = QueueDataset(context)
+                    context["dataset"][dataset[
+                        "name"]] = dataset_class.create_dataset(
+                            dataset["name"], context)
+                elif type == "InMemoryDataset":
+                    dataset_class = InMemoryDataset(context)
                     context["dataset"][dataset[
                         "name"]] = dataset_class.create_dataset(
                             dataset["name"], context)
