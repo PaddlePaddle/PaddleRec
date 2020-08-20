@@ -126,20 +126,20 @@ Running SingleNetwork.
 Running SingleInferStartup.
 Running SingleInferRunner.
 load persistables from increment/9
-batch: 1, acc: [0.974], loss: [0.00772232]
-batch: 2, acc: [0.982], loss: [0.00819101]
-batch: 3, acc: [0.98], loss: [0.00760444]
-batch: 4, acc: [0.982], loss: [0.00729169]
-batch: 5, acc: [0.982], loss: [0.00796839]
-batch: 6, acc: [0.986], loss: [0.00761686]
-batch: 7, acc: [0.978], loss: [0.00841461]
-batch: 8, acc: [0.976], loss: [0.00741155]
-batch: 9, acc: [0.978], loss: [0.00747308]
-batch: 10, acc: [0.982], loss: [0.00788527]
-batch: 11, acc: [0.99], loss: [0.00641487]
-batch: 12, acc: [0.978], loss: [0.00898687]
-batch: 13, acc: [0.988], loss: [0.0057121]
-batch: 14, acc: [0.988], loss: [0.0076998]
+batch: 1, acc: [0.91], loss: [0.02495437]
+batch: 2, acc: [0.936], loss: [0.01941476]
+batch: 3, acc: [0.918], loss: [0.02116447]
+batch: 4, acc: [0.916], loss: [0.0219945]
+batch: 5, acc: [0.902], loss: [0.02242816]
+batch: 6, acc: [0.9], loss: [0.02421589]
+batch: 7, acc: [0.9], loss: [0.026441]
+batch: 8, acc: [0.934], loss: [0.01797657]
+batch: 9, acc: [0.932], loss: [0.01687362]
+batch: 10, acc: [0.926], loss: [0.02047823]
+batch: 11, acc: [0.918], loss: [0.01998716]
+batch: 12, acc: [0.898], loss: [0.0229556]
+batch: 13, acc: [0.928], loss: [0.01736144]
+batch: 14, acc: [0.93], loss: [0.01911209]
 ```
 
 ## 进阶使用

@@ -16,7 +16,7 @@ import paddle.fluid as fluid
 import paddle.fluid.layers.nn as nn
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
-
+from paddlerec.core.metrics import RecallK
 from paddlerec.core.model import ModelBase
 from paddlerec.core.utils import envs
 

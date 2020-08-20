@@ -52,6 +52,7 @@ runner:
   save_inference_path: "inference"
   save_inference_feed_varnames: []
   save_inference_fetch_varnames: []
+  phases: phase1
 - name: infer_runner
   class: infer
   # device to run training or infer
