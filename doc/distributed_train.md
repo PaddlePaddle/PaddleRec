@@ -48,7 +48,7 @@
 
 ```yaml
 # workspace
-workspace: "paddlerec.models.rank.dnn"
+workspace: "models/rank/dnn"
 
 mode: [single_cpu_train]
 runner:

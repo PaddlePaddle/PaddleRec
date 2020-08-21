@@ -124,7 +124,10 @@
 
 ```bash
 # 使用CPU进行单机训练
-python -m paddlerec.run -m paddlerec.models.rank.dnn  
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/rank/dnn/config.yaml  
 ```
 
 
@@ -144,6 +147,7 @@ python -m paddlerec.run -m paddlerec.models.rank.dnn
 * [启动分布式训练](doc/distributed_train.md)
 * [启动预测](doc/predict.md)
 * [快速部署](doc/serving.md)
+* [预训练模型](doc/pre_train_model.md)
 
 
 ### 进阶教程
