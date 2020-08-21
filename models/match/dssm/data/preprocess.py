@@ -16,14 +16,9 @@ for line in lines:
     text = line[0].split(" ") + line[1].split(" ")
     for word in text:
         if word in word_dict:
-            word_dict[word] = word_dict[word] + 1
+            continue
         else:
-            word_dict[word] = 1
-
-word_list = word_dict.items()
-word_list = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
-word_list_ids = range(1, len(word_list) + 1)
-word_dict = dict(zip([x[0] for x in word_list], word_list_ids))
+            word_dict[word] = len(word_dict) + 1
 
 f = open("./zhidao", "r")
 lines = f.readlines()
@@ -74,11 +69,10 @@ for query in test_query:
     if query not in neg_dict:
         continue
     for neg in neg_dict[query]:
-        test_set.append([query, pos, 0])
+        test_set.append([query, neg, 0])
 random.shuffle(test_set)
 
 #训练集中的query,pos,neg转化为词袋
-f = open("train.txt", "w")
 f = open("train.txt", "w")
 for line in train_set:
     query = line[0].strip().split(" ")

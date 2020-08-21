@@ -51,8 +51,8 @@ python -m paddlerec.run -m models/contentunderstanding/match-pyramid/config.yaml
 
 ### 模型效果 (测试)
 
-|       数据集        |       模型       |      auc          |       map       |  
+|       数据集        |       模型       |      正逆序比          |       map       |  
 | :------------------: | :--------------------: | :---------: |:---------: |
-|       zhidao       |       DSSM       |       0.55        |       --          | 
+|       zhidao       |       DSSM       |       2.25        |       --          | 
 |       Letor07        |       match-pyramid       |       --        |      0.42          | 
-|       zhidao        |       multiview-simnet       |       0.59        |       --          |
+|       zhidao        |       multiview-simnet       |       1.72        |       --          |
