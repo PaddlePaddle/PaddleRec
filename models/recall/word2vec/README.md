@@ -5,9 +5,9 @@
 ```
 ├── data #样例数据
   ├── train
-		├── convert_sample.txt
+    ├── convert_sample.txt
   ├── test
-		├── sample.txt
+    ├── sample.txt
   ├── dict
     ├── word_count_dict.txt
     ├── word_id_dict.txt
@@ -177,7 +177,7 @@ PaddleRec预测配置：
   phases: [phase2]
 ```
 
-为复现论文效果，我们提供了一个自定义预测脚本，在自定义预测中，我们会跳过预测结果是输入A，B，C的情况，然后计算预测准确率。执行命令如下：
+为复现论文效果，我们提供了一个自定义预测脚本，在自定义预测中，我们会跳过预测结果是输入A，B，C的情况，然后计算预测准确率。执行命令如下：
 ```
 python infer.py --test_dir ./data/test --dict_path ./data/dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
 ```
