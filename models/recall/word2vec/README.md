@@ -9,7 +9,7 @@
   ├── test
 		├── sample.txt
   ├── dict
-		├── word_count_dict.txt
+    ├── word_count_dict.txt
     ├── word_id_dict.txt
 ├── preprocess.py # 数据预处理文件
 ├── __init__.py
@@ -79,6 +79,7 @@ mkdir -p data/all_test
     # 测试集
     wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/test_dir.tar
     tar xzvf test_dir.tar -C raw_data
+    mv raw_data/data/test_dir/* data/all_test/
     ```
 
 - Step2: 训练据预处理。包含三步，第一步，根据英文语料生成词典，中文语料可以通过修改text_strip方法自定义处理方法。
@@ -102,7 +103,7 @@ mkdir -p data/all_test
     ```
     python preprocess.py --filter_corpus --dict_path raw_data/word_count_dict.txt --input_corpus_dir raw_data/training-monolingual.tokenized.shuffled --output_corpus_dir raw_data/convert_text8 --min_count 5 --downsample 0.001
     ```
-    第三步，为更好地利用多线程进行训练加速，我们需要将训练文件分成多个子文件，默认拆分成1024个文件，文件保存在data/train目录下。
+    第三步，为更好地利用多线程进行训练加速，我们需要将训练文件分成多个子文件，默认拆分成1024个文件。
     ```
     python preprocess.py --data_resplit --input_corpus_dir=raw_data/convert_text8 --output_corpus_dir=data/all_train
     ```
@@ -158,7 +159,7 @@ runner:
   phases: [phase1]
 ```
 ### 单机预测
-我们通过词类比（Word Analogy）任务来检验word2vec模型的训练效果。输入四个词A，B，C，D，假设存在一种关系relation, 使得relation(A, B) = relation(C， D)，然后通过A，B，C去预测D，emb(D) = emb(B) - emb(A) + emb(C)。
+我们通过词类比（Word Analogy）任务来检验word2vec模型的训练效果。输入四个词A，B，C，D，假设存在一种关系relation, 使得relation(A, B) = relation(C， D)，然后通过A，B，C去预测D，emb(D) = emb(B) - emb(A) + emb(C)。
 
 CPU环境
 
@@ -176,7 +177,7 @@ PaddleRec预测配置：
   phases: [phase2]
 ```
 
-为复现论文效果，我们提供了一个自定义预测脚本，自定义预测中，我们会跳过预测结果是输入A，B，C的情况，然后计算预测准确率。执行命令如下：
+为复现论文效果，我们提供了一个自定义预测脚本，在自定义预测中，我们会跳过预测结果是输入A，B，C的情况，然后计算预测准确率。执行命令如下：
 ```
 python infer.py --test_dir ./data/test --dict_path ./data/dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
 ```
@@ -241,7 +242,7 @@ python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定
 python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
 ```
 
-结论：使用cpu训练5轮，自定义预测准确率为0.540，每轮训练时间7小时左右。
+结论：使用cpu训练5轮，自定义预测准确率为0.540，每轮训练时间7小时左右。
 ## 进阶使用
 
 ## FAQ
