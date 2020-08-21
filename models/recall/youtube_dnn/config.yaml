@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-workspace: "paddlerec.models.recall.youtube_dnn"
+workspace: "models/recall/youtube_dnn"
 
 dataset:
 - name: dataset_train
