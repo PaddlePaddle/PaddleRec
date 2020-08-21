@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-workspace: "paddlerec.models.match.dssm"
+workspace: "models/match/dssm"
 
 dataset:
 - name: dataset_train

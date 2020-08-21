@@ -15,7 +15,7 @@
 
 # global settings 
 debug: false
-workspace: "paddlerec.models.rank.deep_crossing"
+workspace: "models/rank/deep_crossing"
 
 dataset:
   - name: train_sample

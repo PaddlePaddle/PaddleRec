@@ -39,8 +39,11 @@
 
 ##使用教程(快速开始)
 ```
-python -m paddlerec.run -m paddlerec.models.contentunderstanding.tagspace
-python -m paddlerec.run -m paddlerec.models.contentunderstanding.classification
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/contentunderstanding/tagspace/config.yaml
+python -m paddlerec.run -m models/contentunderstanding/classification/config.yaml
 ```
 
 ## 使用教程（复现论文）
