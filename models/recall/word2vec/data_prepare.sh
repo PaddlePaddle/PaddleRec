@@ -20,12 +20,12 @@ mkdir -p data/all_test
 
 # download train_data
 mkdir raw_data
-#wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/1-billion-word-language-modeling-benchmark-r13output.tar
+wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/1-billion-word-language-modeling-benchmark-r13output.tar
 tar xvf 1-billion-word-language-modeling-benchmark-r13output.tar
 mv 1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/ raw_data/
 
 # download test data
-#wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/test_dir.tar
+wget --no-check-certificate https://paddlerec.bj.bcebos.com/word2vec/test_dir.tar
 tar xzvf test_dir.tar -C raw_data
 mv raw_data/data/test_dir/* data/all_test/
 
