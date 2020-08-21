@@ -4,13 +4,13 @@
 
 ```
 ├── data #样例数据
-	├── train
+  ├── train
 		├── convert_sample.txt
-    ├── test
+  ├── test
 		├── sample.txt
-    ├── dict
+  ├── dict
 		├── word_count_dict.txt
-        ├── word_id_dict.txt
+    ├── word_id_dict.txt
 ├── preprocess.py # 数据预处理文件
 ├── __init__.py
 ├── README.md # 文档
@@ -61,7 +61,13 @@
 预测：单机CPU；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/predict.md) 
 
 ## 数据处理
-本示例中数据处理共包含三步：
+为和样例数据路径区分，全量训练数据、测试数据、词表文件会依次保存在data/all_train, data/all_test, data/all_dict文件夹中。
+```
+mkdir -p data/all_dict
+mkdir -p data/all_train
+mkdir -p data/all_test
+```
+本示例中全量数据处理共包含三步：
 - Step1: 数据下载。
     ```
     # 全量训练集
@@ -98,16 +104,12 @@
     ```
     第三步，为更好地利用多线程进行训练加速，我们需要将训练文件分成多个子文件，默认拆分成1024个文件，文件保存在data/train目录下。
     ```
-    rm -rf data/train/*
-    python preprocess.py --data_resplit --input_corpus_dir=raw_data/convert_text8 --output_corpus_dir=data/train
+    python preprocess.py --data_resplit --input_corpus_dir=raw_data/convert_text8 --output_corpus_dir=data/all_train
     ```
-- Step3: 数据整理。 将训练文件统一放在data/train目录下，测试文件统一放在data/test目录下，词典相关文件放在data/dict目录下。
+- Step3: 路径整理。
     ```
-    rm -rf data/test/*
-    mv raw_data/data/test_dir/* data/test/
-
-    mv raw_data/word_count_dict.txt data/dict/
-    mv raw_data/word_id_dict.txt data/dict/ 
+    mv raw_data/word_count_dict.txt data/all_dict/
+    mv raw_data/word_count_dict.txt_word_to_id_ data/all_dict/word_id_dict.txt
     rm -rf raw_data
     ```
 方便起见， 我们提供了一键式数据处理脚本：
@@ -173,14 +175,15 @@ PaddleRec预测配置：
   print_interval: 1
   phases: [phase2]
 ```
-为复现论文效果，我们提供了一个自定义预测脚本，自定义预测中，我们会跳过预测结果是输入A，B，C的情况，计算预测准确率。执行命令如下：
+
+为复现论文效果，我们提供了一个自定义预测脚本，自定义预测中，我们会跳过预测结果是输入A，B，C的情况，然后计算预测准确率。执行命令如下：
 ```
 python infer.py --test_dir ./data/test --dict_path ./data/dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
 ```
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.w2v
+python -m paddlerec.run -m paddlerec.models.recall.word2vec
 ```
 
 ### 结果展示
@@ -217,16 +220,28 @@ Infer phase2 of epoch 3 done, use time: 4.43099021912, global metrics: acc=[1.]
 
 ## 论文复现
 
-用原论文的完整数据复现论文效果需要在config.yaml修改超参：
-- batch_size: 修改config.yaml中dataset_train数据集的batch_size为100。
-- epochs: 修改config.yaml中runner的epochs为5。
+1. 用原论文的完整数据复现论文效果需要在config.yaml修改超参：
+- name: dataset_train 
+  batch_size: 100 # 1. 修改batch_size为100
+  type: DataLoader 
+  data_path: "{workspace}/data/all_train" # 2. 修改数据为全量训练数据
+  word_count_dict_path: "{workspace}/data/all_dict/ word_count_dict.txt"   # 3. 修改词表为全量词表
+  data_converter: "{workspace}/w2v_reader.py"
+
+- name: single_cpu_train
+  - epochs: # 4. 修改config.yaml中runner的epochs为5。
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 ```
 python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
 ```
 
-使用cpu训练5轮，自定义测试（跳过输入）准确率为0.540。
+2. 使用自定义预测程序预测全量测试集：
+```
+python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
+```
+
+结论：使用cpu训练5轮，自定义预测准确率为0.540，每轮训练时间7小时左右。
 ## 进阶使用
 
 ## FAQ
