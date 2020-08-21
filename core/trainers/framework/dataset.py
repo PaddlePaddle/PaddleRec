@@ -21,7 +21,7 @@ from paddlerec.core.utils import envs
 from paddlerec.core.utils import dataloader_instance
 from paddlerec.core.reader import SlotReader
 from paddlerec.core.trainer import EngineMode
-from paddlerec.core.utils.util import split_files
+from paddlerec.core.utils.util import split_files, check_filelist
 
 __all__ = ["DatasetBase", "DataLoader", "QueueDataset"]
 
@@ -119,10 +119,15 @@ class QueueDataset(DatasetBase):
         dataset.set_pipe_command(pipe_cmd)
         train_data_path = envs.get_global_env(name + "data_path")
 
-        file_list = [
-            os.path.join(train_data_path, x)
-            for x in os.listdir(train_data_path)
-        ]
+        hidden_file_list, file_list = check_filelist(
+            hidden_file_list=[],
+            data_file_list=[],
+            train_data_path=train_data_path)
+        if (hidden_file_list is not None):
+            print(
+                "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
+                format(hidden_file_list))
+
         file_list.sort()
         need_split_files = False
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
