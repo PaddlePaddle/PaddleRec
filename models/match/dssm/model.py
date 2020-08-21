@@ -94,7 +94,7 @@ class Model(ModelBase):
         prob = fluid.layers.softmax(concat_Rs, axis=1)
 
         hit_prob = fluid.layers.slice(
-            prob, axes=[0, 1], starts=[0, 0], ends=[128, 1])
+            prob, axes=[0, 1], starts=[0, 0], ends=[8, 1])
         loss = -fluid.layers.reduce_sum(fluid.layers.log(hit_prob))
         avg_cost = fluid.layers.mean(x=loss)
         self._cost = avg_cost

@@ -30,7 +30,7 @@ dataset:
 hyper_parameters:
   optimizer:
     class: sgd
-    learning_rate: 0.01
+    learning_rate: 0.001
     strategy: async
   trigram_d: 1439
   neg_num: 1
@@ -44,7 +44,7 @@ runner:
 - name: train_runner
   class: train
   # num of epochs
-  epochs: 4
+  epochs: 3
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
@@ -61,7 +61,7 @@ runner:
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/3" # load model path
+  init_model_path: "increment/2" # load model path
   phases: phase2
 
 # runner will run all the phase in each epoch

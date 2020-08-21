@@ -24,7 +24,7 @@ num = 0
 for line in f.readlines():
     num = num + 1
     line = line.strip()
-    label.append(float(line))
+    label.append(line)
 f.close()
 print(num)
 
@@ -38,5 +38,17 @@ for line in open(filename):
     line = line.strip("]")
     sim.append(float(line))
 
-auc = sklearn.metrics.roc_auc_score(label, sim)
-print("auc = ", auc)
+filename = './data/test/test.txt'
+f = open(filename, "r")
+f.readline()
+query = []
+for line in f.readlines():
+    line = line.strip().split("\t")
+    query.append(line[0])
+f.close()
+
+filename = 'pair.txt'
+f = open(filename, "w")
+for i in range(len(sim)):
+    f.write(str(query[i]) + "\t" + str(sim[i]) + "\t" + str(label[i]) + "\n")
+f.close()
