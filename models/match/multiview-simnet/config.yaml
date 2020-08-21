@@ -51,7 +51,7 @@ runner:
 - name: train_runner
   class: train
   # num of epochs
-  epochs: 3
+  epochs: 2
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
@@ -68,7 +68,7 @@ runner:
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/2" # load model path
+  init_model_path: "increment/1" # load model path
   phases: phase2
 
 # runner will run all the phase in each epoch

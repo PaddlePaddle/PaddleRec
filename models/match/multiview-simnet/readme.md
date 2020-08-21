@@ -13,8 +13,10 @@
 ├── README.md #文档
 ├── model.py #模型文件
 ├── config.yaml #配置文件
-├── run.sh #运行脚本
-├── eval.py #评价脚本
+├── run.sh #运行脚本,在效果复现时使用
+├── transform.py #整理格式准备计算指标的程序
+├── reader.py #读者需要自定义数据集时供读者参考
+├── evaluate_reader.py #读者需要自定义数据集时供读者参考
 ```
 注：在阅读该示例前，建议您先了解以下内容：
 
@@ -79,7 +81,7 @@ rm -f simnet_dataset-1.0.0.tar.gz
 mv data/zhidao ./
 rm -rf data
 ```
-3. 本文提供了快速将数据集中的汉字数据处理为可训练格式数据的脚本，您在解压数据集后，可以看见目录中存在一个名为zhidao的文件。然后能可以在python3环境下运行我们提供的preprocess.py文件。即可生成可以直接用于训练的数据目录test.txt,train.txt和label.txt。将其放入train和test目录下以备训练时调用。命令如下：
+3. 本文提供了快速将数据集中的汉字数据处理为可训练格式数据的脚本，您在解压数据集后，可以看见目录中存在一个名为zhidao的文件。然后能可以在python3环境下运行我们提供的preprocess.py文件。即可生成可以直接用于训练的数据目录test.txt,train.txt,label.txt和testquery.txt。将其放入train和test目录下以备训练时调用。命令如下：
 ```
 python3 preprocess.py
 rm -f ./train/train.txt
@@ -90,17 +92,36 @@ cd ..
 ```
 4. 退回tagspace目录中，打开文件config.yaml,更改其中的参数  
 
-将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
+    将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
 
-5.  执行脚本，开始训练.脚本会运行python -m paddlerec.run -m ./config.yaml启动训练，并将结果输出到result文件中。然后启动评价脚本eval.py计算auc：
+5.  执行脚本，开始训练.脚本会运行python -m paddlerec.run -m ./config.yaml启动训练，并将结果输出到result文件中。然后启动格式整理程序transform，最后计算正逆序比：
 ```
 sh run.sh
 ```
 
 运行结果大致如下：
 ```
-('auc = ', 0.5944897959183673)
+................run.................
+!!! The CPU_NUM is not specified, you should set CPU_NUM in the environment variable list.
+CPU_NUM indicates that how many CPUPlace are used in the current task.
+And if this parameter are set as N (equal to the number of physical CPU core) the program may be faster.
+
+export CPU_NUM=32 # for example, set CPU_NUM as number of physical CPU core which is 32.
+
+!!! The default number of CPU_NUM=1.
+I0821 14:24:57.255358  7888 parallel_executor.cc:440] The Program will be executed on CPU using ParallelExecutor, 1 cards are used, so 1 programs are executed in parallel.
+I0821 14:24:57.259166  7888 build_strategy.cc:365] SeqOnlyAllReduceOps:0, num_trainers:1
+I0821 14:24:57.262634  7888 parallel_executor.cc:307] Inplace strategy is enabled, when build_strategy.enable_inplace = True
+I0821 14:24:57.264791  7888 parallel_executor.cc:375] Garbage collection strategy is enabled, when FLAGS_eager_delete_tensor_gb = 0
+103
+pnr: 1.17674418605
+query_num: 11
+pair_num: 468 468
+equal_num: 0
+正序率： 0.540598290598
+253 215
 ```
+6. 提醒：因为采取较小的数据集进行训练和测试，得到指标的浮动程度会比较大。如果得到的指标不合预期，可以多次执行步骤5，即可获得合理的指标。
 ## 进阶使用
   
 ## FAQ
