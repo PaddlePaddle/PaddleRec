@@ -107,6 +107,7 @@ class Trainer(object):
             self.device = Device.GPU
             gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
             self._place = fluid.CUDAPlace(gpu_id)
+            print("PaddleRec run on device GPU: {}".format(gpu_id))
             self._exe = fluid.Executor(self._place)
         elif device == "CPU":
             self.device = Device.CPU
@@ -146,6 +147,7 @@ class Trainer(object):
         elif engine.upper() == "CLUSTER":
             self.engine = EngineMode.CLUSTER
             self.is_fleet = True
+            self.which_cluster_type()
         else:
             raise ValueError("Not Support Engine {}".format(engine))
         self._context["is_fleet"] = self.is_fleet
@@ -164,6 +166,14 @@ class Trainer(object):
 
         self._context["is_pslib"] = (fleet_mode.upper() == "PSLIB")
         self._context["fleet_mode"] = fleet_mode
+
+    def which_cluster_type(self):
+        cluster_type = os.getenv("PADDLEREC_CLUSTER_TYPE", "MPI")
+        print("PADDLEREC_CLUSTER_TYPE: {}".format(cluster_type))
+        if cluster_type and cluster_type.upper() == "K8S":
+            self._context["cluster_type"] = "K8S"
+        else:
+            self._context["cluster_type"] = "MPI"
 
     def which_executor_mode(self):
         executor_mode = envs.get_runtime_environ("train.trainer.executor_mode")
