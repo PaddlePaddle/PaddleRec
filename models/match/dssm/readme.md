@@ -15,7 +15,9 @@
 ├── config.yaml #配置文件
 ├── synthetic_reader.py #读取训练集的程序
 ├── synthetic_evaluate_reader.py #读取测试集的程序
-├── eval.py #评价脚本
+├── transform.py #将数据整理成合适的格式方便计算指标
+├── run.sh #全量数据集中的训练脚本，从训练到预测并计算指标
+
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -61,13 +63,57 @@ PaddleRec >=0.1
 os : windows/linux/macos
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，直接执行下面的命令即可启动训练： 
+本文提供了样例数据可以供您快速体验，在paddlerec目录下执行下面的命令即可快速启动训练： 
 
 ```
 python -m paddlerec.run -m models/match/dssm/config.yaml
 ```   
 
-
+输出结果示例：
+```
+PaddleRec: Runner train_runner Begin
+Executor Mode: train
+processor_register begin
+Running SingleInstance.
+Running SingleNetwork.
+file_list : ['models/match/dssm/data/train/train.txt']
+Running SingleStartup.
+Running SingleRunner.
+!!! The CPU_NUM is not specified, you should set CPU_NUM in the environment variable list.
+CPU_NUM indicates that how many CPUPlace are used in the current task.
+And if this parameter are set as N (equal to the number of physical CPU core) the program may be faster.
+export CPU_NUM=32 # for example, set CPU_NUM as number of physical CPU core which is 32.
+!!! The default number of CPU_NUM=1.
+I0821 06:56:26.224299 31061 parallel_executor.cc:440] The Program will be executed on CPU using ParallelExecutor, 1 cards are used, so 1 programs are executed in parallel.
+I0821 06:56:26.231163 31061 build_strategy.cc:365] SeqOnlyAllReduceOps:0, num_trainers:1
+I0821 06:56:26.237023 31061 parallel_executor.cc:307] Inplace strategy is enabled, when build_strategy.enable_inplace = True
+I0821 06:56:26.240788 31061 parallel_executor.cc:375] Garbage collection strategy is enabled, when FLAGS_eager_delete_tensor_gb = 0
+batch: 2, LOSS: [4.538238]
+batch: 4, LOSS: [4.16424]
+batch: 6, LOSS: [3.8121371]
+batch: 8, LOSS: [3.4250507]
+batch: 10, LOSS: [3.2285979]
+batch: 12, LOSS: [3.2116117]
+batch: 14, LOSS: [3.1406002]
+epoch 0 done, use time: 0.357971906662, global metrics: LOSS=[3.0968776]
+batch: 2, LOSS: [2.6843479]
+batch: 4, LOSS: [2.546976]
+batch: 6, LOSS: [2.4103594]
+batch: 8, LOSS: [2.301374]
+batch: 10, LOSS: [2.264183]
+batch: 12, LOSS: [2.315862]
+batch: 14, LOSS: [2.3409634]
+epoch 1 done, use time: 0.22123003006, global metrics: LOSS=[2.344321]
+batch: 2, LOSS: [2.0882485]
+batch: 4, LOSS: [2.006743]
+batch: 6, LOSS: [1.9231766]
+batch: 8, LOSS: [1.8850241]
+batch: 10, LOSS: [1.8829436]
+batch: 12, LOSS: [1.9336565]
+batch: 14, LOSS: [1.9784685]
+epoch 2 done, use time: 0.212922096252, global metrics: LOSS=[1.9934461]
+PaddleRec Finish
+```
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
 1. 确认您当前所在目录为PaddleRec/models/match/dssm
@@ -94,15 +140,41 @@ cd ..
 测试集为两个稀疏的BOW方式的向量：query,pos  
 label.txt中对应的测试集中的标签
 
-4. 退回tagspace目录中，打开文件config.yaml,更改其中的参数  
+4. 退回dssm目录中，打开文件config.yaml,更改其中的参数  
 
 将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
 将dataset_train中的batch_size从8改为128
+将文件model.py中的 hit_prob = fluid.layers.slice(prob, axes=[0, 1], starts=[0, 0], ends=[8, 1])  
+    改为hit_prob = fluid.layers.slice(prob, axes=[0, 1], starts=[0, 0], ends=[128, 1]).当您需要改变batchsize的时候，end中第一个参数也需要随之变化
 
-5.  执行脚本，开始训练.脚本会运行python -m paddlerec.run -m ./config.yaml启动训练，并将结果输出到result文件中。然后启动评价脚本eval.py计算auc：
+5.  执行脚本，开始训练.脚本会运行python -m paddlerec.run -m ./config.yaml启动训练，并将结果输出到result文件中。然后启动transform.py整合数据，最后计算出正逆序指标：
 ```
 sh run.sh
 ```
+
+输出结果示例：
+```
+................run.................
+!!! The CPU_NUM is not specified, you should set CPU_NUM in the environment variable list.
+CPU_NUM indicates that how many CPUPlace are used in the current task.
+And if this parameter are set as N (equal to the number of physical CPU core) the program may be faster.
+
+export CPU_NUM=32 # for example, set CPU_NUM as number of physical CPU core which is 32.
+
+!!! The default number of CPU_NUM=1.
+I0821 07:16:04.512531 32200 parallel_executor.cc:440] The Program will be executed on CPU using ParallelExecutor, 1 cards are used, so 1 programs are executed in parallel.
+I0821 07:16:04.515708 32200 build_strategy.cc:365] SeqOnlyAllReduceOps:0, num_trainers:1
+I0821 07:16:04.518872 32200 parallel_executor.cc:307] Inplace strategy is enabled, when build_strategy.enable_inplace = True
+I0821 07:16:04.520995 32200 parallel_executor.cc:375] Garbage collection strategy is enabled, when FLAGS_eager_delete_tensor_gb = 0
+75
+pnr: 2.25581395349
+query_num: 11
+pair_num: 184 184
+equal_num: 44
+正序率： 0.692857142857
+97 43
+```
+6. 提醒：因为采取较小的数据集进行训练和测试，得到指标的浮动程度会比较大。如果得到的指标不合预期，可以多次执行步骤5，即可获得合理的指标。
 
 ## 进阶使用
   
