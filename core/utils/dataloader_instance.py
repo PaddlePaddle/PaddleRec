@@ -39,9 +39,21 @@ def dataloader_by_name(readerclass,
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    files.sort()
+
+    need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
+        # for local cluster: split files for multi process
+        need_split_files = True
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
+        # for k8s mount mode, split files for every node
+        need_split_files = True
+    print("need_split_files: {}".format(need_split_files))
+    if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
+
     print("file_list : {}".format(files))
 
     reader = reader_class(yaml_file)
@@ -81,10 +93,20 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    files.sort()
+
+    need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
+        # for local cluster: split files for multi process
+        need_split_files = True
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
+        # for k8s mount mode, split files for every node
+        need_split_files = True
+
+    if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-        print("file_list: {}".format(files))
 
     sparse = get_global_env(name + "sparse_slots", "#")
     if sparse == "":
@@ -135,10 +157,20 @@ def slotdataloader(readerclass, train, yaml_file, context):
         data_path = os.path.join(package_base, data_path.split("::")[1])
 
     files = [str(data_path) + "/%s" % x for x in os.listdir(data_path)]
+    files.sort()
+
+    need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
+        # for local cluster: split files for multi process
+        need_split_files = True
+    elif context["engine"] == EngineMode.CLUSTER and context[
+            "cluster_type"] == "K8S":
+        # for k8s mount mode, split files for every node
+        need_split_files = True
+
+    if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-        print("file_list: {}".format(files))
 
     sparse = get_global_env("sparse_slots", "#", namespace)
     if sparse == "":
