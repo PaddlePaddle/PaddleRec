@@ -14,7 +14,6 @@
 
 import random
 import numpy as np
-import sklearn.metrics
 
 label = []
 filename = './data/label.txt'
