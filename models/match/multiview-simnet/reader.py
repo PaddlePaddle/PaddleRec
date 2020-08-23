@@ -44,7 +44,7 @@ class Reader(ReaderBase):
             output = [(slot, []) for slot in self.all_slots]
             for elem in elements:
                 slot, feasign = elem.split(':')
-                if not self._all_slots_dict.has_key(slot):
+                if slot not in self._all_slots_dict:
                     continue
                 self._all_slots_dict[slot][0] = True
                 index = self._all_slots_dict[slot][1]
