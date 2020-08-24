@@ -119,7 +119,10 @@ We take the `dnn` algorithm as an example to get start of `PaddleRec`, and we ta
 
 ```bash
 # Training with cpu
-python -m paddlerec.run -m paddlerec.models.rank.dnn  
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/rank/dnn/config.yaml  
 ```
 
 

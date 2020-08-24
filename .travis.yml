@@ -16,15 +16,20 @@ before_install:
   # For pylint dockstring checker
   - sudo apt-get update 
   - sudo apt-get install -y python-pip libpython-dev
+  - sudo apt-get remove python-urllib3
+  - sudo apt-get purge python-urllib3
+  - sudo rm /usr/lib/python2.7/dist-packages/chardet-*
   - sudo pip install -U pip
+  - sudo pip install --upgrade setuptools
   - sudo pip install six --upgrade --ignore-installed six
-  - sudo pip install pillow
   - sudo pip install PyYAML
   - sudo pip install pylint pytest astroid isort pre-commit
   - sudo pip install kiwisolver
-  - sudo pip install paddlepaddle==1.7.2 --ignore-installed urllib3
-  - sudo pip uninstall -y rarfile
+  - sudo pip install scikit-build
+  - sudo pip install Pillow==5.3.0
+  - sudo pip install opencv-python==3.4.3.18
   - sudo pip install rarfile==3.0
+  - sudo pip install paddlepaddle==1.7.2
   - sudo python setup.py install
   - |
     function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
