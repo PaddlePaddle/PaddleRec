@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # workspace
-workspace: "paddlerec.models.rank.flen"
+workspace: "models/rank/flen"
 
 # list of dataset
 dataset:

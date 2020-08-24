@@ -12,20 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "paddlerec.models.contentunderstanding.tagspace"
+workspace: "models/contentunderstanding/tagspace"
 
 dataset:
 - name: sample_1
-  type: QueueDataset
-  batch_size: 5
+  type: DataLoader
+  batch_size: 10
   data_path: "{workspace}/data/train_data"
   data_converter: "{workspace}/reader.py"
+- name: inferdata
+  type: DataLoader
+  batch_size: 10
+  data_path: "{workspace}/data/test_data"
+  data_converter: "{workspace}/reader.py" 
 
 hyper_parameters:
   optimizer:
     class: Adagrad
     learning_rate: 0.001
-  vocab_text_size: 11447
+  vocab_text_size: 75378
   vocab_tag_size: 4
   emb_dim: 10
   hid_dim: 1000
@@ -34,22 +39,34 @@ hyper_parameters:
   neg_size: 3
   num_devices: 1
 
-mode: runner1
+mode: [runner1,infer_runner]
 
 runner:
 - name: runner1
   class: train
   epochs: 10
   device: cpu
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
+  save_checkpoint_interval: 1
+  save_inference_interval: 1
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
   save_inference_feed_varnames: []
   save_inference_fetch_varnames: []
+  phases: phase1
+- name: infer_runner
+  class: infer
+  # device to run training or infer
+  device: cpu
+  print_interval: 1
+  init_model_path: "increment/9" # load model path
+  phases: phase_infer
 
 phase:
 - name: phase1
   model: "{workspace}/model.py"
   dataset_name: sample_1
+  thread_num: 1
+- name: phase_infer
+  model: "{workspace}/model.py"
+  dataset_name: inferdata
   thread_num: 1

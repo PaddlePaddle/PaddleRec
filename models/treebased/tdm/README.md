@@ -8,7 +8,10 @@
 2. 基于单机模型，可以进行分布式的参数服务器训练
 
 ```shell
-python -m paddlerec.run -m paddlerec.models.treebased.tdm
+git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
+cd paddle-rec
+
+python -m paddlerec.run -m models/treebased/tdm/config.yaml
 ```
 
 ## 树结构的准备

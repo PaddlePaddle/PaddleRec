@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "paddlerec.models.recall.gru4rec"
+workspace: "models/recall/gru4rec"
 
 dataset:
 - name: dataset_train

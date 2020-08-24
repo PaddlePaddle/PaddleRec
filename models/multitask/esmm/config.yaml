@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-workspace: "paddlerec.models.multitask.esmm"
+workspace: "models/multitask/esmm"
 
 dataset:
   - name: dataset_train

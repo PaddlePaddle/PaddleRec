@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 debug: false
-workspace: "paddlerec.models.rank.xdeepfm"
+workspace: "models/rank/xdeepfm"
 
 dataset:
   - name: sample_1
