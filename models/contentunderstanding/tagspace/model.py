@@ -16,7 +16,6 @@ import paddle.fluid as fluid
 import paddle.fluid.layers.nn as nn
 import paddle.fluid.layers.tensor as tensor
 import paddle.fluid.layers.control_flow as cf
-
 from paddlerec.core.model import ModelBase
 from paddlerec.core.utils import envs
 
@@ -98,14 +97,19 @@ class Model(ModelBase):
             tensor.fill_constant_batch_size_like(
                 input=loss_part2, shape=[-1, 1], value=0.0, dtype='float32'),
             loss_part2)
-        avg_cost = nn.mean(loss_part3)
+        avg_cost = fluid.layers.mean(loss_part3)
+
         less = tensor.cast(cf.less_than(cos_neg, cos_pos), dtype='float32')
+        label_ones = fluid.layers.fill_constant_batch_size_like(
+            input=cos_neg, dtype='float32', shape=[-1, 1], value=1.0)
         correct = nn.reduce_sum(less)
+        total = fluid.layers.reduce_sum(label_ones)
+        acc = fluid.layers.elementwise_div(correct, total)
         self._cost = avg_cost
 
         if is_infer:
-            self._infer_results["correct"] = correct
-            self._infer_results["cos_pos"] = cos_pos
+            self._infer_results["acc"] = acc
+            self._infer_results["loss"] = self._cost
         else:
-            self._metrics["correct"] = correct
-            self._metrics["cos_pos"] = cos_pos
+            self._metrics["acc"] = acc
+            self._metrics["loss"] = self._cost
