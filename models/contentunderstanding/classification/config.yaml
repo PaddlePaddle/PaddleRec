@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "paddlerec.models.contentunderstanding.classification"
+workspace: "models/contentunderstanding/classification"
 
 dataset:
 - name: data1
-  batch_size: 5
+  batch_size: 10
   type: DataLoader
-  data_path: "{workspace}/data/train_data"
+  data_path: "{workspace}/data/train"
+  data_converter: "{workspace}/reader.py"
+- name: dataset_infer
+  batch_size: 2
+  type: DataLoader
+  data_path: "{workspace}/data/test"
   data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
@@ -26,23 +31,47 @@ hyper_parameters:
     class: Adagrad
     learning_rate: 0.001
   is_sparse: False
+  dict_dim: 33257
+  max_len: 100
+  cnn_dim: 128
+  cnn_filter_size1: 1
+  cnn_filter_size2: 2
+  cnn_filter_size3: 3
+  emb_dim: 128
+  hid_dim: 96
+  class_dim: 2
 
-mode: runner1
+mode: [train_runner,infer_runner]
 
 runner:
-- name: runner1
+- name: train_runner
   class: train
-  epochs: 10
+  epochs: 16
   device: cpu
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
+  save_checkpoint_interval: 1
+  save_inference_interval: 1
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
   save_inference_feed_varnames: []
   save_inference_fetch_varnames: []
+  init_model_path: "" 
+  print_interval: 10
+  phases: phase_train
+- name: infer_runner
+  class: infer
+  # device to run training or infer
+  device: cpu
+  print_interval: 1
+  init_model_path: "increment/14" # load model path
+  phases: phase_infer
 
+  
 phase:
-- name: phase1
+- name: phase_train
   model: "{workspace}/model.py"
   dataset_name: data1
+  thread_num: 1
+- name: phase_infer
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
   thread_num: 1

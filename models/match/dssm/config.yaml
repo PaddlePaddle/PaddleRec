@@ -13,54 +13,56 @@
 # limitations under the License.
 
 
-workspace: "paddlerec.models.match.dssm"
+workspace: "models/match/dssm"
 
 dataset:
 - name: dataset_train
-  batch_size: 4
-  type: QueueDataset
+  batch_size: 8
+  type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/train" 
   data_converter: "{workspace}/synthetic_reader.py"
 - name: dataset_infer
   batch_size: 1
-  type: QueueDataset
-  data_path: "{workspace}/data/train"
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/test"
   data_converter: "{workspace}/synthetic_evaluate_reader.py"
 
 hyper_parameters:
   optimizer:
     class: sgd
-    learning_rate: 0.01
+    learning_rate: 0.001
     strategy: async
-  trigram_d: 1000
-  neg_num: 4
+  trigram_d: 1439
+  neg_num: 1
   fc_sizes: [300, 300, 128]
   fc_acts: ['tanh', 'tanh', 'tanh']
 
-mode: train_runner
+mode: [train_runner,infer_runner]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: train_runner
   class: train
   # num of epochs
-  epochs: 4
+  epochs: 3
   # device to run training or infer
   device: cpu
-  save_checkpoint_interval: 2 # save model interval of epochs
-  save_inference_interval: 4 # save inference
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 1 # save inference
   save_checkpoint_path: "increment" # save checkpoint path
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
   save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 2
+  phases: phase1
 - name: infer_runner
   class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
   init_model_path: "increment/2" # load model path
+  phases: phase2
 
 # runner will run all the phase in each epoch
 phase:
@@ -68,7 +70,7 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
-#- name: phase2
-#  model: "{workspace}/model.py" # user-defined model
-#  dataset_name: dataset_infer # select dataset by name
-#  thread_num: 1
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
+  thread_num: 1
