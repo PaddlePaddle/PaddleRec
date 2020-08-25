@@ -76,7 +76,7 @@ class Reader(ReaderBase):
     def generate_sample(self, line):
         def reader():
             if ':' in line:
-                pass
+                return
             features = self.strip_lines(line.lower(), self.word_to_id)
             features = features.split()
             yield [('analogy_a', [self.word_to_id[features[0]]]),
