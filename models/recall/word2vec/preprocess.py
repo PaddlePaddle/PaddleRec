@@ -228,7 +228,7 @@ def data_split(args):
             contents.extend(f.readlines())
 
     num = int(args.file_nums)
-    lines_per_file = len(contents) / num
+    lines_per_file = int(math.ceil(len(contents) / float(num)))
     print("contents: ", str(len(contents)))
     print("lines_per_file: ", str(lines_per_file))
 
