@@ -205,5 +205,5 @@ batch: 3, acc: [0.90234375], loss: [0.27907994]
 
 |       数据集        |       模型       |       loss         |       acc         |
 | :------------------: | :--------------------: | :---------: |:---------: | 
-|       ag news dataset        |       TagSpace       |       0.2282        |       0.9179          | 
-|       ChnSentiCorp        |       Classification       |       0.9177        |       0.0199          | 
+|       ag news dataset        |       TagSpace       |       0.0198        |       0.9177          | 
+|       ChnSentiCorp        |       Classification       |       0.2282        |        0.9127         | 
