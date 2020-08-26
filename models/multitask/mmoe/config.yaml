@@ -16,12 +16,12 @@ workspace: "models/multitask/mmoe"
 
 dataset:
 - name: dataset_train
-  batch_size: 1
+  batch_size: 5
   type: QueueDataset
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/census_reader.py"
 - name: dataset_infer
-  batch_size: 1
+  batch_size: 5
   type: QueueDataset
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/census_reader.py"
@@ -38,15 +38,14 @@ hyper_parameters:
     strategy: async
 
 #use infer_runner mode and modify 'phase' below if infer
-mode: train_runner
-#mode: infer_runner
+mode: [train_runner, infer_runner]
 
 runner:
 - name: train_runner
   class: train
   device: cpu
   epochs: 3
-  save_checkpoint_interval: 2
+  save_checkpoint_interval: 1
   save_inference_interval: 4
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
@@ -61,7 +60,7 @@ phase:
   model: "{workspace}/model.py"
   dataset_name: dataset_train
   thread_num: 1
-    #- name: infer
-    #  model: "{workspace}/model.py"
-    #  dataset_name: dataset_infer
-    #  thread_num: 1
+- name: infer
+  model: "{workspace}/model.py"
+  dataset_name: dataset_infer
+  thread_num: 1
