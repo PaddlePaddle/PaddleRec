@@ -209,10 +209,10 @@ class Model(ModelBase):
         emb_all_label_l2 = fluid.layers.l2_normalize(x=emb_all_label, axis=1)
         dist = fluid.layers.matmul(
             x=target, y=emb_all_label_l2, transpose_y=True)
-        values, pred_idx = fluid.layers.topk(input=dist, k=4)
+        values, pred_idx = fluid.layers.topk(input=dist, k=1)
         label = fluid.layers.expand(
             fluid.layers.unsqueeze(
-                inputs[3], axes=[1]), expand_times=[1, 4])
+                inputs[3], axes=[1]), expand_times=[1, 1])
         label_ones = fluid.layers.fill_constant_batch_size_like(
             label, shape=[-1, 1], value=1.0, dtype='float32')
         right_cnt = fluid.layers.reduce_sum(input=fluid.layers.cast(
