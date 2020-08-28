@@ -143,6 +143,8 @@ class QueueDataset(DatasetBase):
         if need_split_files:
             file_list = split_files(file_list, context["fleet"].worker_index(),
                                     context["fleet"].worker_num())
+
+        context["file_list"] = file_list
         print("File_list: {}".format(file_list))
 
         dataset.set_filelist(file_list)

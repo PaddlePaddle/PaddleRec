@@ -18,6 +18,7 @@ import os
 import time
 import warnings
 import numpy as np
+import random
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -88,7 +89,8 @@ class RunnerBase(object):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
-
+        # file_list = context["file_list"]
+        # print("File_list: {}".format(file_list))
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -377,6 +379,19 @@ class SingleRunner(RunnerBase):
                 model_class = context["model"][model_dict["name"]]["model"]
                 metrics = model_class._metrics
 
+                # print("context[phases][shuffle_filelist]:{}".format(model_dict["shuffle_filelist"]))
+                # print("context[phases][shuffle_filelist]:{}".format(type(model_dict["shuffle_filelist"])))
+                # print("context[phases][shuffle_filelist]:{}".format(model_dict["shuffle_filelist"]=="True"))
+                if "shuffle_filelist" not in model_dict:
+                    pass
+                elif isinstance(model_dict["shuffle_filelist"], bool) == False:
+                    print(
+                        "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
+                    )
+                    pass
+                elif model_dict["shuffle_filelist"] == True:
+                    random.shuffle(context["file_list"])
+                    print("File_list: {}".format(context["file_list"]))
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
@@ -420,6 +435,16 @@ class PSRunner(RunnerBase):
         model_class = context["model"][model_dict["name"]]["model"]
         metrics = model_class._metrics
         for epoch in range(epochs):
+            if "shuffle_filelist" not in model_dict:
+                pass
+            elif isinstance(model_dict["shuffle_filelist"], bool) == False:
+                print(
+                    "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
+                )
+                pass
+            elif model_dict["shuffle_filelist"] == True:
+                random.shuffle(context["file_list"])
+                print("File_list: {}".format(context["file_list"]))
             begin_time = time.time()
             result = self._run(context, model_dict)
             end_time = time.time()
@@ -465,6 +490,16 @@ class CollectiveRunner(RunnerBase):
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
+            if "shuffle_filelist" not in model_dict:
+                pass
+            elif isinstance(model_dict["shuffle_filelist"], bool) == False:
+                print(
+                    "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
+                )
+                pass
+            elif model_dict["shuffle_filelist"] == True:
+                random.shuffle(context["file_list"])
+                print("File_list: {}".format(context["file_list"]))
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -493,6 +528,16 @@ class PslibRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         for epoch in range(epochs):
+            if "shuffle_filelist" not in model_dict:
+                pass
+            elif isinstance(model_dict["shuffle_filelist"], bool) == False:
+                print(
+                    "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
+                )
+                pass
+            elif model_dict["shuffle_filelist"] == True:
+                random.shuffle(context["file_list"])
+                print("File_list: {}".format(context["file_list"]))
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -555,6 +600,16 @@ class SingleInferRunner(RunnerBase):
                 metrics = model_class._infer_results
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
+                if "shuffle_filelist" not in model_dict:
+                    pass
+                elif isinstance(model_dict["shuffle_filelist"], bool) == False:
+                    print(
+                        "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
+                    )
+                    pass
+                elif model_dict["shuffle_filelist"] == True:
+                    random.shuffle(context["file_list"])
+                    print("File_list: {}".format(context["file_list"]))
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
