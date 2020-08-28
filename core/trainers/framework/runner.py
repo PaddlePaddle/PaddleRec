@@ -174,18 +174,20 @@ class RunnerBase(object):
                         fetch_list=metrics_varnames,
                         return_numpy=False)
 
+                    metrics = [batch_id]
+                    metrics_rets = [
+                        as_numpy(metrics_tensor)
+                        for metrics_tensor in metrics_tensors
+                    ]
+                    metrics.extend(metrics_rets)
+
                     if batch_id % fetch_period == 0 and batch_id != 0:
-                        metrics = [batch_id]
                         end_time = time.time()
                         seconds = end_time - begin_time
-                        metrics.extend([seconds])
+                        metrics_logging = metrics[:]
+                        metrics_logging = metrics.insert(1, seconds)
                         begin_time = end_time
 
-                        metrics_rets = [
-                            as_numpy(metrics_tensor)
-                            for metrics_tensor in metrics_tensors
-                        ]
-                        metrics.extend(metrics_rets)
                         logging.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
