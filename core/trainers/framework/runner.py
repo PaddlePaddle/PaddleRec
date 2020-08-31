@@ -585,7 +585,7 @@ class SingleInferRunner(RunnerBase):
     def _load(self, context, model_dict, model_path):
         if model_path is None or model_path == "":
             return
-        logger.info("load persistables from", model_path)
+        logger.info("load persistables from {}".format(model_path))
 
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             train_prog = context["model"][model_dict["name"]]["main_program"]
