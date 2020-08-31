@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import warnings
+import logging
 
 import paddle.fluid as fluid
 import paddle.fluid.core as core
@@ -24,6 +25,10 @@ __all__ = [
     "StartupBase", "SingleStartup", "PSStartup", "CollectiveStartup",
     "FineTuningStartup"
 ]
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class StartupBase(object):
@@ -41,10 +46,10 @@ class StartupBase(object):
             "runner." + context["runner_name"] + ".init_model_path", None)
         if dirname is None or dirname == "":
             return
-        print("going to load ", dirname)
+        logger.info("going to load ", dirname)
         fluid.io.load_persistables(
             context["exe"], dirname, main_program=main_program)
-        print("load from {} success".format(dirname))
+        logger.info("load from {} success".format(dirname))
 
 
 class SingleStartup(StartupBase):
@@ -52,7 +57,7 @@ class SingleStartup(StartupBase):
     """
 
     def __init__(self, context):
-        print("Running SingleStartup.")
+        logger.info("Running SingleStartup.")
         pass
 
     def startup(self, context):
@@ -79,7 +84,7 @@ class FineTuningStartup(StartupBase):
         self.self.op_role_var_attr_name = core.op_proto_and_checker_maker.kOpRoleVarAttrName(
         )
 
-        print("Running SingleStartup.")
+        logger.info("Running SingleStartup.")
 
     def _is_opt_role_op(self, op):
         # NOTE: depend on oprole to find out whether this op is for
@@ -155,7 +160,7 @@ class FineTuningStartup(StartupBase):
             "runner." + context["runner_name"] + ".init_model_path", None)
         if dirname is None or dirname == "":
             return
-        print("going to load ", dirname)
+        logger.info("going to load ", dirname)
 
         params_grads = self._get_params_grads(main_program)
         update_params = [p for p, _ in params_grads]
@@ -169,7 +174,7 @@ class FineTuningStartup(StartupBase):
 
         fluid.io.load_vars(context["exe"], dirname, main_program,
                            need_load_vars)
-        print("load from {} success".format(dirname))
+        logger.info("load from {} success".format(dirname))
 
     def startup(self, context):
         for model_dict in context["phases"]:
@@ -187,7 +192,7 @@ class FineTuningStartup(StartupBase):
 
 class PSStartup(StartupBase):
     def __init__(self, context):
-        print("Running PSStartup.")
+        logger.info("Running PSStartup.")
         pass
 
     def startup(self, context):
@@ -204,7 +209,7 @@ class PSStartup(StartupBase):
 
 class CollectiveStartup(StartupBase):
     def __init__(self, context):
-        print("Running CollectiveStartup.")
+        logger.info("Running CollectiveStartup.")
         pass
 
     def startup(self, context):
@@ -222,7 +227,7 @@ class CollectiveStartup(StartupBase):
 
 class SingleInferStartup(StartupBase):
     def __init__(self, context):
-        print("Running SingleInferStartup.")
+        logger.info("Running SingleInferStartup.")
         pass
 
     def startup(self, context):

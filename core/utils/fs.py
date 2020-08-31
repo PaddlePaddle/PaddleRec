@@ -13,8 +13,14 @@
 # limitations under the License.
 
 import os
+import time
+import logging
 
 from paddle.fluid.incubate.fleet.utils.hdfs import HDFSClient
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def is_afs_path(path):
@@ -177,4 +183,4 @@ class FileHandler(object):
             return self._hdfs_client.upload(dest_path, org_path)
         if org_is_afs and not dest_is_afs:
             return self._hdfs_client.download(org_path, dest_path)
-        print("Not Suppor hdfs cp currently")
+        logger.info("Not Suppor hdfs cp currently")

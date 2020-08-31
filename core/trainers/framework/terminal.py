@@ -15,11 +15,16 @@
 from __future__ import print_function
 
 import warnings
+import logging
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 
 __all__ = ["TerminalBase", "PSTerminalBase"]
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class TerminalBase(object):
@@ -30,7 +35,7 @@ class TerminalBase(object):
         pass
 
     def terminal(self, context):
-        print("PaddleRec Finish")
+        logger.info("PaddleRec Finish")
 
 
 class PSTerminal(TerminalBase):
@@ -42,4 +47,4 @@ class PSTerminal(TerminalBase):
 
     def terminal(self, context):
         context["fleet"].stop_worker()
-        print("PaddleRec Finish")
+        logger.info("PaddleRec Finish")

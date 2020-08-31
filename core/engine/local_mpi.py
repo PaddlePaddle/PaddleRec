@@ -19,8 +19,13 @@ import copy
 import os
 import sys
 import subprocess
+import logging
 
 from paddlerec.core.engine.engine import Engine
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class LocalMPIEngine(Engine):
@@ -51,7 +56,7 @@ class LocalMPIEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].wait()
-        print(
+        logger.info(
             "all workers and parameter servers already completed",
             file=sys.stderr)
 

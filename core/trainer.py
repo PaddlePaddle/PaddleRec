@@ -17,10 +17,15 @@ import os
 import time
 import sys
 import traceback
+import logging
 
 from paddle import fluid
 
 from paddlerec.core.utils import envs
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class EngineMode:
@@ -88,7 +93,7 @@ class Trainer(object):
                     phases.append(phase)
 
         self._context["phases"] = phases
-        print("PaddleRec: Runner {} Begin".format(self._runner_name))
+        logger.info("PaddleRec: Runner {} Begin".format(self._runner_name))
         self.which_engine()
         self.which_device()
         self.which_fleet_mode()
@@ -107,7 +112,7 @@ class Trainer(object):
             self.device = Device.GPU
             gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
             self._place = fluid.CUDAPlace(gpu_id)
-            print("PaddleRec run on device GPU: {}".format(gpu_id))
+            logger.info("PaddleRec run on device GPU: {}".format(gpu_id))
             self._exe = fluid.Executor(self._place)
         elif device == "CPU":
             self.device = Device.CPU
@@ -169,7 +174,7 @@ class Trainer(object):
 
     def which_cluster_type(self):
         cluster_type = os.getenv("PADDLEREC_CLUSTER_TYPE", "MPI")
-        print("PADDLEREC_CLUSTER_TYPE: {}".format(cluster_type))
+        logger.info("PADDLEREC_CLUSTER_TYPE: {}".format(cluster_type))
         if cluster_type and cluster_type.upper() == "K8S":
             self._context["cluster_type"] = "K8S"
         else:
@@ -184,7 +189,7 @@ class Trainer(object):
             self.is_infer = False
         else:
             self.is_infer = True
-        print("Executor Mode: {}".format(executor_mode))
+        logger.info("Executor Mode: {}".format(executor_mode))
         self._context["is_infer"] = self.is_infer
 
     def legality_check(self):
@@ -224,7 +229,7 @@ class Trainer(object):
         Return:
             None, just sleep in base
         """
-        print('unknow context_status:%s, do nothing' % context['status'])
+        logger.info('unknow context_status:%s, do nothing' % context['status'])
         time.sleep(60)
 
     def handle_processor_exception(self, context, exception):
@@ -233,9 +238,10 @@ class Trainer(object):
         Return:
             bool exit_app or not
         """
-        print("\n--------------------------------\nPaddleRec Error Message "
-              "Summary:\n--------------------------------\n")
-        print(
+        logger.info(
+            "\n--------------------------------\nPaddleRec Error Message "
+            "Summary:\n--------------------------------\n")
+        logger.info(
             'Exit PaddleRec. catch exception in precoss status: [%s], except: %s'
             % (context['status'], str(exception)))
         return True
@@ -258,7 +264,7 @@ class Trainer(object):
                     break
             except Exception as err:
                 traceback.print_exc()
-                print('Catch Exception:%s' % str(err))
+                logger.info('Catch Exception:%s' % str(err))
                 sys.stdout.flush()
                 self.handle_processor_exception(self._context, err)
                 sys.exit(type(err).__name__)

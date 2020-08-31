@@ -15,11 +15,16 @@
 import abc
 import datetime
 import time
+import logging
 
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import fs as fs
 from paddlerec.core.utils import util as util
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class DatasetHolder(object):
@@ -187,7 +192,7 @@ class TimeSplitDatasetHolder(DatasetHolder):
         windown_min = params['time_window_min']
         if begin_time not in self._datasets:
             while self.check_ready(begin_time, windown_min) == False:
-                print("dataset not ready, time:" + begin_time)
+                logger.info("dataset not ready, time:" + begin_time)
                 time.sleep(30)
             file_list = self.get_file_list(begin_time, windown_min,
                                            params['node_num'],

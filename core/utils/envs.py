@@ -21,6 +21,12 @@ import sys
 import six
 import traceback
 import six
+import time
+import logging
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 global_envs = {}
 global_envs_flatten = {}
@@ -104,7 +110,7 @@ def set_global_envs(envs):
             global_envs[name] = "DataLoader"
 
     if get_platform() == "LINUX" and six.PY3:
-        print("QueueDataset can not support PY3, change to DataLoader")
+        logger.info("QueueDataset can not support PY3, change to DataLoader")
         for dataset in envs["dataset"]:
             name = ".".join(["dataset", dataset["name"], "type"])
             global_envs[name] = "DataLoader"
@@ -207,7 +213,7 @@ def lazy_instance_by_package(package, class_name):
         return instance
     except Exception as err:
         traceback.print_exc()
-        print('Catch Exception:%s' % str(err))
+        logger.info('Catch Exception:%s' % str(err))
         return None
 
 
@@ -223,7 +229,7 @@ def lazy_instance_by_fliename(abs, class_name):
         return instance
     except Exception as err:
         traceback.print_exc()
-        print('Catch Exception:%s' % str(err))
+        logger.info('Catch Exception:%s' % str(err))
         return None
 
 

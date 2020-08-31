@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+import logging
 from paddlerec.core.utils import envs
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class ValueFormat:
@@ -41,64 +47,67 @@ class ValueFormat:
     def is_type_valid(self, name, value):
         if self.value_type == "int":
             if not isinstance(value, int):
-                print("\nattr {} should be int, but {} now\n".format(
+                logger.info("\nattr {} should be int, but {} now\n".format(
                     name, type(value)))
                 return False
             return True
 
         elif self.value_type == "str":
             if not isinstance(value, str):
-                print("\nattr {} should be str, but {} now\n".format(
+                logger.info("\nattr {} should be str, but {} now\n".format(
                     name, type(value)))
                 return False
             return True
 
         elif self.value_type == "strs":
             if not isinstance(value, list):
-                print("\nattr {} should be list(str), but {} now\n".format(
-                    name, type(value)))
+                logger.info("\nattr {} should be list(str), but {} now\n".
+                            format(name, type(value)))
                 return False
             for v in value:
                 if not isinstance(v, str):
-                    print("\nattr {} should be list(str), but list({}) now\n".
-                          format(name, type(v)))
+                    logger.info(
+                        "\nattr {} should be list(str), but list({}) now\n".
+                        format(name, type(v)))
                     return False
             return True
 
         elif self.value_type == "dict":
             if not isinstance(value, dict):
-                print("\nattr {} should be str, but {} now\n".format(
+                logger.info("\nattr {} should be str, but {} now\n".format(
                     name, type(value)))
                 return False
             return True
 
         elif self.value_type == "dicts":
             if not isinstance(value, list):
-                print("\nattr {} should be list(dist), but {} now\n".format(
-                    name, type(value)))
+                logger.info("\nattr {} should be list(dist), but {} now\n".
+                            format(name, type(value)))
                 return False
             for v in value:
                 if not isinstance(v, dict):
-                    print("\nattr {} should be list(dist), but list({}) now\n".
-                          format(name, type(v)))
+                    logger.info(
+                        "\nattr {} should be list(dist), but list({}) now\n".
+                        format(name, type(v)))
                     return False
             return True
 
         elif self.value_type == "ints":
             if not isinstance(value, list):
-                print("\nattr {} should be list(int), but {} now\n".format(
-                    name, type(value)))
+                logger.info("\nattr {} should be list(int), but {} now\n".
+                            format(name, type(value)))
                 return False
             for v in value:
                 if not isinstance(v, int):
-                    print("\nattr {} should be list(int), but list({}) now\n".
-                          format(name, type(v)))
+                    logger.info(
+                        "\nattr {} should be list(int), but list({}) now\n".
+                        format(name, type(v)))
                     return False
             return True
 
         else:
-            print("\nattr {}'s type is {}, can not be supported now\n".format(
-                name, type(value)))
+            logger.info("\nattr {}'s type is {}, can not be supported now\n".
+                        format(name, type(value)))
             return False
 
     def is_value_valid(self, name, value):
@@ -108,7 +117,7 @@ class ValueFormat:
 
 def in_value_handler(name, value, values):
     if value not in values:
-        print("\nattr {}'s value is {}, but {} is expected\n".format(
+        logger.info("\nattr {}'s value is {}, but {} is expected\n".format(
             name, value, values))
         return False
     return True
@@ -116,7 +125,7 @@ def in_value_handler(name, value, values):
 
 def eq_value_handler(name, value, values):
     if value != values:
-        print("\nattr {}'s value is {}, but == {} is expected\n".format(
+        logger.info("\nattr {}'s value is {}, but == {} is expected\n".format(
             name, value, values))
         return False
     return True
@@ -124,7 +133,7 @@ def eq_value_handler(name, value, values):
 
 def ge_value_handler(name, value, values):
     if value < values:
-        print("\nattr {}'s value is {}, but >= {} is expected\n".format(
+        logger.info("\nattr {}'s value is {}, but >= {} is expected\n".format(
             name, value, values))
         return False
     return True
@@ -132,7 +141,7 @@ def ge_value_handler(name, value, values):
 
 def le_value_handler(name, value, values):
     if value > values:
-        print("\nattr {}'s value is {}, but <= {} is expected\n".format(
+        logger.info("\nattr {}'s value is {}, but <= {} is expected\n".format(
             name, value, values))
         return False
     return True
@@ -160,8 +169,8 @@ def yaml_validation(config):
 
     for required in require_checkers:
         if required not in _config.keys():
-            print("\ncan not find {} in yaml, which is required\n".format(
-                required))
+            logger.info("\ncan not find {} in yaml, which is required\n".
+                        format(required))
             return False
 
     for name, value in _config.items():

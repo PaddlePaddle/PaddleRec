@@ -17,6 +17,7 @@ from __future__ import print_function
 import os
 import time
 import warnings
+import logging
 import numpy as np
 import paddle.fluid as fluid
 
@@ -26,6 +27,10 @@ from paddlerec.core.metric import Metric
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
 ]
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 def as_numpy(tensor):
@@ -169,7 +174,7 @@ class RunnerBase(object):
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
-                        print(metrics_format.format(*metrics))
+                        logger.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
@@ -365,7 +370,7 @@ class SingleRunner(RunnerBase):
     """
 
     def __init__(self, context):
-        print("Running SingleRunner.")
+        logger.info("Running SingleRunner.")
         pass
 
     def run(self, context):
@@ -381,7 +386,7 @@ class SingleRunner(RunnerBase):
                 result = self._run(context, model_dict)
                 end_time = time.time()
                 seconds = end_time - begin_time
-                message = "epoch {} done, use time: {}".format(epoch, seconds)
+                message = "epoch {} done, use time: {}s".format(epoch, seconds)
                 metrics_result = []
                 for key in metrics:
                     if isinstance(metrics[key], Metric):
@@ -394,7 +399,7 @@ class SingleRunner(RunnerBase):
                         metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
-                print(message)
+                logger.info(message)
 
                 with fluid.scope_guard(context["model"][model_dict["name"]][
                         "scope"]):
@@ -409,7 +414,7 @@ class SingleRunner(RunnerBase):
 
 class PSRunner(RunnerBase):
     def __init__(self, context):
-        print("Running PSRunner.")
+        logger.info("Running PSRunner.")
         pass
 
     def run(self, context):
@@ -424,7 +429,7 @@ class PSRunner(RunnerBase):
             result = self._run(context, model_dict)
             end_time = time.time()
             seconds = end_time - begin_time
-            message = "epoch {} done, use time: {}".format(epoch, seconds)
+            message = "epoch {} done, use time: {}s".format(epoch, seconds)
 
             # TODO, wait for PaddleCloudRoleMaker supports gloo
             from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
@@ -442,7 +447,7 @@ class PSRunner(RunnerBase):
                         metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
-            print(message)
+            logger.info(message)
             with fluid.scope_guard(context["model"][model_dict["name"]][
                     "scope"]):
                 train_prog = context["model"][model_dict["name"]][
@@ -456,7 +461,7 @@ class PSRunner(RunnerBase):
 
 class CollectiveRunner(RunnerBase):
     def __init__(self, context):
-        print("Running CollectiveRunner.")
+        logger.info("Running CollectiveRunner.")
         pass
 
     def run(self, context):
@@ -469,7 +474,7 @@ class CollectiveRunner(RunnerBase):
             self._run(context, model_dict)
             end_time = time.time()
             seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
+            logger.info("epoch {} done, use time: {}s".format(epoch, seconds))
             with fluid.scope_guard(context["model"][model_dict["name"]][
                     "scope"]):
                 train_prog = context["model"][model_dict["name"]][
@@ -483,7 +488,7 @@ class CollectiveRunner(RunnerBase):
 
 class PslibRunner(RunnerBase):
     def __init__(self, context):
-        print("Running PSRunner.")
+        logger.info("Running PSRunner.")
         pass
 
     def run(self, context):
@@ -497,7 +502,7 @@ class PslibRunner(RunnerBase):
             self._run(context, model_dict)
             end_time = time.time()
             seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
+            logger.info("epoch {} done, use time: {}s".format(epoch, seconds))
         """
         # online Training Can do more, As shown below:
 
@@ -527,7 +532,7 @@ class PslibRunner(RunnerBase):
                     self._run(context, model_dict)
                     end_time = time.time()
                     seconds = end_time - begin_time
-                    print("epoch {} done, use time: {}".format(epoch, seconds))
+                    logger.info("epoch {} done, use time: {}".format(epoch, seconds))
                     with fluid.scope_guard(context["model"][model_dict["name"]]
                                            ["scope"]):
                         train_prog = context["model"][model_dict["name"]][
@@ -543,7 +548,7 @@ class PslibRunner(RunnerBase):
 
 class SingleInferRunner(RunnerBase):
     def __init__(self, context):
-        print("Running SingleInferRunner.")
+        logger.info("Running SingleInferRunner.")
         pass
 
     def run(self, context):
@@ -559,7 +564,7 @@ class SingleInferRunner(RunnerBase):
                 result = self._run(context, model_dict)
                 end_time = time.time()
                 seconds = end_time - begin_time
-                message = "Infer {} of epoch {} done, use time: {}".format(
+                message = "Infer {} of epoch {} done, use time: {}s".format(
                     model_dict["name"], epoch_name, seconds)
                 metrics_result = []
                 for key in metrics:
@@ -573,14 +578,14 @@ class SingleInferRunner(RunnerBase):
                         metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
-                print(message)
+                logger.info(message)
 
         context["status"] = "terminal_pass"
 
     def _load(self, context, model_dict, model_path):
         if model_path is None or model_path == "":
             return
-        print("load persistables from", model_path)
+        logger.info("load persistables from", model_path)
 
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             train_prog = context["model"][model_dict["name"]]["main_program"]

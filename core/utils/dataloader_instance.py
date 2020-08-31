@@ -14,12 +14,17 @@
 from __future__ import print_function
 
 import os
+import logging
 from paddlerec.core.utils.envs import lazy_instance_by_fliename
 from paddlerec.core.utils.envs import get_global_env
 from paddlerec.core.utils.envs import get_runtime_environ
 from paddlerec.core.reader import SlotReader
 from paddlerec.core.trainer import EngineMode
 from paddlerec.core.utils.util import split_files, check_filelist
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def dataloader_by_name(readerclass,
@@ -41,7 +46,7 @@ def dataloader_by_name(readerclass,
     hidden_file_list, files = check_filelist(
         hidden_file_list=[], data_file_list=[], train_data_path=data_path)
     if (hidden_file_list is not None):
-        print(
+        logger.info(
             "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
             format(hidden_file_list))
 
@@ -55,7 +60,7 @@ def dataloader_by_name(readerclass,
             "cluster_type"] == "K8S":
         # for k8s mount mode, split files for every node
         need_split_files = True
-    print("need_split_files: {}".format(need_split_files))
+    logger.info("need_split_files: {}".format(need_split_files))
     if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
@@ -103,7 +108,7 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
     hidden_file_list, files = check_filelist(
         hidden_file_list=[], data_file_list=[], train_data_path=data_path)
     if (hidden_file_list is not None):
-        print(
+        logger.info(
             "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
             format(hidden_file_list))
 
@@ -173,7 +178,7 @@ def slotdataloader(readerclass, train, yaml_file, context):
     hidden_file_list, files = check_filelist(
         hidden_file_list=[], data_file_list=[], train_data_path=data_path)
     if (hidden_file_list is not None):
-        print(
+        logger.info(
             "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
             format(hidden_file_list))
 

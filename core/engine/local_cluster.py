@@ -19,9 +19,14 @@ import copy
 import os
 import sys
 import subprocess
+import logging
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.utils import envs
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class LocalClusterEngine(Engine):
@@ -57,7 +62,8 @@ class LocalClusterEngine(Engine):
             ]
 
             factory = "paddlerec.core.factory"
-            cmd = [sys.executable, "-u", "-m", factory, self.trainer]
+            cmd = [sys.executable, "-u", "-m", factory,
+                   self.trainer]  #problems
 
             for i in range(server_num):
                 current_env.update({
@@ -145,7 +151,7 @@ class LocalClusterEngine(Engine):
             if len(log_fns) > 0:
                 log_fns[i].close()
             procs[i].terminate()
-        print(
+        logger.info(
             "all workers already completed, you can view logs under the `{}` directory".
             format(logs_dir),
             file=sys.stderr)

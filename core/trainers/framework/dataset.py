@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import os
+import logging
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
@@ -24,6 +25,10 @@ from paddlerec.core.trainer import EngineMode
 from paddlerec.core.utils.util import split_files, check_filelist
 
 __all__ = ["DatasetBase", "DataLoader", "QueueDataset"]
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class DatasetBase(object):
@@ -83,7 +88,8 @@ class QueueDataset(DatasetBase):
         name = "dataset." + dataset_name + "."
         type_name = envs.get_global_env(name + "type")
         if envs.get_platform() != "LINUX":
-            print("platform ", envs.get_platform(), "Reader To Dataloader")
+            logger.info("platform ",
+                        envs.get_platform(), "Reader To Dataloader")
             type_name = "DataLoader"
 
         if type_name == "DataLoader":
@@ -126,7 +132,7 @@ class QueueDataset(DatasetBase):
             data_file_list=[],
             train_data_path=train_data_path)
         if (hidden_file_list is not None):
-            print(
+            logger.info(
                 "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
                 format(hidden_file_list))
 
@@ -143,7 +149,7 @@ class QueueDataset(DatasetBase):
         if need_split_files:
             file_list = split_files(file_list, context["fleet"].worker_index(),
                                     context["fleet"].worker_num())
-        print("File_list: {}".format(file_list))
+        logger.info("File_list: {}".format(file_list))
 
         dataset.set_filelist(file_list)
         for model_dict in context["phases"]:

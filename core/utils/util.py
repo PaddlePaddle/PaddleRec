@@ -16,8 +16,13 @@ import datetime
 import os
 import sys
 import time
+import logging
 import numpy as np
 from paddle import fluid
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 def save_program_proto(path, program=None):
@@ -146,9 +151,9 @@ def print_log(log_str, params):
     log_str = time_str + " " + log_str
     if 'master' in params and params['master']:
         if 'index' in params and params['index'] == 0:
-            print(log_str)
+            logger.info(log_str)
     else:
-        print(log_str)
+        logger.info(log_str)
     sys.stdout.flush()
     if 'stdout' in params:
         params['stdout'] += log_str + '\n'

@@ -17,9 +17,14 @@ General Trainer, applicable to many situations: Single/Cluster/Local_Cluster + P
 from __future__ import print_function
 
 import os
+import logging
 
 from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer, EngineMode, FleetMode
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class GeneralTrainer(Trainer):
@@ -34,7 +39,7 @@ class GeneralTrainer(Trainer):
         self.runner_env_name = "runner." + self._context["runner_name"]
 
     def processor_register(self):
-        print("processor_register begin")
+        logger.info("processor_register begin")
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('network_pass', self.network)
         self.regist_context_processor('startup_pass', self.startup)

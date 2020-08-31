@@ -16,6 +16,7 @@ from __future__ import print_function
 
 import os
 import warnings
+import logging
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
@@ -25,6 +26,10 @@ __all__ = [
     "NetworkBase", "SingleNetwork", "PSNetwork", "PslibNetwork",
     "CollectiveNetwork", "FineTuningNetwork"
 ]
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class NetworkBase(object):
@@ -43,7 +48,7 @@ class SingleNetwork(NetworkBase):
     """
 
     def __init__(self, context):
-        print("Running SingleNetwork.")
+        logger.info("Running SingleNetwork.")
         pass
 
     def build_network(self, context):
@@ -114,7 +119,7 @@ class FineTuningNetwork(NetworkBase):
     """
 
     def __init__(self, context):
-        print("Running FineTuningNetwork.")
+        logger.info("Running FineTuningNetwork.")
 
     def build_network(self, context):
         context["model"] = {}
@@ -193,7 +198,7 @@ class FineTuningNetwork(NetworkBase):
 
 class PSNetwork(NetworkBase):
     def __init__(self, context):
-        print("Running PSNetwork.")
+        logger.info("Running PSNetwork.")
         pass
 
     def build_network(self, context):
@@ -285,7 +290,7 @@ class PSNetwork(NetworkBase):
 
 class PslibNetwork(NetworkBase):
     def __init__(self, context):
-        print("Running PslibNetwork.")
+        logger.info("Running PslibNetwork.")
         pass
 
     def build_network(self, context):
@@ -357,7 +362,7 @@ class PslibNetwork(NetworkBase):
 
 class CollectiveNetwork(NetworkBase):
     def __init__(self, context):
-        print("Running CollectiveNetwork.")
+        logger.info("Running CollectiveNetwork.")
         pass
 
     def build_network(self, context):

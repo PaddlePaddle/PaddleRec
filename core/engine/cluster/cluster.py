@@ -19,10 +19,15 @@ import copy
 import os
 import subprocess
 import warnings
+import logging
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class ClusterEngine(Engine):
@@ -220,7 +225,8 @@ class ClusterEnvBase(object):
     def env_set(self):
         envs.set_runtime_environs(self.cluster_env)
         flattens = envs.flatten_environs(self.cluster_env)
-        print(envs.pretty_print_envs(flattens, ("Cluster Envs", "Value")))
+        logger.info(
+            envs.pretty_print_envs(flattens, ("Cluster Envs", "Value")))
 
 
 class PaddleCloudMpiEnv(ClusterEnvBase):

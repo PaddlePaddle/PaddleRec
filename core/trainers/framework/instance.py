@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import warnings
+import logging
 
 import paddle.fluid as fluid
 from paddlerec.core.utils import envs
@@ -23,6 +24,10 @@ __all__ = [
     "InstanceBase", "SingleInstance", "PSInstance", "PslibInstance",
     "CollectiveInstance"
 ]
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 
 class InstanceBase(object):
@@ -38,7 +43,7 @@ class InstanceBase(object):
 
 class SingleInstance(InstanceBase):
     def __init__(self, context):
-        print("Running SingleInstance.")
+        logger.info("Running SingleInstance.")
         pass
 
     def instance(self, context):
@@ -47,7 +52,7 @@ class SingleInstance(InstanceBase):
 
 class PSInstance(InstanceBase):
     def __init__(self, context):
-        print("Running PSInstance.")
+        logger.info("Running PSInstance.")
         pass
 
     def instance(self, context):
@@ -61,7 +66,7 @@ class PSInstance(InstanceBase):
 
 class PslibInstance(InstanceBase):
     def __init__(self, context):
-        print("Running PslibInstance.")
+        logger.info("Running PslibInstance.")
         pass
 
     def instance(self, context):
@@ -73,7 +78,7 @@ class PslibInstance(InstanceBase):
 
 class CollectiveInstance(InstanceBase):
     def __init__(self, context):
-        print("Running CollectiveInstance.")
+        logger.info("Running CollectiveInstance.")
         pass
 
     def instance(self, context):

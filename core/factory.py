@@ -14,7 +14,12 @@
 
 import os
 import sys
+import logging
 from paddlerec.core.utils import envs
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("fluid")
+logger.setLevel(logging.INFO)
 
 trainer_abs = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "trainers")
@@ -53,7 +58,7 @@ class TrainerFactory(object):
 
     @staticmethod
     def _build_trainer(yaml_path):
-        print(envs.pretty_print_envs(envs.get_global_envs()))
+        logger.info(envs.pretty_print_envs(envs.get_global_envs()))
 
         train_mode = envs.get_trainer()
         trainer_abs = trainers.get(train_mode, None)

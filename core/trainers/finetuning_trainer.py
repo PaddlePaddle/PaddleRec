@@ -34,7 +34,7 @@ class FineTuningTrainer(Trainer):
         self.runner_env_name = "runner." + self._context["runner_name"]
 
     def processor_register(self):
-        print("processor_register begin")
+        logger.info("processor_register begin")
         self.regist_context_processor('uninit', self.instance)
         self.regist_context_processor('network_pass', self.network)
         self.regist_context_processor('startup_pass', self.startup)
