@@ -119,7 +119,8 @@ class LocalClusterEngine(Engine):
                     "PADDLE_TRAINERS_NUM": str(worker_num),
                     "TRAINING_ROLE": "TRAINER",
                     "PADDLE_TRAINER_ID": str(i),
-                    "FLAGS_selected_gpus": str(selected_gpus[i])
+                    "FLAGS_selected_gpus": str(selected_gpus[i]),
+                    "PADDLEREC_GPU_NUMS": str(selected_gpus_num)
                 })
 
                 os.system("mkdir -p {}".format(logs_dir))

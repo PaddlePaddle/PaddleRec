@@ -47,6 +47,16 @@ def dataloader_by_name(readerclass,
 
     files.sort()
 
+    # for local cluster: discard some files if files cannot be divided equally between GPUs
+    if (context["device"] == "GPU"):
+        selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
+        discard_file_nums = len(files) % selected_gpu_nums
+        if (discard_file_nums != 0):
+            print(
+                "Warning: beacause files cannot be divided equally between GPUs,discard these files:{}".
+                format(files[-discard_file_nums:]))
+            files = files[:len(files) - discard_file_nums]
+
     need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
         # for local cluster: split files for multi process
@@ -108,6 +118,16 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
             format(hidden_file_list))
 
     files.sort()
+
+    # for local cluster: discard some files if files cannot be divided equally between GPUs
+    if (context["device"] == "GPU"):
+        selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
+        discard_file_nums = len(files) % selected_gpu_nums
+        if (discard_file_nums != 0):
+            print(
+                "Warning: beacause files cannot be divided equally between GPUs, discard these files:{}".
+                format(files[-discard_file_nums:]))
+            files = files[:len(files) - discard_file_nums]
 
     need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
@@ -178,6 +198,16 @@ def slotdataloader(readerclass, train, yaml_file, context):
             format(hidden_file_list))
 
     files.sort()
+
+    # for local cluster: discard some files if files cannot be divided equally between GPUs
+    if (context["device"] == "GPU"):
+        selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
+        discard_file_nums = len(files) % selected_gpu_nums
+        if (discard_file_nums != 0):
+            print(
+                "Warning: beacause files cannot be divided equally between GPUs,discard these files:{}".
+                format(files[-discard_file_nums:]))
+            files = files[:len(files) - discard_file_nums]
 
     need_split_files = False
     if context["engine"] == EngineMode.LOCAL_CLUSTER:
