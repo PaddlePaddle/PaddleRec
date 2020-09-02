@@ -14,6 +14,7 @@
 from __future__ import print_function
 
 import os
+import warnings
 from paddlerec.core.utils.envs import lazy_instance_by_fliename
 from paddlerec.core.utils.envs import get_global_env
 from paddlerec.core.utils.envs import get_runtime_environ
@@ -52,8 +53,8 @@ def dataloader_by_name(readerclass,
         selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
         discard_file_nums = len(files) % selected_gpu_nums
         if (discard_file_nums != 0):
-            print(
-                "Warning: beacause files cannot be divided equally between GPUs,discard these files:{}".
+            warnings.warn(
+                "Because files cannot be divided equally between GPUs,discard these files:{}".
                 format(files[-discard_file_nums:]))
             files = files[:len(files) - discard_file_nums]
 
@@ -124,8 +125,8 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
         selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
         discard_file_nums = len(files) % selected_gpu_nums
         if (discard_file_nums != 0):
-            print(
-                "Warning: beacause files cannot be divided equally between GPUs, discard these files:{}".
+            warnings.warn(
+                "Because files cannot be divided equally between GPUs,discard these files:{}".
                 format(files[-discard_file_nums:]))
             files = files[:len(files) - discard_file_nums]
 
@@ -204,8 +205,8 @@ def slotdataloader(readerclass, train, yaml_file, context):
         selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
         discard_file_nums = len(files) % selected_gpu_nums
         if (discard_file_nums != 0):
-            print(
-                "Warning: beacause files cannot be divided equally between GPUs,discard these files:{}".
+            warnings.warn(
+                "Because files cannot be divided equally between GPUs,discard these files:{}".
                 format(files[-discard_file_nums:]))
             files = files[:len(files) - discard_file_nums]
 
