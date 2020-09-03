@@ -25,17 +25,39 @@ logger = logging.getLogger("root")
 logger.propagate = False
 
 
+def get_cluster(node_ips, node_ip, paddle_ports, selected_gpus):
+    assert type(paddle_ports) is list, "paddle_ports must be list"
+    cluster = Cluster(hdfs=None)
+    trainer_rank = 0
+    for node_rank, ip in enumerate(node_ips):
+        pod = Pod()
+        pod.rank = node_rank
+        pod.addr = ip
+        for i in range(len(selected_gpus)):
+            trainer = Trainer()
+            trainer.gpus.append(selected_gpus[i])
+            trainer.endpoint = "%s:%d" % (ip, paddle_ports[i])
+            trainer.rank = trainer_rank
+            trainer_rank += 1
+
+            pod.trainers.append(trainer)
+        cluster.pods.append(pod)
+
+    pod_rank = node_ips.index(node_ip)
+    return cluster, cluster.pods[pod_rank]
+
+
 def get_cloud_cluster(selected_gpus, args_port=None):
     #you can automatically get ip info while using paddlecloud multi nodes mode.
     node_ips = os.getenv("PADDLE_TRAINERS")
     assert node_ips is not None, "PADDLE_TRAINERS should not be None"
-
+    print("node_ips:{}".format(node_ips))
     node_ip = os.getenv("POD_IP")
     assert node_ip is not None, "POD_IP should not be None"
-
+    print("node_ip:{}".format(node_ip))
     node_rank = os.getenv("PADDLE_TRAINER_ID")
     assert node_rank is not None, "PADDLE_TRAINER_ID should not be None"
-
+    print("node_rank:{}".format(node_rank))
     node_ips = node_ips.split(",")
     num_nodes = len(node_ips)
     node_rank = int(node_rank)
