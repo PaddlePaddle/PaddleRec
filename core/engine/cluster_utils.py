@@ -14,15 +14,180 @@
 
 import functools
 import logging
-import os
-import copy
 import socket
+import time
+import os
+import signal
+import copy
 import sys
 import subprocess
+from contextlib import closing
 import socket
 
 logger = logging.getLogger("root")
 logger.propagate = False
+
+
+class Cluster(object):
+    def __init__(self, hdfs):
+        self.job_server = None
+        self.pods = []
+        self.hdfs = None
+        self.job_stage_flag = None
+
+    def __str__(self):
+        return "job_server:{} pods:{} job_stage_flag:{} hdfs:{}".format(
+            self.job_server, [str(pod) for pod in self.pods],
+            self.job_stage_flag, self.hdfs)
+
+    def __eq__(self, cluster):
+        if len(self.pods) != len(cluster.pods):
+            return False
+
+        for a, b in zip(self.pods, cluster.pods):
+            if a != b:
+                return False
+
+        if self.job_stage_flag != cluster.job_stage_flag:
+            return False
+
+        return True
+
+    def __ne__(self, cluster):
+        return not self.__eq__(cluster)
+
+    def update_pods(cluster):
+        self.pods = copy.copy(cluster.pods)
+
+    def trainers_nranks(self):
+        return len(self.trainers_endpoints())
+
+    def pods_nranks(self):
+        return len(self.pods)
+
+    def trainers_endpoints(self):
+        r = []
+        for pod in self.pods:
+            for t in pod.trainers:
+                r.append(t.endpoint)
+        return r
+
+    def pods_endpoints(self):
+        r = []
+        for pod in self.pods:
+            ep = "{}:{}".format(pod.addr, pod.port)
+            assert pod.port != None and pod.addr != None, "{} not a valid endpoint".format(
+                ep)
+            r.append(ep)
+
+        return r
+
+    def get_pod_by_id(self, pod_id):
+        for pod in self.pods:
+            if str(pod_id) == str(pod.id):
+                return pod
+
+        return None
+
+
+class JobServer(object):
+    def __init__(self):
+        self.endpoint = None
+
+    def __str__(self):
+        return "{}".format(self.endpoint)
+
+    def __eq__(self, j):
+        return self.endpint == j.endpoint
+
+    def __ne__(self, j):
+        return not self == j
+
+
+class Trainer(object):
+    def __init__(self):
+        self.gpus = []
+        self.endpoint = None
+        self.rank = None
+
+    def __str__(self):
+        return "gpu:{} endpoint:{} rank:{}".format(self.gpus, self.endpoint,
+                                                   self.rank)
+
+    def __eq__(self, t):
+        if len(self.gpus) != len(t.gpus):
+            return False
+
+        if self.endpoint != t.endpoint or \
+                self.rank != t.rank:
+            return False
+
+        for a, b in zip(self.gpus, t.gpus):
+            if a != b:
+                return False
+
+        return True
+
+    def __ne__(self, t):
+        return not self == t
+
+    def rank(self):
+        return self.rank
+
+
+class Pod(object):
+    def __init__(self):
+        self.rank = None
+        self.id = None
+        self.addr = None
+        self.port = None
+        self.trainers = []
+        self.gpus = []
+
+    def __str__(self):
+        return "rank:{} id:{} addr:{} port:{} visible_gpu:{} trainers:{}".format(
+            self.rank, self.id, self.addr, self.port, self.gpus,
+            [str(t) for t in self.trainers])
+
+    def __eq__(self, pod):
+        if self.rank != pod.rank or \
+                self.id != pod.id or \
+                self.addr != pod.addr or \
+                self.port != pod.port:
+            logger.debug("pod {} != pod".format(self, pod))
+            return False
+
+        if len(self.trainers) != len(pod.trainers):
+            logger.debug("trainers {} != {}".format(self.trainers,
+                                                    pod.trainers))
+            return False
+
+        for i in range(len(self.trainers)):
+            if self.trainers[i] != pod.trainers[i]:
+                logger.debug("trainer {} != {}".format(self.trainers[i],
+                                                       pod.trainers[i]))
+                return False
+
+        return True
+
+    def __ne__(self, pod):
+        return not self == pod
+
+    def parse_response(self, res_pods):
+        pass
+
+    def rank(self):
+        return self.rank
+
+    def get_visible_gpus(self):
+        r = ""
+        for g in self.gpus:
+            r += "{},".format(g)
+
+        assert r != "", "this pod {} can't see any gpus".format(self)
+
+        r = r[:-1]
+        return r
 
 
 def get_cluster(node_ips, node_ip, paddle_ports, selected_gpus):
