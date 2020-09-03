@@ -21,7 +21,7 @@ from paddlerec.core.utils import envs
 from paddlerec.core.utils import dataloader_instance
 from paddlerec.core.reader import SlotReader
 from paddlerec.core.trainer import EngineMode
-from paddlerec.core.utils.util import split_files
+from paddlerec.core.utils.util import split_files, check_filelist
 
 __all__ = ["DatasetBase", "DataLoader", "QueueDataset"]
 
@@ -68,6 +68,8 @@ class DataLoader(DatasetBase):
             reader_ins = SlotReader(context["config_yaml"])
         if hasattr(reader_ins, 'generate_batch_from_trainfiles'):
             dataloader.set_sample_list_generator(reader)
+        elif hasattr(reader_ins, 'batch_tensor_creator'):
+            dataloader.set_batch_generator(reader)
         else:
             dataloader.set_sample_generator(reader, batch_size)
         return dataloader
@@ -119,14 +121,30 @@ class QueueDataset(DatasetBase):
         dataset.set_pipe_command(pipe_cmd)
         train_data_path = envs.get_global_env(name + "data_path")
 
-        file_list = [
-            os.path.join(train_data_path, x)
-            for x in os.listdir(train_data_path)
-        ]
+        hidden_file_list, file_list = check_filelist(
+            hidden_file_list=[],
+            data_file_list=[],
+            train_data_path=train_data_path)
+        if (hidden_file_list is not None):
+            print(
+                "Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:{}".
+                format(hidden_file_list))
+
+        file_list.sort()
+        need_split_files = False
         if context["engine"] == EngineMode.LOCAL_CLUSTER:
+            # for local cluster: split files for multi process
+            need_split_files = True
+        elif context["engine"] == EngineMode.CLUSTER and context[
+                "cluster_type"] == "K8S":
+            # for k8s mount afs, split files for every node
+            need_split_files = True
+
+        if need_split_files:
             file_list = split_files(file_list, context["fleet"].worker_index(),
                                     context["fleet"].worker_num())
         print("File_list: {}".format(file_list))
+
         dataset.set_filelist(file_list)
         for model_dict in context["phases"]:
             if model_dict["dataset_name"] == dataset_name:

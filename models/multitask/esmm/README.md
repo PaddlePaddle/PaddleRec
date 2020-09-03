@@ -50,11 +50,6 @@ ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An E�
 
 数据地址：[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )
 
-```
-cd data 
-sh run.sh
-```
-
 数据格式参见demo数据：data/train
 
 
@@ -108,11 +103,25 @@ CPU环境
 
 ## 论文复现
 
-用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=1000, thread_num=8, epoch_num=4
+由于原论文的数据太大，我们选取了部分数据作为训练和测试数据, 建议使用gpu训练。
 
+我们的测试ctr auc为0.79+，ctcvr auc为0.82+。
 
-修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
+```
+wget https://paddlerec.bj.bcebos.com/esmm/traindata_10w.csv  
+wget https://paddlerec.bj.bcebos.com/esmm/testdata_10w.csv 
+mkdir data/train_data data/test_data
+mv traindata_10w.csv data/train_data
+mv testdata_10w.csv data/test_data
+```
 
+用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=1024, epoch=10, device=gpu, selected_gpus:"0"
+
+具体配置可以下载config_10w.yaml文件
+```
+wget https://paddlerec.bj.bcebos.com/esmm/config_10w.yaml
+```
+修改后运行
 ```
 python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
 ```

@@ -16,11 +16,16 @@ from __future__ import print_function
 
 import os
 import time
+import warnings
 import numpy as np
+import logging
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 from paddlerec.core.metric import Metric
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -139,8 +144,16 @@ class RunnerBase(object):
 
         metrics_varnames = []
         metrics_format = []
+
+        if context["is_infer"]:
+            metrics_format.append("\t[Infer]\t{}: {{}}".format("batch"))
+        else:
+            metrics_format.append("\t[Train]\t{}: {{}}".format("batch"))
+
+        metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
+
         metrics_names = ["total_batch"]
-        metrics_format.append("{}: {{}}".format("batch"))
+
         for name, var in metrics.items():
             metrics_names.append(name)
             metrics_varnames.append(var.name)
@@ -150,6 +163,7 @@ class RunnerBase(object):
         reader = context["model"][model_dict["name"]]["model"]._data_loader
         reader.start()
         batch_id = 0
+        begin_time = time.time()
         scope = context["model"][model_name]["scope"]
         result = None
         with fluid.scope_guard(scope):
@@ -159,8 +173,8 @@ class RunnerBase(object):
                         program=program,
                         fetch_list=metrics_varnames,
                         return_numpy=False)
-                    metrics = [batch_id]
 
+                    metrics = [batch_id]
                     metrics_rets = [
                         as_numpy(metrics_tensor)
                         for metrics_tensor in metrics_tensors
@@ -168,7 +182,13 @@ class RunnerBase(object):
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
-                        print(metrics_format.format(*metrics))
+                        end_time = time.time()
+                        seconds = end_time - begin_time
+                        metrics_logging = metrics[:]
+                        metrics_logging = metrics.insert(1, seconds)
+                        begin_time = end_time
+
+                        logging.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
@@ -284,6 +304,7 @@ class RunnerBase(object):
             return (epoch_id + 1) % epoch_interval == 0
 
         def save_inference_model():
+            # get global env
             name = "runner." + context["runner_name"] + "."
             save_interval = int(
                 envs.get_global_env(name + "save_inference_interval", -1))
@@ -296,18 +317,44 @@ class RunnerBase(object):
             if feed_varnames is None or fetch_varnames is None or feed_varnames == "" or fetch_varnames == "" or \
                     len(feed_varnames) == 0 or len(fetch_varnames) == 0:
                 return
-            fetch_vars = [
-                fluid.default_main_program().global_block().vars[varname]
-                for varname in fetch_varnames
-            ]
+
+            # check feed var exist
+            for var_name in feed_varnames:
+                if var_name not in fluid.default_main_program().global_block(
+                ).vars:
+                    raise ValueError(
+                        "Feed variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               fluid.default_main_program().global_block()
+                               .vars.keys()))
+
+            # check fetch var exist
+            fetch_vars = []
+            for var_name in fetch_varnames:
+                if var_name not in fluid.default_main_program().global_block(
+                ).vars:
+                    raise ValueError(
+                        "Fetch variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               fluid.default_main_program().global_block()
+                               .vars.keys()))
+                else:
+                    fetch_vars.append(fluid.default_main_program()
+                                      .global_block().vars[var_name])
+
             dirname = envs.get_global_env(name + "save_inference_path", None)
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
 
             if is_fleet:
-                context["fleet"].save_inference_model(
-                    context["exe"], dirname, feed_varnames, fetch_vars)
+                warnings.warn(
+                    "Save inference model in cluster training is not recommended! Using save checkpoint instead.",
+                    category=UserWarning,
+                    stacklevel=2)
+                if context["fleet"].worker_index() == 0:
+                    context["fleet"].save_inference_model(
+                        context["exe"], dirname, feed_varnames, fetch_vars)
             else:
                 fluid.io.save_inference_model(dirname, feed_varnames,
                                               fetch_vars, context["exe"])
@@ -323,7 +370,8 @@ class RunnerBase(object):
                 return
             dirname = os.path.join(dirname, str(epoch_id))
             if is_fleet:
-                context["fleet"].save_persistables(context["exe"], dirname)
+                if context["fleet"].worker_index() == 0:
+                    context["fleet"].save_persistables(context["exe"], dirname)
             else:
                 fluid.io.save_persistables(context["exe"], dirname)
 

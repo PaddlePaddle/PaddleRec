@@ -18,12 +18,12 @@ workspace: "models/match/multiview-simnet"
 # list of dataset
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 2
+  batch_size: 128
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/train"
-  sparse_slots: "1 2 3"
+  sparse_slots: "0 1 2"
 - name: dataset_infer # name
-  batch_size: 2
+  batch_size: 1
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/test"
   sparse_slots: "1 2"
@@ -34,17 +34,17 @@ hyper_parameters:
     class: Adam
     learning_rate: 0.0001
     strategy: async
-  query_encoder: "bow"
-  title_encoder: "bow"
+  query_encoder: "gru"
+  title_encoder: "gru"
   query_encode_dim: 128
   title_encode_dim: 128
-  sparse_feature_dim: 1000001
+  sparse_feature_dim: 1439
   embedding_dim: 128
   hidden_size: 128
   margin: 0.1
 
 # select runner by name
-mode: train_runner
+mode: [train_runner,infer_runner]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
@@ -62,12 +62,14 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 1
+  phases: phase1
 - name: infer_runner
   class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/0" # load model path
+  init_model_path: "increment/1" # load model path
+  phases: phase2
 
 # runner will run all the phase in each epoch
 phase:
@@ -75,7 +77,7 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
-#- name: phase2
-#  model: "{workspace}/model.py" # user-defined model
-#  dataset_name: dataset_infer # select dataset by name
-#  thread_num: 1
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
+  thread_num: 1

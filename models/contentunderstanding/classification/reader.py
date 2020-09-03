@@ -23,9 +23,10 @@ class Reader(ReaderBase):
 
     def _process_line(self, l):
         l = l.strip().split()
-        data = l[0:10]
-        seq_len = l[10:11]
-        label = l[11:]
+        data = l[0:100]
+        seq_len = l[100:101]
+        label = l[101:]
+
         return data, label, seq_len
 
     def generate_sample(self, line):
@@ -37,6 +38,6 @@ class Reader(ReaderBase):
             data = [int(i) for i in data]
             label = [int(i) for i in label]
             seq_len = [int(i) for i in seq_len]
-            yield [('data', data), ('label', label), ('seq_len', seq_len)]
+            yield [('data', data), ('seq_len', seq_len), ('label', label)]
 
         return data_iter
