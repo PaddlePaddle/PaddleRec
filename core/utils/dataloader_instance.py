@@ -49,7 +49,8 @@ def dataloader_by_name(readerclass,
     files.sort()
 
     # for local cluster: discard some files if files cannot be divided equally between GPUs
-    if (context["device"] == "GPU"):
+    if (context["device"] == "GPU"
+        ) and os.getenv("PADDLEREC_GPU_NUMS") is not None:
         selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
         discard_file_nums = len(files) % selected_gpu_nums
         if (discard_file_nums != 0):
@@ -121,7 +122,8 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
     files.sort()
 
     # for local cluster: discard some files if files cannot be divided equally between GPUs
-    if (context["device"] == "GPU"):
+    if (context["device"] == "GPU"
+        ) and os.getenv("PADDLEREC_GPU_NUMS") is not None:
         selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
         discard_file_nums = len(files) % selected_gpu_nums
         if (discard_file_nums != 0):
@@ -201,7 +203,8 @@ def slotdataloader(readerclass, train, yaml_file, context):
     files.sort()
 
     # for local cluster: discard some files if files cannot be divided equally between GPUs
-    if (context["device"] == "GPU"):
+    if (context["device"] == "GPU"
+        ) and os.getenv("PADDLEREC_GPU_NUMS") is not None:
         selected_gpu_nums = int(os.getenv("PADDLEREC_GPU_NUMS"))
         discard_file_nums = len(files) % selected_gpu_nums
         if (discard_file_nums != 0):
