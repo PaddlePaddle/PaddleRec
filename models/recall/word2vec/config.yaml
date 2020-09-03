@@ -22,7 +22,7 @@ dataset:
   word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
   data_converter: "{workspace}/w2v_reader.py"
 - name: dataset_infer # name
-  batch_size: 50
+  batch_size: 2000
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/test"
   word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
@@ -42,38 +42,40 @@ hyper_parameters:
   window_size: 5
 
 # select runner by name
-mode: train_runner
+mode: [single_cpu_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-- name: train_runner
+- name: single_cpu_train
   class: train
   # num of epochs
-  epochs: 2
+  epochs: 5
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 1 # save inference
-  save_checkpoint_path: "increment" # save checkpoint path
-  save_inference_path: "inference" # save inference path
+  save_checkpoint_path: "increment_w2v" # save checkpoint path
+  save_inference_path: "inference_w2v" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
-  print_interval: 1
-- name: infer_runner
+  print_interval: 1000
+  phases: [phase1]
+- name: single_cpu_infer
   class: infer
   # device to run training or infer
   device: cpu
-  init_model_path: "increment/0" # load model path
+  init_model_path: "increment_w2v" # load model path
   print_interval: 1
+  phases: [phase2]
 
 # runner will run all the phase in each epoch
 phase:
 - name: phase1
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
+  thread_num: 5
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
   thread_num: 1
-# - name: phase2
-#   model: "{workspace}/model.py" # user-defined model
-#   dataset_name: dataset_infer # select dataset by name
-#   thread_num: 1

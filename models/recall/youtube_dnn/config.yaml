@@ -17,11 +17,10 @@ workspace: "models/recall/youtube_dnn"
 
 dataset:
 - name: dataset_train
-  batch_size: 5
-  type: DataLoader
-  #type: QueueDataset
+  batch_size: 32
+  type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/random_reader.py"
+  data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
   watch_vec_size: 64
@@ -30,22 +29,23 @@ hyper_parameters:
   output_size: 100
   layers: [128, 64, 32]
   optimizer: 
-    class: adam
-    learning_rate: 0.001
-    strategy: async
+    class: SGD
+    learning_rate: 0.01
 
-mode: train_runner
+mode: [cpu_single_train]
 
 runner:
-- name: train_runner
+- name: cpu_single_train
   class: train
   device: cpu
-  epochs: 3
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
-  print_interval: 10
+  epochs: 20
+  save_checkpoint_interval: 1
+  save_inference_interval: 1
+  save_checkpoint_path: "increment_youtubednn"
+  save_inference_path: "inference_youtubednn"
+  save_inference_feed_varnames: ["watch_vec", "search_vec", "other_feat"] # feed vars of save inference
+  save_inference_fetch_varnames: ["l3.tmp_2"]
+  print_interval: 1
 
 phase:
 - name: train
