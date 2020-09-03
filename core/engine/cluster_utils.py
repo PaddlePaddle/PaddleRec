@@ -25,7 +25,7 @@ logger = logging.getLogger("root")
 logger.propagate = False
 
 
-def get_cloud_cluster(selected_gpus):
+def get_cloud_cluster(selected_gpus, args_port=None):
     #you can automatically get ip info while using paddlecloud multi nodes mode.
     node_ips = os.getenv("PADDLE_TRAINERS")
     assert node_ips is not None, "PADDLE_TRAINERS should not be None"
