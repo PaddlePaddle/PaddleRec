@@ -319,6 +319,6 @@ def start_local_trainers(cluster, pod, cmd, log_dir=None):
         tp.log_offset = fn.tell() if fn else None
         tp.cmd = cmd
 
-        procs.append(tp)
+        procs.append(proc)
 
     return procs
