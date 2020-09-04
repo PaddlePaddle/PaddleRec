@@ -225,12 +225,12 @@ def check_filelist(hidden_file_list, data_file_list, train_data_path):
             return hidden_file_list, data_file_list
 
 
-def shuffle_files(shuffle_filelist, filelist):
-    if not isinstance(shuffle_filelist, bool):
+def shuffle_files(need_shuffle_files, filelist):
+    if not isinstance(need_shuffle_files, bool):
         raise ValueError(
             "In your config yaml, 'shuffle_filelist': %s must be written as a boolean type,such as True or False"
-            % shuffle_filelist)
-    elif shuffle_filelist:
+            % need_shuffle_files)
+    elif need_shuffle_files:
         random.shuffle(filelist)
     return filelist
 
