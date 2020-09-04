@@ -397,8 +397,10 @@ class SingleRunner(RunnerBase):
                 model_class = context["model"][model_dict["name"]]["model"]
                 metrics = model_class._metrics
                 if "shuffle_filelist" in model_dict:
+                    shuffle_filelist = model_dict.get("shuffle_filelist", None)
                     filelist = context["file_list"]
-                    context["file_list"] = shuffle_files(model_dict, filelist)
+                    context["file_list"] = shuffle_files(shuffle_filelist,
+                                                         filelist)
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()

@@ -225,13 +225,14 @@ def check_filelist(hidden_file_list, data_file_list, train_data_path):
             return hidden_file_list, data_file_list
 
 
-def shuffle_files(model_dict, filelist):
-    if isinstance(model_dict["shuffle_filelist"], bool) == False:
-        warnings.warn(
-            "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
-        )
-    elif model_dict["shuffle_filelist"] == True:
+def shuffle_files(shuffle_filelist, filelist):
+    if not isinstance(shuffle_filelist, bool):
+        raise ValueError(
+            "In your config yaml, 'shuffle_filelist': %s must be written as a boolean type,such as True or False"
+            % shuffle_filelist)
+    elif shuffle_filelist:
         random.shuffle(filelist)
+        print("File_list: {}".format(filelist))
     return filelist
 
 
