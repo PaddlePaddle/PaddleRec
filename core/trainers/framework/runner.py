@@ -19,11 +19,15 @@ import time
 import warnings
 import numpy as np
 import random
+import logging
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
 from paddlerec.core.utils.util import shuffle_files
 from paddlerec.core.metric import Metric
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -143,8 +147,16 @@ class RunnerBase(object):
 
         metrics_varnames = []
         metrics_format = []
+
+        if context["is_infer"]:
+            metrics_format.append("\t[Infer]\t{}: {{}}".format("batch"))
+        else:
+            metrics_format.append("\t[Train]\t{}: {{}}".format("batch"))
+
+        metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
+
         metrics_names = ["total_batch"]
-        metrics_format.append("{}: {{}}".format("batch"))
+
         for name, var in metrics.items():
             metrics_names.append(name)
             metrics_varnames.append(var.name)
@@ -154,6 +166,7 @@ class RunnerBase(object):
         reader = context["model"][model_dict["name"]]["model"]._data_loader
         reader.start()
         batch_id = 0
+        begin_time = time.time()
         scope = context["model"][model_name]["scope"]
         result = None
         with fluid.scope_guard(scope):
@@ -163,8 +176,8 @@ class RunnerBase(object):
                         program=program,
                         fetch_list=metrics_varnames,
                         return_numpy=False)
-                    metrics = [batch_id]
 
+                    metrics = [batch_id]
                     metrics_rets = [
                         as_numpy(metrics_tensor)
                         for metrics_tensor in metrics_tensors
@@ -172,7 +185,13 @@ class RunnerBase(object):
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
-                        print(metrics_format.format(*metrics))
+                        end_time = time.time()
+                        seconds = end_time - begin_time
+                        metrics_logging = metrics[:]
+                        metrics_logging = metrics.insert(1, seconds)
+                        begin_time = end_time
+
+                        logging.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
