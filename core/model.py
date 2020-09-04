@@ -181,8 +181,9 @@ class ModelBase(object):
             try:
                 opt_lr = float(opt_lr)
             except ValueError:
-                raise ValueError("learning_rate%s must be in float type" %
-                                 type(opt_lr))
+                raise ValueError(
+                    "In your config yaml, 'learning_rate': %s must be written as a floating piont number,such as 0.001 or 1e-3"
+                    % opt_lr)
         opt_strategy = envs.get_global_env(
             "hyper_parameters.optimizer.strategy")
 

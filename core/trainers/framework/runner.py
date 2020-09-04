@@ -94,8 +94,6 @@ class RunnerBase(object):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
-        # file_list = context["file_list"]
-        # print("File_list: {}".format(file_list))
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -398,7 +396,9 @@ class SingleRunner(RunnerBase):
             for model_dict in context["phases"]:
                 model_class = context["model"][model_dict["name"]]["model"]
                 metrics = model_class._metrics
-                shuffle_files(model_dict, context)
+                if "shuffle_filelist" in model_dict:
+                    filelist = context["file_list"]
+                    context["file_list"] = shuffle_files(model_dict, filelist)
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
@@ -442,7 +442,9 @@ class PSRunner(RunnerBase):
         model_class = context["model"][model_dict["name"]]["model"]
         metrics = model_class._metrics
         for epoch in range(epochs):
-            shuffle_files(model_dict, context)
+            if "shuffle_filelist" in model_dict:
+                filelist = context["file_list"]
+                context["file_list"] = shuffle_files(model_dict, filelist)
             begin_time = time.time()
             result = self._run(context, model_dict)
             end_time = time.time()
@@ -488,7 +490,9 @@ class CollectiveRunner(RunnerBase):
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
-            shuffle_files(model_dict, context)
+            if "shuffle_filelist" in model_dict:
+                filelist = context["file_list"]
+                context["file_list"] = shuffle_files(model_dict, filelist)
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -517,7 +521,9 @@ class PslibRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         for epoch in range(epochs):
-            shuffle_files(model_dict, context)
+            if "shuffle_filelist" in model_dict:
+                filelist = context["file_list"]
+                context["file_list"] = shuffle_files(model_dict, filelist)
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -580,7 +586,9 @@ class SingleInferRunner(RunnerBase):
                 metrics = model_class._infer_results
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
-                shuffle_files(model_dict, context)
+                if "shuffle_filelist" in model_dict:
+                    filelist = context["file_list"]
+                    context["file_list"] = shuffle_files(model_dict, filelist)
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
