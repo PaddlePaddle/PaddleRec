@@ -16,6 +16,7 @@ import datetime
 import os
 import sys
 import time
+import random
 import numpy as np
 from paddle import fluid
 
@@ -221,6 +222,18 @@ def check_filelist(hidden_file_list, data_file_list, train_data_path):
                     #train_data_path = os.path.join(train_data_path, dirs_name)
                     check_filelist(hidden_file_list, data_file_list, dirs_path)
             return hidden_file_list, data_file_list
+
+
+def shuffle_files(model_dict, context):
+    if "shuffle_filelist" not in model_dict:
+        pass
+    elif isinstance(model_dict["shuffle_filelist"], bool) == False:
+        print(
+            "Please set shuffle_filelist as a bool value,and execute the program when shuffle_filelist is fasle."
+        )
+        pass
+    elif model_dict["shuffle_filelist"] == True:
+        random.shuffle(context["file_list"])
 
 
 class CostPrinter(object):
