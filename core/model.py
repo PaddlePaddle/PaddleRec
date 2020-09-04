@@ -177,12 +177,12 @@ class ModelBase(object):
         opt_name = envs.get_global_env("hyper_parameters.optimizer.class")
         opt_lr = envs.get_global_env(
             "hyper_parameters.optimizer.learning_rate")
-        if not isinstance(opt_lr, (int, float, Variable)):
+        if not isinstance(opt_lr, (float, Variable)):
             try:
                 opt_lr = float(opt_lr)
             except ValueError:
-                raise ValueError("learning_rate%s must be in int or float type"
-                                 % type(opt_lr))
+                raise ValueError("learning_rate%s must be in float type" %
+                                 type(opt_lr))
         opt_strategy = envs.get_global_env(
             "hyper_parameters.optimizer.strategy")
 
