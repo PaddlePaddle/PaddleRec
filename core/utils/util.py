@@ -232,7 +232,6 @@ def shuffle_files(shuffle_filelist, filelist):
             % shuffle_filelist)
     elif shuffle_filelist:
         random.shuffle(filelist)
-        print("File_list: {}".format(filelist))
     return filelist
 
 
