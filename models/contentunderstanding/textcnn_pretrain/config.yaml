@@ -44,9 +44,9 @@ runner:
   init_model_path: "" 
   print_interval: 10
   startup_class_path: "{workspace}/finetune_startup.py"
-  # Load the parameters in this script
+  # device to run finetune or training
   init_pretraining_model_path: "{workspace}/pretrain_model/pretrain_model_params"
-  # Load the parameters in this script
+  # Parameter data is in this directory
   phases: phase_train
 
 - name: infer_runner
