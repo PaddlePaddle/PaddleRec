@@ -49,6 +49,7 @@ hyper_parameters:
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
+  distributed_embedding: 0
 
 # select runner by name
 mode: [single_cpu_train, single_cpu_infer]
@@ -81,6 +82,18 @@ runner:
 
 - name: ps_cluster
   class: cluster_train
+  epochs: 2
+  device: cpu
+  fleet_mode: ps
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: [phase1]
+
+- name: online_learning_cluster
+  class: cluster_train
+  runner_class_path: "{workspace}/online_learning_runner.py"
   epochs: 2
   device: cpu
   fleet_mode: ps
