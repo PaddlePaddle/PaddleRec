@@ -1,4 +1,4 @@
-# 使用文本分类模型作为预训练模型对textcnn模型进行fine-tuning
+# 使用文本分类模型作为预训练模型对textcnn模型进行fine-turning
 
 以下是本例的简要目录结构及说明： 
 
@@ -68,11 +68,7 @@ PaddleRec >=0.1
 os : windows/linux/macos
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在paddlerec目录下直接执行下面的命令即可启动训练： 
-
-```
-python -m paddlerec.run -m models/contentunderstanding/textcnn_pretrain/config.yaml
-``` 
+本文需要下载模型的参数文件和fineturn的数据集才可以体现出fineturn的效果，所以暂不提供快速一键运行。若想体验fineturn的效果，请按照下面【效果复现】模块的步骤依次执行。 
 
 ## 效果复现
 在本模块，我们希望用户可以理解如何使用预训练模型来对自己的模型进行fine-tuning。
@@ -107,12 +103,7 @@ cd ..
 
 5. 打开文件config.yaml,更改其中的参数
 将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
-将dataset_train下的batch_size值从10改为128      
-将dataset_train下的data_path改为：{workspace}/senta_data/train  
-将dataset_infer下的batch_size值从2改为256    
-将dataset_infer下的data_path改为：{workspace}/senta_data/test  
-在train_runner下添加startup_class_path: "{workspace}/fineturn_startup.py"  
-在train_runner下添加init_pretraining_model_path: "{workspace}/pretrain_model/pretrain_model_params"  
+
 
 6. 执行命令，开始训练：
 ```

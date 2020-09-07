@@ -16,14 +16,14 @@ workspace: "models/contentunderstanding/textcnn_pretrain"
 
 dataset:
 - name: dataset_train
-  batch_size: 10
+  batch_size: 128
   type: DataLoader
-  data_path: "{workspace}/data/train"
+  data_path: "{workspace}/senta_data/train"
   data_converter: "{workspace}/reader.py"
 - name: dataset_infer
-  batch_size: 2
+  batch_size: 256
   type: DataLoader
-  data_path: "{workspace}/data/test"
+  data_path: "{workspace}/senta_data/test"
   data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
@@ -43,6 +43,8 @@ runner:
   save_checkpoint_path: "increment"
   init_model_path: "" 
   print_interval: 10
+  startup_class_path: "{workspace}/fineturn_startup.py"
+  init_pretraining_model_path: "{workspace}/pretrain_model/pretrain_model_params"
   phases: phase_train
 
 - name: infer_runner
