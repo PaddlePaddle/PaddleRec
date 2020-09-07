@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # workspace
-workspace: "models/rank/dnn"
+workspace: "models/demo/online_learning"
 
 # list of dataset
 dataset:
@@ -45,7 +45,6 @@ hyper_parameters:
     strategy: async
   # user-defined <key, value> pairs
   sparse_inputs_slots: 27
-  sparse_feature_number: 1000001
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
@@ -66,6 +65,7 @@ runner:
 
 - name: ps_cluster
   class: cluster_train
+  runner_class_path: "{workspace}/online_learning_runner.py"
   epochs: 2
   device: cpu
   fleet_mode: ps

@@ -28,46 +28,6 @@ from paddlerec.core.trainers.framework.runner import RunnerBase
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
 
-__all__ = [
-    "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
-]
-
-
-def as_numpy(tensor):
-    """
-    Convert a Tensor to a numpy.ndarray, its only support Tensor without LoD information.
-    For higher dimensional sequence data, please use LoDTensor directly.
-
-    Examples:
-        .. code-block:: python
-
-          import paddle.fluid as fluid
-          import numpy
-
-          new_scope = fluid.Scope()
-          with fluid.scope_guard(new_scope):
-              fluid.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), fluid.CPUPlace())
-          tensor = new_scope.find_var("data").get_tensor()
-          fluid.executor.as_numpy(tensor) # or numpy.array(new_scope.find_var("data").get_tensor())
-
-    Args:
-       tensor(Variable): a instance of Tensor
-
-    Returns:
-        numpy.ndarray
-    """
-    if isinstance(tensor, fluid.core.LoDTensorArray):
-        return [as_numpy(t) for t in tensor]
-    if isinstance(tensor, list):
-        return [as_numpy(t) for t in tensor]
-    assert isinstance(tensor, fluid.core.LoDTensor)
-    lod = tensor.lod()
-    # (todo) need print lod or return it for user
-    if tensor._is_initialized():
-        return np.array(tensor)
-    else:
-        return None
-
 
 class OnlineLearningRunner(RunnerBase):
     def __init__(self, context):
@@ -86,8 +46,6 @@ class OnlineLearningRunner(RunnerBase):
         for day_index in range(len(days)):
             day = days[day_index]
             cur_path = "%s/%s" % (path, str(day))
-            fleet_util.rank0_print("dataset_index=%s, path=%s" %
-                                   (dataset_index, cur_path))
             filelist = fleet.split_files(hdfs_ls([cur_path]))
             dataset = create_dataset(use_var, filelist)
             dataset_list.append(dataset)
