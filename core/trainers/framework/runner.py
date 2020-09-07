@@ -18,10 +18,16 @@ import os
 import time
 import warnings
 import numpy as np
+import random
+import logging
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
+from paddlerec.core.utils.util import shuffle_files
 from paddlerec.core.metric import Metric
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -88,7 +94,6 @@ class RunnerBase(object):
         reader_name = model_dict["dataset_name"]
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
-
         fetch_vars = []
         fetch_alias = []
         fetch_period = int(
@@ -140,8 +145,16 @@ class RunnerBase(object):
 
         metrics_varnames = []
         metrics_format = []
+
+        if context["is_infer"]:
+            metrics_format.append("\t[Infer]\t{}: {{}}".format("batch"))
+        else:
+            metrics_format.append("\t[Train]\t{}: {{}}".format("batch"))
+
+        metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
+
         metrics_names = ["total_batch"]
-        metrics_format.append("{}: {{}}".format("batch"))
+
         for name, var in metrics.items():
             metrics_names.append(name)
             metrics_varnames.append(var.name)
@@ -151,6 +164,7 @@ class RunnerBase(object):
         reader = context["model"][model_dict["name"]]["model"]._data_loader
         reader.start()
         batch_id = 0
+        begin_time = time.time()
         scope = context["model"][model_name]["scope"]
         result = None
         with fluid.scope_guard(scope):
@@ -160,8 +174,8 @@ class RunnerBase(object):
                         program=program,
                         fetch_list=metrics_varnames,
                         return_numpy=False)
-                    metrics = [batch_id]
 
+                    metrics = [batch_id]
                     metrics_rets = [
                         as_numpy(metrics_tensor)
                         for metrics_tensor in metrics_tensors
@@ -169,7 +183,13 @@ class RunnerBase(object):
                     metrics.extend(metrics_rets)
 
                     if batch_id % fetch_period == 0 and batch_id != 0:
-                        print(metrics_format.format(*metrics))
+                        end_time = time.time()
+                        seconds = end_time - begin_time
+                        metrics_logging = metrics[:]
+                        metrics_logging = metrics.insert(1, seconds)
+                        begin_time = end_time
+
+                        logging.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
@@ -376,7 +396,12 @@ class SingleRunner(RunnerBase):
             for model_dict in context["phases"]:
                 model_class = context["model"][model_dict["name"]]["model"]
                 metrics = model_class._metrics
-
+                if "shuffle_filelist" in model_dict:
+                    need_shuffle_files = model_dict.get("shuffle_filelist",
+                                                        None)
+                    filelist = context["file_list"]
+                    context["file_list"] = shuffle_files(need_shuffle_files,
+                                                         filelist)
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
@@ -420,6 +445,11 @@ class PSRunner(RunnerBase):
         model_class = context["model"][model_dict["name"]]["model"]
         metrics = model_class._metrics
         for epoch in range(epochs):
+            if "shuffle_filelist" in model_dict:
+                need_shuffle_files = model_dict.get("shuffle_filelist", None)
+                filelist = context["file_list"]
+                context["file_list"] = shuffle_files(need_shuffle_files,
+                                                     filelist)
             begin_time = time.time()
             result = self._run(context, model_dict)
             end_time = time.time()
@@ -465,6 +495,11 @@ class CollectiveRunner(RunnerBase):
                                 ".epochs"))
         model_dict = context["env"]["phase"][0]
         for epoch in range(epochs):
+            if "shuffle_filelist" in model_dict:
+                need_shuffle_files = model_dict.get("shuffle_filelist", None)
+                filelist = context["file_list"]
+                context["file_list"] = shuffle_files(need_shuffle_files,
+                                                     filelist)
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -493,6 +528,11 @@ class PslibRunner(RunnerBase):
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".epochs"))
         for epoch in range(epochs):
+            if "shuffle_filelist" in model_dict:
+                need_shuffle_files = model_dict.get("shuffle_filelist", None)
+                filelist = context["file_list"]
+                context["file_list"] = shuffle_files(need_shuffle_files,
+                                                     filelist)
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -555,6 +595,12 @@ class SingleInferRunner(RunnerBase):
                 metrics = model_class._infer_results
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
+                if "shuffle_filelist" in model_dict:
+                    need_shuffle_files = model_dict.get("shuffle_filelist",
+                                                        None)
+                    filelist = context["file_list"]
+                    context["file_list"] = shuffle_files(need_shuffle_files,
+                                                         filelist)
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()

@@ -32,7 +32,7 @@
 <img align="center" src="../../doc/imgs/tagspace.png">
 <p>
 
-[文本分类CNN模型](https://www.aclweb.org/anthology/D14-1181.pdf)
+[textCNN模型](https://www.aclweb.org/anthology/D14-1181.pdf)
 <p align="center">
 <img align="center" src="../../doc/imgs/cnn-ckim2014.png">
 <p>
@@ -205,5 +205,5 @@ batch: 3, acc: [0.90234375], loss: [0.27907994]
 
 |       数据集        |       模型       |       loss         |       acc         |
 | :------------------: | :--------------------: | :---------: |:---------: | 
-|       ag news dataset        |       TagSpace       |       0.2282        |       0.9179          | 
-|       ChnSentiCorp        |       textcnn       |       0.9177        |       0.0199          | 
+|       ag news dataset        |       TagSpace       |       0.0198        |       0.9177          | 
+|       ChnSentiCorp        |       textcnn       |       0.2282        |        0.9127         | 

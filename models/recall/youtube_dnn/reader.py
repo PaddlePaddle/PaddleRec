@@ -39,13 +39,17 @@ class Reader(ReaderBase):
             """
             This function needs to be implemented by the user, based on data format
             """
-
+            features = line.rstrip().split(";")
+            watch_vec = features[0].split(',')
+            search_vec = features[1].split(',')
+            other_feat = features[2].split(',')
+            label = features[3]
+            assert (len(watch_vec) == self.watch_vec_size)
+            assert (len(search_vec) == self.search_vec_size)
+            assert (len(other_feat) == self.other_feat_size)
             feature_name = ["watch_vec", "search_vec", "other_feat", "label"]
             yield list(
-                zip(feature_name, [
-                    np.random.rand(self.watch_vec_size).tolist()
-                ] + [np.random.rand(self.search_vec_size).tolist()] + [
-                    np.random.rand(self.other_feat_size).tolist()
-                ] + [[np.random.randint(self.output_size)]]))
+                zip(feature_name, [watch_vec] + [search_vec] + [other_feat] +
+                    [label]))
 
         return reader

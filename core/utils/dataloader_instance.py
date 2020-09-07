@@ -59,7 +59,7 @@ def dataloader_by_name(readerclass,
     if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-
+    context["file_list"] = files
     reader = reader_class(yaml_file)
     reader.init()
 
@@ -83,6 +83,10 @@ def dataloader_by_name(readerclass,
 
     if hasattr(reader, 'generate_batch_from_trainfiles'):
         return gen_batch_reader()
+
+    if hasattr(reader, "batch_tensor_creator"):
+        return reader.batch_tensor_creator(gen_reader)
+
     return gen_reader
 
 
@@ -117,7 +121,7 @@ def slotdataloader_by_name(readerclass, dataset_name, yaml_file, context):
     if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-
+    context["file_list"] = files
     sparse = get_global_env(name + "sparse_slots", "#")
     if sparse == "":
         sparse = "#"
@@ -187,7 +191,7 @@ def slotdataloader(readerclass, train, yaml_file, context):
     if need_split_files:
         files = split_files(files, context["fleet"].worker_index(),
                             context["fleet"].worker_num())
-
+    context["file_list"] = files
     sparse = get_global_env("sparse_slots", "#", namespace)
     if sparse == "":
         sparse = "#"

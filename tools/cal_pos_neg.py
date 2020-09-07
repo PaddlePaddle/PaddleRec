@@ -11,14 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#!/usr/bin/python  
-#-*- coding:utf-8 -*-  
-############################  
-#File Name: cal_pos_neg.py
-#Author: youqiheng 
-#Mail: youqiheng@baidu.com
-#Created Time: 2018-04-15 21:59:45
-############################ 
+#!/usr/bin/python   
+#-*- coding:utf-8 -*-   
 """
 docstring
 """

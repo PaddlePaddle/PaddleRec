@@ -4,11 +4,11 @@
 
 ```
 ├── data #样例数据
-	├── train_data
-		├── small_train.csv #训练数据样例
-	├── test_data
-    	├── small_test.csv #测试数据样例
-	├── text2paddle.py #数据处理程序
+    ├── train_data
+        ├── small_train.csv #训练数据样例
+    ├── test_data
+        ├── small_test.csv #测试数据样例
+    ├── text2paddle.py #数据处理程序
 ├── __init__.py
 ├── README.md #文档
 ├── model.py #模型文件
