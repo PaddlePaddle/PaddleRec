@@ -1,7 +1,7 @@
 # 内容理解模型库
 
 ## 简介
-我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](tagspace)、[文本分类](textcnn)、[基于textcnn的预训练模型]（textcnn_pretrain）等。
+我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](tagspace)、[文本分类](textcnn)、[基于textcnn的预训练模型](textcnn_pretrain)等。
 
 模型算法库在持续添加中，欢迎关注。
 
