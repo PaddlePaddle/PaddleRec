@@ -1,4 +1,4 @@
-# 使用文本分类模型作为预训练模型对textcnn模型进行fine-turning
+# 使用文本分类模型作为预训练模型对textcnn模型进行fine-tuning
 
 以下是本例的简要目录结构及说明： 
 
@@ -15,7 +15,7 @@
 ├── basemodel.py #预训练模型
 ├── config.yaml #配置文件
 ├── reader.py #读取程序
-├── fineturn_startup.py #加载参数
+├── finetune_startup.py #加载参数
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -33,7 +33,7 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-情感倾向分析（Sentiment Classification，简称Senta）针对带有主观描述的中文文本，可自动判断该文本的情感极性类别并给出相应的置信度。情感类型分为积极、消极。在本文中，我们提供了一个使用大规模的对文章数据进行多分类的textCNN模型（2个卷积核的cnn模型）作为预训练模型。本文会使用这个预训练模型对contentunderstanding目录下的textcnn模型（3个卷积核的cnn模型）进行fine-turning。本文将预训练模型中的embedding层迁移到了contentunderstanding目录下的textcnn模型中，依然进行情感分析的二分类任务。最终获得了模型准确率上的基本持平以及更快速的收敛  
+情感倾向分析（Sentiment Classification，简称Senta）针对带有主观描述的中文文本，可自动判断该文本的情感极性类别并给出相应的置信度。情感类型分为积极、消极。在本文中，我们提供了一个使用大规模的对文章数据进行多分类的textCNN模型（2个卷积核的cnn模型）作为预训练模型。本文会使用这个预训练模型对contentunderstanding目录下的textcnn模型（3个卷积核的cnn模型）进行fine-tuning。本文将预训练模型中的embedding层迁移到了contentunderstanding目录下的textcnn模型中，依然进行情感分析的二分类任务。最终获得了模型准确率上的基本持平以及更快速的收敛  
 Yoon Kim在论文[EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf)提出了TextCNN并给出基本的结构。将卷积神经网络CNN应用到文本分类任务，利用多个不同size的kernel来提取句子中的关键信息（类似于多窗口大小的ngram），从而能够更好地捕捉局部相关性。模型的主体结构如图所示：  
 <p align="center">
 <img align="center" src="../../../doc/imgs/cnn-ckim2014.png">
@@ -68,7 +68,7 @@ PaddleRec >=0.1
 os : windows/linux/macos
 
 ## 快速开始
-本文需要下载模型的参数文件和fineturn的数据集才可以体现出fineturn的效果，所以暂不提供快速一键运行。若想体验fineturn的效果，请按照下面【效果复现】模块的步骤依次执行。 
+本文需要下载模型的参数文件和finetune的数据集才可以体现出finetune的效果，所以暂不提供快速一键运行。若想体验finetune的效果，请按照下面【效果复现】模块的步骤依次执行。 
 
 ## 效果复现
 在本模块，我们希望用户可以理解如何使用预训练模型来对自己的模型进行fine-tuning。
@@ -133,7 +133,7 @@ PaddleRec Finish
 这是因为本文使用了预训练模型（basemodel.py）中embedding层，经过大量语料的训练后的embedding层中本身已经蕴含了大量的先验知识。而这些先验知识对于下游任务，尤其是小数据集来讲，是非常有帮助的。  
 
 2.在config.yaml中，大家会发现在train_runner中多了startup_class_path和init_pretraining_model_path两个参数。  
-参数startup_class_path的作用是自定义训练的流程。我们将在自定义的fineturn_startup.py文件中将训练好的参数加载入模型当中。  
+参数startup_class_path的作用是自定义训练的流程。我们将在自定义的finetune_startup.py文件中将训练好的参数加载入模型当中。  
 参数init_pretraining_model_path的作用就是指明加载参数的路径。若路径下的参数文件和模型中的var具有相同的名字，就会将参数加载进模型当中。
 若您希望进一步了解自定义流程的操作，可以参考以下内容：[如何添加自定义流程](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/trainer_develop.md#%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B5%81%E7%A8%8B) 
 
