@@ -26,7 +26,7 @@ runner:
   save_checkpoint_path: "increment"
   init_model_path: "" 
   print_interval: 10
-  startup_class_path: "{workspace}/fineturn_startup.py"
+  startup_class_path: "{workspace}/finetune_startup.py"
   init_pretraining_model_path: "{workspace}/pretrain_model/pretrain_model_params"
   phases: phase_train
 ```
