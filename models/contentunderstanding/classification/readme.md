@@ -4,11 +4,11 @@
 
 ```
 ├── data #样例数据
-	├── train
-		├── train.txt #训练数据样例
-	├── test
-    	├── test.txt #测试数据样例
-	├── preprocess.py #数据处理程序
+    ├── train
+         ├── train.txt #训练数据样例
+    ├── test
+        ├── test.txt #测试数据样例
+    ├── preprocess.py #数据处理程序
 ├── __init__.py
 ├── README.md #文档
 ├── model.py #模型文件
@@ -44,7 +44,7 @@ Yoon Kim在论文[EMNLP 2014][Convolutional neural networks for sentence classic
 
 | 模型 | dev | test | 
 | :------| :------ | :------
-| TextCNN | 90.75% | 92.19% |
+| TextCNN | 90.75% | 91.27% |
 
 
 您可以直接执行以下命令下载我们分词完毕后的数据集,文件解压之后，senta_data目录下会存在训练数据（train.tsv）、开发集数据（dev.tsv）、测试集数据（test.tsv）以及对应的词典（word_dict.txt）：  
