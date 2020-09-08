@@ -107,9 +107,9 @@ class Startup(StartupBase):
 
     def load(self, context, is_fleet=False, main_program=None):
         dirname = envs.get_global_env("runner." + context["runner_name"] +
-                                      ".init_pretraining_model_path", None)
+                                      ".init_pretraining_model_path", "")
         hotstart_dirname = envs.get_global_env(
-            "runner." + context["runner_name"] + ".init_model_path", None)
+            "runner." + context["runner_name"] + ".init_model_path", "")
 
         def existed_params(var):
             if not isinstance(var, fluid.framework.Parameter):
@@ -121,13 +121,13 @@ class Startup(StartupBase):
                 #print("SKIP %s" % var.name)
                 return False
 
-        if hotstart_dirname is not None and hotstart_dirname != "":
+        if hotstart_dirname != "":
             #If init_model_path exists, hot start is first choice
             print("going to load ", hotstart_dirname)
             fluid.io.load_persistables(
                 context["exe"], hotstart_dirname, main_program=main_program)
             print("load from {} success".format(hotstart_dirname))
-        elif dirname is not None and dirname != "":
+        elif dirname != "":
             #If init_pretraining_model_path exists ,pretrained model load parameters
             print("going to load ", dirname)
             fluid.io.load_vars(
