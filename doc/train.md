@@ -20,7 +20,7 @@ python -m paddlerec.run -m paddlerec.models.xxx.yyy
 例如启动`recall`下的`word2vec`模型的默认配置;
 
 ```shell
-python -m paddlerec.run -m models/recall/word2vec
+python -m paddlerec.run -m models/recall/word2vec/config.yaml
 ```
 
 ### 2. 启动内置模型的个性化配置训练
