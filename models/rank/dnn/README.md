@@ -259,3 +259,133 @@ auc_var, batch_auc_var, auc_states = fluid.layers.auc(
 ```
 
 完成上述组网后，我们最终可以通过训练拿到`avg_cost`与`auc`两个重要指标。
+
+
+## 流式训练（OnlineLearning）任务启动及配置流程
+
+### 流式训练简介
+流式训练是按照一定顺序进行数据的接收和处理，每接收一个数据，模型会对它进行预测并对当前模型进行更新，然后处理下一个数据。 像信息流、小视频、电商等场景，每天都会新增大量的数据， 让每天(每一刻)新增的数据基于上一天(上一刻)的模型进行新的预测和模型更新。
+
+在大规模流式训练场景下， 需要使用的深度学习框架有对应的能力支持， 即：
+* 支持大规模分布式训练的能力， 数据量巨大， 需要有良好的分布式训练及扩展能力，才能满足训练的时效要求
+* 支持超大规模的Embedding， 能够支持十亿甚至千亿级别的Embedding, 拥有合理的参数输出的能力，能够快速输出模型参数并和线上其他系统进行对接
+* Embedding的特征ID需要支持HASH映射，不要求ID的编码，能够自动增长及控制特征的准入(原先不存在的特征可以以适当的条件创建)， 能够定期淘汰(能够以一定的策略进行过期的特征的清理) 并拥有准入及淘汰策略
+* 最后就是要基于框架开发一套完备的流式训练的 trainer.py， 能够拥有完善的流式训练流程
+
+### 使用ctr-dnn online learning 进行模型的训练
+目前，PaddleRec基于飞桨分布式训练框架的能力，实现了这套流式训练的流程。 供大家参考和使用。我们基于`models/rank/ctr-dnn`修改了一个online_training的版本，供大家更好的理解和参考。
+
+**注意**
+1. 使用online learning 需要安装目前Paddle最新的开发者版本， 你可以从 https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-dev 此处获得它，需要先卸载当前已经安装的飞桨版本，根据自己的Python环境下载相应的安装包。
+2. 使用online learning 需要安装目前PaddleRec最新的开发者版本， 你可以通过 git clone https://github.com/PaddlePaddle/PaddleRec.git 得到最新版的PaddleRec并自行安装
+
+### 启动方法
+1. 修改config.yaml中的 hyper_parameters.distributed_embedding=1，表示打开大规模稀疏的模式
+2. 修改config.yaml中的 mode: [single_cpu_train, single_cpu_infer] 中的 `single_cpu_train` 为online_learning_cluster，表示使用online learning对应的运行模式
+3. 准备训练数据， ctr-dnn中使用的online learning对应的训练模式为 天级别训练， 每天又分为24个小时， 因此训练数据需要 天--小时的目录结构进行整理。
+    以 2020年08月10日 到 2020年08月11日 2天的训练数据举例， 用户需要准备的数据的目录结构如下：
+    ```
+    train_data/
+    |-- 20200810
+    |   |-- 00
+    |   |   `-- train.txt
+    |   |-- 01
+    |   |   `-- train.txt
+    |   |-- 02
+    |   |   `-- train.txt
+    |   |-- 03
+    |   |   `-- train.txt
+    |   |-- 04
+    |   |   `-- train.txt
+    |   |-- 05
+    |   |   `-- train.txt
+    |   |-- 06
+    |   |   `-- train.txt
+    |   |-- 07
+    |   |   `-- train.txt
+    |   |-- 08
+    |   |   `-- train.txt
+    |   |-- 09
+    |   |   `-- train.txt
+    |   |-- 10
+    |   |   `-- train.txt
+    |   |-- 11
+    |   |   `-- train.txt
+    |   |-- 12
+    |   |   `-- train.txt
+    |   |-- 13
+    |   |   `-- train.txt
+    |   |-- 14
+    |   |   `-- train.txt
+    |   |-- 15
+    |   |   `-- train.txt
+    |   |-- 16
+    |   |   `-- train.txt
+    |   |-- 17
+    |   |   `-- train.txt
+    |   |-- 18
+    |   |   `-- train.txt
+    |   |-- 19
+    |   |   `-- train.txt
+    |   |-- 20
+    |   |   `-- train.txt
+    |   |-- 21
+    |   |   `-- train.txt
+    |   |-- 22
+    |   |   `-- train.txt
+    |   `-- 23
+    |       `-- train.txt
+    `-- 20200811
+        |-- 00
+        |   `-- train.txt
+        |-- 01
+        |   `-- train.txt
+        |-- 02
+        |   `-- train.txt
+        |-- 03
+        |   `-- train.txt
+        |-- 04
+        |   `-- train.txt
+        |-- 05
+        |   `-- train.txt
+        |-- 06
+        |   `-- train.txt
+        |-- 07
+        |   `-- train.txt
+        |-- 08
+        |   `-- train.txt
+        |-- 09
+        |   `-- train.txt
+        |-- 10
+        |   `-- train.txt
+        |-- 11
+        |   `-- train.txt
+        |-- 12
+        |   `-- train.txt
+        |-- 13
+        |   `-- train.txt
+        |-- 14
+        |   `-- train.txt
+        |-- 15
+        |   `-- train.txt
+        |-- 16
+        |   `-- train.txt
+        |-- 17
+        |   `-- train.txt
+        |-- 18
+        |   `-- train.txt
+        |-- 19
+        |   `-- train.txt
+        |-- 20
+        |   `-- train.txt
+        |-- 21
+        |   `-- train.txt
+        |-- 22
+        |   `-- train.txt
+        `-- 23
+            `-- train.txt
+    ```    
+4. 准备好数据后， 即可按照标准的训练流程进行流式训练了
+    ```shell
+    python -m paddlerec.run -m models/rerank/ctr-dnn/config.yaml
+    ```
