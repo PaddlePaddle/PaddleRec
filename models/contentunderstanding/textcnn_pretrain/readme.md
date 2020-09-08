@@ -135,6 +135,8 @@ PaddleRec Finish
 2.在config.yaml中，大家会发现在train_runner中多了startup_class_path和init_pretraining_model_path两个参数。  
 参数startup_class_path的作用是自定义训练的流程。我们将在自定义的finetune_startup.py文件中将训练好的参数加载入模型当中。  
 参数init_pretraining_model_path的作用就是指明加载参数的路径。若路径下的参数文件和模型中的var具有相同的名字，就会将参数加载进模型当中。
+在您设置init_model_path参数时，程序会优先试图按您设置的路径热启动。当没有init_model_path参数，无法热启动时，程序会试图加载init_pretraining_model_path路径下的参数，进行finetune训练。  
+只有在两者均为空的情况下，模型会冷启动从头开始训练。
 若您希望进一步了解自定义流程的操作，可以参考以下内容：[如何添加自定义流程](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/trainer_develop.md#%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B5%81%E7%A8%8B) 
 
 3.在basemodel.py中，我们准备了embedding，multi_convs，full_connect三个模块供您在有需要时直接import使用。  
