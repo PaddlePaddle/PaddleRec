@@ -139,9 +139,9 @@ class RunnerBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
-        save_checkpoint_step_interval = int(
+        save_step_interval = int(
             envs.get_global_env("runner." + context["runner_name"] +
-                                ".save_checkpoint_step_interval", -1))
+                                ".save_step_interval", -1))
         if context["is_infer"]:
             metrics = model_class.get_infer_results()
         else:
@@ -186,12 +186,6 @@ class RunnerBase(object):
                     ]
                     metrics.extend(metrics_rets)
 
-                    if save_checkpoint_step_interval >= 1 and batch_id % save_checkpoint_step_interval == 0 and context[
-                            "is_infer"] == False:
-                        self.save(
-                            context,
-                            is_fleet=context["is_fleet"],
-                            batch_id=batch_id)
                     if batch_id % fetch_period == 0 and batch_id != 0:
                         end_time = time.time()
                         seconds = end_time - begin_time
@@ -200,6 +194,27 @@ class RunnerBase(object):
                         begin_time = end_time
 
                         logging.info(metrics_format.format(*metrics))
+
+                    if save_step_interval >= 1 and batch_id % save_step_interval == 0 and context[
+                            "is_infer"] == False:
+                        if context["fleet_mode"]:
+                            if context["fleet_mode"].upper() == "PS":
+                                train_prog = context["model"][model_dict[
+                                    "name"]]["main_program"]
+                            elif context["fleet_mode"].upper() == "COLLECTIVE":
+                                train_prog = context["model"][model_dict[
+                                    "name"]]["default_main_program"]
+                        elif not context["is_fleet"]:
+                            train_prog = context["model"][model_dict["name"]][
+                                "default_main_program"]
+                        startup_prog = context["model"][model_dict["name"]][
+                            "startup_program"]
+                        with fluid.program_guard(train_prog, startup_prog):
+                            self.save(
+                                context,
+                                is_fleet=context["is_fleet"],
+                                epoch_id=None,
+                                batch_id=batch_id)
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
@@ -389,10 +404,8 @@ class RunnerBase(object):
         def save_checkpoint_step():
             name = "runner." + context["runner_name"] + "."
             save_interval = int(
-                envs.get_global_env(name + "save_checkpoint_step_interval",
-                                    -1))
-            dirname = envs.get_global_env(name + "save_checkpoint_step_path",
-                                          None)
+                envs.get_global_env(name + "save_step_interval", -1))
+            dirname = envs.get_global_env(name + "save_step_path", None)
             if dirname is None or dirname == "":
                 return
             dirname = os.path.join(dirname, str(batch_id))
@@ -457,7 +470,7 @@ class SingleRunner(RunnerBase):
                     startup_prog = context["model"][model_dict["name"]][
                         "startup_program"]
                     with fluid.program_guard(train_prog, startup_prog):
-                        self.save(epoch, context)
+                        self.save(context=context, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -509,7 +522,7 @@ class PSRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.save(epoch, context, True)
+                    self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -541,7 +554,7 @@ class CollectiveRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.save(epoch, context, True)
+                    self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 

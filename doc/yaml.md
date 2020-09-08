@@ -27,6 +27,8 @@
 |        init_model_path        |    string    |                           路径                            |    否    |                            初始化模型地址                            |
 |   save_checkpoint_interval    |     int      |                           >= 1                            |    否    |                          Save参数的轮数间隔                          |
 |     save_checkpoint_path      |    string    |                           路径                            |    否    |                            Save参数的地址                            |
+|    save_step_interval    |     int      |                           >= 1                            |    否    |                        Step save参数的batch数间隔                        |
+|      save_step_path      |    string    |                           路径                            |    否    |                           Step save参数的地址                          |
 |    save_inference_interval    |     int      |                           >= 1                            |    否    |                        Save预测模型的轮数间隔                        |
 |      save_inference_path      |    string    |                           路径                            |    否    |                          Save预测模型的地址                          |
 | save_inference_feed_varnames  | list[string] |                 组网中指定Variable的name                  |    否    |                        预测模型的入口变量name                        |
