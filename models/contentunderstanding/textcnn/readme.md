@@ -1,11 +1,11 @@
-# classification文本分类模型
+# textcnn文本分类模型
 
 以下是本例的简要目录结构及说明： 
 
 ```
 ├── data #样例数据
     ├── train
-         ├── train.txt #训练数据样例
+        ├── train.txt #训练数据样例
     ├── test
         ├── test.txt #测试数据样例
     ├── preprocess.py #数据处理程序
@@ -15,7 +15,6 @@
 ├── config.yaml #配置文件
 ├── reader.py #读取程序
 ```
-
 注：在阅读该示例前，建议您先了解以下内容：
 [paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
 
@@ -73,13 +72,13 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在paddlerec目录下直接执行下面的命令即可启动训练： 
 
 ```
-python -m paddlerec.run -m models/contentunderstanding/classification/config.yaml
+python -m paddlerec.run -m models/contentunderstanding/textcnn/config.yaml
 ```   
 
 
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
-1. 确认您当前所在目录为PaddleRec/models/contentunderstanding/classification  
+1. 确认您当前所在目录为PaddleRec/models/contentunderstanding/textcnn  
 2. 下载并解压数据集，命令如下：  
 ``` 
 wget https://baidu-nlp.bj.bcebos.com/sentiment_classification-dataset-1.0.0.tar.gz

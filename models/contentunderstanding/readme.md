@@ -1,7 +1,7 @@
 # 内容理解模型库
 
 ## 简介
-我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](tagspace)、[文本分类](classification)等。
+我们提供了常见的内容理解任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的内容理解模型包括 [Tagspace](tagspace)、[文本分类](textcnn)、[基于textcnn的预训练模型](textcnn_pretrain)等。
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -23,7 +23,7 @@
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :---------: |
 | TagSpace | 标签推荐 | [EMNLP 2014][TagSpace: Semantic Embeddings from Hashtags](https://www.aclweb.org/anthology/D14-1194.pdf) |
-| Classification | 文本分类 | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf) |
+| textcnn | 文本分类 | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
@@ -32,7 +32,7 @@
 <img align="center" src="../../doc/imgs/tagspace.png">
 <p>
 
-[文本分类CNN模型](https://www.aclweb.org/anthology/D14-1181.pdf)
+[textCNN模型](https://www.aclweb.org/anthology/D14-1181.pdf)
 <p align="center">
 <img align="center" src="../../doc/imgs/cnn-ckim2014.png">
 <p>
@@ -42,7 +42,7 @@
 git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
 cd PaddleRec
 python -m paddlerec.run -m models/contentunderstanding/tagspace/config.yaml
-python -m paddlerec.run -m models/contentunderstanding/classification/config.yaml
+python -m paddlerec.run -m models/contentunderstanding/textcnn/config.yaml
 ```
 
 ## 使用教程（复现论文）
@@ -134,7 +134,7 @@ batch: 13, acc: [0.928], loss: [0.01736144]
 batch: 14, acc: [0.93], loss: [0.01911209]
 ```
 
-**（2）Classification**
+**（2）textcnn**
 
 ### 数据处理
 情感倾向分析（Sentiment Classification，简称Senta）针对带有主观描述的中文文本，可自动判断该文本的情感极性类别并给出相应的置信度。情感类型分为积极、消极。情感倾向分析能够帮助企业理解用户消费习惯、分析热点话题和危机舆情监控，为企业提供有利的决策支持。  
@@ -206,4 +206,4 @@ batch: 3, acc: [0.90234375], loss: [0.27907994]
 |       数据集        |       模型       |       loss         |       acc         |
 | :------------------: | :--------------------: | :---------: |:---------: | 
 |       ag news dataset        |       TagSpace       |       0.0198        |       0.9177          | 
-|       ChnSentiCorp        |       Classification       |       0.2282        |        0.9127         | 
+|       ChnSentiCorp        |       textcnn       |       0.2282        |        0.9127         | 
