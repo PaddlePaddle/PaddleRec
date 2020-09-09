@@ -201,10 +201,8 @@ class RunnerBase(object):
                             if context["fleet_mode"].upper() == "PS":
                                 train_prog = context["model"][model_dict[
                                     "name"]]["main_program"]
-                            elif context["fleet_mode"].upper() == "COLLECTIVE":
-                                train_prog = context["model"][model_dict[
-                                    "name"]]["default_main_program"]
-                        elif not context["is_fleet"]:
+                        elif not context["is_fleet"] or context[
+                                "fleet_mode"].upper() == "COLLECTIVE":
                             train_prog = context["model"][model_dict["name"]][
                                 "default_main_program"]
                         startup_prog = context["model"][model_dict["name"]][
