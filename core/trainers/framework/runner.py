@@ -370,7 +370,8 @@ class RunnerBase(object):
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
-
+            logging.info("\tsave epoch_id:%d model into: \"%s\"" %
+                         (epoch_id, dirname))
             if is_fleet:
                 warnings.warn(
                     "Save inference model in cluster training is not recommended! Using save checkpoint instead.",
@@ -393,6 +394,8 @@ class RunnerBase(object):
             if dirname is None or dirname == "":
                 return
             dirname = os.path.join(dirname, str(epoch_id))
+            logging.info("\tsave epoch_id:%d model into: \"%s\"" %
+                         (epoch_id, dirname))
             if is_fleet:
                 if context["fleet"].worker_index() == 0:
                     context["fleet"].save_persistables(context["exe"], dirname)
@@ -407,6 +410,8 @@ class RunnerBase(object):
             if dirname is None or dirname == "":
                 return
             dirname = os.path.join(dirname, str(batch_id))
+            logging.info("\tsave batch_id:%d model into: \"%s\"" %
+                         (batch_id, dirname))
             if is_fleet:
                 if context["fleet"].worker_index() == 0:
                     context["fleet"].save_persistables(context["exe"], dirname)
