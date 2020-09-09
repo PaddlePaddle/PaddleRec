@@ -37,6 +37,8 @@
 |      startup_class_path       |    string    |                           路径                            |    否    |                     自定义startup流程实现的地址                      |
 |       runner_class_path       |    string    |                           路径                            |    否    |                      自定义runner流程实现的地址                      |
 |      terminal_class_path      |    string    |                           路径                            |    否    |                     自定义terminal流程实现的地址                     |
+|  init_pretraining_model_path  |    string    |                           路径                            |    否    |自定义的startup流程中需要传入这个参数，finetune中需要加载的参数的地址 |
+
 
 
 
