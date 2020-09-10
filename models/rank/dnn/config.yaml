@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # workspace
-workspace: "models/rank/dnn"
+workspace: "./"
 
 # list of dataset
 dataset:
@@ -52,23 +52,23 @@ hyper_parameters:
   distributed_embedding: 0
 
 # select runner by name
-mode: [single_cpu_train, single_cpu_infer]
+mode: [local_ps_train, single_cpu_infer]
 # config of each runner.
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: single_cpu_train
   class: train
   # num of epochs
-  epochs: 4
+  epochs: 1
   # device to run training or infer
   device: cpu
-  save_checkpoint_interval: 2 # save model interval of epochs
+  save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment_dnn" # save checkpoint path
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
-  print_interval: 10
+  print_interval: 1
   phases: [phase1]
 
 - name: single_cpu_infer
@@ -114,13 +114,15 @@ runner:
   print_interval: 1
   phases: [phase1]
 
-name: single_multi_gpu_train
-  class: train
+- name: local_ps_train
+  class: local_cluster_train
   # num of epochs
   epochs: 1
   # device to run training or infer
-  device: gpu
+  device: cpu
   selected_gpus: "0" # 选择多卡执行训练
+  work_num: 1
+  server_num: 1
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_step_interval: 1
@@ -130,8 +132,7 @@ name: single_multi_gpu_train
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
   print_interval: 1
-  phases: [phase1]  
-
+  phases: [phase1]
 # runner will run all the phase in each epoch
 phase:
 - name: phase1
