@@ -110,8 +110,6 @@ def set_global_envs(envs):
                 dataset for dataset in envs["dataset"]
                 if dataset["name"] == dataset_name
             ]
-            print(dataset[0])
-            print(type(dataset[0]))
             if dataset[0].get("type") == "QueueDataset":
                 runner["save_step_interval"] = None
                 runner["save_step_path"] = None
