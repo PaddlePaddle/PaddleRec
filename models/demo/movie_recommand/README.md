@@ -27,6 +27,3 @@ sh online_recall.sh
 ```shell
 sh online_rank.sh
 ```
-
-
-
