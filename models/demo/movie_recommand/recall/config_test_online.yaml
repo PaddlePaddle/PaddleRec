@@ -47,7 +47,7 @@ runner:
   device: cpu
   class: infer
   print_interval: 10000
-  runner_result_save_path: "{workspace}/recall/infer_result"
+  runner_result_dump_path: "{workspace}/recall/infer_result"
   init_model_path: "increment_recall/9" # load model path
 
 #offline infer
@@ -56,3 +56,4 @@ phase:
   model: "{workspace}/recall/model.py" # user-defined model
   dataset_name: dataset_online_infer # select dataset by name
   thread_num: 1
+  

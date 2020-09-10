@@ -45,7 +45,7 @@ runner:
   device: cpu
   class: infer
   print_interval: 100000
-  runner_result_save_path: "{workspace}/recall/infer_result"
+  runner_result_dump_path: "{workspace}/recall/infer_result"
   init_model_path: "increment_recall/9" # load model path
 
 
