@@ -59,16 +59,16 @@ runner:
 - name: single_cpu_train
   class: train
   # num of epochs
-  epochs: 1
+  epochs: 4
   # device to run training or infer
   device: cpu
-  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_interval: 2 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment_dnn" # save checkpoint path
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
-  print_interval: 1
+  print_interval: 10
   phases: [phase1]
 
 - name: single_cpu_infer
