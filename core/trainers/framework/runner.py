@@ -19,6 +19,7 @@ import time
 import warnings
 import numpy as np
 import random
+import json
 import logging
 import paddle.fluid as fluid
 
@@ -147,17 +148,22 @@ class RunnerBase(object):
         metrics_format = []
 
         if context["is_infer"]:
-            metrics_format.append("\t[Infer]\t{}: {{}}".format("batch"))
+            metrics_format.append("\t[Infer] {}: {{}}".format("batch"))
         else:
-            metrics_format.append("\t[Train]\t{}: {{}}".format("batch"))
+            metrics_format.append("\t[Train]")
+            if "current_epoch" in context:
+                metrics_format.append(" epoch: {}".format(context[
+                    "current_epoch"]))
+            metrics_format.append(" {}: {{}}".format("batch"))
 
         metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
 
         metrics_names = ["total_batch"]
-
+        metrics_indexes = dict()
         for name, var in metrics.items():
             metrics_names.append(name)
             metrics_varnames.append(var.name)
+            metrics_indexes[var.name] = len(metrics_varnames) - 1
             metrics_format.append("{}: {{}}".format(name))
         metrics_format = ", ".join(metrics_format)
 
@@ -166,6 +172,7 @@ class RunnerBase(object):
         batch_id = 0
         begin_time = time.time()
         scope = context["model"][model_name]["scope"]
+        runner_results = []
         result = None
         with fluid.scope_guard(scope):
             try:
@@ -182,17 +189,34 @@ class RunnerBase(object):
                     ]
                     metrics.extend(metrics_rets)
 
+                    batch_runner_result = {}
+                    for k, v in metrics_indexes.items():
+                        batch_runner_result[k] = np.array(metrics_rets[
+                            v]).tolist()
+                    runner_results.append(batch_runner_result)
+
                     if batch_id % fetch_period == 0 and batch_id != 0:
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
                         metrics_logging = metrics.insert(1, seconds)
                         begin_time = end_time
-
                         logging.info(metrics_format.format(*metrics))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+
+        runner_result_save_path = envs.get_global_env(
+            "runner." + context["runner_name"] + ".runner_result_dump_path",
+            None)
+        if runner_result_save_path:
+            if "current_epoch" in context:
+                runner_result_save_path = runner_result_save_path + "_epoch_{}".format(
+                    context["current_epoch"])
+            logging.info("Dump runner result in {}".format(
+                runner_result_save_path))
+            with open(runner_result_save_path, 'w+') as fout:
+                json.dump(runner_results, fout)
 
         if batch_id > 0:
             result = dict(zip(metrics_names, metrics))
@@ -402,6 +426,7 @@ class SingleRunner(RunnerBase):
                     filelist = context["file_list"]
                     context["file_list"] = shuffle_files(need_shuffle_files,
                                                          filelist)
+                context["current_epoch"] = epoch
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
@@ -450,6 +475,7 @@ class PSRunner(RunnerBase):
                 filelist = context["file_list"]
                 context["file_list"] = shuffle_files(need_shuffle_files,
                                                      filelist)
+            context["current_epoch"] = epoch
             begin_time = time.time()
             result = self._run(context, model_dict)
             end_time = time.time()
@@ -500,6 +526,7 @@ class CollectiveRunner(RunnerBase):
                 filelist = context["file_list"]
                 context["file_list"] = shuffle_files(need_shuffle_files,
                                                      filelist)
+            context["current_epoch"] = epoch
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -533,6 +560,7 @@ class PslibRunner(RunnerBase):
                 filelist = context["file_list"]
                 context["file_list"] = shuffle_files(need_shuffle_files,
                                                      filelist)
+            context["current_epoch"] = epoch
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
