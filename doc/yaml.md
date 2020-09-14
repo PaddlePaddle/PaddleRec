@@ -38,6 +38,7 @@
 |       runner_class_path       |    string    |                           路径                            |    否    |                      自定义runner流程实现的地址                      |
 |      terminal_class_path      |    string    |                           路径                            |    否    |                     自定义terminal流程实现的地址                     |
 |  init_pretraining_model_path  |    string    |                           路径                            |    否    |自定义的startup流程中需要传入这个参数，finetune中需要加载的参数的地址 |
+|  runner_result_dump_path  |    string    |                           路径                            |    否    | 运行中metrics的结果使用json.dump到文件的地址，若是在训练的runner中使用, 会自动加上epoch后缀 |
 
 
 
