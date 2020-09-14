@@ -135,8 +135,8 @@ def get_engine(args, running_config, mode):
                 selected_gpus))
 
         selected_gpus_num = len(selected_gpus.split(","))
-        if selected_gpus_num > 1:
-            engine = "LOCAL_CLUSTER_TRAIN"
+        # if selected_gpus_num > 1:
+        #     engine = "LOCAL_CLUSTER_TRAIN"
 
     if engine not in engine_choices:
         raise ValueError("{} can only be chosen in {}".format(engine_class,

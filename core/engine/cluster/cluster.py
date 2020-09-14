@@ -23,6 +23,7 @@ import warnings
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
+import paddlerec.core.engine.cluster_utils as cluster_utils
 
 
 class ClusterEngine(Engine):
@@ -47,8 +48,47 @@ class ClusterEngine(Engine):
                 self.backend))
 
     def start_worker_procs(self):
-        trainer = TrainerFactory.create(self.trainer)
-        trainer.run()
+        factory = "paddlerec.core.factory"
+        cmd = [sys.executable, "-u", "-m", factory, self.trainer]
+
+        print("use_paddlecloud_flag:{}".format(cluster_utils.use_paddlecloud(
+        )))
+        if cluster_utils.use_paddlecloud():
+            cluster, pod = cluster_utils.get_cloud_cluster(selected_gpus)
+            logger.info("get cluster from cloud:{}".format(cluster))
+            procs = cluster_utils.start_local_trainers(
+                cluster, pod, cmd, log_dir=logs_dir)
+
+        else:
+            # trainers_num = 1 or not use paddlecloud ips="a,b"
+            for i in range(selected_gpus_num - 1):
+                while True:
+                    new_port = envs.find_free_port()
+                    if new_port not in ports:
+                        ports.append(new_port)
+                        break
+            user_endpoints = ",".join(["127.0.0.1:" + str(x) for x in ports])
+            for i in range(selected_gpus_num):
+                current_env.update({
+                    "PADDLE_TRAINER_ENDPOINTS": user_endpoints,
+                    "PADDLE_CURRENT_ENDPOINTS": user_endpoints[i],
+                    "PADDLE_TRAINERS_NUM": str(worker_num),
+                    "TRAINING_ROLE": "TRAINER",
+                    "PADDLE_TRAINER_ID": str(i),
+                    "FLAGS_selected_gpus": str(selected_gpus[i]),
+                    "PADDLEREC_GPU_NUMS": str(selected_gpus_num)
+                })
+
+                os.system("mkdir -p {}".format(logs_dir))
+                fn = open("%s/worker.%d" % (logs_dir, i), "w")
+                log_fns.append(fn)
+                proc = subprocess.Popen(
+                    cmd,
+                    env=current_env,
+                    stdout=fn,
+                    stderr=fn,
+                    cwd=os.getcwd())
+                procs.append(proc)
 
     def start_master_procs(self):
         if self.backend == "PADDLECLOUD":
