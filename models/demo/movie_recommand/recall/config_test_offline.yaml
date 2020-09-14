@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#workspace: "paddlerec.models.demo.movie_recommand"
 workspace: "./"
-
 # list of dataset
 dataset:
-- name: dataset_train # name of dataset to distinguish different datasets
+- name: dataset_infer # name
   batch_size: 128
-  type: DataLoader 
-  data_path: "{workspace}/data/train"
+  type: DataLoader
+  data_path: "{workspace}/data/test"
   sparse_slots: "logid time userid gender age occupation movieid title genres label"
   dense_slots: ""
 
@@ -37,18 +37,21 @@ hyper_parameters:
   fc_sizes: [512, 256, 128, 32]
 
 # train
-mode: runner_train
-runner:
-- name: runner_train
-  class: train
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_recall" # save checkpoint path
-  epochs: 10
-  device: cpu
+mode: runner_infer
 
-#train
+runner:
+- name: runner_infer
+  epochs: 1
+  device: cpu
+  class: infer
+  print_interval: 100000
+  runner_result_dump_path: "{workspace}/recall/infer_result"
+  init_model_path: "increment_recall/9" # load model path
+
+
+#offline infer
 phase:
 - name: phase1
   model: "{workspace}/recall/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
-  thread_num: 4
+  dataset_name: dataset_infer 
+  thread_num: 1
