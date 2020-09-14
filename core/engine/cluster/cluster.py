@@ -19,6 +19,7 @@ import copy
 import os
 import subprocess
 import warnings
+import sys
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.factory import TrainerFactory
