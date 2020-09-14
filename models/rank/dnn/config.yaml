@@ -114,6 +114,25 @@ runner:
   print_interval: 1
   phases: [phase1]
 
+- name: local_ps_train
+  class: local_cluster_train
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  selected_gpus: "0" # 选择多卡执行训练
+  work_num: 1
+  server_num: 1
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_step_interval: 1
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_step_path: "step_save"
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  print_interval: 1
+  phases: [phase1]
 # runner will run all the phase in each epoch
 phase:
 - name: phase1
