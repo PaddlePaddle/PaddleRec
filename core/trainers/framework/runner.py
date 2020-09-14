@@ -199,9 +199,9 @@ class RunnerBase(object):
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
-                        metrics_logging = metrics.insert(1, seconds)
+                        metrics_logging.insert(1, seconds)
                         begin_time = end_time
-                        logging.info(metrics_format.format(*metrics))
+                        logging.info(metrics_format.format(*metrics_logging))
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
