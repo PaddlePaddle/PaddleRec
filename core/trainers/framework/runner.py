@@ -203,9 +203,9 @@ class RunnerBase(object):
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
-                        metrics_logging = metrics.insert(1, seconds)
+                        metrics_logging.insert(1, seconds)
                         begin_time = end_time
-                        logging.info(metrics_format.format(*metrics))
+                        logging.info(metrics_format.format(*metrics_logging))
 
                     if save_step_interval >= 1 and batch_id % save_step_interval == 0 and context[
                             "is_infer"] == False:
@@ -225,6 +225,7 @@ class RunnerBase(object):
                                 is_fleet=context["is_fleet"],
                                 epoch_id=None,
                                 batch_id=batch_id)
+
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
