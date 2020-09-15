@@ -11,15 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 #!/bin/bash
-echo "................run................."
-python -m paddlerec.run -m ./config.yaml &>result1.txt
-grep -i "query_pt_sim" ./result1.txt >./result2.txt
-sed '$d' result2.txt >result.txt
-rm -f result1.txt
-rm -f result2.txt
-python transform.py
-sort -t $'\t' -k1,1 -k 2nr,2 pair.txt >result.txt
-rm -f pair.txt
-python ../../../tools/cal_pos_neg.py result.txt
+
+wget https://paddlerec.bj.bcebos.com/dssm%2Fbq.tar.gz
+tar xzf dssm%2Fbq.tar.gz
+rm -f dssm%2Fbq.tar.gz
+mv bq/train.txt ./raw_data.txt
+python3 preprocess.py
+mkdir big_train
+mv train.txt ./big_train
+mkdir big_test
+mv test.txt ./big_test
