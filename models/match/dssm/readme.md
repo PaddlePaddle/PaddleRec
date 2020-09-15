@@ -157,6 +157,7 @@ label.txt中对应的测试集中的标签
 将hyper_parameters中的slice_end从8改为128.当您需要改变batchsize的时候，这个参数也需要随之变化
 将dataset_train中的data_path改为{workspace}/data/big_train
 将dataset_infer中的data_path改为{workspace}/data/big_test
+将hyper_parameters中的trigram_d改为6327
 
 5.  执行脚本，开始训练.脚本会运行python -m paddlerec.run -m ./config.yaml启动训练，并将结果输出到result文件中。然后启动transform.py整合数据，最后计算出正逆序指标：
 ```
