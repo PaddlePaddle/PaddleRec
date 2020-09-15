@@ -19,6 +19,7 @@ import time
 import warnings
 import numpy as np
 import random
+import json
 import logging
 import paddle.fluid as fluid
 
@@ -99,6 +100,7 @@ class RunnerBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
+
         scope = context["model"][model_name]["scope"]
         program = context["model"][model_name]["main_program"]
         reader = context["dataset"][reader_name]
@@ -138,6 +140,9 @@ class RunnerBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
+        save_step_interval = int(
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".save_step_interval", -1))
         if context["is_infer"]:
             metrics = model_class.get_infer_results()
         else:
@@ -147,17 +152,22 @@ class RunnerBase(object):
         metrics_format = []
 
         if context["is_infer"]:
-            metrics_format.append("\t[Infer]\t{}: {{}}".format("batch"))
+            metrics_format.append("\t[Infer] {}: {{}}".format("batch"))
         else:
-            metrics_format.append("\t[Train]\t{}: {{}}".format("batch"))
+            metrics_format.append("\t[Train]")
+            if "current_epoch" in context:
+                metrics_format.append(" epoch: {}".format(context[
+                    "current_epoch"]))
+            metrics_format.append(" {}: {{}}".format("batch"))
 
         metrics_format.append("{}: {{:.2f}}s".format("time_each_interval"))
 
         metrics_names = ["total_batch"]
-
+        metrics_indexes = dict()
         for name, var in metrics.items():
             metrics_names.append(name)
             metrics_varnames.append(var.name)
+            metrics_indexes[var.name] = len(metrics_varnames) - 1
             metrics_format.append("{}: {{}}".format(name))
         metrics_format = ", ".join(metrics_format)
 
@@ -166,6 +176,7 @@ class RunnerBase(object):
         batch_id = 0
         begin_time = time.time()
         scope = context["model"][model_name]["scope"]
+        runner_results = []
         result = None
         with fluid.scope_guard(scope):
             try:
@@ -182,17 +193,54 @@ class RunnerBase(object):
                     ]
                     metrics.extend(metrics_rets)
 
+                    batch_runner_result = {}
+                    for k, v in metrics_indexes.items():
+                        batch_runner_result[k] = np.array(metrics_rets[
+                            v]).tolist()
+                    runner_results.append(batch_runner_result)
+
                     if batch_id % fetch_period == 0 and batch_id != 0:
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
-                        metrics_logging = metrics.insert(1, seconds)
+                        metrics_logging.insert(1, seconds)
                         begin_time = end_time
+                        logging.info(metrics_format.format(*metrics_logging))
 
-                        logging.info(metrics_format.format(*metrics))
+                    if save_step_interval >= 1 and batch_id % save_step_interval == 0 and context[
+                            "is_infer"] == False:
+                        if context["fleet_mode"]:
+                            if context["fleet_mode"].upper() == "PS":
+                                train_prog = context["model"][model_dict[
+                                    "name"]]["main_program"]
+                        elif not context["is_fleet"] or context[
+                                "fleet_mode"].upper() == "COLLECTIVE":
+                            train_prog = context["model"][model_dict["name"]][
+                                "default_main_program"]
+                        startup_prog = context["model"][model_dict["name"]][
+                            "startup_program"]
+                        with fluid.program_guard(train_prog, startup_prog):
+                            self.save(
+                                context,
+                                is_fleet=context["is_fleet"],
+                                epoch_id=None,
+                                batch_id=batch_id)
+
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
+
+        runner_result_save_path = envs.get_global_env(
+            "runner." + context["runner_name"] + ".runner_result_dump_path",
+            None)
+        if runner_result_save_path:
+            if "current_epoch" in context:
+                runner_result_save_path = runner_result_save_path + "_epoch_{}".format(
+                    context["current_epoch"])
+            logging.info("Dump runner result in {}".format(
+                runner_result_save_path))
+            with open(runner_result_save_path, 'w+') as fout:
+                json.dump(runner_results, fout)
 
         if batch_id > 0:
             result = dict(zip(metrics_names, metrics))
@@ -290,7 +338,7 @@ class RunnerBase(object):
             exec_strategy=_exe_strategy)
         return program
 
-    def save(self, epoch_id, context, is_fleet=False):
+    def save(self, context, is_fleet=False, epoch_id=None, batch_id=None):
         def need_save(epoch_id, epoch_interval, is_last=False):
             name = "runner." + context["runner_name"] + "."
             total_epoch = int(envs.get_global_env(name + "epochs", 1))
@@ -347,7 +395,8 @@ class RunnerBase(object):
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
-
+            logging.info("\tsave epoch_id:%d model into: \"%s\"" %
+                         (epoch_id, dirname))
             if is_fleet:
                 warnings.warn(
                     "Save inference model in cluster training is not recommended! Using save checkpoint instead.",
@@ -370,14 +419,35 @@ class RunnerBase(object):
             if dirname is None or dirname == "":
                 return
             dirname = os.path.join(dirname, str(epoch_id))
+            logging.info("\tsave epoch_id:%d model into: \"%s\"" %
+                         (epoch_id, dirname))
             if is_fleet:
                 if context["fleet"].worker_index() == 0:
                     context["fleet"].save_persistables(context["exe"], dirname)
             else:
                 fluid.io.save_persistables(context["exe"], dirname)
 
-        save_persistables()
-        save_inference_model()
+        def save_checkpoint_step():
+            name = "runner." + context["runner_name"] + "."
+            save_interval = int(
+                envs.get_global_env(name + "save_step_interval", -1))
+            dirname = envs.get_global_env(name + "save_step_path", None)
+            if dirname is None or dirname == "":
+                return
+            dirname = os.path.join(dirname, str(batch_id))
+            logging.info("\tsave batch_id:%d model into: \"%s\"" %
+                         (batch_id, dirname))
+            if is_fleet:
+                if context["fleet"].worker_index() == 0:
+                    context["fleet"].save_persistables(context["exe"], dirname)
+            else:
+                fluid.io.save_persistables(context["exe"], dirname)
+
+        if isinstance(epoch_id, int):
+            save_persistables()
+            save_inference_model()
+        if isinstance(batch_id, int):
+            save_checkpoint_step()
 
 
 class SingleRunner(RunnerBase):
@@ -402,6 +472,7 @@ class SingleRunner(RunnerBase):
                     filelist = context["file_list"]
                     context["file_list"] = shuffle_files(need_shuffle_files,
                                                          filelist)
+                context["current_epoch"] = epoch
                 begin_time = time.time()
                 result = self._run(context, model_dict)
                 end_time = time.time()
@@ -428,7 +499,7 @@ class SingleRunner(RunnerBase):
                     startup_prog = context["model"][model_dict["name"]][
                         "startup_program"]
                     with fluid.program_guard(train_prog, startup_prog):
-                        self.save(epoch, context)
+                        self.save(context=context, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -450,6 +521,7 @@ class PSRunner(RunnerBase):
                 filelist = context["file_list"]
                 context["file_list"] = shuffle_files(need_shuffle_files,
                                                      filelist)
+            context["current_epoch"] = epoch
             begin_time = time.time()
             result = self._run(context, model_dict)
             end_time = time.time()
@@ -480,7 +552,7 @@ class PSRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.save(epoch, context, True)
+                    self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -500,6 +572,7 @@ class CollectiveRunner(RunnerBase):
                 filelist = context["file_list"]
                 context["file_list"] = shuffle_files(need_shuffle_files,
                                                      filelist)
+            context["current_epoch"] = epoch
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
@@ -512,7 +585,7 @@ class CollectiveRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.save(epoch, context, True)
+                    self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -533,6 +606,7 @@ class PslibRunner(RunnerBase):
                 filelist = context["file_list"]
                 context["file_list"] = shuffle_files(need_shuffle_files,
                                                      filelist)
+            context["current_epoch"] = epoch
             begin_time = time.time()
             self._run(context, model_dict)
             end_time = time.time()
