@@ -114,15 +114,13 @@ runner:
   print_interval: 1
   phases: [phase1]
 
-- name: local_ps_train
-  class: local_cluster_train
+- name: single_multi_gpu_train
+  class: train
   # num of epochs
   epochs: 1
   # device to run training or infer
-  device: cpu
-  selected_gpus: "0" # 选择多卡执行训练
-  work_num: 1
-  server_num: 1
+  device: gpu
+  selected_gpus: "0,1" # 选择多卡执行训练
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 4 # save inference
   save_step_interval: 1
