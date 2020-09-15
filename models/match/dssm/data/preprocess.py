@@ -27,7 +27,7 @@ f.close()
 word_dict = {}
 for line in lines:
     line = line.strip().split("\t")
-    text = line[0].strip("") + line[1].strip("")
+    text = line[0].strip("") + " " + line[1].strip("")
     text = jieba.cut(text)
     for word in text:
         if word in word_dict:
