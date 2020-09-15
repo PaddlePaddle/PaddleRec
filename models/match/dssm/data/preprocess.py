@@ -15,10 +15,11 @@
 
 import os
 import sys
+import jieba
 import numpy as np
 import random
 
-f = open("./zhidao", "r")
+f = open("./raw_data.txt", "r")
 lines = f.readlines()
 f.close()
 
@@ -26,14 +27,15 @@ f.close()
 word_dict = {}
 for line in lines:
     line = line.strip().split("\t")
-    text = line[0].split(" ") + line[1].split(" ")
+    text = line[0].strip("") + line[1].strip("")
+    text = jieba.cut(text)
     for word in text:
         if word in word_dict:
             continue
         else:
             word_dict[word] = len(word_dict) + 1
 
-f = open("./zhidao", "r")
+f = open("./raw_data.txt", "r")
 lines = f.readlines()
 f.close()
 
@@ -57,12 +59,13 @@ for line in lines:
         else:
             pos_dict[line[0]] = [line[1]]
 
+print("build dict done")
 #划分训练集和测试集
 query_list = list(pos_dict.keys())
-#print(len(query))
+#print(len(query_list))
 random.shuffle(query_list)
-train_query = query_list[:90]
-test_query = query_list[90:]
+train_query = query_list[:11600]
+test_query = query_list[11600:]
 
 #获得训练集
 train_set = []
@@ -73,6 +76,7 @@ for query in train_query:
         for neg in neg_dict[query]:
             train_set.append([query, pos, neg])
 random.shuffle(train_set)
+print("get train_set done")
 
 #获得测试集
 test_set = []
@@ -84,13 +88,14 @@ for query in test_query:
     for neg in neg_dict[query]:
         test_set.append([query, neg, 0])
 random.shuffle(test_set)
+print("get test_set done")
 
 #训练集中的query,pos,neg转化为词袋
 f = open("train.txt", "w")
 for line in train_set:
-    query = line[0].strip().split(" ")
-    pos = line[1].strip().split(" ")
-    neg = line[2].strip().split(" ")
+    query = jieba.cut(line[0].strip())
+    pos = jieba.cut(line[1].strip())
+    neg = jieba.cut(line[2].strip())
     query_token = [0] * (len(word_dict) + 1)
     for word in query:
         query_token[word_dict[word]] = 1
@@ -109,8 +114,8 @@ f.close()
 f = open("test.txt", "w")
 fa = open("label.txt", "w")
 for line in test_set:
-    query = line[0].strip().split(" ")
-    pos = line[1].strip().split(" ")
+    query = jieba.cut(line[0].strip())
+    pos = jieba.cut(line[1].strip())
     label = line[2]
     query_token = [0] * (len(word_dict) + 1)
     for word in query:

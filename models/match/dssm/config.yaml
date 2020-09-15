@@ -29,11 +29,12 @@ dataset:
 
 hyper_parameters:
   optimizer:
-    class: sgd
+    class: adam
     learning_rate: 0.001
-    strategy: async
-  trigram_d: 1439
+    strategy: sync
+  trigram_d: 6327
   neg_num: 1
+  slice_end: 8
   fc_sizes: [300, 300, 128]
   fc_acts: ['tanh', 'tanh', 'tanh']
 
@@ -44,7 +45,7 @@ runner:
 - name: train_runner
   class: train
   # num of epochs
-  epochs: 3
+  epochs: 1
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
@@ -54,14 +55,14 @@ runner:
   save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
   save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # fetch vars of save inference
   init_model_path: "" # load model path
-  print_interval: 2
+  print_interval: 10
   phases: phase1
 - name: infer_runner
   class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/2" # load model path
+  init_model_path: "increment/0" # load model path
   phases: phase2
 
 # runner will run all the phase in each epoch
