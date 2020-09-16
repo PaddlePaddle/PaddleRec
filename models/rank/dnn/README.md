@@ -32,11 +32,10 @@
 ```bash
 sh run.sh
 ```
-执行该脚本，会从国内源的服务器上下载Criteo数据集，并解压到指定文件夹。原始的全量数据放置于`./train_data_full/`，原始的全量测试数据放置于`./test_data_full/`，原始的用于快速验证的训练数据与测试数据放置于`./train_data/`与`./test_data/`。处理后的全量训练数据放置于`./slot_train_data_full/`，处理后的全量测试数据放置于`./slot_test_data_full/`，处理后的用于快速验证的训练数据与测试数据放置于`./slot_train_data/`与`./slot_test_data/`。
+进入models/rank/dnn/data目录下，执行该脚本，会从国内源的服务器上下载Criteo数据集，并解压到指定文件夹。原始的全量数据放置于`./train_data_full/`，原始的全量测试数据放置于`./test_data_full/`，原始的用于快速验证的训练数据与测试数据放置于`./train_data/`与`./test_data/`。处理后的全量训练数据放置于`./slot_train_data_full/`，处理后的全量测试数据放置于`./slot_test_data_full/`，处理后的用于快速验证的训练数据与测试数据放置于`./slot_train_data/`与`./slot_test_data/`。
 
 执行该脚本的理想输出为：
 ```bash
-> sh run.sh
 --2019-11-26 06:31:33--  https://fleet.bj.bcebos.com/ctr_data.tar.gz
 Resolving fleet.bj.bcebos.com... 10.180.112.31
 Connecting to fleet.bj.bcebos.com|10.180.112.31|:443... connected.
@@ -100,7 +99,7 @@ def get_dataset(inputs, args)
 3. 创建一个子类，继承dataset的基类，基类有多种选择，如果是多种数据类型混合，并且需要转化为数值进行预处理的，建议使用`MultiSlotDataGenerator`；若已经完成了预处理并保存为数据文件，可以直接以`string`的方式进行读取，使用`MultiSlotStringDataGenerator`，能够进一步加速。在示例代码，我们继承并实现了名为`CriteoDataset`的dataset子类，使用`MultiSlotDataGenerator`方法。
 4. 继承并实现基类中的`generate_sample`函数，逐行读取数据。该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
 5. 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。例如对以行为单位的数据进行截取，转换及预处理。
-6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的，并转换为类似字典的形式。在示例代码中，我们使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出。如果展开来看，我们输出的数据形如`[('dense_feature',[value]),('C1',[value]),('C2',[value]),...,('C26',[value]),('label',[value])]`
+6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的。在示例代码中，我们将数据整理成`click:value dense_feature:value ... dense_feature:value 1:value ... 26:value`的格式。用print输出是因为我们在run.sh中将结果重定向到slot_train_data等文件中，由模型直接读取。在用户自定义使用时，可以使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出，并在config.yaml中的data_converter参数指定reader的路径。
 
 
 ```python
@@ -240,7 +239,7 @@ for size in hidden_layers:
 - 预测的结果通过一个输出shape为2的FC层给出，该FC层的激活函数是softmax，会给出每条样本分属于正负样本的概率。
 - 每条样本的损失由交叉熵给出，交叉熵的输入维度为[batch_size,2]，数据类型为float，label的输入维度为[batch_size,1]，数据类型为int。
 - 该batch的损失`avg_cost`是各条样本的损失之和
-- 我们同时还会计算预测的auc，auc的结果由`fluid.layers.auc()`给出，该层的返回值有三个，分别是全局auc: `auc`，当前batch的auc: `batch_auc`，以及auc_states: `_`，auc_states包含了`batch_stat_pos, batch_stat_neg, stat_pos, stat_neg`信息。`batch_auc`我们取近20个batch的平均，由参数`slide_steps=20`指定，roc曲线的离散化的临界数值设置为4096，由`num_thresholds=2**12`指定。
+- 我们同时还会计算预测的auc，auc的结果由`fluid.layers.auc()`给出，该层的返回值有三个，分别是从第一个batch累计到当前batch的全局auc: `auc`，最近几个batch的auc: `batch_auc`，以及auc_states: `_`，auc_states包含了`batch_stat_pos, batch_stat_neg, stat_pos, stat_neg`信息。`batch_auc`我们取近20个batch的平均，由参数`slide_steps=20`指定，roc曲线的离散化的临界数值设置为4096，由`num_thresholds=2**12`指定。
 ```
 predict = fluid.layers.fc(
     input=fcs[-1],
