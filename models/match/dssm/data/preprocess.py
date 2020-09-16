@@ -63,7 +63,7 @@ print("build dict done")
 #划分训练集和测试集
 query_list = list(pos_dict.keys())
 #print(len(query_list))
-random.shuffle(query_list)
+#random.shuffle(query_list)
 train_query = query_list[:11600]
 test_query = query_list[11600:]
 
