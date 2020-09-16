@@ -261,7 +261,7 @@ from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
 
 # 定义TrainReader，需要继承 paddlerec.core.reader.Reader
-class Reader(ReaderBase)::
+class Reader(ReaderBase):
 
     # 数据预处理逻辑，继承自基类
     # 如果无需处理， 使用pass跳过该函数的执行
@@ -269,7 +269,7 @@ class Reader(ReaderBase)::
         self.cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.cont_max_ = [20, 600, 100, 50, 64000, 500, 100, 50, 500, 10, 10, 10, 50]
         self.cont_diff_ = [20, 603, 100, 50, 64000, 500, 100, 50, 500, 10, 10, 10, 50]
-        self.hash_dim_ = envs.get_global_env("hyper_parameters.sparse_feature_number", None, "train.model")
+        self.hash_dim_ = envs.get_global_env("hyper_parameters.sparse_feature_number", None)
         self.continuous_range_ = range(1, 14)
         self.categorical_range_ = range(14, 40)
 
