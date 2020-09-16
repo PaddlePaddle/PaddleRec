@@ -209,12 +209,10 @@ class RunnerBase(object):
 
                     if save_step_interval >= 1 and batch_id % save_step_interval == 0 and context[
                             "is_infer"] == False:
-                        if context["fleet_mode"]:
-                            if context["fleet_mode"].upper() == "PS":
-                                train_prog = context["model"][model_dict[
-                                    "name"]]["main_program"]
-                        elif not context["is_fleet"] or context[
-                                "fleet_mode"].upper() == "COLLECTIVE":
+                        if context["fleet_mode"].upper() == "PS":
+                            train_prog = context["model"][model_dict["name"]][
+                                "main_program"]
+                        else:
                             train_prog = context["model"][model_dict["name"]][
                                 "default_main_program"]
                         startup_prog = context["model"][model_dict["name"]][
