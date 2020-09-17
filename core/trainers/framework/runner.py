@@ -100,6 +100,7 @@ class RunnerBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
+
         scope = context["model"][model_name]["scope"]
         program = context["model"][model_name]["main_program"]
         reader = context["dataset"][reader_name]
@@ -139,6 +140,9 @@ class RunnerBase(object):
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
                                 ".print_interval", 20))
+        save_step_interval = int(
+            envs.get_global_env("runner." + context["runner_name"] +
+                                ".save_step_interval", -1))
         if context["is_infer"]:
             metrics = model_class.get_infer_results()
         else:
@@ -202,6 +206,24 @@ class RunnerBase(object):
                         metrics_logging.insert(1, seconds)
                         begin_time = end_time
                         logging.info(metrics_format.format(*metrics_logging))
+
+                    if save_step_interval >= 1 and batch_id % save_step_interval == 0 and context[
+                            "is_infer"] == False:
+                        if context["fleet_mode"].upper() == "PS":
+                            train_prog = context["model"][model_dict["name"]][
+                                "main_program"]
+                        else:
+                            train_prog = context["model"][model_dict["name"]][
+                                "default_main_program"]
+                        startup_prog = context["model"][model_dict["name"]][
+                            "startup_program"]
+                        with fluid.program_guard(train_prog, startup_prog):
+                            self.save(
+                                context,
+                                is_fleet=context["is_fleet"],
+                                epoch_id=None,
+                                batch_id=batch_id)
+
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
@@ -314,7 +336,7 @@ class RunnerBase(object):
             exec_strategy=_exe_strategy)
         return program
 
-    def save(self, epoch_id, context, is_fleet=False):
+    def save(self, context, is_fleet=False, epoch_id=None, batch_id=None):
         def need_save(epoch_id, epoch_interval, is_last=False):
             name = "runner." + context["runner_name"] + "."
             total_epoch = int(envs.get_global_env(name + "epochs", 1))
@@ -371,7 +393,8 @@ class RunnerBase(object):
 
             assert dirname is not None
             dirname = os.path.join(dirname, str(epoch_id))
-
+            logging.info("\tsave epoch_id:%d model into: \"%s\"" %
+                         (epoch_id, dirname))
             if is_fleet:
                 warnings.warn(
                     "Save inference model in cluster training is not recommended! Using save checkpoint instead.",
@@ -394,14 +417,35 @@ class RunnerBase(object):
             if dirname is None or dirname == "":
                 return
             dirname = os.path.join(dirname, str(epoch_id))
+            logging.info("\tsave epoch_id:%d model into: \"%s\"" %
+                         (epoch_id, dirname))
             if is_fleet:
                 if context["fleet"].worker_index() == 0:
                     context["fleet"].save_persistables(context["exe"], dirname)
             else:
                 fluid.io.save_persistables(context["exe"], dirname)
 
-        save_persistables()
-        save_inference_model()
+        def save_checkpoint_step():
+            name = "runner." + context["runner_name"] + "."
+            save_interval = int(
+                envs.get_global_env(name + "save_step_interval", -1))
+            dirname = envs.get_global_env(name + "save_step_path", None)
+            if dirname is None or dirname == "":
+                return
+            dirname = os.path.join(dirname, str(batch_id))
+            logging.info("\tsave batch_id:%d model into: \"%s\"" %
+                         (batch_id, dirname))
+            if is_fleet:
+                if context["fleet"].worker_index() == 0:
+                    context["fleet"].save_persistables(context["exe"], dirname)
+            else:
+                fluid.io.save_persistables(context["exe"], dirname)
+
+        if isinstance(epoch_id, int):
+            save_persistables()
+            save_inference_model()
+        if isinstance(batch_id, int):
+            save_checkpoint_step()
 
 
 class SingleRunner(RunnerBase):
@@ -453,7 +497,7 @@ class SingleRunner(RunnerBase):
                     startup_prog = context["model"][model_dict["name"]][
                         "startup_program"]
                     with fluid.program_guard(train_prog, startup_prog):
-                        self.save(epoch, context)
+                        self.save(context=context, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -506,7 +550,7 @@ class PSRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.save(epoch, context, True)
+                    self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
@@ -539,7 +583,7 @@ class CollectiveRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with fluid.program_guard(train_prog, startup_prog):
-                    self.save(epoch, context, True)
+                    self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
