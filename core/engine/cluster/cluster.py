@@ -50,10 +50,11 @@ class ClusterEngine(Engine):
 
     def start_worker_procs(self):
         if (envs.get_runtime_environ("fleet_mode") == "COLLECTIVE"):
-            selected_gpus_num = self.backend_env.get("submit.k8s_gpu_card", 1)
+            # trainer_ports = os.getenv("TRAINER_PORTS", None)
+            trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")
             # cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
             # if cuda_visible_devices is None or cuda_visible_devices == "":
-            selected_gpus = [range(selected_gpus_num)]
+            selected_gpus = [range(trainer_ports)]
             # else:
             #     # change selected_gpus into relative values
             #     # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;
