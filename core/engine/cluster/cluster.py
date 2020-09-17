@@ -63,10 +63,11 @@ class ClusterEngine(Engine):
                 assert x in cuda_visible_devices_list, "Can't find "\
                 "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
                 % (x, cuda_visible_devices)
-            selected_gpus = [
-                cuda_visible_devices_list.index(x.strip())
-                for x in self.envs["selected_gpus"].split(",")
-            ]
+            # selected_gpus = [
+            #     cuda_visible_devices_list.index(x.strip())
+            #     for x in self.envs["selected_gpus"].split(",")
+            # ]
+            selected_gpus = [0, 1, 2, 3]
         selected_gpus_num = len(selected_gpus)
 
         factory = "paddlerec.core.factory"
