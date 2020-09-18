@@ -54,67 +54,34 @@ class ClusterEngine(Engine):
 
     def start_worker_procs(self):
         if (envs.get_runtime_environ("fleet_mode") == "COLLECTIVE"):
-            # trainer_ports = os.getenv("TRAINER_PORTS", None)
-            trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")
-            # cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
-            # if cuda_visible_devices is None or cuda_visible_devices == "":
-            selected_gpus = [len(trainer_ports)]
-            # else:
-            #     # change selected_gpus into relative values
-            #     # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;
-            #     # therefore selected_gpus=0,1,2,3
-            #     cuda_visible_devices_list = cuda_visible_devices.split(',')
-            #     for x in self.cluster_env["SELECTED_GPUS_FROM_CLOUD"].split(","):
-            #         assert x in cuda_visible_devices_list, "Can't find "\
-            #         "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
-            #         % (x, cuda_visible_devices)
-            #     selected_gpus = [
-            #         cuda_visible_devices_list.index(x.strip())
-            #         for x in self.cluster_env["SELECTED_GPUS_FROM_CLOUD"].split(",")
-            #     ]
+            #trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")                                            
+            cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+            if cuda_visible_devices is None or cuda_visible_devices == "":
+                selected_gpus = range(int(os.getenv("TRAINER_GPU_CARD_COUNT")))
+            else:
+                # change selected_gpus into relative values                                                         
+                # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;                                    
+                # therefore selected_gpus=0,1,2,3                                                                   
+                cuda_visible_devices_list = cuda_visible_devices.split(',')
+                for x in range(int(os.getenv("TRAINER_GPU_CARD_COUNT"))):
+                    assert x in cuda_visible_devices_list, "Can't find "\
+                    "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
+                    % (x, cuda_visible_devices)
+                selected_gpus = [cuda_visible_devices_list.index(x)]
+            print("selected_gpus:{}".format(selected_gpus))
 
             factory = "paddlerec.core.factory"
             cmd = [sys.executable, "-u", "-m", factory, self.trainer]
-
+            logs_dir = envs.get_runtime_environ("log_dir")
             print("use_paddlecloud_flag:{}".format(
                 cluster_utils.use_paddlecloud()))
             if cluster_utils.use_paddlecloud():
                 cluster, pod = cluster_utils.get_cloud_cluster(selected_gpus)
                 logger.info("get cluster from cloud:{}".format(cluster))
-                procs = cluster_utils.start_local_trainers(cluster, pod, cmd)
+                procs = cluster_utils.start_local_trainers(
+                    cluster, pod, cmd, log_dir=logs_dir)
                 print("cluster:{}".format(cluster))
                 print("pod:{}".format(pod))
-            # else:
-            #     # trainers_num = 1 or not use paddlecloud ips="a,b"
-            #     for i in range(selected_gpus_num - 1):
-            #         while True:
-            #             new_port = envs.find_free_port()
-            #             if new_port not in ports:
-            #                 ports.append(new_port)
-            #                 break
-            #     user_endpoints = ",".join(
-            #         ["127.0.0.1:" + str(x) for x in ports])
-            #     for i in range(selected_gpus_num):
-            #         current_env.update({
-            #             "PADDLE_TRAINER_ENDPOINTS": user_endpoints,
-            #             "PADDLE_CURRENT_ENDPOINTS": user_endpoints[i],
-            #             "PADDLE_TRAINERS_NUM": str(worker_num),
-            #             "TRAINING_ROLE": "TRAINER",
-            #             "PADDLE_TRAINER_ID": str(i),
-            #             "FLAGS_selected_gpus": str(selected_gpus[i]),
-            #             "PADDLEREC_GPU_NUMS": str(selected_gpus_num)
-            #         })
-
-            #         os.system("mkdir -p {}".format(logs_dir))
-            #         fn = open("%s/worker.%d" % (logs_dir, i), "w")
-            #         log_fns.append(fn)
-            #         proc = subprocess.Popen(
-            #             cmd,
-            #             env=current_env,
-            #             stdout=fn,
-            #             stderr=fn,
-            #             cwd=os.getcwd())
-            #         procs.append(proc)
         else:
             trainer = TrainerFactory.create(self.trainer)
             trainer.run()
