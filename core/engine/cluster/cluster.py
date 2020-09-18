@@ -26,6 +26,9 @@ from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
 import paddlerec.core.engine.cluster_utils as cluster_utils
 
+logger = logging.getLogger("root")
+logger.propagate = False
+
 
 class ClusterEngine(Engine):
     def __init_impl__(self):
