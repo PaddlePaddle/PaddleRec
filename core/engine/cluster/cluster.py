@@ -53,6 +53,7 @@ class ClusterEngine(Engine):
                 self.backend))
 
     def start_worker_procs(self):
+        logs_dir = self.envs["log_dir"]
         if (envs.get_runtime_environ("fleet_mode") == "COLLECTIVE"):
             # trainer_ports = os.getenv("TRAINER_PORTS", None)
             trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")
@@ -83,7 +84,8 @@ class ClusterEngine(Engine):
                 logger.info("get cluster from cloud:{}".format(cluster))
                 procs = cluster_utils.start_local_trainers(
                     cluster, pod, cmd, log_dir=logs_dir)
-
+                print("cluster:{}".format(cluster))
+                print("pod:{}".format(pod))
             else:
                 # trainers_num = 1 or not use paddlecloud ips="a,b"
                 for i in range(selected_gpus_num - 1):
