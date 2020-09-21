@@ -4,11 +4,12 @@
 
 ```
 ├── data #样例数据
-	├── train
-		├── train.txt #训练数据样例
-	├── test
-    	├── test.txt #测试数据样例
-	├── preprocess.py #数据处理程序
+    ├── train
+        ├── train.txt #训练数据样例
+    ├── test
+        ├── test.txt #测试数据样例
+    ├── preprocess.py #数据处理程序
+    ├── data_process #数据一键处理脚本
 ├── __init__.py
 ├── README.md #文档
 ├── model.py #模型文件
@@ -46,13 +47,19 @@ Query 和 Doc 的语义相似性可以用这两个向量的 cosine 距离表示�
 <p>
 
 ## 数据准备
-我们公开了自建的测试集，包括百度知道、ECOM、QQSIM、UNICOM 四个数据集。这里我们选取百度知道数据集来进行训练。执行以下命令可以获取上述数据集。
+BQ是一个智能客服中文问句匹配数据集，该数据集是自动问答系统语料，共有120,000对句子对，并标注了句子对相似度值。数据中存在错别字、语法不规范等问题，但更加贴近工业场景。执行以下命令可以获取上述数据集。
 ```
-wget --no-check-certificate https://baidu-nlp.bj.bcebos.com/simnet_dataset-1.0.0.tar.gz
-tar xzf simnet_dataset-1.0.0.tar.gz
-rm simnet_dataset-1.0.0.tar.gz
+wget https://paddlerec.bj.bcebos.com/dssm%2Fbq.tar.gz
+tar xzf dssm%2Fbq.tar.gz
+rm -f dssm%2Fbq.tar.gz
 ```
-
+数据集样例：
+```
+请问一天是否都是限定只能转入或转出都是五万。    微众多少可以赎回短期理财        0
+微粒咨询电话号码多少    你们的人工客服电话是多少        1
+已经在银行换了新预留号码。      我现在换了电话号码，这个需要更换吗      1
+每个字段以tab键分隔，第1，2列表示两个文本。第3列表示类别（0或1，0表示两个文本不相似，1表示两个文本相似）。
+```
 ## 运行环境
 PaddlePaddle>=1.7.2
 
@@ -120,20 +127,23 @@ PaddleRec Finish
 2. 在data目录下载并解压数据集，命令如下：  
 ``` 
 cd data
-wget --no-check-certificate https://baidu-nlp.bj.bcebos.com/simnet_dataset-1.0.0.tar.gz
-tar xzf simnet_dataset-1.0.0.tar.gz
-rm simnet_dataset-1.0.0.tar.gz
+wget https://paddlerec.bj.bcebos.com/dssm%2Fbq.tar.gz
+tar xzf dssm%2Fbq.tar.gz
+rm -f dssm%2Fbq.tar.gz
 ```
-3. 本文提供了快速将数据集中的汉字数据处理为可训练格式数据的脚本，您在解压数据集后，可以看见目录中存在一个名为zhidao的文件。然后能可以在python3环境下运行我们提供的preprocess.py文件。即可生成可以直接用于训练的数据目录test.txt,train.txt和label.txt。将其放入train和test目录下以备训练时调用。命令如下：
+3. 本文提供了快速将数据集中的汉字数据处理为可训练格式数据的脚本，您在解压数据集后，可以看见目录中存在一个名为bq的目录。将其中的train.txt文件移动到data目录下，然后可以在python3环境下运行我们提供的preprocess.py文件。即可生成可以直接用于训练的数据目录test.txt,train.txt和label.txt。将其放入train和test目录下以备训练时调用。生成时间较长，请耐心等待。命令如下：
 ```
-mv data/zhidao ./
-rm -rf data
+mv bq/train.txt ./raw_data.txt
 python3 preprocess.py
-rm -f ./train/train.txt
-mv train.txt ./train
-rm -f ./test/test.txt
-mv test.txt test
+mkdir big_train
+mv train.txt ./big_train
+mkdir big_test
+mv test.txt ./big_test
 cd ..
+```
+也可以使用我们提供的一键数据处理脚本data_process.sh
+```
+sh data_process.sh
 ```
 经过预处理的格式：  
 训练集为三个稀疏的BOW方式的向量：query,pos,neg  
@@ -144,8 +154,10 @@ label.txt中对应的测试集中的标签
 
 将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
 将dataset_train中的batch_size从8改为128
-将文件model.py中的 hit_prob = fluid.layers.slice(prob, axes=[0, 1], starts=[0, 0], ends=[8, 1])  
-    改为hit_prob = fluid.layers.slice(prob, axes=[0, 1], starts=[0, 0], ends=[128, 1]).当您需要改变batchsize的时候，end中第一个参数也需要随之变化
+将hyper_parameters中的slice_end从8改为128.当您需要改变batchsize的时候，这个参数也需要随之变化
+将dataset_train中的data_path改为{workspace}/data/big_train
+将dataset_infer中的data_path改为{workspace}/data/big_test
+将hyper_parameters中的trigram_d改为5913
 
 5.  执行脚本，开始训练.脚本会运行python -m paddlerec.run -m ./config.yaml启动训练，并将结果输出到result文件中。然后启动transform.py整合数据，最后计算出正逆序指标：
 ```
@@ -155,26 +167,14 @@ sh run.sh
 输出结果示例：
 ```
 ................run.................
-!!! The CPU_NUM is not specified, you should set CPU_NUM in the environment variable list.
-CPU_NUM indicates that how many CPUPlace are used in the current task.
-And if this parameter are set as N (equal to the number of physical CPU core) the program may be faster.
-
-export CPU_NUM=32 # for example, set CPU_NUM as number of physical CPU core which is 32.
-
-!!! The default number of CPU_NUM=1.
-I0821 07:16:04.512531 32200 parallel_executor.cc:440] The Program will be executed on CPU using ParallelExecutor, 1 cards are used, so 1 programs are executed in parallel.
-I0821 07:16:04.515708 32200 build_strategy.cc:365] SeqOnlyAllReduceOps:0, num_trainers:1
-I0821 07:16:04.518872 32200 parallel_executor.cc:307] Inplace strategy is enabled, when build_strategy.enable_inplace = True
-I0821 07:16:04.520995 32200 parallel_executor.cc:375] Garbage collection strategy is enabled, when FLAGS_eager_delete_tensor_gb = 0
-75
-pnr: 2.25581395349
-query_num: 11
-pair_num: 184 184
-equal_num: 44
-正序率： 0.692857142857
-97 43
+8989
+pnr:2.75621659307
+query_num:1369
+pair_num:16240 , 16240
+equal_num:77
+正序率: 0.733774670544
+pos_num: 11860 , neg_num: 4303
 ```
-6. 提醒：因为采取较小的数据集进行训练和测试，得到指标的浮动程度会比较大。如果得到的指标不合预期，可以多次执行步骤5，即可获得合理的指标。
 
 ## 进阶使用
   
