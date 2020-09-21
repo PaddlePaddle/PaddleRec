@@ -93,7 +93,7 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
 
     ```yaml
     ...
-    train:
+    hyper_parameters:
         reader:
             avg: 10
     ...
