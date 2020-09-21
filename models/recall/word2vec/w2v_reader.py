@@ -15,6 +15,7 @@
 import io
 
 import numpy as np
+import paddle.fluid as fluid
 
 from paddlerec.core.reader import ReaderBase
 from paddlerec.core.utils import envs
@@ -47,6 +48,10 @@ class Reader(ReaderBase):
         self.with_shuffle_batch = envs.get_global_env(
             "hyper_parameters.with_shuffle_batch")
         self.random_generator = NumpyRandomInt(1, self.window_size + 1)
+        self.batch_size = envs.get_global_env(
+            "dataset.dataset_train.batch_size")
+        self.is_dataloader = envs.get_global_env(
+            "dataset.dataset_train.type") == "DataLoader"
 
         self.cs = None
         if not self.with_shuffle_batch:
@@ -88,11 +93,46 @@ class Reader(ReaderBase):
                 for context_id in context_word_ids:
                     output = [('input_word', [int(target_id)]),
                               ('true_label', [int(context_id)])]
-                    if not self.with_shuffle_batch:
+                    if self.with_shuffle_batch or self.is_dataloader:
+                        yield output
+                    else:
                         neg_array = self.cs.searchsorted(
                             np.random.sample(self.neg_num))
                         output += [('neg_label',
                                     [int(str(i)) for i in neg_array])]
-                    yield output
+                        yield output
 
         return reader
+
+    def batch_tensor_creator(self, sample_reader):
+        def __reader__():
+            result = [[], []]
+            for sample in sample_reader():
+                for i, fea in enumerate(sample):
+                    result[i].append(fea)
+                if len(result[0]) == self.batch_size:
+                    tensor_result = []
+                    for tensor in result:
+                        t = fluid.Tensor()
+                        dat = np.array(tensor, dtype='int64')
+                        if len(dat.shape) > 2:
+                            dat = dat.reshape((dat.shape[0], dat.shape[2]))
+                        elif len(dat.shape) == 1:
+                            dat = dat.reshape((-1, 1))
+                        t.set(dat, fluid.CPUPlace())
+                        tensor_result.append(t)
+                    if self.with_shuffle_batch:
+                        yield tensor_result
+                    else:
+                        tt = fluid.Tensor()
+                        neg_array = self.cs.searchsorted(
+                            np.random.sample(self.neg_num))
+                        neg_array = np.tile(neg_array, self.batch_size)
+                        tt.set(
+                            neg_array.reshape((self.batch_size, self.neg_num)),
+                            fluid.CPUPlace())
+                        tensor_result.append(tt)
+                        yield tensor_result
+                    result = [[], []]
+
+        return __reader__

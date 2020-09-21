@@ -1,5 +1,4 @@
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -40,8 +39,8 @@ class Reader(ReaderBase):
             padding = 0
             output = [(slot, []) for slot in self.all_slots]
             for elem in elements:
-                feasign, slot = elem.split(':')
-                if not self._all_slots_dict.has_key(slot):
+                slot, feasign = elem.split(':')
+                if slot not in self._all_slots_dict:
                     continue
                 self._all_slots_dict[slot][0] = True
                 index = self._all_slots_dict[slot][1]

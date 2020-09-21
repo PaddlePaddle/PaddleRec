@@ -73,6 +73,7 @@ class Model(ModelBase):
 
         query_fc = fc(inputs[0], self.hidden_layers, self.hidden_acts,
                       ['query_l1', 'query_l2', 'query_l3'])
+
         doc_pos_fc = fc(inputs[1], self.hidden_layers, self.hidden_acts,
                         ['doc_pos_l1', 'doc_pos_l2', 'doc_pos_l3'])
         R_Q_D_p = fluid.layers.cos_sim(query_fc, doc_pos_fc)
@@ -93,7 +94,7 @@ class Model(ModelBase):
         prob = fluid.layers.softmax(concat_Rs, axis=1)
 
         hit_prob = fluid.layers.slice(
-            prob, axes=[0, 1], starts=[0, 0], ends=[4, 1])
+            prob, axes=[0, 1], starts=[0, 0], ends=[8, 1])
         loss = -fluid.layers.reduce_sum(fluid.layers.log(hit_prob))
         avg_cost = fluid.layers.mean(x=loss)
         self._cost = avg_cost
