@@ -203,18 +203,16 @@ class RunnerBase(object):
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
-                        metrics_logging = metrics.insert(1, seconds)
+                        metrics_logging.insert(1, seconds)
                         begin_time = end_time
-                        logging.info(metrics_format.format(*metrics))
+                        logging.info(metrics_format.format(*metrics_logging))
 
                     if save_step_interval >= 1 and batch_id % save_step_interval == 0 and context[
                             "is_infer"] == False:
-                        if context["fleet_mode"]:
-                            if context["fleet_mode"].upper() == "PS":
-                                train_prog = context["model"][model_dict[
-                                    "name"]]["main_program"]
-                        elif not context["is_fleet"] or context[
-                                "fleet_mode"].upper() == "COLLECTIVE":
+                        if context["fleet_mode"].upper() == "PS":
+                            train_prog = context["model"][model_dict["name"]][
+                                "main_program"]
+                        else:
                             train_prog = context["model"][model_dict["name"]][
                                 "default_main_program"]
                         startup_prog = context["model"][model_dict["name"]][
@@ -225,6 +223,7 @@ class RunnerBase(object):
                                 is_fleet=context["is_fleet"],
                                 epoch_id=None,
                                 batch_id=batch_id)
+
                     batch_id += 1
             except fluid.core.EOFException:
                 reader.reset()
