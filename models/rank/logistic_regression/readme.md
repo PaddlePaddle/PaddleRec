@@ -210,9 +210,8 @@ first_weights = fluid.layers.reshape(first_weights_re,shape=[-1, self.num_field]
 #### sigmoid层
 将离散数据通过embedding查表得到的值，与连续数据的输入进行相乘再累加的操作，合为一个整体输入。我们又构造了一个初始化为0，shape为1的变量，将其与累加结果相加一起输入sigmoid中得到分类结果。  
 在这里，可以将这个过程理解为一个全连接层。通过embedding查表获得权重w，构造的变量b_linear即为偏置变量b，再经过激活函数为sigmoid。
-```math
-Out=Act(\sum^{N-1}_{i=0}X_iW_i+b)
-```
+$$Out=Act(\sum^{N-1}_{i=0}X_iW_i+b)$$
+
 
 ```python
 y_first_order = fluid.layers.reduce_sum(first_weights * feat_value, 1, keep_dim=True)
