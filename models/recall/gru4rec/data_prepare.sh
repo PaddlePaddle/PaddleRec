@@ -16,30 +16,15 @@
 
 set -e
 
-dataset=$1
-src=$1
-
-if [[ $src == "yoochoose1_4" || $src == "yoochoose1_64" ]];then
-    src="yoochoose"
-elif [[ $src == "diginetica" ]];then
-    src="diginetica"
-else
-    echo "Usage: sh data_prepare.sh [diginetica|yoochoose1_4|yoochoose1_64]"
-    exit 1
-fi
-
 echo "begin to download data"
-cd data && python download.py $src
-mkdir $dataset
-python preprocess.py --dataset $src
+cd data && python download.py
 
+python preprocess.py
 echo "begin to convert data (binary -> txt)"
-python convert_data.py --data_dir $dataset
+python convert_data.py
 
-cat ${dataset}/train.txt | wc -l >> config.txt
+mkdir raw_train_data && mkdir raw_test_data
+mv rsc15_train_tr_paddle.txt raw_train_data/ && mv rsc15_test_paddle.txt raw_test_data/
 
-rm -rf train && mkdir train
-mv ${dataset}/train.txt train
-
-rm -rf test && mkdir test
-mv ${dataset}/test.txt test
+mkdir all_train && mkdir all_test
+python text2paddle.py raw_train_data/ raw_test_data/ all_train all_test vocab.txt
