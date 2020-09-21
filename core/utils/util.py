@@ -16,6 +16,8 @@ import datetime
 import os
 import sys
 import time
+import warnings
+import random
 import numpy as np
 from paddle import fluid
 
@@ -221,6 +223,16 @@ def check_filelist(hidden_file_list, data_file_list, train_data_path):
                     #train_data_path = os.path.join(train_data_path, dirs_name)
                     check_filelist(hidden_file_list, data_file_list, dirs_path)
             return hidden_file_list, data_file_list
+
+
+def shuffle_files(need_shuffle_files, filelist):
+    if not isinstance(need_shuffle_files, bool):
+        raise ValueError(
+            "In your config yaml, 'shuffle_filelist': %s must be written as a boolean type,such as True or False"
+            % need_shuffle_files)
+    elif need_shuffle_files:
+        random.shuffle(filelist)
+    return filelist
 
 
 class CostPrinter(object):

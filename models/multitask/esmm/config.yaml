@@ -17,19 +17,19 @@ workspace: "models/multitask/esmm"
 
 dataset:
   - name: dataset_train
-    batch_size: 1
+    batch_size: 5
     type: QueueDataset
     data_path: "{workspace}/data/train"
     data_converter: "{workspace}/esmm_reader.py"
   - name: dataset_infer
-    batch_size: 1
+    batch_size: 5
     type: QueueDataset
     data_path: "{workspace}/data/test"
     data_converter: "{workspace}/esmm_reader.py"
 
 hyper_parameters:
-  vocab_size: 10000
-  embed_size: 128
+  vocab_size: 737946
+  embed_size: 12
   optimizer:
     class: adam
     learning_rate: 0.001
@@ -43,15 +43,15 @@ runner:
     class: train
     device: cpu
     epochs: 3
-    save_checkpoint_interval: 2
+    save_checkpoint_interval: 1
     save_inference_interval: 4
-    save_checkpoint_path: "increment"
+    save_checkpoint_path: "increment_esmm"
     save_inference_path: "inference"
     print_interval: 10
     phases: [train]
   - name: infer_runner
     class: infer
-    init_model_path: "increment/1"
+    init_model_path: "increment_esmm/1"
     device: cpu
     print_interval: 1
     phases: [infer]
