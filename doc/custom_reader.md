@@ -77,7 +77,7 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
     ```
 2. 创建一个子类，继承Reader的基类，训练所需Reader命名为`TrainerReader`
     ```python
-    class TrainerReader(ReaderBase):
+    class Reader(ReaderBase):
         def init(self):
             pass
 
@@ -89,7 +89,7 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
    
     比如，我们希望从yaml文件中读取一个数据预处理变量`avg=10`，目的是将数据A的数据缩小10倍，可以这样实现：
 
-    首先更改yaml文件，在某个space下加入该变量
+    首先更改yaml文件，在某个hyper_parameters下加入该变量
 
     ```yaml
     ...
@@ -104,9 +104,9 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
 
     ```python
     from paddlerec.core.utils import envs
-    class TrainerReader(Reader):
+    class Reader(ReaderBase):
         def init(self):
-            self.avg = envs.get_global_env("avg", None, "train.reader")
+            self.avg = envs.get_global_env("avg", None, "hyper_parameters.reader")
 
         def generator_sample(self, line):
             pass
@@ -125,9 +125,9 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
     则示例代码如下：
     ```python
     from paddlerec.core.utils import envs
-    class TrainerReader(Reader):
+    class Reader(ReaderBase):
         def init(self):
-            self.avg = envs.get_global_env("avg", None, "train.reader")
+            self.avg = envs.get_global_env("avg", None, "hyper_parameters.reader")
 
         def generator_sample(self, line):
             
@@ -169,9 +169,8 @@ Reader的逻辑需要一个单独的python文件进行描述。我们试写一�
 ```yaml
 reader:
     batch_size: 2
-    class: "{workspace}/reader.py"
+    class: "{workspace}/criteo_reader.py"
     train_data_path: "{workspace}/data/train_data"
-    reader_debug_mode: False
 ```
 
 batch_size: 顾名思义，是小批量训练时的样本大小
