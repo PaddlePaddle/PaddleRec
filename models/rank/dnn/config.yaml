@@ -49,6 +49,7 @@ hyper_parameters:
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
+  distributed_embedding: 0
 
 # select runner by name
 mode: [single_cpu_train, single_cpu_infer]
@@ -90,6 +91,18 @@ runner:
   print_interval: 1
   phases: [phase1]
 
+- name: online_learning_cluster
+  class: cluster_train
+  runner_class_path: "{workspace}/online_learning_runner.py"
+  epochs: 2
+  device: cpu
+  fleet_mode: ps
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: [phase1]
+
 - name: collective_cluster
   class: cluster_train
   epochs: 2
@@ -101,6 +114,23 @@ runner:
   print_interval: 1
   phases: [phase1]
 
+- name: single_multi_gpu_train
+  class: train
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: gpu
+  selected_gpus: "0,1" # 选择多卡执行训练
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_step_interval: 1
+  save_checkpoint_path: "increment_dnn" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_step_path: "step_save"
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  print_interval: 1
+  phases: [phase1]
 # runner will run all the phase in each epoch
 phase:
 - name: phase1

@@ -25,8 +25,16 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.is_distributed = True if envs.get_fleet_mode().upper(
-        ) == "PSLIB" else False
+        self.is_distributed = False
+        self.distributed_embedding = False
+
+        if envs.get_fleet_mode().upper() == "PSLIB":
+            self.is_distributed = True
+
+        if envs.get_global_env("hyper_parameters.distributed_embedding",
+                               0) == 1:
+            self.distributed_embedding = True
+
         self.sparse_feature_number = envs.get_global_env(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = envs.get_global_env(
@@ -40,14 +48,26 @@ class Model(ModelBase):
         self.label_input = self._sparse_data_var[0]
 
         def embedding_layer(input):
-            emb = fluid.layers.embedding(
-                input=input,
-                is_sparse=True,
-                is_distributed=self.is_distributed,
-                size=[self.sparse_feature_number, self.sparse_feature_dim],
-                param_attr=fluid.ParamAttr(
-                    name="SparseFeatFactors",
-                    initializer=fluid.initializer.Uniform()), )
+            if self.distributed_embedding:
+                emb = fluid.contrib.layers.sparse_embedding(
+                    input=input,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=fluid.ParamAttr(
+                        name="SparseFeatFactors",
+                        initializer=fluid.initializer.Uniform()))
+            else:
+                emb = fluid.layers.embedding(
+                    input=input,
+                    is_sparse=True,
+                    is_distributed=self.is_distributed,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=fluid.ParamAttr(
+                        name="SparseFeatFactors",
+                        initializer=fluid.initializer.Uniform()))
             emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
             return emb_sum
 

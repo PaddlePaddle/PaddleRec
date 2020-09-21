@@ -12,54 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/multitask/mmoe"
+workspace: "models/contentunderstanding/textcnn_pretrain"
 
 dataset:
 - name: dataset_train
-  batch_size: 5
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/census_reader.py"
+  batch_size: 128
+  type: DataLoader
+  data_path: "{workspace}/senta_data/train"
+  data_converter: "{workspace}/reader.py"
 - name: dataset_infer
-  batch_size: 5
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/census_reader.py"
+  batch_size: 256
+  type: DataLoader
+  data_path: "{workspace}/senta_data/test"
+  data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
-  feature_size: 499
-  expert_num: 8
-  gate_num: 2
-  expert_size: 16
-  tower_size: 8
-  optimizer: 
+  optimizer:
     class: adam
     learning_rate: 0.001
     strategy: async
 
-mode: [train_runner, infer_runner]
+mode: [train_runner,infer_runner]
 
 runner:
 - name: train_runner
   class: train
+  epochs: 6
   device: cpu
-  epochs: 3
   save_checkpoint_interval: 1
-  save_inference_interval: 4
   save_checkpoint_path: "increment"
-  save_inference_path: "inference"
-  print_interval: 1
+  init_model_path: "" 
+  print_interval: 10
+  # startup class for finetuning
+  startup_class_path: "{workspace}/finetune_startup.py"
+  # path of pretrained model. Please set empty if you don't use finetune function.
+  init_pretraining_model_path: "{workspace}/pretrain_model/pretrain_model_params"
+ 
+  phases: phase_train
+
 - name: infer_runner
   class: infer
-  init_model_path: "increment/1"
+  # device to run training or infer
   device: cpu
+  print_interval: 1
+  init_model_path: "increment/3" # load model path
+  phases: phase_infer
 
+  
 phase:
-- name: train
+- name: phase_train
   model: "{workspace}/model.py"
   dataset_name: dataset_train
   thread_num: 1
-- name: infer
-  model: "{workspace}/model.py"
-  dataset_name: dataset_infer
+- name: phase_infer
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
   thread_num: 1
