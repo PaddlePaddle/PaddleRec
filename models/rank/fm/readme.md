@@ -152,7 +152,6 @@ class Reader(dg.MultiSlotDataGenerator):
                 for j in v:
                     s += " " + k + ":" + str(j)
             print(s.strip())
-            yield None
         return data_iter
 reader = Reader(
     "../config.yaml")  # run this file in original folder to find config.yaml
