@@ -106,7 +106,7 @@ def make_train():
                         pair_list.append((d1, high_d2, low_d2))
     print('Pair Instance Count:', len(pair_list))
 
-    f = open("./data/train/train.txt", "w")
+    f = open("./data/big_train/train.txt", "w")
     for batch in range(800):
         X1 = np.zeros((batch_size * 2, data1_maxlen), dtype=np.int32)
         X2 = np.zeros((batch_size * 2, data2_maxlen), dtype=np.int32)
@@ -131,7 +131,7 @@ def make_train():
 def make_test():
     rel = read_relation(filename=os.path.join(Letor07Path,
                                               'relation.test.fold1.txt'))
-    f = open("./data/test/test.txt", "w")
+    f = open("./data/big_test/test.txt", "w")
     for label, d1, d2 in rel:
         X1 = np.zeros(data1_maxlen, dtype=np.int32)
         X2 = np.zeros(data2_maxlen, dtype=np.int32)
