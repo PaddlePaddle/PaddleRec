@@ -31,8 +31,9 @@ filename = './result.txt'
 sim = []
 for line in open(filename):
     line = line.strip().split(",")
-    line[1] = line[1].split(":")
-    line = line[1][1].strip(" ")
+    print(line)
+    line[3] = line[3].split(":")
+    line = line[3][1].strip(" ")
     line = line.strip("[")
     line = line.strip("]")
     sim.append(float(line))
@@ -49,5 +50,6 @@ f.close()
 filename = 'pair.txt'
 f = open(filename, "w")
 for i in range(len(sim)):
+    print(i)
     f.write(str(query[i]) + "\t" + str(sim[i]) + "\t" + str(label[i]) + "\n")
 f.close()
