@@ -48,7 +48,7 @@ mode: [train_runner,infer_runner]
 runner:
   - name: train_runner
     class: train
-    epochs: 2
+    epochs: 1
     device: cpu
     init_model_path: ""
     save_checkpoint_interval: 1
@@ -56,11 +56,14 @@ runner:
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
     print_interval: 1
+    phases: phase1
+
   - name: infer_runner
     class: infer
     device: cpu
-    init_model_path: "increment"
+    init_model_path: "increment/0"
     print_interval: 1
+    phases: infer_phase
 
 phase:
 - name: phase1
