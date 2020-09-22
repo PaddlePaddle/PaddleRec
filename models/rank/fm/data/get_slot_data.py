@@ -79,7 +79,7 @@ class Reader(dg.MultiSlotDataGenerator):
                 v = i[1]
                 for j in v:
                     s += " " + k + ":" + str(j)
-            print(s.strip())
+            print(s.strip())  # add print for data preprocessing
 
         return data_iter
 
