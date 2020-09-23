@@ -4,10 +4,10 @@
 
 ```
 ├── data #样例数据及数据处理相关文件
-	├── train
-		├── small_train.txt # 样例训练数据
+  ├── train
+    ├── small_train.txt # 样例训练数据
   ├── test
-		├── small_test.txt # 样例测试数据
+    ├── small_test.txt # 样例测试数据
   ├── convert_format.py # 数据转换脚本
   ├── download.py # 数据下载脚本
   ├── preprocess.py # 数据预处理脚本
@@ -178,6 +178,7 @@ PaddleRec Finish
 用原论文的完整数据复现论文效果需要在config.yaml修改超参：
 - batch_size: 修改config.yaml中dataset_train数据集的batch_size为500。
 - epochs: 修改config.yaml中runner的epochs为10。
+- 数据源：修改config.yaml中dataset_train数据集的data_path为"{workspace}/data/all_train"，dataset_test数据集的data_path为"{workspace}/data/all_test"。
 
 使用gpu训练10轮 测试结果为
 
