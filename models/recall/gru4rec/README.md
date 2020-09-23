@@ -11,6 +11,7 @@
   ├── convert_format.py # 数据转换脚本
   ├── download.py # 数据下载脚本
   ├── preprocess.py # 数据预处理脚本
+  ├── text2paddle.py # paddle训练数据生成脚本
 ├── __init__.py
 ├── README.md # 文档
 ├── model.py #模型文件
