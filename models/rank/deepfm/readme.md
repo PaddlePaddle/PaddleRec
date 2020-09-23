@@ -283,35 +283,28 @@ auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
 
 完成上述组网后，我们最终可以通过训练拿到`auc`指标。
 ```
-PaddleRec: Runner train_runner Begin
-Executor Mode: train
+PaddleRec: Runner infer_runner Begin
+Executor Mode: infer
 processor_register begin
 Running SingleInstance.
 Running SingleNetwork.
 Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:[]
-Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:[]
-Running SingleStartup.
-Running SingleRunner.
-I0921 13:11:33.118367 20932 parallel_executor.cc:440] The Program will be executed on CPU using ParallelExecutor, 1 cards are used, so 1 programs are executed in parallel.
-I0921 13:11:33.120508 20932 build_strategy.cc:365] SeqOnlyAllReduceOps:0, num_trainers:1
-I0921 13:11:33.122474 20932 parallel_executor.cc:307] Inplace strategy is enabled, when build_strategy.enable_inplace = True
-I0921 13:11:33.123886 20932 parallel_executor.cc:375] Garbage collection strategy is enabled, when FLAGS_eager_delete_tensor_gb = 0
-2020-09-21 13:11:33,631-INFO:   [Train] batch: 1, time_each_interval: 0.51s, BATCH_AUC: [0.44643497], AUC: [0.44643497]
-2020-09-21 13:11:33,831-INFO:   [Train] batch: 2, time_each_interval: 0.20s, BATCH_AUC: [0.46514697], AUC: [0.46514697]
-2020-09-21 13:11:33,983-INFO:   [Train] batch: 3, time_each_interval: 0.15s, BATCH_AUC: [0.47406181], AUC: [0.47406181]
-2020-09-21 13:11:34,139-INFO:   [Train] batch: 4, time_each_interval: 0.16s, BATCH_AUC: [0.47984827], AUC: [0.47984827]
+Running SingleInferStartup.
+Running SingleInferRunner.
+load persistables from incerement/1
+2020-09-23 11:26:38,879-INFO:   [Infer] batch: 1, time_each_interval: 1.39s, AUC: [0.8044914]
+2020-09-23 11:26:39,468-INFO:   [Infer] batch: 2, time_each_interval: 0.59s, AUC: [0.80449145]
+2020-09-23 11:26:40,021-INFO:   [Infer] batch: 3, time_each_interval: 0.55s, AUC: [0.80449146]
+2020-09-23 11:26:40,557-INFO:   [Infer] batch: 4, time_each_interval: 0.54s, AUC: [0.80449131]
+2020-09-23 11:26:41,148-INFO:   [Infer] batch: 5, time_each_interval: 0.59s, AUC: [0.80449144]
+2020-09-23 11:26:41,659-INFO:   [Infer] batch: 6, time_each_interval: 0.51s, AUC: [0.80449172]
+2020-09-23 11:26:42,182-INFO:   [Infer] batch: 7, time_each_interval: 0.52s, AUC: [0.80449169]
+2020-09-23 11:26:42,691-INFO:   [Infer] batch: 8, time_each_interval: 0.51s, AUC: [0.80449169]
+2020-09-23 11:26:43,190-INFO:   [Infer] batch: 9, time_each_interval: 0.50s, AUC: [0.80449191]
+2020-09-23 11:26:43,671-INFO:   [Infer] batch: 10, time_each_interval: 0.48s, AUC: [0.80449164]
 ...
-2020-09-22 12:16:08,478-INFO:   [Infer] batch: 8973, time_each_interval: 0.25s, AUC: [0.76192624]
-2020-09-22 12:16:08,625-INFO:   [Infer] batch: 8974, time_each_interval: 0.15s, AUC: [0.76192887]
-2020-09-22 12:16:08,760-INFO:   [Infer] batch: 8975, time_each_interval: 0.14s, AUC: [0.76193024]
-2020-09-22 12:16:08,964-INFO:   [Infer] batch: 8976, time_each_interval: 0.20s, AUC: [0.76193132]
-2020-09-22 12:16:09,186-INFO:   [Infer] batch: 8977, time_each_interval: 0.22s, AUC: [0.7619334]
-2020-09-22 12:16:09,439-INFO:   [Infer] batch: 8978, time_each_interval: 0.25s, AUC: [0.7619324]
-2020-09-22 12:16:09,687-INFO:   [Infer] batch: 8979, time_each_interval: 0.25s, AUC: [0.76193426]
-2020-09-22 12:16:09,900-INFO:   [Infer] batch: 8980, time_each_interval: 0.21s, AUC: [0.76193488]
-2020-09-22 12:16:10,101-INFO:   [Infer] batch: 8981, time_each_interval: 0.20s, AUC: [0.76193451]
-2020-09-22 12:16:10,279-INFO:   [Infer] batch: 8982, time_each_interval: 0.18s, AUC: [0.76193513]
-2020-09-22 12:16:10,518-INFO:   [Infer] batch: 8983, time_each_interval: 0.24s, AUC: [0.76193726]
-Infer infer_phase of epoch 1 done, use time: 1764.81796193, global metrics: AUC=0.76193726
+2020-09-23 12:16:10,279-INFO:   [Infer] batch: 8982, time_each_interval: 0.18s, AUC: [0.8044914]
+2020-09-23 12:16:10,518-INFO:   [Infer] batch: 8983, time_each_interval: 0.24s, AUC: [0.80449133]
+Infer infer_phase of epoch 1 done, use time: 1764.81796193, global metrics: AUC=0.80449133
 PaddleRec Finish
 ```
