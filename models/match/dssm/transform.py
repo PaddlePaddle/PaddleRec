@@ -32,13 +32,13 @@ filename = './result.txt'
 sim = []
 for line in open(filename):
     line = line.strip().split(",")
-    line[1] = line[1].split(":")
-    line = line[1][1].strip(" ")
+    line[3] = line[3].split(":")
+    line = line[3][1].strip(" ")
     line = line.strip("[")
     line = line.strip("]")
     sim.append(float(line))
 
-filename = './data/test/test.txt'
+filename = './data/big_test/test.txt'
 f = open(filename, "r")
 f.readline()
 query = []

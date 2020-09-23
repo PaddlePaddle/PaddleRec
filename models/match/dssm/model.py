@@ -29,6 +29,7 @@ class Model(ModelBase):
         self.hidden_acts = envs.get_global_env("hyper_parameters.fc_acts")
         self.learning_rate = envs.get_global_env(
             "hyper_parameters.learning_rate")
+        self.slice_end = envs.get_global_env("hyper_parameters.slice_end")
 
     def input_data(self, is_infer=False, **kwargs):
         query = fluid.data(
@@ -94,7 +95,7 @@ class Model(ModelBase):
         prob = fluid.layers.softmax(concat_Rs, axis=1)
 
         hit_prob = fluid.layers.slice(
-            prob, axes=[0, 1], starts=[0, 0], ends=[8, 1])
+            prob, axes=[0, 1], starts=[0, 0], ends=[self.slice_end, 1])
         loss = -fluid.layers.reduce_sum(fluid.layers.log(hit_prob))
         avg_cost = fluid.layers.mean(x=loss)
         self._cost = avg_cost
