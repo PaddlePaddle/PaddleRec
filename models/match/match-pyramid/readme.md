@@ -56,10 +56,10 @@
 4.嵌入层文件：我们将预训练的词向量存储在嵌入文件中。例如：embed_wiki-pdc_d50_norm  
 
 ## 运行环境
-PaddlePaddle>=1.7.2
-python 2.7/3.5/3.6/3.7
-PaddleRec >=0.1
-os : windows/linux/macos
+PaddlePaddle>=1.7.2  
+python 2.7/3.5/3.6/3.7  
+PaddleRec >=0.1  
+os : windows/linux/macos  
 
 ## 快速开始
 
@@ -72,7 +72,7 @@ python -m paddlerec.run -m models/match/match-pyramid/config.yaml
 ## 论文复现
 1. 确认您当前所在目录为PaddleRec/models/match/match-pyramid
 2. 本文提供了原数据集的下载以及一键生成训练和测试数据的预处理脚本，您可以直接一键运行:bash data_process.sh  
-执行该脚本，会从国内源的服务器上下载Letor07数据集，删除掉data文件夹中原有的relation.test.fold1.txt和relation.train.fold1.txt，并将完整的数据集解压到data文件夹。随后运行 process.py 将全量训练数据放置于`./data/train`，全量测试数据放置于`./data/test`。并生成用于初始化embedding层的embedding.npy文件  
+执行该脚本，会从国内源的服务器上下载Letor07数据集，并将完整的数据集解压到data文件夹。随后运行 process.py 将全量训练数据放置于`./data/big_train`，全量测试数据放置于`./data/big_test`。并生成用于初始化embedding层的embedding.npy文件  
 执行该脚本的理想输出为：  
 ```
 bash data_process.sh
@@ -123,6 +123,8 @@ data/embed_wiki-pdc_d50_norm
 3. 打开文件config.yaml,更改其中的参数  
 
 将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）
+将dataset_train下的data_path参数改为{workspace}/data/big_train
+将dataset_infer下的data_path参数改为{workspace}/data/big_test
 
 4. 随后，您直接一键运行：bash run.sh  即可得到复现的论文效果
 执行该脚本后，会执行python -m paddlerec.run -m ./config.yaml 命令开始训练并测试模型，将测试的结果保存到result.txt文件，最后通过执行eval.py进行评估得到数据的map指标  
@@ -131,7 +133,7 @@ data/embed_wiki-pdc_d50_norm
 ..............test.................
 13651
 336
-('map=', 0.420878322843591)
+('map=', 0.3993127885738651)
 ```  
 ## 进阶使用
   

@@ -27,6 +27,8 @@
 |        init_model_path        |    string    |                           路径                            |    否    |                            初始化模型地址                            |
 |   save_checkpoint_interval    |     int      |                           >= 1                            |    否    |                          Save参数的轮数间隔                          |
 |     save_checkpoint_path      |    string    |                           路径                            |    否    |                            Save参数的地址                            |
+|    save_step_interval    |     int      |                           >= 1                            |    否    |                        Step save参数的batch数间隔                        |
+|      save_step_path      |    string    |                           路径                            |    否    |                           Step save参数的地址                          |
 |    save_inference_interval    |     int      |                           >= 1                            |    否    |                        Save预测模型的轮数间隔                        |
 |      save_inference_path      |    string    |                           路径                            |    否    |                          Save预测模型的地址                          |
 | save_inference_feed_varnames  | list[string] |                 组网中指定Variable的name                  |    否    |                        预测模型的入口变量name                        |
@@ -37,6 +39,9 @@
 |      startup_class_path       |    string    |                           路径                            |    否    |                     自定义startup流程实现的地址                      |
 |       runner_class_path       |    string    |                           路径                            |    否    |                      自定义runner流程实现的地址                      |
 |      terminal_class_path      |    string    |                           路径                            |    否    |                     自定义terminal流程实现的地址                     |
+|  init_pretraining_model_path  |    string    |                           路径                            |    否    |自定义的startup流程中需要传入这个参数，finetune中需要加载的参数的地址 |
+|  runner_result_dump_path  |    string    |                           路径                            |    否    | 运行中metrics的结果使用json.dump到文件的地址，若是在训练的runner中使用, 会自动加上epoch后缀 |
+
 
 
 

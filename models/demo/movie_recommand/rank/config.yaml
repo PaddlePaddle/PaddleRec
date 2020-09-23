@@ -12,26 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/demo/movie_recommand"
+workspace: "./"
 
 # list of dataset
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 128
-  type: QueueDataset 
+  type: DataLoader 
   data_path: "{workspace}/data/train"
-  sparse_slots: "logid time userid gender age occupation movieid title genres label"
-  dense_slots: ""
-- name: dataset_infer # name
-  batch_size: 128
-  type: DataLoader
-  data_path: "{workspace}/data/test"
-  sparse_slots: "logid time userid gender age occupation movieid title genres label"
-  dense_slots: ""
-- name: dataset_online_infer # name
-  batch_size: 10
-  type: DataLoader
-  data_path: "{workspace}/data/online_user/test"
   sparse_slots: "logid time userid gender age occupation movieid title genres label"
   dense_slots: ""
 
@@ -51,42 +39,17 @@ hyper_parameters:
 # train
 mode: runner_train
 
-## online or offline infer
-#mode: runner_infer
 runner:
 - name: runner_train
   class: train
   save_checkpoint_interval: 1 # save model interval of epochs
-  save_inference_interval: 1 # save inference
-  save_checkpoint_path: "increment" # save checkpoint path
-  save_inference_path: "inference" # save inference path
+  save_checkpoint_path: "increment_rank" # save checkpoint path
   epochs: 10
   device: cpu
-
-- name: runner_infer
-  class: infer
-  print_interval: 10000
-  init_model_path: "increment/9" # load model path
 
 #train
 phase:
 - name: phase1
-  model: "{workspace}/model.py" # user-defined model
+  model: "{workspace}/rank/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
-  thread_num: 12
-
-##offline infer
-#phase:
-#- name: phase1
-#  model: "{workspace}/model.py" # user-defined model
-#  dataset_name: dataset_infer # select dataset by name
-#  save_path: "./infer_result"
-#  thread_num: 1
-
-##offline infer
-#phase:
-#- name: phase1
-#  model: "{workspace}/model.py" # user-defined model
-#  dataset_name: dataset_online_infer # select dataset by name
-#  save_path: "./infer_result"
-#  thread_num: 1
+  thread_num: 4

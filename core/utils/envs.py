@@ -20,7 +20,7 @@ import socket
 import sys
 import six
 import traceback
-import six
+import warnings
 
 global_envs = {}
 global_envs_flatten = {}
@@ -97,6 +97,25 @@ def set_global_envs(envs):
         if isinstance(value, str):
             value = os_path_adapter(workspace_adapter(value))
             global_envs[name] = value
+
+    for runner in envs["runner"]:
+        if "save_step_interval" in runner or "save_step_path" in runner:
+            phase_name = runner["phases"]
+            phase = [
+                phase for phase in envs["phase"]
+                if phase["name"] == phase_name[0]
+            ]
+            dataset_name = phase[0].get("dataset_name")
+            dataset = [
+                dataset for dataset in envs["dataset"]
+                if dataset["name"] == dataset_name
+            ]
+            if dataset[0].get("type") == "QueueDataset":
+                runner["save_step_interval"] = None
+                runner["save_step_path"] = None
+                warnings.warn(
+                    "QueueDataset can not support save by step, please not config save_step_interval and save_step_path in your yaml"
+                )
 
     if get_platform() != "LINUX":
         for dataset in envs["dataset"]:
