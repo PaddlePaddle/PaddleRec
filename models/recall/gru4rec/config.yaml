@@ -41,7 +41,7 @@ hyper_parameters:
     strategy: async
 
 #use infer_runner mode and modify 'phase' below if infer
-mode: [cpu_train_runner]
+mode: [cpu_train_runner, cpu_infer_runner]
 #mode: infer_runner
 
 runner:
@@ -53,13 +53,15 @@ runner:
   save_inference_interval: 1
   save_checkpoint_path: "increment_gru4rec"
   save_inference_path: "inference_gru4rec"
+  save_inference_feed_varnames: ["src_wordseq", "dst_wordseq"] # feed vars of save inference
+  save_inference_fetch_varnames: ["mean_0.tmp_0", "top_k_0.tmp_0"]
   print_interval: 10
-  phase: train
+  phases: [train]
 - name: cpu_infer_runner
   class: infer
   init_model_path: "increment_gru4rec"
   device: cpu
-  phase: infer
+  phases: [infer]
 
 phase:
 - name: train

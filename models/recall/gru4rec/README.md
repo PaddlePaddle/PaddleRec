@@ -65,7 +65,7 @@ python download.py
   3. 训练集、测试集划分。原始数据集里最新日期七天内的作为训练集，更早之前的数据作为测试集。
 ```
 python preprocess.py
-python convert_data.py
+python convert_format.py
 ```
 这一步之后，会在data/目录下得到两个文件，rsc15_train_tr_paddle.txt为原始训练文件，rsc15_test_paddle.txt为原始测试文件。格式如下所示：
 ```
@@ -80,7 +80,7 @@ python convert_data.py
 214821275 214821275 214821371 214821371 214821371 214717089 214563337 214706462 214717436 214743335 214826837 214819762
 214717867 21471786
 ```
-- Step3: 数据整理。将训练文件统一放在data/all_train目录下，测试文件统一放在data/all_test目录下。
+- Step3: 生成字典并整理数据路径。这一步会根据训练和测试文件生成字典和对应的paddle输入文件，并将训练文件统一放在data/all_train目录下，测试文件统一放在data/all_test目录下。
 ```
 mkdir raw_train_data && mkdir raw_test_data
 mv rsc15_train_tr_paddle.txt raw_train_data/ && mv rsc15_test_paddle.txt raw_test_data/
@@ -108,32 +108,38 @@ os : windows/linux/macos
 
 ### 单机训练
 
+在config.yaml文件中设置好设备，epochs等。
 ```
-mode: [cpu_train_runner, cpu_infer_runner]
-
 runner:
 - name: cpu_train_runner
   class: train
-  device: cpu
+  device: cpu  # gpu
   epochs: 10
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
+  save_checkpoint_interval: 1
+  save_inference_interval: 1
   save_checkpoint_path: "increment_gru4rec"
   save_inference_path: "inference_gru4rec"
+  save_inference_feed_varnames: ["src_wordseq", "dst_wordseq"] # feed vars of save inference
+  save_inference_fetch_varnames: ["mean_0.tmp_0", "top_k_0.tmp_0"]
   print_interval: 10
-  phase: train
-- name: cpu_infer_runner
-  class: infer
-  init_model_path: "increment_gru4rec"
-  device: cpu
-  phase: infer
+  phases: [train]
+
 ```
 
 ### 单机预测
 
+在config.yaml文件中设置好设备，epochs等。
+```
+- name: cpu_infer_runner
+  class: infer
+  init_model_path: "increment_gru4rec"
+  device: cpu  # gpu
+  phases: [infer]
+```
+
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.w2v
+python -m paddlerec.run -m paddlerec.models.recall.gru4rec
 ```
 
 ### 结果展示
@@ -143,28 +149,54 @@ python -m paddlerec.run -m paddlerec.models.recall.w2v
 ```
 Running SingleStartup.
 Running SingleRunner.
-batch: 1, acc: [0.03125]
-batch: 2, acc: [0.0625]
-batch: 3, acc: [0.]
+2020-09-22 03:31:18,167-INFO:   [Train],  epoch: 0,  batch: 10, time_each_interval: 4.34s, RecallCnt: [1669.], cost: [8.366313], InsCnt: [16228.], Acc(Recall@20): [0.10284693]
+2020-09-22 03:31:21,982-INFO:   [Train],  epoch: 0,  batch: 20, time_each_interval: 3.82s, RecallCnt: [3168.], cost: [8.170701], InsCnt: [31943.], Acc(Recall@20): [0.09917666]
+2020-09-22 03:31:25,797-INFO:   [Train],  epoch: 0,  batch: 30, time_each_interval: 3.81s, RecallCnt: [4855.], cost: [8.017181], InsCnt: [47892.], Acc(Recall@20): [0.10137393]
 ...
-epoch 0 done, use time: 0.0605320930481, global metrics: acc=[0.]
+epoch 0 done, use time: 6003.78719687, global metrics: cost=[4.4394927], InsCnt=23622448.0 RecallCnt=14547467.0 Acc(Recall@20)=0.6158323218660487
+2020-09-22 05:11:17,761-INFO:   save epoch_id:0 model into: "inference_gru4rec/0"
 ...
-epoch 19 done, use time: 0.33447098732, global metrics: acc=[0.]
+epoch 9 done, use time: 6009.97707605, global metrics: cost=[4.069373], InsCnt=236237470.0 RecallCnt=162838200.0 Acc(Recall@20)=0.6892988086157644
+2020-09-22 20:17:11,358-INFO:   save epoch_id:9 model into: "inference_gru4rec/9"
+PaddleRec Finish
 ```
 
 样例数据预测结果展示:
 ```
-user:0, top K videos:[40, 31, 4, 33, 93]
-user:1, top K videos:[35, 57, 58, 40, 17]
-user:2, top K videos:[35, 17, 88, 40, 9]
-user:3, top K videos:[73, 35, 39, 58, 38]
-user:4, top K videos:[40, 31, 57, 4, 73]
-user:5, top K videos:[38, 9, 7, 88, 22]
-user:6, top K videos:[35, 73, 14, 58, 28]
-user:7, top K videos:[35, 73, 58, 38, 56]
-user:8, top K videos:[38, 40, 9, 35, 99]
-user:9, top K videos:[88, 73, 9, 35, 28]
-user:10, top K videos:[35, 52, 28, 54, 73]
+Running SingleInferStartup.
+Running SingleInferRunner.
+load persistables from increment_gru4rec/9
+2020-09-23 03:46:21,081-INFO:   [Infer] batch: 20, time_each_interval: 3.68s, RecallCnt: [24875.], InsCnt: [35581.], Acc(Recall@20): [0.6991091]
+Infer infer of epoch 9 done, use time: 5.25408315659, global metrics: InsCnt=52551.0 RecallCnt=36720.0 Acc(Recall@20)=0.698749785922247
+...
+Infer infer of epoch 0 done, use time: 5.20699501038, global metrics: InsCnt=52551.0 RecallCnt=33664.0 Acc(Recall@20)=0.6405967536298073
+PaddleRec Finish
+```
+
+## 论文复现
+
+用原论文的完整数据复现论文效果需要在config.yaml修改超参：
+- batch_size: 修改config.yaml中dataset_train数据集的batch_size为500。
+- epochs: 修改config.yaml中runner的epochs为10。
+
+使用gpu训练10轮 测试结果为
+
+epoch | 测试recall@20 | 速度(s)
+-- | -- | --
+1 | 0.6406 | 6003
+2 | 0.6727 | 6007
+3 | 0.6831 | 6108
+4 | 0.6885 | 6025
+5 | 0.6913 | 6019
+6 | 0.6931 | 6011
+7 | 0.6952 | 6015
+8 | 0.6968 | 6076
+9 | 0.6972 | 6076
+10 | 0.6987| 6009
+
+修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
+```
+python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
 ```
 
 ## 进阶使用

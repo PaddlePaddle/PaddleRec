@@ -21,7 +21,7 @@ cd data && python download.py
 
 python preprocess.py
 echo "begin to convert data (binary -> txt)"
-python convert_data.py
+python convert_format.py
 
 mkdir raw_train_data && mkdir raw_test_data
 mv rsc15_train_tr_paddle.txt raw_train_data/ && mv rsc15_test_paddle.txt raw_test_data/
