@@ -16,18 +16,19 @@ workspace: "models/recall/gru4rec"
 
 dataset:
 - name: dataset_train
-  batch_size: 5
-  type: QueueDataset
+  batch_size: 500
+  type: DataLoader # QueueDataset
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/rsc15_reader.py"
 - name: dataset_infer
-  batch_size: 5
-  type: QueueDataset
+  batch_size: 500
+  type: DataLoader #QueueDataset
   data_path: "{workspace}/data/test"
   data_converter: "{workspace}/rsc15_reader.py"
 
 hyper_parameters:
-  vocab_size: 1000
+  recall_k: 20
+  vocab_size: 37483
   hid_size: 100
   emb_lr_x: 10.0
   gru_lr_x: 1.0
@@ -40,30 +41,34 @@ hyper_parameters:
     strategy: async
 
 #use infer_runner mode and modify 'phase' below if infer
-mode: train_runner
+mode: [cpu_train_runner, cpu_infer_runner]
 #mode: infer_runner
 
 runner:
-- name: train_runner
+- name: cpu_train_runner
   class: train
   device: cpu
-  epochs: 3
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
+  epochs: 10
+  save_checkpoint_interval: 1
+  save_inference_interval: 1
+  save_checkpoint_path: "increment_gru4rec"
+  save_inference_path: "inference_gru4rec"
+  save_inference_feed_varnames: ["src_wordseq", "dst_wordseq"] # feed vars of save inference
+  save_inference_fetch_varnames: ["mean_0.tmp_0", "top_k_0.tmp_0"]
   print_interval: 10
-- name: infer_runner
+  phases: [train]
+- name: cpu_infer_runner
   class: infer
-  init_model_path: "increment/0"
+  init_model_path: "increment_gru4rec"
   device: cpu
+  phases: [infer]
 
 phase:
 - name: train
   model: "{workspace}/model.py"
   dataset_name: dataset_train
   thread_num: 1
-#- name: infer
-#  model: "{workspace}/model.py"
-#  dataset_name: dataset_infer
-#  thread_num: 1
+- name: infer
+  model: "{workspace}/model.py"
+  dataset_name: dataset_infer
+  thread_num: 1
