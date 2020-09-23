@@ -1,21 +1,20 @@
-# classification文本分类模型
+# textcnn文本分类模型
 
 以下是本例的简要目录结构及说明： 
 
 ```
 ├── data #样例数据
-	├── train
-		├── train.txt #训练数据样例
-	├── test
-    	├── test.txt #测试数据样例
-	├── preprocess.py #数据处理程序
+    ├── train
+        ├── train.txt #训练数据样例
+    ├── test
+        ├── test.txt #测试数据样例
+    ├── preprocess.py #数据处理程序
 ├── __init__.py
 ├── README.md #文档
 ├── model.py #模型文件
 ├── config.yaml #配置文件
 ├── reader.py #读取程序
 ```
-
 注：在阅读该示例前，建议您先了解以下内容：
 [paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
 
@@ -44,7 +43,7 @@ Yoon Kim在论文[EMNLP 2014][Convolutional neural networks for sentence classic
 
 | 模型 | dev | test | 
 | :------| :------ | :------
-| TextCNN | 90.75% | 92.19% |
+| TextCNN | 90.75% | 91.27% |
 
 
 您可以直接执行以下命令下载我们分词完毕后的数据集,文件解压之后，senta_data目录下会存在训练数据（train.tsv）、开发集数据（dev.tsv）、测试集数据（test.tsv）以及对应的词典（word_dict.txt）：  
@@ -73,13 +72,13 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在paddlerec目录下直接执行下面的命令即可启动训练： 
 
 ```
-python -m paddlerec.run -m models/contentunderstanding/classification/config.yaml
+python -m paddlerec.run -m models/contentunderstanding/textcnn/config.yaml
 ```   
 
 
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
-1. 确认您当前所在目录为PaddleRec/models/contentunderstanding/classification  
+1. 确认您当前所在目录为PaddleRec/models/contentunderstanding/textcnn  
 2. 下载并解压数据集，命令如下：  
 ``` 
 wget https://baidu-nlp.bj.bcebos.com/sentiment_classification-dataset-1.0.0.tar.gz
