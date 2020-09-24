@@ -102,7 +102,7 @@ PaddleRec Finish
 
 deepFM模型的组网本质是一个二分类任务，代码参考`model.py`。模型主要组成是一阶项部分，二阶项部分,dnn部分以及相应的分类任务的loss计算和auc计算。模型的组网可以看做FM部分和dnn部分的结合，其中FM部分主要的工作是通过特征间交叉得到低阶特征，以二阶特征为主。FM的表达式如下，可观察到，只是在线性表达式后面加入了新的交叉项特征及对应的权值。
 
-$$Out=sigmoid(b + \sum^{N}_{i=1}W_iX_i + \sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X_iX_j)$$
+<img align="center" src="picture/1.jpg">
 
 ### 一阶项部分
 一阶项部分类似于我们rank下的logistic_regression模型。主要由embedding层和reduce_sum层组成  
@@ -111,12 +111,17 @@ $$Out=sigmoid(b + \sum^{N}_{i=1}W_iX_i + \sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X
 将离散数据通过embedding查表得到的值，与连续数据的输入进行相乘再累加的操作，合为一个一阶项的整体。  
 用公式表示如下：  
 
-$$\sum^{N}_{i=1}W_iX_i$$
+<img align="center" src="picture/2.jpg">
 
 ### 二阶项部分
-二阶项部分主要实现了公式中的交叉项部分，也就是特征的组合部分。Wij求解的思路是通过矩阵分解的方法。所有的二次项参数Wij可以组成一个对称阵W，那么这个矩阵就可以分解为 $W=V^TV$，V 的第 i 列便是第 i 维特征的隐向量。交叉项的展开式如下：
+二阶项部分主要实现了公式中的交叉项部分，也就是特征的组合部分。Wij求解的思路是通过矩阵分解的方法。所有的二次项参数Wij可以组成一个对称阵W，那么这个矩阵就可以如下分解：  
 
-$$\sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X_iX_j =1/2\sum^{k}_{j=1}((\sum^{N}_{i=1}W_iX_i)^2-\sum^{N}_{i=1}W_i^2X_i^2)$$
+<img align="center" src="picture/3.jpg">
+
+V 的第 i 列便是第 i 维特征的隐向量。特征分量Xi与Xj的交叉项系数就等于Xi对应的隐向量与Xj对应的隐向量的内积，即每个参数 wij=⟨vi,vj⟩
+交叉项的展开式如下：
+
+<img align="center" src="picture/4.jpg">
 
 ### Loss及Auc计算
 - 预测的结果将FM的一阶项部分，二阶项部分以及dnn部分相加，再通过激活函数sigmoid给出，为了得到每条样本分属于正负样本的概率，我们将预测结果和`1-predict`合并起来得到predict_2d，以便接下来计算auc。  
@@ -130,7 +135,7 @@ $$\sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X_iX_j =1/2\sum^{k}_{j=1}((\sum^{N}_{i=1
 在全量数据下模型的指标如下：  
 
 | 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
-| :------| :------ | :------| :------ | :------| :------ | :------ 
+| :------| :------ | :------| :------ | :------| :------ | 
 | deepFM | 0.8044 | 1024 | 10 | 2 | 约3.5小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/deepfm
