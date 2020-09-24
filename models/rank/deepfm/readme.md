@@ -43,10 +43,7 @@
   year={2017}
 }
 ```
-在全量数据下模型的指标如下：
-| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
-| :------| :------ | :------| :------ | :------| :------ | :------ |
-| deepFM | 0.8044 | 1024 | 10 | 2 | 约3.5小时 |
+
 ## 数据准备
 ### 数据来源
 训练及测试数据集选用[Display Advertising Challenge](https://www.kaggle.com/c/criteo-display-ad-challenge/)所用的Criteo数据集。该数据集包括两部分：训练集和测试集。训练集包含一段时间内Criteo的部分流量，测试集则对应训练数据后一天的广告点击流量。
@@ -104,6 +101,7 @@ PaddleRec Finish
 ## 模型组网
 
 deepFM模型的组网本质是一个二分类任务，代码参考`model.py`。模型主要组成是一阶项部分，二阶项部分,dnn部分以及相应的分类任务的loss计算和auc计算。模型的组网可以看做FM部分和dnn部分的结合，其中FM部分主要的工作是通过特征间交叉得到低阶特征，以二阶特征为主。FM的表达式如下，可观察到，只是在线性表达式后面加入了新的交叉项特征及对应的权值。
+
 $$Out=sigmoid(b + \sum^{N}_{i=1}W_iX_i + \sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X_iX_j)$$
 
 ### 一阶项部分
@@ -112,10 +110,12 @@ $$Out=sigmoid(b + \sum^{N}_{i=1}W_iX_i + \sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X
 各个稀疏的输入通过Embedding层后，进行reshape操作，方便和连续值进行结合。  
 将离散数据通过embedding查表得到的值，与连续数据的输入进行相乘再累加的操作，合为一个一阶项的整体。  
 用公式表示如下：  
+
 $$\sum^{N}_{i=1}W_iX_i$$
 
 ### 二阶项部分
 二阶项部分主要实现了公式中的交叉项部分，也就是特征的组合部分。Wij求解的思路是通过矩阵分解的方法。所有的二次项参数Wij可以组成一个对称阵W，那么这个矩阵就可以分解为 $W=V^TV$，V 的第 i 列便是第 i 维特征的隐向量。交叉项的展开式如下：
+
 $$\sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X_iX_j =1/2\sum^{k}_{j=1}((\sum^{N}_{i=1}W_iX_i)^2-\sum^{N}_{i=1}W_i^2X_i^2)$$
 
 ### Loss及Auc计算
@@ -126,7 +126,13 @@ $$\sum^{N-1}_{i=1}\sum^{N}_{j=i+1}W_{ij}X_iX_j =1/2\sum^{k}_{j=1}((\sum^{N}_{i=1
 完成上述组网后，我们最终可以通过训练拿到`auc`指标。
 
 ## 效果复现
-为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。
+在全量数据下模型的指标如下：  
+
+| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
+| :------| :------ | :------| :------ | :------| :------ | :------ 
+| deepFM | 0.8044 | 1024 | 10 | 2 | 约3.5小时 |
+
 1. 确认您当前所在目录为PaddleRec/models/rank/deepfm
 2. 在data目录下运行数据一键处理脚本，命令如下：  
 ``` 
@@ -140,11 +146,11 @@ cd ..
 将train_sample中的data_path改为{workspace}/data/slot_train_data  
 将infer_sample中的batch_size从5改为1024  
 将infer_sample中的data_path改为{workspace}/data/slot_test_data  
-4. 开始训练。运行命令启动训练即可得到相应auc指标  
+4. 运行命令，模型会进行两个epoch的训练，然后进行一个epoch的预测，并获得相应auc指标  
 ```
 python -m paddlerec.run -m ./config.yaml
 ```
-5. 全量数据的训练结果示例如下：
+5. 经过全量数据训练后，执行预测的结果示例如下：
 ```
 PaddleRec: Runner infer_runner Begin
 Executor Mode: infer
