@@ -151,7 +151,7 @@ cd ..
 将train_sample中的data_path改为{workspace}/data/slot_train_data  
 将infer_sample中的batch_size从5改为1024  
 将infer_sample中的data_path改为{workspace}/data/slot_test_data  
-4. 运行命令，模型会进行两个epoch的训练，然后进行一个epoch的预测，并获得相应auc指标  
+4. 运行命令，模型会进行两个epoch的训练，然后预测第二个epoch，并获得相应auc指标  
 ```
 python -m paddlerec.run -m ./config.yaml
 ```
