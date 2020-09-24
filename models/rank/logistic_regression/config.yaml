@@ -66,8 +66,8 @@ phase:
 - name: phase1
   model: "{workspace}/model.py"
   dataset_name: train_sample
-  thread_num: 10
+  thread_num: 1
 - name: infer_phase
   model: "{workspace}/model.py"
   dataset_name: infer_sample
-  thread_num: 10
+  thread_num: 1
