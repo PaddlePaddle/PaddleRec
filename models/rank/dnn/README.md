@@ -30,13 +30,12 @@
 
 ### 一键下载训练及测试数据
 ```bash
-sh download_data.sh
+sh run.sh
 ```
-执行该脚本，会从国内源的服务器上下载Criteo数据集，并解压到指定文件夹。全量训练数据放置于`./train_data_full/`，全量测试数据放置于`./test_data_full/`，用于快速验证的训练数据与测试数据放置于`./train_data/`与`./test_data/`。
+进入models/rank/dnn/data目录下，执行该脚本，会从国内源的服务器上下载Criteo数据集，并解压到指定文件夹。原始的全量数据放置于`./train_data_full/`，原始的全量测试数据放置于`./test_data_full/`，原始的用于快速验证的训练数据与测试数据放置于`./train_data/`与`./test_data/`。处理后的全量训练数据放置于`./slot_train_data_full/`，处理后的全量测试数据放置于`./slot_test_data_full/`，处理后的用于快速验证的训练数据与测试数据放置于`./slot_train_data/`与`./slot_test_data/`。
 
 执行该脚本的理想输出为：
 ```bash
-> sh download_data.sh
 --2019-11-26 06:31:33--  https://fleet.bj.bcebos.com/ctr_data.tar.gz
 Resolving fleet.bj.bcebos.com... 10.180.112.31
 Connecting to fleet.bj.bcebos.com|10.180.112.31|:443... connected.
@@ -100,7 +99,7 @@ def get_dataset(inputs, args)
 3. 创建一个子类，继承dataset的基类，基类有多种选择，如果是多种数据类型混合，并且需要转化为数值进行预处理的，建议使用`MultiSlotDataGenerator`；若已经完成了预处理并保存为数据文件，可以直接以`string`的方式进行读取，使用`MultiSlotStringDataGenerator`，能够进一步加速。在示例代码，我们继承并实现了名为`CriteoDataset`的dataset子类，使用`MultiSlotDataGenerator`方法。
 4. 继承并实现基类中的`generate_sample`函数，逐行读取数据。该函数应返回一个可以迭代的reader方法(带有yield的函数不再是一个普通的函数，而是一个生成器generator，成为了可以迭代的对象，等价于一个数组、链表、文件、字符串etc.)
 5. 在这个可以迭代的函数中，如示例代码中的`def reader()`，我们定义数据读取的逻辑。例如对以行为单位的数据进行截取，转换及预处理。
-6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的，并转换为类似字典的形式。在示例代码中，我们使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出。如果展开来看，我们输出的数据形如`[('dense_feature',[value]),('C1',[value]),('C2',[value]),...,('C26',[value]),('label',[value])]`
+6. 最后，我们需要将数据整理为特定的格式，才能够被dataset正确读取，并灌入的训练的网络中。简单来说，数据的输出顺序与我们在网络中创建的`inputs`必须是严格一一对应的。在示例代码中，我们将数据整理成`click:value dense_feature:value ... dense_feature:value 1:value ... 26:value`的格式。用print输出是因为我们在run.sh中将结果重定向到slot_train_data等文件中，由模型直接读取。在用户自定义使用时，可以使用`zip`的方法将参数名与数值构成的元组组成了一个list，并将其yield输出，并在config.yaml中的data_converter参数指定reader的路径。
 
 
 ```python
@@ -113,11 +112,22 @@ hash_dim_ = 1000001
 continuous_range_ = range(1, 14)
 categorical_range_ = range(14, 40)
 
+
 class CriteoDataset(dg.MultiSlotDataGenerator):
-   
+    """
+    DacDataset: inheritance MultiSlotDataGeneratior, Implement data reading
+    Help document: http://wiki.baidu.com/pages/viewpage.action?pageId=728820675
+    """
+
     def generate_sample(self, line):
-        
+        """
+        Read the data line by line and process it as a dictionary
+        """
+
         def reader():
+            """
+            This function needs to be implemented by the user, based on data format
+            """
             features = line.rstrip('\n').split('\t')
             dense_feature = []
             sparse_feature = []
@@ -137,10 +147,15 @@ class CriteoDataset(dg.MultiSlotDataGenerator):
             for idx in categorical_range_:
                 feature_name.append("C" + str(idx - 13))
             feature_name.append("label")
-
-            yield zip(feature_name, [dense_feature] + sparse_feature + [label])
+            s = "click:" + str(label[0])
+            for i in dense_feature:
+                s += " dense_feature:" + str(i)
+            for i in range(1, 1 + len(categorical_range_)):
+                s += " " + str(i) + ":" + str(sparse_feature[i - 1][0])
+            print(s.strip()) # add print for data preprocessing
 
         return reader
+
 
 d = CriteoDataset()
 d.run_from_stdin()
@@ -149,117 +164,124 @@ d.run_from_stdin()
 我们可以脱离组网架构，单独验证Dataset的输出是否符合我们预期。使用命令
 `cat 数据文件 | python dataset读取python文件`进行dataset代码的调试：
 ```bash
-cat train_data/part-0 | python dataset_generator.py
+cat train_data/part-0 | python get_slot_data.py
 ```
 输出的数据格式如下：
-` dense_input:size ; dense_input:value ; sparse_input:size ; sparse_input:value ; ... ; sparse_input:size ; sparse_input:value ; label:size ; label:value `
+`label:value dense_input:value ... dense_input:value sparse_input:value ... sparse_input:value `
 
 理想的输出为(截取了一个片段)：
 ```bash
 ...
-13 0.05 0.00663349917081 0.05 0.0 0.02159375 0.008 0.15 0.04 0.362 0.1 0.2 0.0 0.04 1 715353 1 817085 1 851010 1 833725 1 286835 1 948614 1 881652 1 507110 1 27346 1 646986 1 643076 1 200960 1 18464 1 202774 1 532679 1 729573 1 342789 1 562805 1 880474 1 984402 1 666449 1 26235 1 700326 1 452909 1 884722 1 787527 1 0
+click:0 dense_feature:0.05 dense_feature:0.00663349917081 dense_feature:0.05 dense_feature:0.0 dense_feature:0.02159375 dense_feature:0.008 dense_feature:0.15 dense_feature:0.04 dense_feature:0.362 dense_feature:0.1 dense_feature:0.2 dense_feature:0.0 dense_feature:0.04 1:715353 2:817085 3:851010 4:833725 5:286835 6:948614 7:881652 8:507110 9:27346 10:646986 11:643076 12:200960 13:18464 14:202774 15:532679 16:729573 17:342789 18:562805 19:880474 20:984402 21:666449 22:26235 23:700326 24:452909 25:884722 26:787527
 ...
 ```
 
 #
 ## 模型组网
 ### 数据输入声明
-正如数据准备章节所介绍，Criteo数据集中，分为连续数据与离散（稀疏）数据，所以整体而言，CTR-DNN模型的数据输入层包括三个，分别是：`dense_input`用于输入连续数据，维度由超参数`dense_feature_dim`指定，数据类型是归一化后的浮点型数据。`sparse_input_ids`用于记录离散数据，在Criteo数据集中，共有26个slot，所以我们创建了名为`C1~C26`的26个稀疏参数输入，并设置`lod_level=1`，代表其为变长数据，数据类型为整数；最后是每条样本的`label`，代表了是否被点击，数据类型是整数，0代表负样例，1代表正样例。
-
-在Paddle中数据输入的声明使用`paddle.fluid.data()`，会创建指定类型的占位符，数据IO会依据此定义进行数据的输入。
-```python
-dense_input = fluid.data(name="dense_input",
-                                 shape=[-1, args.dense_feature_dim],
-                                 dtype="float32")
-
-sparse_input_ids = [
-    fluid.data(name="C" + str(i),
-                shape=[-1, 1],
-                lod_level=1,
-                dtype="int64") for i in range(1, 27)
-]
-
-label = fluid.data(name="label", shape=[-1, 1], dtype="int64")
-inputs = [dense_input] + sparse_input_ids + [label]
-```
+正如数据准备章节所介绍，Criteo数据集中，分为连续数据与离散（稀疏）数据，所以整体而言，CTR-DNN模型的数据输入层包括三个，分别是：`dense_input`用于输入连续数据，维度由超参数`dense_input_dim`指定，数据类型是归一化后的浮点型数据。`sparse_inputs`用于记录离散数据，在Criteo数据集中，共有26个slot，所以我们创建了名为`1~26`的26个稀疏参数输入，数据类型为整数；最后是每条样本的`label`，代表了是否被点击，数据类型是整数，0代表负样例，1代表正样例。
 
 ### CTR-DNN模型组网
 
-CTR-DNN模型的组网比较直观，本质是一个二分类任务，代码参考`model.py`。模型主要组成是一个`Embedding`层，三个`FC`层，以及相应的分类任务的loss计算和auc计算。
+CTR-DNN模型的组网比较直观，本质是一个二分类任务，代码参考`model.py`。模型主要组成是一个`Embedding`层，四个`FC`层，以及相应的分类任务的loss计算和auc计算。
 
 #### Embedding层
-首先介绍Embedding层的搭建方式：`Embedding`层的输入是`sparse_input`，shape由超参的`sparse_feature_dim`和`embedding_size`定义。需要特别解释的是`is_sparse`参数，当我们指定`is_sprase=True`后，计算图会将该参数视为稀疏参数，反向更新以及分布式通信时，都以稀疏的方式进行，会极大的提升运行效率，同时保证效果一致。
+首先介绍Embedding层的搭建方式：`Embedding`层的输入是`sparse_input`，由超参的`sparse_feature_number`和`sparse_feature_dimshape`定义。需要特别解释的是`is_sparse`参数，当我们指定`is_sprase=True`后，计算图会将该参数视为稀疏参数，反向更新以及分布式通信时，都以稀疏的方式进行，会极大的提升运行效率，同时保证效果一致。
 
 各个稀疏的输入通过Embedding层后，将其合并起来，置于一个list内，以方便进行concat的操作。
 
 ```python
 def embedding_layer(input):
-   return fluid.layers.embedding(
+    if self.distributed_embedding:
+        emb = fluid.contrib.layers.sparse_embedding(
+            input=input,
+            size=[self.sparse_feature_number, self.sparse_feature_dim],
+            param_attr=fluid.ParamAttr(
+                name="SparseFeatFactors",
+                initializer=fluid.initializer.Uniform()))
+    else:
+        emb = fluid.layers.embedding(
             input=input,
             is_sparse=True,
-            size=[args.sparse_feature_dim, 
-                  args.embedding_size],
+            is_distributed=self.is_distributed,
+            size=[self.sparse_feature_number, self.sparse_feature_dim],
             param_attr=fluid.ParamAttr(
-            name="SparseFeatFactors",
-            initializer=fluid.initializer.Uniform()),
-   )
+                name="SparseFeatFactors",
+                initializer=fluid.initializer.Uniform()))
+    emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
+    return emb_sum
 
-sparse_embed_seq = list(map(embedding_layer, inputs[1:-1])) # [C1~C26]
+sparse_embed_seq = list(map(embedding_layer, self.sparse_inputs)) # [C1~C26]
 ```
 
 #### FC层
-将离散数据通过embedding查表得到的值，与连续数据的输入进行`concat`操作，合为一个整体输入，作为全链接层的原始输入。我们共设计了3层FC，每层FC的输出维度都为400，每层FC都后接一个`relu`激活函数，每层FC的初始化方式为符合正态分布的随机初始化，标准差与上一层的输出维度的平方根成反比。
+将离散数据通过embedding查表得到的值，与连续数据的输入进行`concat`操作，合为一个整体输入，作为全链接层的原始输入。我们共设计了4层FC，每层FC的输出维度由超参`fc_sizes`指定，每层FC都后接一个`relu`激活函数，每层FC的初始化方式为符合正态分布的随机初始化，标准差与上一层的输出维度的平方根成反比。
 ```python
-concated = fluid.layers.concat(sparse_embed_seq + inputs[0:1], axis=1)
-        
-fc1 = fluid.layers.fc(
-   input=concated,
-   size=400,
-   act="relu",
-   param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-         scale=1 / math.sqrt(concated.shape[1]))),
-)
-fc2 = fluid.layers.fc(
-   input=fc1,
-   size=400,
-   act="relu",
-   param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-         scale=1 / math.sqrt(fc1.shape[1]))),
-)
-fc3 = fluid.layers.fc(
-   input=fc2,
-   size=400,
-   act="relu",
-   param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-         scale=1 / math.sqrt(fc2.shape[1]))),
-)
+concated = fluid.layers.concat(
+    sparse_embed_seq + [self.dense_input], axis=1)
+
+fcs = [concated]
+hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
+
+for size in hidden_layers:
+    output = fluid.layers.fc(
+        input=fcs[-1],
+        size=size,
+        act='relu',
+        param_attr=fluid.ParamAttr(
+            initializer=fluid.initializer.Normal(
+                scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
+    fcs.append(output)
+
 ```
 #### Loss及Auc计算
 - 预测的结果通过一个输出shape为2的FC层给出，该FC层的激活函数是softmax，会给出每条样本分属于正负样本的概率。
 - 每条样本的损失由交叉熵给出，交叉熵的输入维度为[batch_size,2]，数据类型为float，label的输入维度为[batch_size,1]，数据类型为int。
 - 该batch的损失`avg_cost`是各条样本的损失之和
-- 我们同时还会计算预测的auc，auc的结果由`fluid.layers.auc()`给出，该层的返回值有三个，分别是全局auc: `auc_var`，当前batch的auc: `batch_auc_var`，以及auc_states: `auc_states`，auc_states包含了`batch_stat_pos, batch_stat_neg, stat_pos, stat_neg`信息。`batch_auc`我们取近20个batch的平均，由参数`slide_steps=20`指定，roc曲线的离散化的临界数值设置为4096，由`num_thresholds=2**12`指定。
+- 我们同时还会计算预测的auc，auc的结果由`fluid.layers.auc()`给出，该层的返回值有三个，分别是从第一个batch累计到当前batch的全局auc: `auc`，最近几个batch的auc: `batch_auc`，以及auc_states: `_`，auc_states包含了`batch_stat_pos, batch_stat_neg, stat_pos, stat_neg`信息。`batch_auc`我们取近20个batch的平均，由参数`slide_steps=20`指定，roc曲线的离散化的临界数值设置为4096，由`num_thresholds=2**12`指定。
 ```
 predict = fluid.layers.fc(
-            input=fc3,
-            size=2,
-            act="softmax",
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-                scale=1 / math.sqrt(fc3.shape[1]))),
-        )
+    input=fcs[-1],
+    size=2,
+    act="softmax",
+    param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
+        scale=1 / math.sqrt(fcs[-1].shape[1]))))
 
-cost = fluid.layers.cross_entropy(input=predict, label=inputs[-1])
-avg_cost = fluid.layers.reduce_sum(cost)
-accuracy = fluid.layers.accuracy(input=predict, label=inputs[-1])
-auc_var, batch_auc_var, auc_states = fluid.layers.auc(
-                                          input=predict,
-                                          label=inputs[-1],
-                                          num_thresholds=2**12,
-                                          slide_steps=20)
+self.predict = predict
+
+auc, batch_auc, _ = fluid.layers.auc(input=self.predict,label=self.label_input,
+                                     num_thresholds=2**12,
+                                     slide_steps=20)
+
+cost = fluid.layers.cross_entropy(
+            input=self.predict, label=self.label_input)
+avg_cost = fluid.layers.reduce_mean(cost)
 ```
 
-完成上述组网后，我们最终可以通过训练拿到`avg_cost`与`auc`两个重要指标。
-
+完成上述组网后，我们最终可以通过训练拿到`BATCH_AUC`与`auc`两个重要指标。
+```
+PaddleRec: Runner single_cpu_infer Begin
+Executor Mode: infer
+processor_register begin
+Running SingleInstance.
+Running SingleNetwork.
+Running SingleInferStartup.
+Running SingleInferRunner.
+load persistables from increment_dnn/3
+batch: 20, BATCH_AUC: [0.75670043], AUC: [0.77490453]
+batch: 40, BATCH_AUC: [0.77020144], AUC: [0.77490437]
+batch: 60, BATCH_AUC: [0.77464683], AUC: [0.77490435]
+batch: 80, BATCH_AUC: [0.76858989], AUC: [0.77490416]
+batch: 100, BATCH_AUC: [0.75728286], AUC: [0.77490362]
+batch: 120, BATCH_AUC: [0.75007016], AUC: [0.77490286]
+...
+batch: 720, BATCH_AUC: [0.76840144], AUC: [0.77489881]
+batch: 740, BATCH_AUC: [0.76659033], AUC: [0.77489854]
+batch: 760, BATCH_AUC: [0.77332639], AUC: [0.77489849]
+batch: 780, BATCH_AUC: [0.78361653], AUC: [0.77489874]
+Infer phase2 of epoch increment_dnn/3 done, use time: 52.7707588673, global metrics: BATCH_AUC=[0.78361653], AUC=[0.77489874]
+PaddleRec Finish
+```
 
 ## 流式训练（OnlineLearning）任务启动及配置流程
 
@@ -387,5 +409,5 @@ auc_var, batch_auc_var, auc_states = fluid.layers.auc(
     ```    
 4. 准备好数据后， 即可按照标准的训练流程进行流式训练了
     ```shell
-    python -m paddlerec.run -m models/rerank/ctr-dnn/config.yaml
+    python -m paddlerec.run -m models/rank/dnn/config.yaml
     ```
