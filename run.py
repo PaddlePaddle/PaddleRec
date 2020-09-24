@@ -348,6 +348,7 @@ def cluster_engine(args):
 
         cluster_envs["fleet_mode"] = fleet_mode
         cluster_envs["engine_role"] = "WORKER"
+        cluster_envs["log_dir"] = "logs"
         cluster_envs["train.trainer.trainer"] = trainer
         cluster_envs["train.trainer.engine"] = "cluster"
         cluster_envs["train.trainer.executor_mode"] = executor_mode
