@@ -112,7 +112,7 @@ logistic_regression模型的组网比较直观，本质是一个二分类任务�
 
 ### sigmoid层
 将离散数据通过embedding查表得到的值，与连续数据的输入进行相乘再累加的操作，合为一个整体输入。我们又构造了一个初始化为0，shape为1的变量，将其与累加结果相加一起输入sigmoid中得到分类结果。  
-在这里，可以将这个过程理解为一个全连接层。通过embedding查表获得权重w，构造的变量b_linear即为偏置变量b，再经过激活函数为sigmoid。
+在这里，可以将这个过程理解为一个全连接层。通过embedding查表获得权重w，构造的变量b_linear即为偏置变量b，再经过激活函数为sigmoid得到输出。
 
 ### Loss及Auc计算
 - 预测的结果通过直接通过激活函数sigmoid给出，为了得到每条样本分属于正负样本的概率，我们将预测结果和`1-predict`合并起来得到predict_2d，以便接下来计算auc。  
@@ -128,7 +128,7 @@ logistic_regression模型的组网比较直观，本质是一个二分类任务�
 
 | 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
 | :------| :------ | :------| :------ | :------| :------ | 
-| LR | 0.7243 | 1024 | 10 | 2 | 约3小时 |
+| LR | 0.7611 | 1024 | 10 | 2 | 约4小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/deepfm
 2. 在data目录下运行数据一键处理脚本，命令如下：  
@@ -143,6 +143,7 @@ cd ..
 将train_sample中的data_path改为{workspace}/data/slot_train_data  
 将infer_sample中的batch_size从5改为1024  
 将infer_sample中的data_path改为{workspace}/data/slot_test_data  
+根据自己的需求调整phase中的线程数  
 4. 运行命令，模型会进行两个epoch的训练，然后预测第二个epoch，并获得相应auc指标  
 ```
 python -m paddlerec.run -m ./config.yaml
@@ -158,28 +159,30 @@ Warning:please make sure there are no hidden files in the dataset folder and che
 Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:[]
 Running SingleInferStartup.
 Running SingleInferRunner.
-load persistables from increment/0
-2020-09-18 11:43:23,533-INFO:   [Infer] batch: 1, time_each_interval: 0.18s, AUC: [0.72274697]
-2020-09-18 11:43:23,564-INFO:   [Infer] batch: 2, time_each_interval: 0.03s, AUC: [0.72274716]
-2020-09-18 11:43:23,624-INFO:   [Infer] batch: 3, time_each_interval: 0.06s, AUC: [0.72274746]
-2020-09-18 11:43:23,695-INFO:   [Infer] batch: 4, time_each_interval: 0.07s, AUC: [0.72274772]
-2020-09-18 11:43:23,841-INFO:   [Infer] batch: 5, time_each_interval: 0.15s, AUC: [0.72274817]
-2020-09-18 11:43:23,922-INFO:   [Infer] batch: 6, time_each_interval: 0.08s, AUC: [0.72274794]
-2020-09-18 11:43:23,989-INFO:   [Infer] batch: 7, time_each_interval: 0.07s, AUC: [0.72274796]
-2020-09-18 11:43:24,058-INFO:   [Infer] batch: 8, time_each_interval: 0.07s, AUC: [0.72274792]
-2020-09-18 11:43:24,130-INFO:   [Infer] batch: 9, time_each_interval: 0.07s, AUC: [0.72274824]
-2020-09-18 11:43:24,195-INFO:   [Infer] batch: 10, time_each_interval: 0.07s, AUC: [0.72274831]
+load persistables from increment/1
+2020-09-25 01:38:01,653-INFO: 	[Infer]	batch: 1, time_each_interval: 0.64s, AUC: [0.76076558]
+2020-09-25 01:38:01,890-INFO: 	[Infer]	batch: 2, time_each_interval: 0.24s, AUC: [0.76076588]
+2020-09-25 01:38:02,116-INFO: 	[Infer]	batch: 3, time_each_interval: 0.23s, AUC: [0.76076599]
+2020-09-25 01:38:02,351-INFO: 	[Infer]	batch: 4, time_each_interval: 0.23s, AUC: [0.76076598]
+2020-09-25 01:38:02,603-INFO: 	[Infer]	batch: 5, time_each_interval: 0.25s, AUC: [0.76076637]
+2020-09-25 01:38:02,841-INFO: 	[Infer]	batch: 6, time_each_interval: 0.24s, AUC: [0.76076656]
+2020-09-25 01:38:03,076-INFO: 	[Infer]	batch: 7, time_each_interval: 0.24s, AUC: [0.76076668]
+2020-09-25 01:38:03,308-INFO: 	[Infer]	batch: 8, time_each_interval: 0.23s, AUC: [0.76076662]
+2020-09-25 01:38:03,541-INFO: 	[Infer]	batch: 9, time_each_interval: 0.23s, AUC: [0.76076698]
+2020-09-25 01:38:03,772-INFO: 	[Infer]	batch: 10, time_each_interval: 0.23s, AUC: [0.76076676]
+2020-09-25 01:38:04,025-INFO: 	[Infer]	batch: 11, time_each_interval: 0.25s, AUC: [0.76076655]
 ...
-2020-09-18 12:57:53,777-INFO:   [Infer] batch: 17959, time_each_interval: 0.07s, AUC: [0.72434065]
-2020-09-18 12:57:53,848-INFO:   [Infer] batch: 17960, time_each_interval: 0.07s, AUC: [0.72434041]
-2020-09-18 12:57:53,910-INFO:   [Infer] batch: 17961, time_each_interval: 0.06s, AUC: [0.72434046]
-2020-09-18 12:57:53,974-INFO:   [Infer] batch: 17962, time_each_interval: 0.06s, AUC: [0.72434055]
-2020-09-18 12:57:54,045-INFO:   [Infer] batch: 17963, time_each_interval: 0.07s, AUC: [0.72434008]
-2020-09-18 12:57:54,111-INFO:   [Infer] batch: 17964, time_each_interval: 0.07s, AUC: [0.72434022]
-2020-09-18 12:57:54,177-INFO:   [Infer] batch: 17965, time_each_interval: 0.07s, AUC: [0.72434011]
-2020-09-18 12:57:54,246-INFO:   [Infer] batch: 17966, time_each_interval: 0.07s, AUC: [0.72434023]
-2020-09-18 12:57:54,309-INFO:   [Infer] batch: 17967, time_each_interval: 0.06s, AUC: [0.72434046]
-Infer infer_phase of epoch increment/0 done, use time: 1414.92181587, global metrics: AUC=0.72434046
+2020-09-25 02:00:14,043-INFO: 	[Infer]	batch: 4482, time_each_interval: 0.26s, AUC: [0.76117275]
+2020-09-25 02:00:14,338-INFO: 	[Infer]	batch: 4483, time_each_interval: 0.29s, AUC: [0.7611731]
+2020-09-25 02:00:14,614-INFO: 	[Infer]	batch: 4484, time_each_interval: 0.27s, AUC: [0.76117289]
+2020-09-25 02:00:14,858-INFO: 	[Infer]	batch: 4485, time_each_interval: 0.25s, AUC: [0.76117328]
+2020-09-25 02:00:15,187-INFO: 	[Infer]	batch: 4486, time_each_interval: 0.33s, AUC: [0.7611733]
+2020-09-25 02:00:15,483-INFO: 	[Infer]	batch: 4487, time_each_interval: 0.30s, AUC: [0.76117372]
+2020-09-25 02:00:15,729-INFO: 	[Infer]	batch: 4488, time_each_interval: 0.25s, AUC: [0.76117397]
+2020-09-25 02:00:15,965-INFO: 	[Infer]	batch: 4489, time_each_interval: 0.24s, AUC: [0.7611739]
+2020-09-25 02:00:16,244-INFO: 	[Infer]	batch: 4490, time_each_interval: 0.28s, AUC: [0.76117379]
+2020-09-25 02:00:16,560-INFO: 	[Infer]	batch: 4491, time_each_interval: 0.32s, AUC: [0.76117405]
+Infer infer_phase of epoch increment/1 done, use time: 1335.62605906, global metrics: AUC=0.76117405
 PaddleRec Finish
 ```
 

@@ -55,11 +55,13 @@ runner:
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
     print_interval: 1
+    phases: phase1
   - name: infer_runner
     class: infer
     device: cpu
     init_model_path: "increment/1"
     print_interval: 1
+    phases: infer_phase
     
 
 phase:
