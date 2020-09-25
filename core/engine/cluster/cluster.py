@@ -19,10 +19,16 @@ import copy
 import os
 import subprocess
 import warnings
+import sys
+import logging
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
+import paddlerec.core.engine.cluster_utils as cluster_utils
+
+logger = logging.getLogger("root")
+logger.propagate = False
 
 
 class ClusterEngine(Engine):
@@ -47,8 +53,38 @@ class ClusterEngine(Engine):
                 self.backend))
 
     def start_worker_procs(self):
-        trainer = TrainerFactory.create(self.trainer)
-        trainer.run()
+        if (envs.get_runtime_environ("fleet_mode") == "COLLECTIVE"):
+            #trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")                                            
+            cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+            if cuda_visible_devices is None or cuda_visible_devices == "":
+                selected_gpus = range(int(os.getenv("TRAINER_GPU_CARD_COUNT")))
+            else:
+                # change selected_gpus into relative values                                                         
+                # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;                                    
+                # therefore selected_gpus=0,1,2,3                                                                   
+                cuda_visible_devices_list = cuda_visible_devices.split(',')
+                for x in range(int(os.getenv("TRAINER_GPU_CARD_COUNT"))):
+                    assert x in cuda_visible_devices_list, "Can't find "\
+                    "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
+                    % (x, cuda_visible_devices)
+                selected_gpus = [cuda_visible_devices_list.index(x)]
+            print("selected_gpus:{}".format(selected_gpus))
+
+            factory = "paddlerec.core.factory"
+            cmd = [sys.executable, "-u", "-m", factory, self.trainer]
+            logs_dir = envs.get_runtime_environ("log_dir")
+            print("use_paddlecloud_flag:{}".format(
+                cluster_utils.use_paddlecloud()))
+            if cluster_utils.use_paddlecloud():
+                cluster, pod = cluster_utils.get_cloud_cluster(selected_gpus)
+                logger.info("get cluster from cloud:{}".format(cluster))
+                procs = cluster_utils.start_local_trainers(
+                    cluster, pod, cmd, log_dir=logs_dir)
+                print("cluster:{}".format(cluster))
+                print("pod:{}".format(pod))
+        else:
+            trainer = TrainerFactory.create(self.trainer)
+            trainer.run()
 
     def start_master_procs(self):
         if self.backend == "PADDLECLOUD":
