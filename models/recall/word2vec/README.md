@@ -222,15 +222,18 @@ Infer phase2 of epoch 3 done, use time: 4.43099021912, global metrics: acc=[1.]
 ## 论文复现
 
 1. 用原论文的完整数据复现论文效果需要在config.yaml修改超参：
+```
 - name: dataset_train 
   batch_size: 100 # 1. 修改batch_size为100
   type: DataLoader 
   data_path: "{workspace}/data/all_train" # 2. 修改数据为全量训练数据
-  word_count_dict_path: "{workspace}/data/all_dict/ word_count_dict.txt"   # 3. 修改词表为全量词表
+  word_count_dict_path: "{workspace}/data/all_dict/word_count_dict.txt"   # 3. 修改词表为全量词表
   data_converter: "{workspace}/w2v_reader.py"
+- name: dataset_infer
+  data_path: "{workspace}/data/all_test" # 4. 修改数据为全量测试数据
+  word_id_dict_path: "{workspace}/data/all_dict/word_id_dict.txt" # 5. 修改词表为全量词表
 
-- name: single_cpu_train
-  - epochs: # 4. 修改config.yaml中runner的epochs为5。
+```
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 ```
