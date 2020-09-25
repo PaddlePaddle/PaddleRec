@@ -61,8 +61,7 @@ class CriteoDataset(dg.MultiSlotDataGenerator):
                 s += " dense_feature:" + str(i)
             for i in range(1, 1 + len(categorical_range_)):
                 s += " " + str(i) + ":" + str(sparse_feature[i - 1][0])
-            print(s.strip())
-            yield None
+            print(s.strip())  # add print for data preprocessing
 
         return reader
 
