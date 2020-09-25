@@ -35,7 +35,7 @@ hyper_parameters:
     # 用户自定义配置
     optimizer:
         class: Adam
-        learning_rate: 0.0001
+        learning_rate: 0.001
     sparse_feature_number: 1086460
     sparse_feature_dim: 9
     is_sparse: False
@@ -48,7 +48,7 @@ mode: [train_runner,infer_runner]
 runner:
   - name: train_runner
     class: train
-    epochs: 1
+    epochs: 2
     device: cpu
     init_model_path: ""
     save_checkpoint_interval: 1
