@@ -242,7 +242,7 @@ python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定
 
 2. 使用自定义预测程序预测全量测试集：
 ```
-python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
+python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_dict.txt --batch_size 10000 --model_dir ./increment_w2v/  --start_index 0 --last_index 4 --emb_size 300
 ```
 
 结论：使用cpu训练5轮，自定义预测准确率为0.540，每轮训练时间7小时左右。
