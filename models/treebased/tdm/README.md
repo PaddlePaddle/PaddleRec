@@ -13,6 +13,7 @@ cd paddle-rec
 
 python -m paddlerec.run -m models/treebased/tdm/config.yaml
 ```
+3. 建树及自定义训练的细节可以查阅[TDM-Demo建树及训练](./gen_tree/README.md)
 
 ## 树结构的准备
 ### 名词概念
