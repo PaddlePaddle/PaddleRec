@@ -102,7 +102,7 @@ epoch 1 done, use time: 0.18719792366, global metrics: BATCH_AUC=0.0069110393524
 PaddleRec Finish
 ```
 
-## logistic_regression模型组网
+## 模型组网
 
 logistic_regression模型的组网比较直观，本质是一个二分类任务，代码参考`model.py`。模型主要组成是一个`Embedding`层，一个`sigmoid`层，以及相应的分类任务的loss计算和auc计算。
 
@@ -130,14 +130,14 @@ logistic_regression模型的组网比较直观，本质是一个二分类任务�
 | :------| :------ | :------| :------ | :------| :------ | 
 | LR | 0.7611 | 1024 | 10 | 2 | 约4小时 |
 
-1. 确认您当前所在目录为PaddleRec/models/rank/deepfm
+1. 确认您当前所在目录为PaddleRec/models/rank/logistic_regression
 2. 在data目录下运行数据一键处理脚本，命令如下：  
 ``` 
 cd data
 sh run.sh
 cd ..
 ```
-3. 退回deepfm目录中，打开文件config.yaml,更改其中的参数  
+3. 退回logistic_regression目录中，打开文件config.yaml,更改其中的参数  
 将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
 将train_sample中的batch_size从5改为1024  
 将train_sample中的data_path改为{workspace}/data/slot_train_data  
