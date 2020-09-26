@@ -74,9 +74,7 @@ class Trainer(object):
         phase_names = envs.get_global_env(
             "runner." + self._runner_name + ".phases", None)
 
-        print("phase_names:{}".format(phase_names))
         _config = envs.load_yaml(config)
-        print("_config:{}".format(_config["phase"]))
 
         self._context["env"] = _config
         self._context["dataset"] = _config.get("dataset")
@@ -92,7 +90,6 @@ class Trainer(object):
         _config["phase"] = phases
         self._context["env"] = _config
         self._context["dataset"] = _config.get("dataset")
-        print("self._context[\"phases\"]:{}".format(self._context["phases"]))
         print("PaddleRec: Runner {} Begin".format(self._runner_name))
         self.which_engine()
         self.which_device()
@@ -259,7 +256,6 @@ class Trainer(object):
             try:
                 self.reload_train_context()
                 self.context_process(self._context)
-                print(self._context["env"]["phase"][0])
                 if self._context['is_exit']:
                     break
             except Exception as err:
