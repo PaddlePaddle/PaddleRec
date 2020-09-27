@@ -40,7 +40,7 @@ hyper_parameters:
     hidden3_units: 25
 
 
-mode: train_runner 
+mode: [train_runner , infer_runner]
 # if infer, change mode to "infer_runner" and change phase to "infer_phase"
 
 runner:
