@@ -420,7 +420,7 @@ class RunnerBase(object):
             dirname = envs.get_global_env(name + "save_checkpoint_path", None)
             if dirname is None or dirname == "":
                 return
-            dirname = os.path.join(dirname, "epoch_" + str(epoch_id))
+            dirname = os.path.join(dirname, str(epoch_id))
             logging.info("\tsave epoch_id:%d model into: \"%s\"" %
                          (epoch_id, dirname))
             if is_fleet:
