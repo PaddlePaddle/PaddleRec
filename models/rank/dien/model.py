@@ -230,7 +230,7 @@ class Model(ModelBase):
                                                    pad_value)
         seq_shape = fluid.layers.shape(pos_seq_pad)
         
-        if seq_shape[1] < 2:
+        if (seq_shape[1] == 1):
             aux_loss = 0
         else:
             test_pos = fluid.layers.reduce_sum(
@@ -239,28 +239,26 @@ class Model(ModelBase):
                         fluid.layers.sigmoid(
                             fluid.layers.reduce_sum(
                                 gru_out_pad[:, start_value:seq_shape[1] - 1, :]
-                                * pos_seq_pad[:, start_value + 1:seq_shape[
-                                    1], :],
+                                * pos_seq_pad[:, start_value +
+                                              1:seq_shape[1], :],
                                 dim=2,
                                 keep_dim=True))),
                     dim=2),
                 dim=1,
                 keep_dim=True)
-            
             test_neg = fluid.layers.reduce_sum(
                 fluid.layers.reduce_sum(
                     fluid.layers.log(
                         fluid.layers.sigmoid(
                             fluid.layers.reduce_sum(
                                 gru_out_pad[:, start_value:seq_shape[1] - 1, :]
-                                * neg_seq_pad[:, start_value + 1:seq_shape[
-                                    1], :],
+                                * neg_seq_pad[:, start_value +
+                                              1:seq_shape[1], :],
                                 dim=2,
                                 keep_dim=True))),
                     dim=2),
                 dim=1,
                 keep_dim=True)
-            
             aux_loss = fluid.layers.mean(test_neg + test_pos)
 
         # ------------------------- Interest Evolving Layer (GRU with attentional input (AIGRU)) --------------------------
