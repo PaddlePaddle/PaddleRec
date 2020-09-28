@@ -436,9 +436,11 @@ class RunnerBase(object):
             dirname = envs.get_global_env(name + "save_step_path", None)
             if dirname is None or dirname == "":
                 return
-            dirname = os.path.join(dirname, str(batch_id))
-            logging.info("\tsave batch_id:%d model into: \"%s\"" %
-                         (batch_id, dirname))
+            dirname = os.path.join(dirname,
+                                   "epoch_" + str(context["current_epoch"]) +
+                                   "_batch_" + str(batch_id))
+            logging.info("\tsave epoch_id:%d, batch_id:%d model into: \"%s\"" %
+                         (context["current_epoch"], batch_id, dirname))
             if is_fleet:
                 if context["fleet"].worker_index() == 0:
                     context["fleet"].save_persistables(context["exe"], dirname)
