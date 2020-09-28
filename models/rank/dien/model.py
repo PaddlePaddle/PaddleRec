@@ -239,8 +239,8 @@ class Model(ModelBase):
                         fluid.layers.sigmoid(
                             fluid.layers.reduce_sum(
                                 gru_out_pad[:, start_value:seq_shape[1] - 1, :]
-                                * pos_seq_pad[:, start_value +
-                                              1:seq_shape[1], :],
+                                * pos_seq_pad[:, start_value + 1:seq_shape[
+                                    1], :],
                                 dim=2,
                                 keep_dim=True))),
                     dim=2),
@@ -252,8 +252,8 @@ class Model(ModelBase):
                         fluid.layers.sigmoid(
                             fluid.layers.reduce_sum(
                                 gru_out_pad[:, start_value:seq_shape[1] - 1, :]
-                                * neg_seq_pad[:, start_value +
-                                              1:seq_shape[1], :],
+                                * neg_seq_pad[:, start_value + 1:seq_shape[
+                                    1], :],
                                 dim=2,
                                 keep_dim=True))),
                     dim=2),
