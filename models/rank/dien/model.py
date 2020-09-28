@@ -230,7 +230,7 @@ class Model(ModelBase):
                                                    pad_value)
         seq_shape = fluid.layers.shape(pos_seq_pad)
         
-        if(seq_shape[1] < 2):
+        if seq_shape[1] < 2:
             aux_loss = 0
         else:
             test_pos = fluid.layers.reduce_sum(
