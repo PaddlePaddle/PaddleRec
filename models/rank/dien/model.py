@@ -229,7 +229,11 @@ class Model(ModelBase):
         neg_seq_pad, _ = fluid.layers.sequence_pad(neg_reshape_hist_item_emb,
                                                    pad_value)
         seq_shape = fluid.layers.shape(pos_seq_pad)
-        test_pos = fluid.layers.reduce_sum(
+        
+        if(seq_shape[1] < 2):
+            aux_loss = 0
+        else:
+            test_pos = fluid.layers.reduce_sum(
             fluid.layers.reduce_sum(
                 fluid.layers.log(
                     fluid.layers.sigmoid(
@@ -241,7 +245,7 @@ class Model(ModelBase):
                 dim=2),
             dim=1,
             keep_dim=True)
-        test_neg = fluid.layers.reduce_sum(
+            test_neg = fluid.layers.reduce_sum(
             fluid.layers.reduce_sum(
                 fluid.layers.log(
                     fluid.layers.sigmoid(
@@ -253,7 +257,7 @@ class Model(ModelBase):
                 dim=2),
             dim=1,
             keep_dim=True)
-        aux_loss = fluid.layers.mean(test_neg + test_pos)
+            aux_loss = fluid.layers.mean(test_neg + test_pos)
 
         # ------------------------- Interest Evolving Layer (GRU with attentional input (AIGRU)) --------------------------
 
