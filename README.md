@@ -175,6 +175,7 @@ python -m paddlerec.run -m models/rank/dnn/config.yaml
 <p>
 
 ### 版本历史
+- 2020.09.28 - PaddleRec v0.2.0
 - 2020.06.17 - PaddleRec v0.1.0
 - 2020.06.03 - PaddleRec v0.0.2
 - 2020.05.14 - PaddleRec v0.0.1
