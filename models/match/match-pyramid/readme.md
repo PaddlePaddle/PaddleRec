@@ -55,6 +55,12 @@
 3.关系文件：关系文件被用来存储两个句子之间的关系，如query 和document之间的关系。例如：relation.train.fold1.txt, relation.test.fold1.txt  
 4.嵌入层文件：我们将预训练的词向量存储在嵌入文件中。例如：embed_wiki-pdc_d50_norm  
 
+在本例中需要调用jieba库和sklearn库，如环境中没有提前安装，可以使用以下命令安装。  
+```
+pip install sklearn
+pip install jieba
+```
+
 ## 运行环境
 PaddlePaddle>=1.7.2  
 python 2.7/3.5/3.6/3.7  

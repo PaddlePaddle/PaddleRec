@@ -19,13 +19,13 @@ workspace: "models/rank/deepfm"
 
 dataset:
   - name: train_sample
-    type: QueueDataset
+    type: DataLoader
     batch_size: 5
     data_path: "{workspace}/data/sample_data/train"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
   - name: infer_sample
-    type: QueueDataset
+    type: DataLoader
     batch_size: 5
     data_path: "{workspace}/data/sample_data/train"
     sparse_slots: "label feat_idx"
@@ -33,8 +33,8 @@ dataset:
 
 hyper_parameters:
     optimizer:
-        class: SGD
-        learning_rate: 0.0001
+        class: Adam
+        learning_rate: 0.001
     sparse_feature_number: 1086460
     sparse_feature_dim: 9
     num_field: 39
@@ -43,7 +43,7 @@ hyper_parameters:
     act: "relu"
 
 
-mode: train_runner
+mode: [train_runner,infer_runner]
 # if infer, change mode to "infer_runner" and change phase to "infer_phase"
 
 runner:
@@ -57,19 +57,22 @@ runner:
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
     print_interval: 1
+    phases: phase1
   - name: infer_runner
     class: infer
     device: cpu
-    init_model_path: "increment/0"
+    init_model_path: "increment/1"
     print_interval: 1
-    
+    phases: infer_phase
+
+
 
 phase:
 - name: phase1
   model: "{workspace}/model.py"
   dataset_name: train_sample
-  thread_num: 1
-#- name: infer_phase
-#  model: "{workspace}/model.py"
-#  dataset_name: infer_sample
-#  thread_num: 1
+  thread_num: 10
+- name: infer_phase
+  model: "{workspace}/model.py"
+  dataset_name: infer_sample
+  thread_num: 10

@@ -1,5 +1,5 @@
 python download_preprocess.py 
-
+mv ./deepfm%2Ffeat_dict_10.pkl2 sample_data/feat_dict_10.pkl2
 mkdir slot_train_data
 for i in `ls ./train_data`
 do
