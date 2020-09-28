@@ -16,6 +16,20 @@ import random
 import numpy as np
 import sklearn.metrics
 
+filename = './result.txt'
+f = open(filename, "r")
+lines = f.readlines()
+f.close()
+result = []
+for line in lines:
+    if "query_doc_sim" in str(line):
+        result.append(line)
+result = result[:-1]
+f = open(filename, "w")
+for i in range(len(result)):
+    f.write(str(result[i]))
+f.close()
+
 label = []
 filename = './data/label.txt'
 f = open(filename, "r")

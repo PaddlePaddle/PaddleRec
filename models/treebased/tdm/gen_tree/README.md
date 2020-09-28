@@ -2,7 +2,7 @@
 
 ## 建树所需环境
 Requirements:
-- python >= 2.7
+- python == 2.7
 - paddlepaddle >= 1.7.2（建议1.7.2）
 - paddle-rec （克隆github paddlerec，执行python setup.py install）
 - sklearn
