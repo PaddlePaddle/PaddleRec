@@ -15,6 +15,20 @@
 import random
 import numpy as np
 
+filename = './result.txt'
+f = open(filename, "r")
+lines = f.readlines()
+f.close()
+result = []
+for line in lines:
+    if "query_pt_sim" in str(line):
+        result.append(line)
+result = result[:-1]
+f = open(filename, "w")
+for i in range(len(result)):
+    f.write(str(result[i]))
+f.close()
+
 label = []
 filename = './data/label.txt'
 f = open(filename, "r")
@@ -31,7 +45,7 @@ filename = './result.txt'
 sim = []
 for line in open(filename):
     line = line.strip().split(",")
-    print(line)
+    #print(line)
     line[3] = line[3].split(":")
     line = line[3][1].strip(" ")
     line = line.strip("[")
@@ -50,6 +64,6 @@ f.close()
 filename = 'pair.txt'
 f = open(filename, "w")
 for i in range(len(sim)):
-    print(i)
+    #print(i)
     f.write(str(query[i]) + "\t" + str(sim[i]) + "\t" + str(label[i]) + "\n")
 f.close()
