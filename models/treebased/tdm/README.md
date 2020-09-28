@@ -15,6 +15,22 @@ python -m paddlerec.run -m models/treebased/tdm/config.yaml
 ```
 3. 建树及自定义训练的细节可以查阅[TDM-Demo建树及训练](./gen_tree/README.md)
 
+## 文件目录
+
+```shell
+.
+├── config.yaml                       # 模型配置文件
+├── data                              # 训练及测试数据样例文件夹
+├── gen_tree                          # 建树代码及文档文件夹
+├── __init__.py                       # __init__.py
+├── model.py                          # tdm组网文件
+├── README.md                         # tdm-demo文档
+├── tdm_evaluate_reader.py            # 测试数据reader
+├── tdm_reader.py                     # 训练数据reader
+├── tdm_startup.py                    # tdm模型启动阶段自定义逻辑
+└── tree                              # 树文件样例
+```
+
 ## 树结构的准备
 ### 名词概念
 

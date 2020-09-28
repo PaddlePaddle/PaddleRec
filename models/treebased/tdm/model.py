@@ -134,9 +134,14 @@ class Model(ModelBase):
                 tree_dtype='int64',
                 dtype='int64')
 
+        sample_nodes = [
+            fluid.layers.reshape(sample_nodes[i], [-1, 1])
+            for i in range(self.max_layers)
+        ]
+
         # 查表得到每个节点的Embedding
         sample_nodes_emb = [
-            fluid.embedding(
+            fluid.layers.embedding(
                 input=sample_nodes[i],
                 is_sparse=True,
                 size=[self.node_nums, self.node_emb_size],
