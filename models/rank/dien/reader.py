@@ -95,15 +95,19 @@ class Reader(ReaderBase):
                 self.neg_candidate_item.extend(b[i][0])
                 self.neg_candidate_cat.extend(b[i][1])
                 if len(self.neg_candidate_item) > self.max_neg_item:
-                    self.neg_candidate_item = self.neg_candidate_item[0:self.max_neg_item]
-                    self.neg_candidate_cat = self.neg_candidate_cat[0:self.max_neg_item]
+                    self.neg_candidate_item = self.neg_candidate_item[
+                        0:self.max_neg_item]
+                    self.neg_candidate_cat = self.neg_candidate_cat[
+                        0:self.max_neg_item]
             else:
                 len_seq = len(b[i][0])
                 start_idx = random.randint(0, self.max_neg_item - len_seq - 1)
-                self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[i][0]
-                self.neg_candidate_cat[start_idx:start_idx + len_seq + 1] = b[i][1]
+                self.neg_candidate_item[start_idx:start_idx + len_seq +
+                                        1] = b[i][0]
+                self.neg_candidate_cat[start_idx:start_idx + len_seq +
+                                       1] = b[i][1]
 
-            for _ in range(len(b[i][0])):      
+            for _ in range(len(b[i][0])):
                 randindex = random.randint(0, len(self.neg_candidate_item) - 1)
                 neg_item[i].append(self.neg_candidate_item[randindex])
                 neg_cat[i].append(self.neg_candidate_cat[randindex])
