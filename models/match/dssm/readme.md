@@ -60,6 +60,12 @@ rm -f dssm%2Fbq.tar.gz
 已经在银行换了新预留号码。      我现在换了电话号码，这个需要更换吗      1
 每个字段以tab键分隔，第1，2列表示两个文本。第3列表示类别（0或1，0表示两个文本不相似，1表示两个文本相似）。
 ```
+在本例中需要调用jieba库和sklearn库，如环境中没有提前安装，可以使用以下命令安装。  
+```
+pip install sklearn
+pip install jieba
+```
+
 ## 运行环境
 PaddlePaddle>=1.7.2
 
