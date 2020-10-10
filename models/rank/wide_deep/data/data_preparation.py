@@ -109,6 +109,7 @@ def build_model_columns(train_data_path, test_data_path):
         train_df[categorical_columns], columns=categorical_columns)
     test_df_temp = pd.get_dummies(
         test_df[categorical_columns], columns=categorical_columns)
+
     train_df = train_df.join(train_df_temp)
     test_df = test_df.join(test_df_temp)
 
@@ -121,22 +122,26 @@ def build_model_columns(train_data_path, test_data_path):
         lambda x: 1 if x == '>50K' else 0)
     test_df['label'] = test_df['income_bracket'].apply(
         lambda x: 1 if x == '>50K' else 0)
-
+    '''
     with io.open('train_data/columns.txt', 'w') as f:
         write_str = str(len(wide_columns)) + '\n' + str(len(
             deep_columns)) + '\n'
-        f.write(write_str)
+        f.write(u"{}".format(write_str))
         f.close()
     with io.open('test_data/columns.txt', 'w') as f:
         write_str = str(len(wide_columns)) + '\n' + str(len(
             deep_columns)) + '\n'
-        f.write(write_str)
-        f.close()
+        f.write(u"{}".format(write_str))
 
-    train_df[wide_columns + deep_columns + ['label']].fillna(0).to_csv(
-        train_data_path, index=False)
-    test_df[wide_columns + deep_columns + ['label']].fillna(0).to_csv(
-        test_data_path, index=False)
+        f.close()
+    '''
+
+    train_df = train_df[wide_columns + deep_columns + ['label']]
+    train_df = train_df.fillna(0).astype(int)
+    train_df.to_csv(train_data_path, index=False, header=0)
+    test_df = test_df[wide_columns + deep_columns + ['label']]
+    test_df = test_df.fillna(0).astype(int)
+    test_df.to_csv(test_data_path, index=False, header=0)
 
 
 def clean_file(train_path, test_path, train_data_path, test_data_path):

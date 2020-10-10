@@ -18,7 +18,7 @@ workspace: "models/treebased/tdm"
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 2
-  type: QueueDataset # or QueueDataset 
+  type: QueueDataset # or DataLoader 
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/tdm_reader.py"
 - name: dataset_infer # name

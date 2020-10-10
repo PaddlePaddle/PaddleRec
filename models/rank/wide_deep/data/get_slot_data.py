@@ -29,7 +29,7 @@ class Reader(dg.MultiSlotDataGenerator):
 
     def _process_line(self, line):
         line = line.strip().split(',')
-        features = list(map(float, line))
+        features = list(map(int, map(float, line)))
         wide_feat = features[0:8]
         deep_feat = features[8:58 + 8]
         label = features[-1]
