@@ -107,7 +107,7 @@ python infer.py --use_gpu 1 --test_epoch 19 --inference_model_dir ./inference_yo
 ```
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.youtube_dnn
+python -m paddlerec.run -m models/recall/youtube_dnn/config.yaml
 ```
 
 ### 结果展示
