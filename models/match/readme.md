@@ -53,6 +53,6 @@ python -m paddlerec.run -m models/contentunderstanding/match-pyramid/config.yaml
 
 |       数据集        |       模型       |      正逆序比          |       map       |  
 | :------------------: | :--------------------: | :---------: |:---------: |
-|       zhidao       |       DSSM       |       2.25        |       --          | 
+|       zhidao       |       DSSM       |       2.75        |       --          | 
 |       Letor07        |       match-pyramid       |       --        |      0.42          | 
-|       zhidao        |       multiview-simnet       |       1.72        |       --          |
+|       zhidao        |       multiview-simnet       |       13.67        |       --          |

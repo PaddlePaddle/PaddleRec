@@ -7,6 +7,7 @@ do
 done
 
 mkdir slot_test_data
+
 for i in `ls ./test_data`
 do
     cat test_data/$i | python get_slot_data.py > slot_test_data/$i
