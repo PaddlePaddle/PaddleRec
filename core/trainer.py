@@ -76,9 +76,6 @@ class Trainer(object):
 
         _config = envs.load_yaml(config)
 
-        self._context["env"] = _config
-        self._context["dataset"] = _config.get("dataset")
-
         phases = []
         if phase_names is None:
             phases = _config.get("phase")
@@ -86,8 +83,10 @@ class Trainer(object):
             for phase in _config.get("phase"):
                 if phase["name"] in phase_names:
                     phases.append(phase)
-
         self._context["phases"] = phases
+        _config["phase"] = phases
+        self._context["env"] = _config
+        self._context["dataset"] = _config.get("dataset")
         print("PaddleRec: Runner {} Begin".format(self._runner_name))
         self.which_engine()
         self.which_device()

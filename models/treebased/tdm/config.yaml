@@ -18,7 +18,7 @@ workspace: "models/treebased/tdm"
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 2
-  type: QueueDataset # or QueueDataset 
+  type: QueueDataset # or DataLoader 
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/tdm_reader.py"
 - name: dataset_infer # name
@@ -59,49 +59,39 @@ hyper_parameters:
     tree_emb_path: "{workspace}/tree/tree_emb.npy"
 
 # select runner by name
-mode: runner1
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
+mode: [runner1]
+
 runner:
 - name: runner1
   class: train
   startup_class_path: "{workspace}/tdm_startup.py"
-  # num of epochs
   epochs: 10
-  # device to run training or infer
   device: cpu
   save_checkpoint_interval: 2 # save model interval of epochs
-  save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
+  phases: [phase1]
 
 - name: runner2
   class: infer
   startup_class_path: "{workspace}/tdm_startup.py"
-  # device to run training or infer
   device: cpu
   init_model_path: "increment/0" # load model path
   print_interval: 1
+  phases: [phase2]
   
 - name: runner3
   class: local_cluster_train
   startup_class_path: "{workspace}/tdm_startup.py"
   fleet_mode: ps
   epochs: 10
-  # device to run training or infer
   device: cpu
   save_checkpoint_interval: 2 # save model interval of epochs
-  save_inference_interval: 4 # save inference
   save_checkpoint_path: "increment" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "init_model" # load model path
   print_interval: 10
+  phases: [phase1]
 
 # runner will run all the phase in each epoch
 phase:
@@ -109,7 +99,7 @@ phase:
   model: "{workspace}/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
   thread_num: 1
-# - name: phase2
-#   model: "{workspace}/model.py"
-#   dataset_name: dataset_infer
-#   thread_num: 2
+- name: phase2
+  model: "{workspace}/model.py"
+  dataset_name: dataset_infer
+  thread_num: 2
