@@ -26,19 +26,19 @@ dataset:
   batch_size: 1
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/test"
-  sparse_slots: "1 2"
+  sparse_slots: "0 1"
 
 # hyper parameters of user-defined network
 hyper_parameters:
   optimizer:
     class: Adam
-    learning_rate: 0.0001
-    strategy: async
+    learning_rate: 0.001
+    strategy: sync
   query_encoder: "gru"
   title_encoder: "gru"
   query_encode_dim: 128
   title_encode_dim: 128
-  sparse_feature_dim: 1439
+  sparse_feature_dim: 6327
   embedding_dim: 128
   hidden_size: 128
   margin: 0.1

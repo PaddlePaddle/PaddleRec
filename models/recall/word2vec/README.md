@@ -184,7 +184,7 @@ python infer.py --test_dir ./data/test --dict_path ./data/dict/word_id_dict.txt 
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.word2vec
+python -m paddlerec.run -m models/recall/word2vec/config.yaml
 ```
 
 ### 结果展示
@@ -222,15 +222,18 @@ Infer phase2 of epoch 3 done, use time: 4.43099021912, global metrics: acc=[1.]
 ## 论文复现
 
 1. 用原论文的完整数据复现论文效果需要在config.yaml修改超参：
+```
 - name: dataset_train 
   batch_size: 100 # 1. 修改batch_size为100
   type: DataLoader 
   data_path: "{workspace}/data/all_train" # 2. 修改数据为全量训练数据
-  word_count_dict_path: "{workspace}/data/all_dict/ word_count_dict.txt"   # 3. 修改词表为全量词表
+  word_count_dict_path: "{workspace}/data/all_dict/word_count_dict.txt"   # 3. 修改词表为全量词表
   data_converter: "{workspace}/w2v_reader.py"
+- name: dataset_infer
+  data_path: "{workspace}/data/all_test" # 4. 修改数据为全量测试数据
+  word_id_dict_path: "{workspace}/data/all_dict/word_id_dict.txt" # 5. 修改词表为全量词表
 
-- name: single_cpu_train
-  - epochs: # 4. 修改config.yaml中runner的epochs为5。
+```
 
 修改后运行方案：修改config.yaml中的'workspace'为config.yaml的目录位置，执行
 ```
@@ -239,7 +242,7 @@ python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定
 
 2. 使用自定义预测程序预测全量测试集：
 ```
-python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_dict.txt --batch_size 20000 --model_dir ./increment_w2v/  --start_index 0 --last_index 5 --emb_size 300
+python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_dict.txt --batch_size 10000 --model_dir ./increment_w2v/  --start_index 0 --last_index 4 --emb_size 300
 ```
 
 结论：使用cpu训练5轮，自定义预测准确率为0.540，每轮训练时间7小时左右。

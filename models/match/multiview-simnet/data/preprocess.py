@@ -1,3 +1,4 @@
+#encoding=utf-8
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,14 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#encoding=utf-8
 
 import os
 import sys
+import io
+import jieba
 import numpy as np
 import random
 
-f = open("./zhidao", "r")
+f = io.open("./raw_data.txt", mode="r", encoding='utf-8')
 lines = f.readlines()
 f.close()
 
@@ -26,14 +28,15 @@ f.close()
 word_dict = {}
 for line in lines:
     line = line.strip().split("\t")
-    text = line[0].split(" ") + line[1].split(" ")
+    text = line[0].strip("") + line[1].strip("")
+    text = jieba.cut(text)
     for word in text:
         if word in word_dict:
             continue
         else:
             word_dict[word] = len(word_dict) + 1
 
-f = open("./zhidao", "r")
+f = io.open("./raw_data.txt", mode="r", encoding='utf-8')
 lines = f.readlines()
 f.close()
 
@@ -59,10 +62,10 @@ for line in lines:
 
 #划分训练集和测试集
 query_list = list(pos_dict.keys())
-#print(len(query_list))
+print(len(query_list))
 random.shuffle(query_list)
-train_query = query_list[:90]
-test_query = query_list[90:]
+train_query = query_list[:11600]
+test_query = query_list[11600:]
 
 #获得训练集
 train_set = []
@@ -88,9 +91,9 @@ random.shuffle(test_set)
 #训练集中的query,pos,neg转化格式
 f = open("train.txt", "w")
 for line in train_set:
-    query = line[0].strip().split(" ")
-    pos = line[1].strip().split(" ")
-    neg = line[2].strip().split(" ")
+    query = jieba.cut(line[0].strip())
+    pos = jieba.cut(line[1].strip())
+    neg = jieba.cut(line[2].strip())
     query_list = []
     for word in query:
         query_list.append(word_dict[word])
@@ -110,8 +113,8 @@ f = open("test.txt", "w")
 fa = open("label.txt", "w")
 fb = open("testquery.txt", "w")
 for line in test_set:
-    query = line[0].strip().split(" ")
-    pos = line[1].strip().split(" ")
+    query = jieba.cut(line[0].strip())
+    pos = jieba.cut(line[1].strip())
     label = line[2]
     query_list = []
     for word in query:
