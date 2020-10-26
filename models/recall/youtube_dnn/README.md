@@ -8,7 +8,7 @@
 		├── data.txt
     ├── test
 		├── data.txt
-├── generate_ramdom_data # 随机训练数据生成文件
+├── generate_ramdom_data.py # 随机训练数据生成文件
 ├── __init__.py
 ├── README.md # 文档
 ├── model.py #模型文件
@@ -107,7 +107,7 @@ python infer.py --use_gpu 1 --test_epoch 19 --inference_model_dir ./inference_yo
 ```
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.w2v
+python -m paddlerec.run -m models/recall/youtube_dnn/config.yaml
 ```
 
 ### 结果展示

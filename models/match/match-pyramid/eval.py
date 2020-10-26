@@ -32,6 +32,20 @@ def eval_MAP(pred, gt):
         return map_value / r
 
 
+filename = './result.txt'
+f = open(filename, "r")
+lines = f.readlines()
+f.close()
+result = []
+for line in lines:
+    if "prediction" in str(line):
+        result.append(line)
+result = result[:-1]
+f = open(filename, "w")
+for i in range(len(result)):
+    f.write(str(result[i]))
+f.close()
+
 filename = './data/relation.test.fold1.txt'
 gt = []
 qid = []
@@ -49,14 +63,14 @@ filename = './result.txt'
 pred = []
 for line in open(filename):
     line = line.strip().split(",")
-    line[1] = line[1].split(":")
-    line = line[1][1].strip(" ")
+    line[3] = line[3].split(":")
+    line = line[3][1].strip(" ")
     line = line.strip("[")
     line = line.strip("]")
     pred.append(float(line))
 
 result_dict = {}
-for i in range(len(qid)):
+for i in range(len(pred)):
     if qid[i] not in result_dict:
         result_dict[qid[i]] = []
     result_dict[qid[i]].append([gt[i], pred[i]])
