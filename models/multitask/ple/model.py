@@ -84,7 +84,7 @@ class Model(ModelBase):
             # f^{k}(x) = sum_{i=1}^{n}(g^{k}(x)_{i} * f_{i}(x)) 
             cur_experts = expert_outputs[i * self.exp_per_task:(
                 i + 1) * self.exp_per_task] + expert_outputs[-int(
-                    self.task_num):]
+                    self.shared_num):]
             expert_concat = fluid.layers.concat(cur_experts, axis=1)
             expert_concat = fluid.layers.reshape(
                 expert_concat, [-1, cur_expert_num, self.expert_size])
