@@ -56,7 +56,7 @@ runner:
 - name: infer_runner
   class: infer
   init_model_path: "increment_ple/1"
-  device: gpu
+  device: cpu # or gpu
   phases: [infer]
 
 phase:
