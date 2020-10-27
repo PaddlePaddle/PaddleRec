@@ -212,12 +212,6 @@ class Model(ModelBase):
             param_attr=fluid.ParamAttr(initializer=fluid.initializer.Uniform(
                 low=-stdv, high=stdv)))  # [batch_size, h]
 
-        # all_vocab = layers.create_global_var(
-        #     shape=[items_num - 1],
-        #     value=0,
-        #     dtype="int64",
-        #     persistable=True,
-        #     name="all_vocab")
         all_vocab = np.arange(1, self.dict_size).reshape((-1)).astype('int32')
         all_vocab = fluid.layers.cast(
             x=fluid.layers.assign(all_vocab), dtype='int64')
