@@ -176,7 +176,6 @@ click:0 dense_feature:0.05 dense_feature:0.00663349917081 dense_feature:0.05 den
 ...
 ```
 
-#
 ## 模型组网
 ### 数据输入声明
 正如数据准备章节所介绍，Criteo数据集中，分为连续数据与离散（稀疏）数据，所以整体而言，CTR-DNN模型的数据输入层包括三个，分别是：`dense_input`用于输入连续数据，维度由超参数`dense_input_dim`指定，数据类型是归一化后的浮点型数据。`sparse_inputs`用于记录离散数据，在Criteo数据集中，共有26个slot，所以我们创建了名为`1~26`的26个稀疏参数输入，数据类型为整数；最后是每条样本的`label`，代表了是否被点击，数据类型是整数，0代表负样例，1代表正样例。
@@ -259,6 +258,33 @@ avg_cost = fluid.layers.reduce_mean(cost)
 ```
 
 完成上述组网后，我们最终可以通过训练拿到`BATCH_AUC`与`auc`两个重要指标。
+
+### 效果复现
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。 在全量数据下模型的指标如下：
+| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
+| :------| :------ | :------| :------ | :------| :------ | 
+| dnn | 0.7748 | 512 | 10 | 4 | 约3.5小时 |
+
+1. 确认您当前所在目录为PaddleRec/models/rank/dnn  
+2. 在data目录下运行数据一键处理脚本，处理时间较长，请耐心等待。命令如下：  
+``` 
+cd data
+sh run.sh
+cd ..
+```
+3. 退回dnn目录中，打开文件config.yaml,更改其中的参数  
+将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
+将dataloader_train中的batch_size从2改为512  
+将dataloader_train中的data_path改为{workspace}/data/slot_train_data_full  
+将dataset_infer中的batch_size从2改为512  
+将dataset_infer中的data_path改为{workspace}/data/slot_test_data_full  
+根据自己的需求调整phase中的线程数  
+4. 运行命令，模型会进行四个epoch的训练，然后预测第四个epoch，并获得相应auc指标  
+```
+python -m paddlerec.run -m ./config.yaml
+```
+5. 经过全量数据训练后，执行预测的结果示例如下：
+
 ```
 PaddleRec: Runner single_cpu_infer Begin
 Executor Mode: infer

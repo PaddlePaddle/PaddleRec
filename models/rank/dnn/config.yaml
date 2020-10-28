@@ -22,19 +22,19 @@ dataset:
   type: DataLoader # or QueueDataset 
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-  dense_slots: "dense_var:13"
+  dense_slots: "dense_feature:13"
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 2
   type: QueueDataset # or DataLoader 
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-  dense_slots: "dense_var:13"
+  dense_slots: "dense_feature:13"
 - name: dataset_infer # name
   batch_size: 2
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/sample_data/train"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-  dense_slots: "dense_var:13"
+  dense_slots: "dense_feature:13"
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -77,7 +77,7 @@ runner:
   epochs: 1
   # device to run training or infer
   device: cpu
-  init_model_path: "increment_dnn" # load model path
+  init_model_path: "increment_dnn/3" # load model path
   phases: [phase2]
 
 - name: ps_cluster
