@@ -1,0 +1,7 @@
+sphinx==2.1.0
+mistune
+sphinx_rtd_theme
+paddlepaddle>=1.8
+zmq
+sphinx-markdown-tables
+recommonmark
