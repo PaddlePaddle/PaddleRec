@@ -76,7 +76,7 @@
 
 ### Environmental requirements
 * Python 2.7/ 3.5 / 3.6 / 3.7
-* PaddlePaddle  >= 1.7.2
+* PaddlePaddle  >= 1.7.2 <= 1.8.5 
 * operating system: Windows/Mac/Linux
 
   > Linux is recommended for distributed training
@@ -97,7 +97,7 @@
   - Install PaddlePaddle  
 
     ```shell
-    python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple
+    python -m pip install paddlepaddle==1.8.5 -i https://mirror.baidu.com/pypi/simple
     ```
 
   - Install PaddleRec by source code
@@ -169,6 +169,7 @@ python -m paddlerec.run -m models/rank/dnn/config.yaml
 <p>
 
 ### Version history
+- 2020.10.12 - PaddleRec v1.8.5
 - 2020.06.17 - PaddleRec v0.1.0
 - 2020.06.03 - PaddleRec v0.0.2
 - 2020.05.14 - PaddleRec v0.0.1

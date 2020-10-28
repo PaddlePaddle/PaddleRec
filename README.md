@@ -68,6 +68,7 @@
     |   排序   |                    [FGCNN](models/rank/fgcnn/model.py)                    |    ✓    |    ✓    |     ✓     |     ✓     | [WWW 2019][Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)                                                                      |
     |   排序   |                  [Fibinet](models/rank/fibinet/model.py)                  |    ✓    |    ✓    |     ✓     |     ✓     | [RecSys19][FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction]( https://arxiv.org/pdf/1905.09433.pdf)                                                 |
     |   排序   |                     [Flen](models/rank/flen/model.py)                     |    ✓    |    ✓    |     ✓     |     ✓     | [2019][FLEN: Leveraging Field for Scalable CTR Prediction]( https://arxiv.org/pdf/1911.04690.pdf)                                                                                                           |
+    |  多任务  |                  [PLE](models/multitask/ple/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     | [RecSys 2020][Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations](https://dl.acm.org/doi/abs/10.1145/3383313.3412236)                                                              |
     |  多任务  |                  [ESMM](models/multitask/esmm/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)                                                              |
     |  多任务  |                  [MMOE](models/multitask/mmoe/model.py)                   |    ✓    |    ✓    |     ✓     |     ✓     | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)                                                       |
     |  多任务  |           [ShareBottom](models/multitask/share-bottom/model.py)           |    ✓    |    ✓    |     ✓     |     ✓     | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)                                                                                                               |
@@ -81,7 +82,7 @@
 
 ### 环境要求
 * Python 2.7/ 3.5 / 3.6 / 3.7
-* PaddlePaddle  >= 1.7.2
+* PaddlePaddle  >= 1.7.2 <= 1.8.5 
 * 操作系统: Windows/Mac/Linux
 
   > Windows下PaddleRec目前仅支持单机训练，分布式训练建议使用Linux环境
@@ -99,10 +100,10 @@
 
 - 安装方法二 **源码编译安装**
   
-  - 安装飞桨  **注：需要用户安装版本 == 1.7.2 的飞桨**
+  - 安装飞桨  **注：需要用户安装版本 == 1.8.5 的飞桨**
 
     ```shell
-    python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple
+    python -m pip install paddlepaddle==1.8.5 -i https://mirror.baidu.com/pypi/simple
     ```
 
   - 源码安装PaddleRec
@@ -175,6 +176,7 @@ python -m paddlerec.run -m models/rank/dnn/config.yaml
 <p>
 
 ### 版本历史
+- 2020.10.12 - PaddleRec v1.8.5
 - 2020.06.17 - PaddleRec v0.1.0
 - 2020.06.03 - PaddleRec v0.0.2
 - 2020.05.14 - PaddleRec v0.0.1
