@@ -23,11 +23,11 @@ from setuptools import setup, find_packages
 import shutil
 import tempfile
 
-requires = ["paddlepaddle == 1.7.2", "PyYAML >= 5.1.1"]
+requires = ["paddlepaddle == 1.8.5", "PyYAML >= 5.1.1"]
 
 about = {}
 about["__title__"] = "paddle-rec"
-about["__version__"] = "0.1.0"
+about["__version__"] = "1.8.5.0"
 about["__description__"] = "paddle-rec"
 about["__author__"] = "paddle-dev"
 about["__author_email__"] = "paddle-dev@baidu.com"
