@@ -17,6 +17,8 @@ import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 
+import numpy as np
+
 
 class Model(ModelBase):
     def __init__(self, config):
@@ -131,7 +133,7 @@ class Model(ModelBase):
         hist_cat_seq = inputs[1]  # history category sequence
         target_item = inputs[2]  # one dim target item
         target_cat = inputs[3]  # one dim target category
-        label = inputs[4]  # label 
+        label = inputs[4]  # label
         mask = inputs[5]  # mask
         target_item_seq = inputs[6]  # target item expand to sequence
         target_cat_seq = inputs[7]  # traget category expand to sequence
@@ -139,6 +141,14 @@ class Model(ModelBase):
         neg_hist_cat_seq = inputs[9]  # neg cat sampling for aux loss
 
         item_emb_attr = fluid.ParamAttr(name="item_emb")
+        cur_program = fluid.Program()
+        cur_block = cur_program.current_block()
+        item_emb_copy = cur_block.create_var(
+            name="item_emb",
+            shape=[self.item_count, self.item_emb_size],
+            dtype='float32')
+        #item_emb_copy = fluid.layers.Print(item_emb_copy, message="Testing:")
+        ##item_emb_attr = fluid.layers.Print(item_emb_attr, summarize=2)
         cat_emb_attr = fluid.ParamAttr(name="cat_emb")
 
         # ------------------------- Embedding Layer --------------------------
@@ -148,7 +158,11 @@ class Model(ModelBase):
             size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
-
+        item_emb_copy = fluid.layers.Print(
+            item_emb_copy,
+            message="Testing:",
+            summarize=20,
+            print_phase='backward')
         neg_hist_cat_emb = fluid.embedding(
             input=neg_hist_cat_seq,
             size=[self.cat_count, self.cat_emb_size],
@@ -229,31 +243,36 @@ class Model(ModelBase):
         neg_seq_pad, _ = fluid.layers.sequence_pad(neg_reshape_hist_item_emb,
                                                    pad_value)
         seq_shape = fluid.layers.shape(pos_seq_pad)
-        test_pos = fluid.layers.reduce_sum(
-            fluid.layers.reduce_sum(
-                fluid.layers.log(
-                    fluid.layers.sigmoid(
-                        fluid.layers.reduce_sum(
-                            gru_out_pad[:, start_value:seq_shape[1] - 1, :] *
-                            pos_seq_pad[:, start_value + 1:seq_shape[1], :],
-                            dim=2,
-                            keep_dim=True))),
-                dim=2),
-            dim=1,
-            keep_dim=True)
-        test_neg = fluid.layers.reduce_sum(
-            fluid.layers.reduce_sum(
-                fluid.layers.log(
-                    fluid.layers.sigmoid(
-                        fluid.layers.reduce_sum(
-                            gru_out_pad[:, start_value:seq_shape[1] - 1, :] *
-                            neg_seq_pad[:, start_value + 1:seq_shape[1], :],
-                            dim=2,
-                            keep_dim=True))),
-                dim=2),
-            dim=1,
-            keep_dim=True)
-        aux_loss = fluid.layers.mean(test_neg + test_pos)
+        if (seq_shape[1] == 1):
+            aux_loss = 0
+        else:
+            test_pos = fluid.layers.reduce_sum(
+                fluid.layers.reduce_sum(
+                    fluid.layers.log(
+                        fluid.layers.sigmoid(
+                            fluid.layers.reduce_sum(
+                                gru_out_pad[:, start_value:seq_shape[1] - 1, :]
+                                * pos_seq_pad[:, start_value + 1:seq_shape[
+                                    1], :],
+                                dim=2,
+                                keep_dim=True))),
+                    dim=2),
+                dim=1,
+                keep_dim=True)
+            test_neg = fluid.layers.reduce_sum(
+                fluid.layers.reduce_sum(
+                    fluid.layers.log(
+                        fluid.layers.sigmoid(
+                            fluid.layers.reduce_sum(
+                                gru_out_pad[:, start_value:seq_shape[1] - 1, :]
+                                * neg_seq_pad[:, start_value + 1:seq_shape[
+                                    1], :],
+                                dim=2,
+                                keep_dim=True))),
+                    dim=2),
+                dim=1,
+                keep_dim=True)
+            aux_loss = fluid.layers.mean(test_neg + test_pos)
 
         # ------------------------- Interest Evolving Layer (GRU with attentional input (AIGRU)) --------------------------
 
@@ -263,7 +282,7 @@ class Model(ModelBase):
         concat_weighted_vector = fluid.layers.concat(
             [weighted_vector] * 3, axis=2)
 
-        attention_rnn = fluid.layers.StaticRNN(name="attnention_evolution")
+        attention_rnn = fluid.layers.StaticRNN(name="attention_evolution")
 
         with attention_rnn.step():
             word = attention_rnn.step_input(concat_weighted_vector)
@@ -302,11 +321,13 @@ class Model(ModelBase):
 
         self.predict = fluid.layers.sigmoid(logit)
         predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
+
         label_int = fluid.layers.cast(label, 'int64')
         auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
                                                      label=label_int,
                                                      slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
+
         if is_infer:
             self._infer_results["AUC"] = auc_var
