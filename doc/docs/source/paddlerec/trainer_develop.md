@@ -1,4 +1,4 @@
-# 如何添加自定义流程
+# 如何添加自定义Trainer训练流程
 
 模型训练的流程也可以像`model`及`reader`一样，由用户自定义，并在`config.yaml`中指定路径，由PaddleRec调用。
 

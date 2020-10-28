@@ -33,13 +33,18 @@
    :caption: 入门教程
    :name: Getting started
 
-   paddlerec/model.md
    paddlerec/slot_reader.md
    paddlerec/train.md
-   paddlerec/distributed_train.md
+   paddlerec/model.md
    paddlerec/predict.md
    paddlerec/serving.md
-   paddlerec/pre_train_model.md
+
+
+.. image:: media/design.png
+   :align: center
+   :alt: design
+   :width: 10.03529in
+   :height: 3.97222in
 
 .. toctree::
    :maxdepth: 1
@@ -47,12 +52,15 @@
    :caption: 进阶教程
    :name: Advanced course
 
+   paddlerec/design.md
+   paddlerec/yaml.md
    paddlerec/custom_reader.md
    paddlerec/model_develop.md
-   paddlerec/trainer_develop.md
-   paddlerec/yaml.md
-   paddlerec/design.md
    paddlerec/metrics.md
+   paddlerec/exist_develop.md
+   paddlerec/trainer_develop.md
+   paddlerec/distributed_train.md
+   
 
 .. toctree::
    :maxdepth: 1
