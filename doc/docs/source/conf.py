@@ -33,6 +33,7 @@ sys.path.append(os.path.abspath('../../PaddleRec/'))
 sys.path.append(os.path.abspath('../..'))
 sys.path.append(os.path.abspath('..'))
 import sphinx_rtd_theme
+import sphinx_markdown_tables
 
 # -- Project information -----------------------------------------------------
 
@@ -50,7 +51,8 @@ release = '0.1.0.beta'
 # ones.
 extensions = [
     'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
-    'sphinx.ext.autodoc', 'sphinx.ext.napoleon', "markdown2rst"
+    'sphinx.ext.autodoc', 'sphinx.ext.napoleon', "markdown2rst",
+    'sphinx.ext.githubpages', 'sphinx_markdown_tables'
 ]
 
 # Support Inline mathjax
@@ -102,7 +104,7 @@ latex_elements={# The paper size ('letterpaper' or 'a4paper').
 \XeTeXlinebreakskip = 0pt plus 1pt
 """}
 
-extensions = ['recommonmark']
+extensions = ['recommonmark', 'sphinx_markdown_tables']
 
 source_suffix = {
     '.rst': 'restructuredtext',
