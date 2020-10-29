@@ -3,5 +3,5 @@ mistune
 sphinx_rtd_theme
 paddlepaddle>=1.8
 zmq
-sphinx_markdown_tables
+sphinx-markdown-tables
 recommonmark
