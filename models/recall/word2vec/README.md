@@ -184,7 +184,7 @@ python infer.py --test_dir ./data/test --dict_path ./data/dict/word_id_dict.txt 
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.word2vec
+python -m paddlerec.run -m models/recall/word2vec/config.yaml
 ```
 
 ### 结果展示

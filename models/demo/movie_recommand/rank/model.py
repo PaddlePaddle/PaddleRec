@@ -83,10 +83,6 @@ class Model(ModelBase):
 
         predict = fluid.layers.scale(sim, scale=5)
         self.predict = predict
-        # auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
-        #                                     label=self.label_input,
-        #                                     num_thresholds=10000,
-        #                                     slide_steps=20)
 
         if is_infer:
             self._infer_results["uid"] = self._sparse_data_var[2]
@@ -95,10 +91,6 @@ class Model(ModelBase):
             self._infer_results["predict"] = self.predict
             return
 
-        #self._metrics["AUC"] = auc
-        #self._metrics["BATCH_AUC"] = batch_auc
-        # cost = fluid.layers.cross_entropy(
-        #    input=self.predict, label=self.label_input)
         cost = fluid.layers.square_error_cost(
             self.predict,
             fluid.layers.cast(

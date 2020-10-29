@@ -15,11 +15,12 @@
 
 import os
 import sys
+import io
 import jieba
 import numpy as np
 import random
 
-f = open("./raw_data.txt", "r")
+f = io.open("./raw_data.txt", mode="r", encoding='utf-8')
 lines = f.readlines()
 f.close()
 
@@ -35,7 +36,7 @@ for line in lines:
         else:
             word_dict[word] = len(word_dict) + 1
 
-f = open("./raw_data.txt", "r")
+f = io.open("./raw_data.txt", mode="r", encoding='utf-8')
 lines = f.readlines()
 f.close()
 

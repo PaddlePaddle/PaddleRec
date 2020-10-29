@@ -140,7 +140,7 @@ runner:
 
 ### 运行
 ```
-python -m paddlerec.run -m paddlerec.models.recall.gru4rec
+python -m paddlerec.run -m models/recall/gru4rec/config.yaml
 ```
 
 ### 结果展示
