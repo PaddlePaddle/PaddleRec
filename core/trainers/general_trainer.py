@@ -20,6 +20,7 @@ import os
 
 from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer, EngineMode, FleetMode
+import paddle
 
 
 class GeneralTrainer(Trainer):
@@ -28,6 +29,7 @@ class GeneralTrainer(Trainer):
     """
 
     def __init__(self, config=None):
+        paddle.enable_static()
         Trainer.__init__(self, config)
         self.processor_register()
         self.abs_dir = os.path.dirname(os.path.abspath(__file__))

@@ -185,7 +185,7 @@ class FineTuningStartup(StartupBase):
         context["status"] = "train_pass"
 
 
-class PSStartup(StartupBase):
+class FleetStartup(StartupBase):
     def __init__(self, context):
         print("Running PSStartup.")
         pass
@@ -194,29 +194,18 @@ class PSStartup(StartupBase):
         model_dict = context["env"]["phase"][0]
         with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
 
-            train_prog = context["model"][model_dict["name"]]["main_program"]
-            startup_prog = context["model"][model_dict["name"]][
-                "startup_program"]
-            with fluid.program_guard(train_prog, startup_prog):
-                context["exe"].run(startup_prog)
-        context["status"] = "train_pass"
-
-
-class CollectiveStartup(StartupBase):
-    def __init__(self, context):
-        print("Running CollectiveStartup.")
-        pass
-
-    def startup(self, context):
-        model_dict = context["env"]["phase"][0]
-        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
             train_prog = context["model"][model_dict["name"]][
                 "default_main_program"]
             startup_prog = context["model"][model_dict["name"]][
                 "startup_program"]
             with fluid.program_guard(train_prog, startup_prog):
                 context["exe"].run(startup_prog)
-                self.load(context, main_program=train_prog)
+                if context['fleet'].is_worker():
+                    # for parameter-server worker
+                    context["fleet"].init_worker()
+                else:
+                    # for collective
+                    self.load(context, main_program=train_prog)
         context["status"] = "train_pass"
 
 

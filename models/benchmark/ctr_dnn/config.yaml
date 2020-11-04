@@ -17,7 +17,7 @@ workspace: "./"
 hyper_parameters:
   optimizer:
     class: Adam
-    learning_rate: 0.001
+    learning_rate: 0.0001
     strategy: async
   sparse_inputs_slots: 27
   sparse_feature_number: 1000001
@@ -68,12 +68,13 @@ runner:
   class: train
   epochs: 1
   device: cpu
-  phases: [phase2]
+  init_model_path: "./model/init_model"
+  phases: [phase1]
 
 phase:
 - name: phase1
   model: "{workspace}/model.py" 
-  dataset_name: dataloader_train 
+  dataset_name: dataset_train 
   thread_num: 1
 
 - name: phase2
@@ -83,17 +84,17 @@ phase:
 
 dataset:
 - name: dataloader_train 
-  batch_size: 2
+  batch_size: 1000
   type: DataLoader 
   data_converter: "{workspace}/dataset_generator.py"
   data_path: "{workspace}/train_data"
 - name: dataset_train 
-  batch_size: 2
+  batch_size: 1000
   type: QueueDataset 
   data_converter: "{workspace}/dataset_generator.py"
   data_path: "{workspace}/train_data"
 - name: dataset_infer
-  batch_size: 2
+  batch_size: 1
   type: DataLoader
   data_converter: "{workspace}/dataset_generator.py"
   data_path: "{workspace}/test_data"

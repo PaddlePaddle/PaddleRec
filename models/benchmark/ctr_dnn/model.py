@@ -35,18 +35,18 @@ class Model(ModelBase):
             "hyper_parameters.optimizer.learning_rate")
 
     def input_data(self, is_infer=False, **kwargs):
-        dense_input = paddle.data(
+        dense_input = paddle.static.data(
             name="dense_input",
-            shape=[self.dense_feature_dim],
+            shape=[-1, self.dense_feature_dim],
             dtype="float32")
 
         sparse_input_ids = [
-            paddle.data(
-                name="C" + str(i), shape=[1], lod_level=1, dtype="int64")
+            paddle.static.data(
+                name="C" + str(i), shape=[-1, 1], dtype="int64")
             for i in range(1, 27)
         ]
 
-        label = paddle.data(name="label", shape=[1], dtype="float32")
+        label = paddle.static.data(name="label", shape=[-1, 1], dtype="int64")
 
         inputs = [dense_input] + sparse_input_ids + [label]
         return inputs
@@ -54,43 +54,54 @@ class Model(ModelBase):
     def net(self, input, is_infer=False):
         self.dense_input = input[0]
         self.sparse_input = input[1:-1]
-        self.label_input = self.input[-1]
+        self.label_input = input[-1]
 
         def embedding_layer(input):
             emb = paddle.static.nn.embedding(
                 input=input,
                 is_sparse=True,
-                is_distributed=self.is_distributed,
                 size=[self.sparse_feature_number, self.sparse_feature_dim],
                 param_attr=paddle.ParamAttr(
                     name="SparseFeatFactors",
                     initializer=fluid.initializer.Uniform()))
-            emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
-            return emb_sum
+            emb = paddle.reshape(emb, [-1, self.sparse_feature_dim])
+            return emb
 
-        sparse_embed_seq = list(map(embedding_layer, self.sparse_inputs))
+        sparse_embed_seq = list(map(embedding_layer, self.sparse_input))
         concated = paddle.concat(sparse_embed_seq + [self.dense_input], axis=1)
+        fluid.layers.Print(concated, message="concated")
 
-        fcs = [concated]
-        hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
+        fc1 = paddle.static.nn.fc(
+            x=concated,
+            size=400,
+            activation='relu',
+            name="fc1",
+            weight_attr=paddle.ParamAttr(initializer=fluid.initializer.Normal(
+                scale=1.0 / math.sqrt(concated.shape[1]))))
+        fluid.layers.Print(fc1, message="fc1")
 
-        for size in hidden_layers:
-            output = paddle.static.nn.fc(
-                input=fcs[-1],
-                size=size,
-                act='relu',
-                param_attr=paddle.ParamAttr(
-                    initializer=fluid.initializer.Normal(
-                        scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
-            fcs.append(output)
+        fc2 = paddle.static.nn.fc(
+            x=fc1,
+            size=400,
+            activation='relu',
+            name="fc2",
+            weight_attr=paddle.ParamAttr(initializer=fluid.initializer.Normal(
+                scale=1.0 / math.sqrt(fc1.shape[1]))))
+
+        fc3 = paddle.static.nn.fc(
+            x=fc2,
+            size=400,
+            activation='relu',
+            name="fc3",
+            weight_attr=paddle.ParamAttr(initializer=fluid.initializer.Normal(
+                scale=1.0 / math.sqrt(fc2.shape[1]))))
 
         predict = paddle.static.nn.fc(
-            input=fcs[-1],
+            x=fc3,
             size=2,
-            act="softmax",
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-                scale=1 / math.sqrt(fcs[-1].shape[1]))))
-
+            activation="softmax",
+            weight_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
+                scale=1 / math.sqrt(fc3.shape[1]))))
         self.predict = predict
 
         auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
@@ -104,7 +115,7 @@ class Model(ModelBase):
 
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
-        cost = paddle.nn.functional.cross_entropy(
+        cost = fluid.layers.cross_entropy(
             input=self.predict, label=self.label_input)
         avg_cost = fluid.layers.reduce_mean(cost)
         self._cost = avg_cost
