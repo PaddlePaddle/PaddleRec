@@ -20,6 +20,8 @@ import os
 import sys
 import subprocess
 import logging
+import tempfile
+import shutil
 
 from paddlerec.core.engine.engine import Engine
 from paddlerec.core.utils import envs
@@ -44,6 +46,10 @@ class LocalClusterEngine(Engine):
         current_env.pop("https_proxy", None)
         procs = []
         log_fns = []
+
+        self.gloo_rendezvous_dir = tempfile.mkdtemp()
+        gloo_http_port = str(envs.find_free_port())
+        self.gloo_endpoints = ":".join(["127.0.0.1", gloo_http_port])
 
         if fleet_mode.upper() == "PS":
             for i in range(server_num - 1):
@@ -70,7 +76,11 @@ class LocalClusterEngine(Engine):
                     "PADDLE_PORT": user_endpoints_port[i],
                     "TRAINING_ROLE": "PSERVER",
                     "PADDLE_TRAINERS_NUM": str(worker_num),
-                    "POD_IP": user_endpoints_ips[i]
+                    "POD_IP": user_endpoints_ips[i],
+                    "PADDLE_WITH_GLOO": "1",
+                    "PADDLE_GLOO_RENDEZVOUS": "3",
+                    "PADDLE_GLOO_FS_PATH": self.gloo_rendezvous_dir,
+                    "PADDLE_GLOO_HTTP_ENDPOINT": self.gloo_endpoints
                 })
 
                 os.system("mkdir -p {}".format(logs_dir))
@@ -89,7 +99,11 @@ class LocalClusterEngine(Engine):
                     "PADDLE_PSERVERS_IP_PORT_LIST": user_endpoints,
                     "PADDLE_TRAINERS_NUM": str(worker_num),
                     "TRAINING_ROLE": "TRAINER",
-                    "PADDLE_TRAINER_ID": str(i)
+                    "PADDLE_TRAINER_ID": str(i),
+                    "PADDLE_WITH_GLOO": "1",
+                    "PADDLE_GLOO_RENDEZVOUS": "3",
+                    "PADDLE_GLOO_FS_PATH": self.gloo_rendezvous_dir,
+                    "PADDLE_GLOO_HTTP_ENDPOINT": self.gloo_endpoints
                 })
 
                 os.system("mkdir -p {}".format(logs_dir))
@@ -116,8 +130,8 @@ class LocalClusterEngine(Engine):
                 cuda_visible_devices_list = cuda_visible_devices.split(',')
                 for x in self.envs["selected_gpus"].split(","):
                     assert x in cuda_visible_devices_list, "Can't find "\
-                    "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
-                    % (x, cuda_visible_devices)
+                        "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
+                        % (x, cuda_visible_devices)
                 selected_gpus = [
                     cuda_visible_devices_list.index(x.strip())
                     for x in self.envs["selected_gpus"].split(",")
@@ -153,7 +167,10 @@ class LocalClusterEngine(Engine):
                         "TRAINING_ROLE": "TRAINER",
                         "PADDLE_TRAINER_ID": str(i),
                         "FLAGS_selected_gpus": str(selected_gpus[i]),
-                        "PADDLEREC_GPU_NUMS": str(selected_gpus_num)
+                        "PADDLEREC_GPU_NUMS": str(selected_gpus_num),
+                        "PADDLE_WITH_GLOO": "1",
+                        "PADDLE_GLOO_RENDEZVOUS": "3",
+                        "PADDLE_GLOO_FS_PATH": self.gloo_rendezvous_dir,
                     })
 
                     os.system("mkdir -p {}".format(logs_dir))
@@ -183,6 +200,8 @@ class LocalClusterEngine(Engine):
             "all workers already completed, you can view logs under the `{}` directory".
             format(logs_dir),
             file=sys.stderr)
+        if os.path.exists(self.gloo_rendezvous_dir):
+            shutil.rmtree(self.gloo_rendezvous_dir)
 
     def run(self):
         self.start_procs()

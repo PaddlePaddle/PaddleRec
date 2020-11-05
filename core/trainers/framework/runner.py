@@ -134,7 +134,8 @@ class RunnerBase(object):
 
     def _executor_dataloader_train(self, model_dict, context):
         model_name = model_dict["name"]
-        program = self._get_dataloader_program(model_dict, context)
+        model_class = context["model"][model_dict["name"]]["model"]
+        program = context["model"][model_name]["main_program"]
 
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
@@ -181,8 +182,7 @@ class RunnerBase(object):
             try:
                 while True:
                     metrics_tensors = context["exe"].run(
-                        program=context["model"][model_dict["name"]][
-                            "main_program"],
+                        program=program,
                         fetch_list=metrics_varnames,
                         return_numpy=False)
 

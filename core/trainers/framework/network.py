@@ -194,7 +194,6 @@ class FineTuningNetwork(NetworkBase):
 class FleetNetwork(NetworkBase):
     def __init__(self, context):
         print("Running FleetNetwork.")
-        pass
 
     def build_network(self, context):
         context["model"] = {}
