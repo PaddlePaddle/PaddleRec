@@ -69,7 +69,6 @@ class Model(ModelBase):
 
         sparse_embed_seq = list(map(embedding_layer, self.sparse_input))
         concated = paddle.concat(sparse_embed_seq + [self.dense_input], axis=1)
-        fluid.layers.Print(concated, message="concated")
 
         fc1 = paddle.static.nn.fc(
             x=concated,
@@ -78,7 +77,6 @@ class Model(ModelBase):
             name="fc1",
             weight_attr=paddle.ParamAttr(initializer=fluid.initializer.Normal(
                 scale=1.0 / math.sqrt(concated.shape[1]))))
-        fluid.layers.Print(fc1, message="fc1")
 
         fc2 = paddle.static.nn.fc(
             x=fc1,

@@ -15,7 +15,7 @@
 from __future__ import print_function
 
 import warnings
-
+import paddle
 import paddle.fluid as fluid
 import paddle.fluid.core as core
 from paddlerec.core.utils import envs
@@ -53,17 +53,16 @@ class SingleStartup(StartupBase):
 
     def __init__(self, context):
         print("Running SingleStartup.")
-        pass
 
     def startup(self, context):
         for model_dict in context["phases"]:
-            with fluid.scope_guard(context["model"][model_dict["name"]][
-                    "scope"]):
+            with paddle.static.scope_guard(context["model"][model_dict["name"]]
+                                           ["scope"]):
                 train_prog = context["model"][model_dict["name"]][
                     "main_program"]
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
-                with fluid.program_guard(train_prog, startup_prog):
+                with paddle.static.program_guard(train_prog, startup_prog):
                     context["exe"].run(startup_prog)
                     self.load(context, main_program=train_prog)
         context["status"] = "train_pass"
@@ -187,18 +186,18 @@ class FineTuningStartup(StartupBase):
 
 class FleetStartup(StartupBase):
     def __init__(self, context):
-        print("Running PSStartup.")
+        print("Running FleetStartup.")
         pass
 
     def startup(self, context):
         model_dict = context["env"]["phase"][0]
-        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
-
+        with paddle.static.scope_guard(context["model"][model_dict["name"]][
+                "scope"]):
             train_prog = context["model"][model_dict["name"]][
                 "default_main_program"]
             startup_prog = context["model"][model_dict["name"]][
                 "startup_program"]
-            with fluid.program_guard(train_prog, startup_prog):
+            with paddle.static.program_guard(train_prog, startup_prog):
                 context["exe"].run(startup_prog)
                 if context['fleet'].is_worker():
                     # for parameter-server worker
@@ -216,12 +215,12 @@ class SingleInferStartup(StartupBase):
 
     def startup(self, context):
         for model_dict in context["phases"]:
-            with fluid.scope_guard(context["model"][model_dict["name"]][
-                    "scope"]):
+            with paddle.static.scope_guard(context["model"][model_dict["name"]]
+                                           ["scope"]):
                 train_prog = context["model"][model_dict["name"]][
                     "main_program"]
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
-                with fluid.program_guard(train_prog, startup_prog):
+                with paddle.static.program_guard(train_prog, startup_prog):
                     context["exe"].run(startup_prog)
         context["status"] = "train_pass"
