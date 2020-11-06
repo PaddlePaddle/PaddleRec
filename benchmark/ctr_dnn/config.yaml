@@ -25,10 +25,10 @@ hyper_parameters:
   dense_feature_dim: 13
   fc_sizes: [400, 400, 400]
 
-mode: [collective]
+mode: [ps_cpu]
 runner:
 - name: ps_cpu
-  class: local_cluster_train
+  class: cluster_train
   epochs: 1
   device: cpu
   fleet_mode: ps
@@ -72,7 +72,7 @@ phase:
 - name: phase1
   model: "{workspace}/model.py" 
   dataset_name: dataloader_train 
-  thread_num: 1
+  thread_num: 2
 
 - name: phase2
   model: "{workspace}/model.py" 
