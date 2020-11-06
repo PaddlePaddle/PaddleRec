@@ -67,6 +67,10 @@ class Model(ModelBase):
             emb = paddle.reshape(emb, [-1, self.sparse_feature_dim])
             return emb
 
+        slr = fluid.global_scope().find_var("var")
+        data = np.array(slr.get_selected_rows().get_tensor())
+        rows = np.array(slr.get_selected_rows().rows())
+
         sparse_embed_seq = list(map(embedding_layer, self.sparse_input))
         concated = paddle.concat(sparse_embed_seq + [self.dense_input], axis=1)
 
