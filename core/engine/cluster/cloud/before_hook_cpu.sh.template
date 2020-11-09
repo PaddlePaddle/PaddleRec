@@ -1,8 +1,8 @@
 echo "Run before_hook.sh ..."
 
-wget https://paddlerec.bj.bcebos.com/whl/PaddleRec_v1106.tar.gz --no-check-certificate 
+wget https://paddlerec.bj.bcebos.com/whl/PaddleRec.tar.gz --no-check-certificate 
 
-tar -xf PaddleRec_v1106.tar.gz
+tar -xf PaddleRec.tar.gz
 
 cd PaddleRec
 
@@ -10,9 +10,6 @@ python setup.py install
 
 pip uninstall -y paddlepaddle
 
-hadoop fs -D hadoop.job.ugi=paddle,paddle -D fs.default.name=afs://yinglong.afs.baidu.com:9902 -get /user/paddle/chengmo/whl/heter_ps_1029/paddlepaddle-0.0.0-cp27-cp27mu-linux_x86_64.whl ./
-pip install paddlepaddle-0.0.0-cp27-cp27mu-linux_x86_64.whl --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
-
-# pip install paddlepaddle==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
+pip install paddlepaddle==<$ PADDLEPADDLE_VERSION $> --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
 
 echo "End before_hook.sh ..."
