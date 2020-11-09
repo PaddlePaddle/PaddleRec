@@ -120,14 +120,14 @@ class FineTuningNetwork(NetworkBase):
         context["model"] = {}
         for model_dict in context["phases"]:
             context["model"][model_dict["name"]] = {}
-            train_program = fluid.Program()
-            startup_program = fluid.Program()
+            train_program = paddle.static.Program()
+            startup_program = paddle.static.Program()
             scope = fluid.Scope()
             dataset_name = model_dict["dataset_name"]
 
-            with fluid.program_guard(train_program, startup_program):
+            with paddle.static.program_guard(train_program, startup_program):
                 with fluid.unique_name.guard():
-                    with fluid.scope_guard(scope):
+                    with paddle.static.scope_guard(scope):
                         model_path = envs.os_path_adapter(
                             envs.workspace_adapter(model_dict["model"]))
                         model = envs.lazy_instance_by_fliename(
@@ -287,7 +287,7 @@ class FleetNetwork(NetworkBase):
             strategy.build_strategy = build_strategy
 
             # execute strategy
-            execution_strategy = fluid.ExecutionStrategy()
+            execution_strategy = paddle.static.ExecutionStrategy()
             execution_strategy.num_threads = int(os.getenv('CPU_NUM', 2))
             execution_strategy.num_iteration_per_drop_scope = 100
             execution_strategy.num_iteration_per_run = 1

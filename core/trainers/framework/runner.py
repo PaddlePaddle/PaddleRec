@@ -21,6 +21,7 @@ import numpy as np
 import random
 import json
 import logging
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -47,8 +48,8 @@ def as_numpy(tensor):
           import numpy
 
           new_scope = fluid.Scope()
-          with fluid.scope_guard(new_scope):
-              fluid.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), fluid.CPUPlace())
+          with paddle.static.scope_guard(new_scope):
+              paddle.static.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), paddle.CPUPlace())
           tensor = new_scope.find_var("data").get_tensor()
           fluid.executor.as_numpy(tensor) # or numpy.array(new_scope.find_var("data").get_tensor())
 
@@ -105,7 +106,7 @@ class RunnerBase(object):
         program = context["model"][model_name]["main_program"]
         reader = context["dataset"][reader_name]
 
-        with fluid.scope_guard(scope):
+        with paddle.static.scope_guard(scope):
             if context["is_infer"]:
                 metrics = model_class.get_infer_results()
                 if metrics:
@@ -123,7 +124,7 @@ class RunnerBase(object):
                 if metrics:
                     fetch_vars = metrics.values()
                     fetch_alias = metrics.keys()
-                with fluid.scope_guard(scope):
+                with paddle.static.scope_guard(scope):
                     context["exe"].train_from_dataset(
                         program=program,
                         dataset=reader,
@@ -178,7 +179,7 @@ class RunnerBase(object):
         scope = context["model"][model_name]["scope"]
         runner_results = []
         result = None
-        with fluid.scope_guard(scope):
+        with paddle.static.scope_guard(scope):
             try:
                 while True:
                     metrics_tensors = context["exe"].run(
@@ -221,7 +222,8 @@ class RunnerBase(object):
                                 "default_main_program"]
                         startup_prog = context["model"][model_dict["name"]][
                             "startup_program"]
-                        with fluid.program_guard(train_prog, startup_prog):
+                        with paddle.static.program_guard(train_prog,
+                                                         startup_prog):
                             self.save(
                                 context,
                                 is_fleet=context["is_fleet"],
@@ -279,26 +281,26 @@ class RunnerBase(object):
 
             # check feed var exist
             for var_name in feed_varnames:
-                if var_name not in fluid.default_main_program().global_block(
-                ).vars:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
                     raise ValueError(
                         "Feed variable: {} not in default_main_program, global block has follow vars: {}".
                         format(var_name,
-                               fluid.default_main_program().global_block()
-                               .vars.keys()))
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
 
             # check fetch var exist
             fetch_vars = []
             for var_name in fetch_varnames:
-                if var_name not in fluid.default_main_program().global_block(
-                ).vars:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
                     raise ValueError(
                         "Fetch variable: {} not in default_main_program, global block has follow vars: {}".
                         format(var_name,
-                               fluid.default_main_program().global_block()
-                               .vars.keys()))
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
                 else:
-                    fetch_vars.append(fluid.default_main_program()
+                    fetch_vars.append(paddle.static.default_main_program()
                                       .global_block().vars[var_name])
 
             dirname = envs.get_global_env(name + "save_inference_path", None)
@@ -316,8 +318,8 @@ class RunnerBase(object):
                     context["fleet"].save_inference_model(
                         context["exe"], dirname, feed_varnames, fetch_vars)
             else:
-                fluid.io.save_inference_model(dirname, feed_varnames,
-                                              fetch_vars, context["exe"])
+                paddle.static.save_inference_model(dirname, feed_varnames,
+                                                   fetch_vars, context["exe"])
 
         def save_persistables():
             name = "runner." + context["runner_name"] + "."
@@ -404,13 +406,13 @@ class SingleRunner(RunnerBase):
                     message += ", global metrics: " + ", ".join(metrics_result)
                 print(message)
 
-                with fluid.scope_guard(context["model"][model_dict["name"]][
-                        "scope"]):
+                with paddle.static.scope_guard(context["model"][model_dict[
+                        "name"]]["scope"]):
                     train_prog = context["model"][model_dict["name"]][
                         "default_main_program"]
                     startup_prog = context["model"][model_dict["name"]][
                         "startup_program"]
-                    with fluid.program_guard(train_prog, startup_prog):
+                    with paddle.static.program_guard(train_prog, startup_prog):
                         self.save(context=context, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
@@ -453,13 +455,13 @@ class FleetRunner(RunnerBase):
                 message += ", global metrics: " + ", ".join(metrics_result)
             print(message)
 
-            with fluid.scope_guard(context["model"][model_dict["name"]][
-                    "scope"]):
+            with paddle.static.scope_guard(context["model"][model_dict["name"]]
+                                           ["scope"]):
                 train_prog = context["model"][model_dict["name"]][
                     "main_program"]
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
-                with fluid.program_guard(train_prog, startup_prog):
+                with paddle.static.program_guard(train_prog, startup_prog):
                     self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
@@ -511,11 +513,12 @@ class SingleInferRunner(RunnerBase):
             return
         print("load persistables from", model_path)
 
-        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+        with paddle.static.scope_guard(context["model"][model_dict["name"]][
+                "scope"]):
             train_prog = context["model"][model_dict["name"]]["main_program"]
             startup_prog = context["model"][model_dict["name"]][
                 "startup_program"]
-            with fluid.program_guard(train_prog, startup_prog):
+            with paddle.static.program_guard(train_prog, startup_prog):
                 fluid.io.load_persistables(
                     context["exe"], model_path, main_program=train_prog)
             clear_metrics = context["model"][model_dict["name"]][

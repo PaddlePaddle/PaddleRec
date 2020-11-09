@@ -24,7 +24,7 @@ from paddle import fluid
 
 def save_program_proto(path, program=None):
     if program is None:
-        _program = fluid.default_main_program()
+        _program = paddle.static.default_main_program()
     else:
         _program = program
 

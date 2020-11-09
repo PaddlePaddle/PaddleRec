@@ -15,6 +15,7 @@
 import math
 
 import numpy as np
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.metric import Metric
@@ -47,12 +48,12 @@ class PosNegRatio(Metric):
             raise ValueError("neg_score must be Variable, but received %s" %
                              type(neg_score))
 
-        wrong = fluid.layers.cast(
-            fluid.layers.less_equal(pos_score, neg_score), dtype='float32')
-        wrong_cnt = fluid.layers.reduce_sum(wrong)
-        right = fluid.layers.cast(
-            fluid.layers.less_than(neg_score, pos_score), dtype='float32')
-        right_cnt = fluid.layers.reduce_sum(right)
+        wrong = paddle.cast(
+            paddle.less_equal(pos_score, neg_score), dtype='float32')
+        wrong_cnt = paddle.sum(wrong)
+        right = paddle.cast(
+            paddle.less_than(neg_score, pos_score), dtype='float32')
+        right_cnt = paddle.sum(right)
 
         global_right_cnt, _ = helper.create_or_get_global_variable(
             name="right_cnt", persistable=True, dtype='float32', shape=[1])

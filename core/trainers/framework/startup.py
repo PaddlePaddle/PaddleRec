@@ -140,7 +140,7 @@ class FineTuningStartup(StartupBase):
             .. code-block:: python
 
                 import paddle.fluid as fluid
-                param = fluid.default_main_program().global_block().var('fc.b')
+                param = paddle.static.default_main_program().global_block().var('fc.b')
                 res = fluid.io.is_persistable(param)
         """
         if var.desc.type() == core.VarDesc.VarType.FEED_MINIBATCH or \
@@ -172,13 +172,13 @@ class FineTuningStartup(StartupBase):
 
     def startup(self, context):
         for model_dict in context["phases"]:
-            with fluid.scope_guard(context["model"][model_dict["name"]][
-                    "scope"]):
+            with paddle.static.scope_guard(context["model"][model_dict["name"]]
+                                           ["scope"]):
                 train_prog = context["model"][model_dict["name"]][
                     "main_program"]
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
-                with fluid.program_guard(train_prog, startup_prog):
+                with paddle.static.program_guard(train_prog, startup_prog):
                     context["exe"].run(startup_prog)
                     self.load(context, main_program=train_prog)
         context["status"] = "train_pass"
