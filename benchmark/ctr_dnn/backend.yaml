@@ -19,8 +19,8 @@ config:
 
 submit:
   # PaddleCloud 个人信息 AK 及 SK
-  ak: "3acae1baa7505ca1b074e7c93b81e2d2"
-  sk: "9a4262b4de7557c086e4ddfa778ae5a3"
+  ak: ""
+  sk: ""
   
   # 任务运行优先级，默认high
   priority: "high"
@@ -40,3 +40,12 @@ submit:
   # for mpi ps-cpu
   # mpi 参数服务器模式下，任务的节点数
   nodes: 2
+
+before_hook:
+  - pip uninstall -y paddlepaddle
+  - pip uninstall -y paddlepaddle-gpu
+  - hadoop fs -D hadoop.job.ugi=paddle,paddle -D fs.default.name=afs://yinglong.afs.baidu.com:9902 -get /user/paddle/chengmo/whl/heter_ps_1029/paddlepaddle-0.0.0-cp27-cp27mu-linux_x86_64.whl ./
+  - pip install paddlepaddle-0.0.0-cp27-cp27mu-linux_x86_64.whl --index-url=http://pip.baidu.com/pypi/simple --trusted-host pip.baidu.com
+
+end_hook:
+  - echo "finish end hook"
