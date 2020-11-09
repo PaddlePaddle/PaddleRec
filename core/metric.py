@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import abc
+import paddle
 import paddle.fluid as fluid
 import numpy as np
 
@@ -31,9 +32,9 @@ class Metric(object):
         """R
         """
         if scope is None:
-            scope = fluid.global_scope()
+            scope = paddle.static.global_scope()
 
-        place = fluid.CPUPlace()
+        place = paddle.CPUPlace()
         for key in self._global_metric_state_vars:
             varname, dtype = self._global_metric_state_vars[key]
             var = scope.find_var(varname)
@@ -64,7 +65,7 @@ class Metric(object):
         """R
         """
         if scope is None:
-            scope = fluid.global_scope()
+            scope = paddle.static.global_scope()
 
         global_metrics = dict()
         for key in self._global_metric_state_vars:

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.layer import Layer
@@ -35,22 +35,24 @@ class EmbeddingFuseLayer(Layer):
     def generate(self, param):
         """R
         """
-        show_clk = fluid.layers.concat(
+        show_clk = paddle.concat(
             [param['layer']['show'], param['layer']['click']], axis=1)
         show_clk.stop_gradient = True
         data_var = []
         for slot in self._slots:
-            l = fluid.layers.data(
+            l = paddle.static.data(
                 name=slot, shape=[1], dtype="int64", lod_level=1)
             data_var.append(l)
-            emb = fluid.layers.embedding(input=l, size=[10, self._emb_dim], \
-                                         is_sparse=True, is_distributed=True,
-                                         param_attr=fluid.ParamAttr(name="embedding"))
+            emb = paddle.static.nn.embedding(
+                input=l,
+                size=[10, self._emb_dim],
+                is_sparse=True,
+                is_distributed=True,
+                param_attr=paddle.ParamAttr(name="embedding"))
             emb = fluid.layers.sequence_pool(input=emb, pool_type='sum')
             emb = fluid.layers.continuous_value_model(emb, show_clk, self._cvm)
             self._emb_layers.append(emb)
-        output = fluid.layers.concat(
-            input=self._emb_layers, axis=1, name=self._name)
+        output = paddle.concat(x=self._emb_layers, axis=1, name=self._name)
         return output, {'data_var': data_var}
 
 
@@ -69,9 +71,13 @@ class LabelInputLayer(Layer):
     def generate(self, param):
         """R
         """
-        label = fluid.layers.data(name=self._name, shape=[-1, self._dim], \
-                                  dtype=self._data_type, lod_level=0, append_batch_size=False)
-        cast_label = fluid.layers.cast(label, dtype='float32')
+        label = paddle.static.data(
+            name=self._name,
+            shape=[-1, self._dim],
+            dtype=self._data_type,
+            lod_level=0,
+            append_batch_size=False)
+        cast_label = paddle.cast(label, dtype='float32')
         cast_label.stop_gradient = True
         return cast_label, {'data_var': [label]}
 
@@ -91,8 +97,13 @@ class TagInputLayer(Layer):
     def generate(self, param):
         """R
         """
-        output = fluid.layers.data(name=self._name, shape=[-1, self._dim], \
-                                   dtype=self._data_type, lod_level=0, append_batch_size=False, stop_gradient=True)
+        output = paddle.static.data(
+            name=self._name,
+            shape=[-1, self._dim],
+            dtype=self._data_type,
+            lod_level=0,
+            append_batch_size=False,
+            stop_gradient=True)
         return output, {'data_var': [output]}
 
 
@@ -165,8 +176,8 @@ class NormalizationLayer(Layer):
         summary_layer = param['layer'][self._summary]
         if len(self._input) > 0:
             input_list = [param['layer'][i] for i in self._input]
-            input_layer = fluid.layers.concat(input=input_list, axis=1)
-        bn = fluid.layers.data_norm(
+            input_layer = paddle.concat(x=input_list, axis=1)
+        bn = paddle.static.nn.data_norm(
             input=input_layer,
             name=self._name,
             epsilon=1e-4,
@@ -179,8 +190,13 @@ class NormalizationLayer(Layer):
             self._name + '.batch_size', self._name + '.batch_sum',
             self._name + '.batch_square_sum'
         ]
-        return bn, {'inference_param': {'name': 'summary', \
-                                        'params': inference_param, 'table_id': summary_layer.get('table_id', -1)}}
+        return bn, {
+            'inference_param': {
+                'name': 'summary',
+                'params': inference_param,
+                'table_id': summary_layer.get('table_id', -1)
+            }
+        }
 
 
 class FCLayer(Layer):
@@ -203,27 +219,33 @@ class FCLayer(Layer):
         input_layer = param['layer'][self._input[0]]
         if len(self._input) > 0:
             input_list = [param['layer'][i] for i in self._input]
-            input_layer = fluid.layers.concat(input=input_list, axis=1)
+            input_layer = paddle.concat(x=input_list, axis=1)
         input_coln = input_layer.shape[1]
         scale = param_layer['init_range'] / (input_coln**0.5)
         bias = None
         if self._bias:
-            bias = fluid.ParamAttr(
+            bias = paddle.ParamAttr(
                 learning_rate=1.0,
                 initializer=fluid.initializer.NormalInitializer(
                     loc=0.0, scale=scale))
-        fc = fluid.layers.fc(
+        fc = paddle.static.nn.fc(
             name=self._name,
             input=input_layer,
             size=param_layer['coln'],
             act=self._act_func,
-            param_attr= \
-                fluid.ParamAttr(learning_rate=1.0, \
-                                initializer=fluid.initializer.NormalInitializer(loc=0.0, scale=scale)),
+            param_attr=paddle.ParamAttr(
+                learning_rate=1.0,
+                initializer=fluid.initializer.NormalInitializer(
+                    loc=0.0, scale=scale)),
             bias_attr=bias)
         inference_param = [self._name + '.w_0', self._name + '.b_0']
-        return fc, {'inference_param': {'name': 'param', 'params': inference_param, \
-                                        'table_id': param_layer.get('table_id', -1)}}
+        return fc, {
+            'inference_param': {
+                'name': 'param',
+                'params': inference_param,
+                'table_id': param_layer.get('table_id', -1)
+            }
+        }
 
 
 class LogLossLayer(Layer):
@@ -292,32 +314,32 @@ class LogLossLayer(Layer):
         label_layer = param['layer'][self._label]
         output = fluid.layers.clip(
             input_layer, self._bound[0], self._bound[1], name=self._name)
-        norm = fluid.layers.sigmoid(output, name=self._name)
-        output = fluid.layers.log_loss(
-            norm, fluid.layers.cast(
+        norm = paddle.nn.functional.sigmoid(output, name=self._name)
+        output = paddle.nn.functional.log_loss(
+            norm, paddle.cast(
                 x=label_layer, dtype='float32'))
         if self._weight:
             weight_layer = param['layer'][self._weight]
-            output = fluid.layers.elementwise_mul(output, weight_layer)
-        output = fluid.layers.mean(x=output)
+            output = paddle.multiply(output, weight_layer)
+        output = paddle.mean(x=output)
         self._extend_output['loss'] = output
 
         # For AUC Metric
         metric = self._extend_output['metric_dict']
-        binary_predict = fluid.layers.concat(
-            input=[
-                fluid.layers.elementwise_sub(fluid.layers.ceil(norm), norm),
-                norm
+        binary_predict = paddle.concat(
+            x=[
+                paddle.add(paddle.ceil(norm), paddle.multiply(-1, norm)), norm
             ],
             axis=1)
-        metric['auc']['var'], metric['batch_auc']['var'], [metric['batch_stat_pos']['var'], \
+        metric['auc']['var'], metric['batch_auc']['var'], [metric['batch_stat_pos']['var'],
                                                            metric['batch_stat_neg']['var'], metric['stat_pos']['var'],
                                                            metric['stat_neg']['var']] = \
-            fluid.layers.auc(input=binary_predict, label=fluid.layers.cast(x=label_layer, dtype='int64'), \
+            fluid.layers.auc(input=binary_predict, label=paddle.cast(x=label_layer, dtype='int64'),
                              curve='ROC', num_thresholds=32)
 
         metric['sqrerr']['var'], metric['abserr']['var'], metric['prob']['var'], metric['q']['var'], \
-        metric['pos_ins_num']['var'], metric['total_ins_num']['var'] = \
-            fluid.contrib.layers.ctr_metric_bundle(norm, fluid.layers.cast(x=label_layer, dtype='float32'))
+            metric['pos_ins_num']['var'], metric['total_ins_num']['var'] = \
+            fluid.contrib.layers.ctr_metric_bundle(
+                norm, paddle.cast(x=label_layer, dtype='float32'))
 
         return norm, self._extend_output

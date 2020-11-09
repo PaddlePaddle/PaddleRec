@@ -14,6 +14,7 @@
 
 import abc
 import os
+import paddle
 import paddle.fluid as fluid
 from paddle.fluid.framework import Variable
 
@@ -78,7 +79,7 @@ class ModelBase(object):
             dense_slots = [i.split(":")[0] for i in dense_slots]
             self._dense_data_var = []
             for i in range(len(dense_slots)):
-                l = fluid.layers.data(
+                l = paddle.static.data(
                     name=dense_slots[i],
                     shape=dense_slots_shape[i],
                     dtype="float32")
@@ -86,7 +87,7 @@ class ModelBase(object):
                 self._dense_data_var.append(l)
             self._sparse_data_var = []
             for name in sparse_slots:
-                l = fluid.layers.data(
+                l = paddle.static.data(
                     name=name, shape=[1], lod_level=1, dtype="int64")
                 self._data_var.append(l)
                 self._sparse_data_var.append(l)
@@ -162,11 +163,11 @@ class ModelBase(object):
             os.environ["FLAGS_communicator_is_sgd_optimizer"] = '0'
 
         if name == "SGD":
-            optimizer_i = fluid.optimizer.SGD(lr)
+            optimizer_i = paddle.optimizer.SGD(lr)
         elif name == "ADAM":
-            optimizer_i = fluid.optimizer.Adam(lr, lazy_mode=True)
+            optimizer_i = paddle.optimizer.Adam(lr, lazy_mode=True)
         elif name == "ADAGRAD":
-            optimizer_i = fluid.optimizer.Adagrad(lr)
+            optimizer_i = paddle.optimizer.Adagrad(lr)
         else:
             raise ValueError(
                 "configured optimizer can only supported SGD/Adam/Adagrad")
@@ -211,7 +212,7 @@ class ModelBase(object):
             self._dense_data_var = []
             data_var_ = []
             for i in range(len(dense_slots)):
-                l = fluid.layers.data(
+                l = paddle.static.data(
                     name=dense_slots[i],
                     shape=dense_slots_shape[i],
                     dtype="float32")
@@ -220,7 +221,7 @@ class ModelBase(object):
                 self._dense_data_var_map[dense_slots[i]] = l
             self._sparse_data_var = []
             for name in sparse_slots:
-                l = fluid.layers.data(
+                l = paddle.static.data(
                     name=name, shape=[1], lod_level=1, dtype="int64")
                 data_var_.append(l)
                 self._sparse_data_var.append(l)
