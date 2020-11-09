@@ -35,25 +35,6 @@ runner:
   print_interval: 10
   phases: [phase1]
 
-- name: collective
-  class: single
-  epochs: 10
-  device: gpu
-  fleet_mode: collective
-  selected_gpus: "0,1"
-  print_interval: 1
-  phases: [phase1]
-
-- name: ps_heter
-  class: cluster_train
-  epochs: 10
-  device: gpu
-  fleet_mode: ps
-  save_checkpoint_interval: 1 
-  save_checkpoint_path: "increment_dnn" 
-  print_interval: 1
-  phases: [phase1]
-
 - name: local_infer
   class: infer
   epochs: 1
@@ -72,7 +53,7 @@ phase:
 - name: phase1
   model: "{workspace}/model.py" 
   dataset_name: dataloader_train 
-  thread_num: 2
+  thread_num: 16
 
 - name: phase2
   model: "{workspace}/model.py" 
