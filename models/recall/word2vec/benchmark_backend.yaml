@@ -1,0 +1,45 @@
+backend: "PaddleCloud"
+cluster_type: mpi # k8s可选
+
+config:
+  paddlecloud_job_version: "paddle-fluid-v1.8.2"
+  paddle_version: "1.8.2"
+  before_hook_file_path: "./before_hook.sh"
+  end_hook_file_path: "./end_hook.sh"
+
+  # hdfs/afs的配置信息填写
+  fs_name: "afs://yinglong.afs.baidu.com:9902"
+  fs_ugi: "paddle,paddle"
+
+  # 填任务输出目录的远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  output_path: "/user/paddle/chengmo/heter_ps/ctr_dnn/output"
+
+  # for mpi
+  # 填远程数据及地址，如afs:/user/your/path/ 则此处填 /user/your/path
+  train_data_path: "/user/paddle/benchmark/ctr/train_data_paddle"
+  # test_data_path: ""
+  # thirdparty_path: ""
+
+submit:
+  # PaddleCloud 个人信息 AK 及 SK
+  ak: ""
+  sk: ""
+
+  # 任务运行优先级，默认high
+  priority: "high"
+
+  # 任务名称
+  job_name: "PaddleRec_benchmark_CTR"
+
+  # 训练资源所在组
+  group: "paddle"
+
+  # 节点上的任务启动命令
+  start_cmd: "python -m paddlerec.run -m ./config.yaml"
+
+  # 本地需要上传到节点工作目录的文件
+  files: ./*.py ./*.yaml
+
+  # for mpi ps-cpu
+  # mpi 参数服务器模式下，任务的节点数
+  nodes: 2

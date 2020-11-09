@@ -54,19 +54,19 @@ class ClusterEngine(Engine):
 
     def start_worker_procs(self):
         if (envs.get_runtime_environ("fleet_mode") == "COLLECTIVE"):
-            #trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")                                            
+            #trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")
             cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
             if cuda_visible_devices is None or cuda_visible_devices == "":
                 selected_gpus = range(int(os.getenv("TRAINER_GPU_CARD_COUNT")))
             else:
-                # change selected_gpus into relative values                                                         
-                # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;                                    
-                # therefore selected_gpus=0,1,2,3                                                                   
+                # change selected_gpus into relative values
+                # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;
+                # therefore selected_gpus=0,1,2,3
                 cuda_visible_devices_list = cuda_visible_devices.split(',')
                 for x in range(int(os.getenv("TRAINER_GPU_CARD_COUNT"))):
                     assert x in cuda_visible_devices_list, "Can't find "\
-                    "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
-                    % (x, cuda_visible_devices)
+                        "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
+                        % (x, cuda_visible_devices)
                 selected_gpus = [cuda_visible_devices_list.index(x)]
             print("selected_gpus:{}".format(selected_gpus))
 
@@ -193,7 +193,21 @@ class ClusterEnvBase(object):
 
         # paddle_version
         self.cluster_env["PADDLE_VERSION"] = self.backend_env.get(
-            "config.paddle_version", "1.7.2")
+            "config.paddle_version", "2.0.0rc0")
+
+        # before_hook
+        before_hook = self.backend_env.get("config.before_hook_file_path", "")
+        self.cluster_env["BEFORE_HOOK_FILE"] = before_hook
+        if before_hook != "":
+            warnings.warn(
+                "PADDLE_VERSION will not take effect because you have setting 'before_hook_file_path' ! Please pip install the specified paddlepaddle version in your before_hook.sh .",
+                category=UserWarning,
+                stacklevel=2)
+
+        # end_hook
+        end_hook = self.backend_env.get("config.end_hook_file_path", "")
+
+        self.cluster_env["END_HOOK_FILE"] = end_hook
 
         # python_version
         self.cluster_env["USE_PYTHON3"] = self.backend_env.get(

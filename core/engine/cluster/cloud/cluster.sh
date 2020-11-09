@@ -90,19 +90,31 @@ function _gen_k8s_config() {
 
 function _gen_cpu_before_hook() {
   echo "gen cpu before_hook.sh"
-  sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
-    ${abs_dir}/cloud/before_hook_cpu.sh.template >${PWD}/before_hook.sh
+  if [ ${BEFORE_HOOK_FILE} == "" ]; then
+    sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
+      ${abs_dir}/cloud/before_hook_cpu.sh.template >${PWD}/before_hook.sh
+  else
+    cp ${BEFORE_HOOK_FILE} ${PWD}/before_hook.sh
+  fi
 }
 
 function _gen_gpu_before_hook() {
   echo "gen gpu before_hook.sh"
-  sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
-    ${abs_dir}/cloud/before_hook_gpu.sh.template >${PWD}/before_hook.sh
+  if [ ${BEFORE_HOOK_FILE} == "" ]; then
+    sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
+      ${abs_dir}/cloud/before_hook_gpu.sh.template >${PWD}/before_hook.sh
+  else
+    cp ${BEFORE_HOOK_FILE} ${PWD}/before_hook.sh
+  fi
 }
 
 function _gen_end_hook() {
   echo "gen end_hook.sh"
-  cp ${abs_dir}/cloud/end_hook.sh.template ${PWD}/end_hook.sh
+  if [ ${END_HOOK_FILE} == "" ]; then
+    cp ${abs_dir}/cloud/end_hook.sh.template ${PWD}/end_hook.sh
+  else
+    cp ${END_HOOK_FILE} ${PWD}/end_hook.sh
+  fi
 }
 
 function _gen_mpi_job() {
