@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import copy
-
+import paddle
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 import yaml
