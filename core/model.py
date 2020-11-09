@@ -76,10 +76,12 @@ class ModelBase(object):
             dense_slots_shape = [[
                 int(j) for j in i.split(":")[1].strip("[]").split(",")
             ] for i in dense_slots]
+            for i in range(len(dense_slots)):
+                dense_slots_shape[i] = [-1] + dense_slots_shape[i]
             dense_slots = [i.split(":")[0] for i in dense_slots]
             self._dense_data_var = []
             for i in range(len(dense_slots)):
-                l = fluid.layers.data(
+                l = paddle.static.data(
                     name=dense_slots[i],
                     shape=dense_slots_shape[i],
                     dtype="float32")
@@ -87,7 +89,8 @@ class ModelBase(object):
                 self._dense_data_var.append(l)
             self._sparse_data_var = []
             for name in sparse_slots:
-                l = fluid(name=name, shape=[1], lod_level=1, dtype="int64")
+                l = paddle.static.data(
+                    name=name, shape=[-1, 1], lod_level=1, dtype="int64")
                 self._data_var.append(l)
                 self._sparse_data_var.append(l)
 
@@ -207,11 +210,13 @@ class ModelBase(object):
             dense_slots_shape = [[
                 int(j) for j in i.split(":")[1].strip("[]").split(",")
             ] for i in dense_slots]
+            for i in range(len(dense_slots)):
+                dense_slots_shape[i] = [-1] + dense_slots_shape[i]
             dense_slots = [i.split(":")[0] for i in dense_slots]
             self._dense_data_var = []
             data_var_ = []
             for i in range(len(dense_slots)):
-                l = fluid.layers.data(
+                l = paddle.static.data(
                     name=dense_slots[i],
                     shape=dense_slots_shape[i],
                     dtype="float32")
@@ -220,8 +225,8 @@ class ModelBase(object):
                 self._dense_data_var_map[dense_slots[i]] = l
             self._sparse_data_var = []
             for name in sparse_slots:
-                l = fluid.layers.data(
-                    name=name, shape=[1], lod_level=1, dtype="int64")
+                l = paddle.static.data(
+                    name=name, shape=[-1, 1], lod_level=1, dtype="int64")
                 data_var_.append(l)
                 self._sparse_data_var.append(l)
                 self._sparse_data_var_map[name] = l
