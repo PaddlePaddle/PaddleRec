@@ -88,7 +88,7 @@ class YamlModel(Model):
                     if self._build_nodes[phase] is None:
                         continue
                     for node in self._build_nodes[phase]:
-                        exec("""layer=layer.{}(node)""".format(node['class']))
+                        exec("layer=layer.{}(node)".format(node['class']))
                         layer_output, extend_output = layer.generate(
                             self._config['mode'], self._build_param)
                         self._build_param['layer'][node['name']] = layer_output
