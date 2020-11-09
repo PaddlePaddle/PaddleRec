@@ -469,6 +469,7 @@ class SingleRunner(RunnerBase):
         for epoch in range(epochs):
             for model_dict in context["phases"]:
                 model_class = context["model"][model_dict["name"]]["model"]
+                context["model"][model_dict["name"]]["running_time"] = []
                 metrics = model_class._metrics
                 if "shuffle_filelist" in model_dict:
                     need_shuffle_files = model_dict.get("shuffle_filelist",
@@ -482,6 +483,8 @@ class SingleRunner(RunnerBase):
                 end_time = time.time()
                 seconds = end_time - begin_time
                 message = "epoch {} done, use time: {}".format(epoch, seconds)
+                context["model"][model_dict["name"]]["running_time"].append(
+                    seconds)
                 metrics_result = []
                 for key in metrics:
                     if isinstance(metrics[key], Metric):
@@ -519,6 +522,7 @@ class PSRunner(RunnerBase):
         model_dict = context["env"]["phase"][0]
         model_class = context["model"][model_dict["name"]]["model"]
         metrics = model_class._metrics
+        context["model"][model_dict["name"]]["running_time"] = []
         for epoch in range(epochs):
             if "shuffle_filelist" in model_dict:
                 need_shuffle_files = model_dict.get("shuffle_filelist", None)
@@ -531,6 +535,7 @@ class PSRunner(RunnerBase):
             end_time = time.time()
             seconds = end_time - begin_time
             message = "epoch {} done, use time: {}".format(epoch, seconds)
+            context["running_time"].append(seconds)
 
             # TODO, wait for PaddleCloudRoleMaker supports gloo
             from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
