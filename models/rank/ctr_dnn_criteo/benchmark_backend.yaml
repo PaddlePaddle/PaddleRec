@@ -1,5 +1,5 @@
 backend: "PaddleCloud"
-cluster_type: mpi # k8s可选
+cluster_type: mpi 
 
 config:
   paddlecloud_job_version: "paddle-fluid-v1.8.2"
