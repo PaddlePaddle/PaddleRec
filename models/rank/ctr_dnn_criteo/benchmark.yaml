@@ -18,14 +18,13 @@ hyper_parameters:
   optimizer:
     class: Adam
     learning_rate: 0.0001
-    strategy: async
   sparse_inputs_slots: 27
   sparse_feature_number: 1000001
   sparse_feature_dim: 10
   dense_feature_dim: 13
   fc_sizes: [400, 400, 400]
 
-mode: [ps_cpu]
+mode: [ps_cpu_dataset_async]
 runner:
 - name: ps_cpu_dataset_async
   class: cluster_train
@@ -36,7 +35,7 @@ runner:
   runner_result_dump_path: "ctr_training_metric"
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "ctr_model" # save checkpoint path
-  print_interval: 1000
+  print_interval: 10
   phases: [dataset_train]
 
 - name: ps_cpu_dataset_sync

@@ -1,6 +1,6 @@
 #!/bin/bash
 # download paddlerec
-hadoop fs -D fs.default.name=afs://yinglong.afs.baidu.com:9902 -D hadoop.job.ugi=paddle,paddle -get /user/paddle/chengmo/paddlerec/whl/ps_benchmark/PaddleRec.tar.gz
+hadoop fs -D fs.default.name=afs://yinglong.afs.baidu.com:9902 -D hadoop.job.ugi=paddle,paddle -get /user/paddle/chengmo/paddlerec/whl/ps_benchmark/PaddleRec.tar.gz ./
 tar -xf PaddleRec.tar.gz
 
 # install paddlerec

@@ -444,7 +444,8 @@ class FleetRunner(RunnerBase):
             end_time = time.time()
             seconds = end_time - begin_time
             message = "epoch {} done, use time: {}".format(epoch, seconds)
-            context["running_time"].append(seconds)
+            context["model"][model_dict["name"]]["running_time"].append(
+                seconds)
 
             metrics_result = []
             for key in metrics:

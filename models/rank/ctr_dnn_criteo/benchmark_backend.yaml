@@ -21,8 +21,8 @@ config:
 
 submit:
   # PaddleCloud 个人信息 AK 及 SK
-  ak: ""
-  sk: ""
+  ak: "3acae1baa7505ca1b074e7c93b81e2d2"
+  sk: "9a4262b4de7557c086e4ddfa778ae5a3"
   
   # 任务运行优先级，默认high
   priority: "high"
@@ -34,11 +34,11 @@ submit:
   group: "paddle"
 
   # 节点上的任务启动命令
-  start_cmd: "python -m paddlerec.run -m ./config.yaml"
+  start_cmd: "python -m paddlerec.run -m ./benchmark.yaml"
   
   # 本地需要上传到节点工作目录的文件
   files: ./*.py ./*.yaml
 
   # for mpi ps-cpu
   # mpi 参数服务器模式下，任务的节点数
-  nodes: 2
+  nodes: 4
