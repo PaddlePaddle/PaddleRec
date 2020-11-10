@@ -29,7 +29,7 @@ before_install:
   - sudo pip install Pillow==5.3.0
   - sudo pip install opencv-python==3.4.3.18
   - sudo pip install rarfile==3.0
-  - sudo pip install paddlepaddle==1.7.2
+  - sudo pip install paddlepaddle==2.0.0rc0
   - sudo python setup.py install
   - |
     function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
