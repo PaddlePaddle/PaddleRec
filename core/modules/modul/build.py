@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import copy
-
+import paddle
 import paddle.fluid as fluid
 from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
 import yaml
@@ -78,16 +78,17 @@ class YamlModel(Model):
             self._build_param['inner_layer'][layer['name']] = layer
 
         self._build_param['table'] = {}
-        self._build_param['model']['train_program'] = fluid.Program()
-        self._build_param['model']['startup_program'] = fluid.Program()
-        with fluid.program_guard(self._build_param['model']['train_program'], \
-                                 self._build_param['model']['startup_program']):
+        self._build_param['model']['train_program'] = paddle.sataic.Program()
+        self._build_param['model']['startup_program'] = paddle.static.Program()
+        with paddle.static.program_guard(
+                self._build_param['model']['train_program'],
+                self._build_param['model']['startup_program']):
             with fluid.unique_name.guard():
                 for phase in self._build_phase:
                     if self._build_nodes[phase] is None:
                         continue
                     for node in self._build_nodes[phase]:
-                        exec ("""layer=layer.{}(node)""".format(node['class']))
+                        exec("layer=layer.{}(node)".format(node['class']))
                         layer_output, extend_output = layer.generate(
                             self._config['mode'], self._build_param)
                         self._build_param['layer'][node['name']] = layer_output
@@ -140,8 +141,9 @@ class YamlModel(Model):
                 ]
             strategy['stat_var_names'] = list(set(stat_var_names))
         optimizer_generator = 'optimizer = fluid.optimizer.' + optimizer_conf['class'] + \
-                              '(learning_rate=' + str(optimizer_conf['learning_rate']) + ')'
-        exec (optimizer_generator)
+                              '(learning_rate=' + \
+            str(optimizer_conf['learning_rate']) + ')'
+        exec(optimizer_generator)
         optimizer = fleet.distributed_optimizer(optimizer, strategy=strategy)
         return optimizer
 
@@ -187,10 +189,14 @@ class YamlModel(Model):
                 program.global_block().var(i) for i in params_name_list
             ]
             params_file_name = infernce_item['save_file_name']
-            with fluid.scope_guard(scope):
+            with paddle.static.scope_guard(scope):
                 if params['save_combine']:
-                    fluid.io.save_vars(executor, "./", \
-                                       program, vars=params_var_list, filename=params_file_name)
+                    fluid.io.save_vars(
+                        executor,
+                        "./",
+                        program,
+                        vars=params_var_list,
+                        filename=params_file_name)
                 else:
                     fluid.io.save_vars(
                         executor,
@@ -219,7 +225,8 @@ class YamlModel(Model):
             if 'inference_param' in self._build_param['layer_extend'][node[
                     'name']]:
                 self._inference_meta['params'][layer] += \
-                    self._build_param['layer_extend'][node['name']]['inference_param']['params']
+                    self._build_param['layer_extend'][node['name']
+                                                      ]['inference_param']['params']
         return self._inference_meta['params'][layer]
 
     def get_dependency(self, layer_graph, dest_layer):
