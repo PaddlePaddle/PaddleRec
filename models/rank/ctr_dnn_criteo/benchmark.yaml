@@ -24,7 +24,7 @@ hyper_parameters:
   dense_feature_dim: 13
   fc_sizes: [400, 400, 400]
 
-mode: [ps_cpu_dataset_async]
+mode: [ps_cpu_dataset_async,local_infer]
 runner:
 - name: ps_cpu_dataset_async
   class: cluster_train
@@ -76,7 +76,6 @@ runner:
 
 - name: local_infer
   class: infer
-  epochs: 1
   device: cpu
   runner_result_dump_path: "ctr_infer_metric"
   init_model_path: "ctr_model"

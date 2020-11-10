@@ -16,7 +16,7 @@ config:
   # for mpi
   # 填远程数据及地址，如afs:/user/your/path/ 则此处填 /user/your/path
   train_data_path: "/user/paddle/benchmark/ctr/train_data_paddle"
-  # test_data_path: "" 
+  test_data_path: "/user/paddle/benchmark/ctr/test_data" 
   # thirdparty_path: "" 
 
 submit:

@@ -112,6 +112,11 @@ class ClusterEngine(Engine):
     def run(self):
         if self.role == "MASTER":
             self.start_master_procs()
+            warnings.warn(
+                "Finish Job Submit. PaddleRec will not perform follow-up mode.",
+                category=UserWarning,
+                stacklevel=2)
+            exit(0)
 
         elif self.role == "WORKER":
             self.start_worker_procs()
