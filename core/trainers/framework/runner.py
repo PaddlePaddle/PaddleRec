@@ -200,7 +200,7 @@ class RunnerBase(object):
                             v]).tolist()
                     runner_results.append(batch_runner_result)
 
-                    if batch_id % fetch_period == 0 and batch_id != 0:
+                    if batch_id % fetch_period == 0:
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
@@ -453,7 +453,7 @@ class FleetRunner(RunnerBase):
                     metrics_result.append(_str)
             if len(metrics_result) > 0:
                 message += ", global metrics: " + ", ".join(metrics_result)
-            print(message)
+            logging.info(message)
 
             with paddle.static.scope_guard(context["model"][model_dict["name"]]
                                            ["scope"]):
@@ -504,14 +504,14 @@ class SingleInferRunner(RunnerBase):
                         metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
-                print(message)
+                logging.info(message)
 
         context["status"] = "terminal_pass"
 
     def _load(self, context, model_dict, model_path):
         if model_path is None or model_path == "":
             return
-        print("load persistables from", model_path)
+        logging.info("load persistables from {}".format(model_path))
 
         with paddle.static.scope_guard(context["model"][model_dict["name"]][
                 "scope"]):
@@ -541,3 +541,6 @@ class SingleInferRunner(RunnerBase):
         if len(self.epoch_model_path_list) == 0:
             self.epoch_model_path_list.append(dirname)
             self.epoch_model_name_list.append(dirname)
+
+        self.epoch_model_path_list.sort()
+        self.epoch_model_name_list.sort()
