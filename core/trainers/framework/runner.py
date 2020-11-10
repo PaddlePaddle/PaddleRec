@@ -199,7 +199,7 @@ class RunnerBase(object):
                             v]).tolist()
                     runner_results.append(batch_runner_result)
 
-                    if batch_id % fetch_period == 0 and batch_id != 0:
+                    if batch_id % fetch_period == 0:
                         end_time = time.time()
                         seconds = end_time - begin_time
                         metrics_logging = metrics[:]
