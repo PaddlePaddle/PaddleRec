@@ -121,6 +121,7 @@ function _gen_mpi_job() {
   echo "gen mpi_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
       -e "s#<$ JOB_NAME $>#$OLD_JOB_NAME#g" \
+      -e "s#<$ PADDLECLOUD_JOB_VERSION $>#$PADDLECLOUD_JOB_VERSION#g" \
       -e "s#<$ AK $>#$AK#g" \
       -e "s#<$ SK $>#$SK#g" \
       -e "s#<$ MPI_PRIORITY $>#$PRIORITY#g" \
@@ -133,6 +134,7 @@ function _gen_k8s_gpu_job() {
   echo "gen k8s_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
       -e "s#<$ JOB_NAME $>#$OLD_JOB_NAME#g" \
+      -e "s#<$ PADDLECLOUD_JOB_VERSION $>#$PADDLECLOUD_JOB_VERSION#g" \
       -e "s#<$ AK $>#$AK#g" \
       -e "s#<$ SK $>#$SK#g" \
       -e "s#<$ K8S_PRIORITY $>#$PRIORITY#g" \
@@ -147,6 +149,7 @@ function _gen_k8s_cpu_job() {
   echo "gen k8s_job.sh"
   sed -e "s#<$ GROUP_NAME $>#$GROUP_NAME#g" \
       -e "s#<$ JOB_NAME $>#$OLD_JOB_NAME#g" \
+      -e "s#<$ PADDLECLOUD_JOB_VERSION $>#$PADDLECLOUD_JOB_VERSION#g" \
       -e "s#<$ AK $>#$AK#g" \
       -e "s#<$ SK $>#$SK#g" \
       -e "s#<$ K8S_PRIORITY $>#$PRIORITY#g" \

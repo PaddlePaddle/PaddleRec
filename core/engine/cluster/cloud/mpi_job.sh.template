@@ -7,7 +7,7 @@ job_name=<$ JOB_NAME $>
 
 # 作业参数
 group_name=<$ GROUP_NAME $>
-job_version="paddle-fluid-v1.7.1"
+job_version="<$ PADDLECLOUD_JOB_VERSION $>"
 start_cmd="<$ START_CMD $>"
 wall_time="2000:00:00"
 

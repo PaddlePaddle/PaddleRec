@@ -191,6 +191,10 @@ class ClusterEnvBase(object):
                 category=UserWarning,
                 stacklevel=2)
 
+        # paddlecloud_job_version
+        self.cluster_env["PADDLECLOUD_JOB_VERSION"] = self.backend_env.get(
+            "config.paddlecloud_job_version", "paddle-fluid-v1.8.2")
+
         # paddle_version
         self.cluster_env["PADDLE_VERSION"] = self.backend_env.get(
             "config.paddle_version", "2.0.0rc0")
