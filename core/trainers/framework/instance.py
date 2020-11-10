@@ -45,41 +45,16 @@ class SingleInstance(InstanceBase):
         context['status'] = 'network_pass'
 
 
-class PSInstance(InstanceBase):
+class FleetInstance(InstanceBase):
     def __init__(self, context):
-        print("Running PSInstance.")
-        pass
+        print("Running FleetInstance")
 
     def instance(self, context):
-        from paddle.fluid.incubate.fleet.parameter_server.distribute_transpiler import fleet
-        from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
-        role = PaddleCloudRoleMaker()
+        import paddle.distributed.fleet.base.role_maker as role_maker
+        import paddle.distributed.fleet as fleet
+        is_collective = (context["fleet_mode"] == 'COLLECTIVE')
+        role = role_maker.PaddleCloudRoleMaker(is_collective=is_collective)
         fleet.init(role)
         context['fleet'] = fleet
-        context['status'] = 'network_pass'
-
-
-class PslibInstance(InstanceBase):
-    def __init__(self, context):
-        print("Running PslibInstance.")
-        pass
-
-    def instance(self, context):
-        from paddle.fluid.incubate.fleet.parameter_server.pslib import fleet
-        fleet.init()
-        context['fleet'] = fleet
-        context['status'] = 'network_pass'
-
-
-class CollectiveInstance(InstanceBase):
-    def __init__(self, context):
-        print("Running CollectiveInstance.")
-        pass
-
-    def instance(self, context):
-        from paddle.fluid.incubate.fleet.collective import fleet
-        from paddle.fluid.incubate.fleet.base.role_maker import PaddleCloudRoleMaker
-        role = PaddleCloudRoleMaker(is_collective=True)
-        fleet.init(role)
-        context['fleet'] = fleet
+        context['role'] = role
         context['status'] = 'network_pass'

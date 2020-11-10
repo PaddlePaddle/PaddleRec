@@ -21,6 +21,7 @@ import numpy as np
 import random
 import json
 import logging
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.utils import envs
@@ -47,8 +48,8 @@ def as_numpy(tensor):
           import numpy
 
           new_scope = fluid.Scope()
-          with fluid.scope_guard(new_scope):
-              fluid.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), fluid.CPUPlace())
+          with paddle.static.scope_guard(new_scope):
+              paddle.static.global_scope().var("data").get_tensor().set(numpy.ones((2, 2)), paddle.CPUPlace())
           tensor = new_scope.find_var("data").get_tensor()
           fluid.executor.as_numpy(tensor) # or numpy.array(new_scope.find_var("data").get_tensor())
 
@@ -105,7 +106,7 @@ class RunnerBase(object):
         program = context["model"][model_name]["main_program"]
         reader = context["dataset"][reader_name]
 
-        with fluid.scope_guard(scope):
+        with paddle.static.scope_guard(scope):
             if context["is_infer"]:
                 metrics = model_class.get_infer_results()
                 if metrics:
@@ -123,7 +124,7 @@ class RunnerBase(object):
                 if metrics:
                     fetch_vars = metrics.values()
                     fetch_alias = metrics.keys()
-                with fluid.scope_guard(scope):
+                with paddle.static.scope_guard(scope):
                     context["exe"].train_from_dataset(
                         program=program,
                         dataset=reader,
@@ -135,7 +136,7 @@ class RunnerBase(object):
     def _executor_dataloader_train(self, model_dict, context):
         model_name = model_dict["name"]
         model_class = context["model"][model_dict["name"]]["model"]
-        program = self._get_dataloader_program(model_dict, context)
+        program = context["model"][model_name]["main_program"]
 
         fetch_period = int(
             envs.get_global_env("runner." + context["runner_name"] +
@@ -178,7 +179,7 @@ class RunnerBase(object):
         scope = context["model"][model_name]["scope"]
         runner_results = []
         result = None
-        with fluid.scope_guard(scope):
+        with paddle.static.scope_guard(scope):
             try:
                 while True:
                     metrics_tensors = context["exe"].run(
@@ -221,7 +222,8 @@ class RunnerBase(object):
                                 "default_main_program"]
                         startup_prog = context["model"][model_dict["name"]][
                             "startup_program"]
-                        with fluid.program_guard(train_prog, startup_prog):
+                        with paddle.static.program_guard(train_prog,
+                                                         startup_prog):
                             self.save(
                                 context,
                                 is_fleet=context["is_fleet"],
@@ -247,98 +249,6 @@ class RunnerBase(object):
         if batch_id > 0:
             result = dict(zip(metrics_names, metrics))
         return result
-
-    def _get_dataloader_program(self, model_dict, context):
-        model_name = model_dict["name"]
-        if context["model"][model_name]["compiled_program"] == None:
-            if context["is_infer"]:
-                program = context["model"][model_name]["main_program"]
-            elif context["is_fleet"]:
-                if context["fleet_mode"].upper() == "PS":
-                    program = self._get_ps_program(model_dict, context)
-                elif context["fleet_mode"].upper() == "COLLECTIVE":
-                    program = context["model"][model_name]["main_program"]
-            elif not context["is_fleet"]:
-                if context["device"].upper() == "CPU":
-                    program = self._get_single_cpu_program(model_dict, context)
-                elif context["device"].upper() == "GPU":
-                    program = self._get_single_gpu_program(model_dict, context)
-            context["model"][model_name]["compiled_program"] = program
-        return context["model"][model_name]["compiled_program"]
-
-    def _get_strategy(self, model_dict, context):
-        _build_strategy = fluid.BuildStrategy()
-        _exe_strategy = fluid.ExecutionStrategy()
-
-        # 0: kCoeffNumDevice; 1: One; 2: Customized
-        _gradient_scale_strategy = model_dict.get("gradient_scale_strategy", 0)
-        if _gradient_scale_strategy == 0:
-            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.CoeffNumDevice
-        elif _gradient_scale_strategy == 1:
-            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.One
-        elif _gradient_scale_strategy == 2:
-            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
-        else:
-            raise ValueError(
-                "Unsupported config. gradient_scale_strategy must be one of [0, 1, 2]."
-            )
-        _build_strategy.gradient_scale_strategy = gradient_scale_strategy
-
-        if "thread_num" in model_dict and model_dict["thread_num"] > 1:
-            _build_strategy.reduce_strategy = fluid.BuildStrategy.ReduceStrategy.Reduce
-            _exe_strategy.num_threads = model_dict["thread_num"]
-            os.environ['CPU_NUM'] = str(_exe_strategy.num_threads)
-
-        return _exe_strategy, _build_strategy
-
-    def _get_single_gpu_program(self, model_dict, context):
-        model_name = model_dict["name"]
-        return context["model"][model_name]["main_program"].clone()
-
-    def _get_single_cpu_program(self, model_dict, context):
-        model_name = model_dict["name"]
-        model_class = context["model"][model_dict["name"]]["model"]
-        program = context["model"][model_name]["main_program"].clone()
-        _exe_strategy, _build_strategy = self._get_strategy(model_dict,
-                                                            context)
-
-        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-            loss_name=model_class.get_avg_cost().name,
-            build_strategy=_build_strategy,
-            exec_strategy=_exe_strategy)
-        return program
-
-    def _get_ps_program(self, model_dict, context):
-        model_name = model_dict["name"]
-        model_class = context["model"][model_dict["name"]]["model"]
-        program = context["model"][model_name]["main_program"].clone()
-
-        _build_strategy = context["strategy"].get_build_strategy()
-        _exe_strategy = context["strategy"].get_execute_strategy()
-
-        if "thread_num" in model_dict and model_dict["thread_num"] > 1:
-            _build_strategy.reduce_strategy = fluid.BuildStrategy.ReduceStrategy.Reduce
-            _exe_strategy.num_threads = model_dict["thread_num"]
-            os.environ['CPU_NUM'] = str(_exe_strategy.num_threads)
-
-        _gradient_scale_strategy = model_dict.get("gradient_scale_strategy", 0)
-        if _gradient_scale_strategy == 0:
-            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.CoeffNumDevice
-        elif _gradient_scale_strategy == 1:
-            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.One
-        elif _gradient_scale_strategy == 2:
-            gradient_scale_strategy = fluid.BuildStrategy.GradientScaleStrategy.Customized
-        else:
-            raise ValueError(
-                "Unsurpported config. gradient_scale_strategy must be one of [0, 1, 2]."
-            )
-        _build_strategy.gradient_scale_strategy = gradient_scale_strategy
-
-        program = fluid.compiler.CompiledProgram(program).with_data_parallel(
-            loss_name=model_class.get_avg_cost().name,
-            build_strategy=_build_strategy,
-            exec_strategy=_exe_strategy)
-        return program
 
     def save(self, context, is_fleet=False, epoch_id=None, batch_id=None):
         def need_save(epoch_id, epoch_interval, is_last=False):
@@ -371,26 +281,26 @@ class RunnerBase(object):
 
             # check feed var exist
             for var_name in feed_varnames:
-                if var_name not in fluid.default_main_program().global_block(
-                ).vars:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
                     raise ValueError(
                         "Feed variable: {} not in default_main_program, global block has follow vars: {}".
                         format(var_name,
-                               fluid.default_main_program().global_block()
-                               .vars.keys()))
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
 
             # check fetch var exist
             fetch_vars = []
             for var_name in fetch_varnames:
-                if var_name not in fluid.default_main_program().global_block(
-                ).vars:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
                     raise ValueError(
                         "Fetch variable: {} not in default_main_program, global block has follow vars: {}".
                         format(var_name,
-                               fluid.default_main_program().global_block()
-                               .vars.keys()))
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
                 else:
-                    fetch_vars.append(fluid.default_main_program()
+                    fetch_vars.append(paddle.static.default_main_program()
                                       .global_block().vars[var_name])
 
             dirname = envs.get_global_env(name + "save_inference_path", None)
@@ -408,8 +318,8 @@ class RunnerBase(object):
                     context["fleet"].save_inference_model(
                         context["exe"], dirname, feed_varnames, fetch_vars)
             else:
-                fluid.io.save_inference_model(dirname, feed_varnames,
-                                              fetch_vars, context["exe"])
+                paddle.static.save_inference_model(dirname, feed_varnames,
+                                                   fetch_vars, context["exe"])
 
         def save_persistables():
             name = "runner." + context["runner_name"] + "."
@@ -496,21 +406,20 @@ class SingleRunner(RunnerBase):
                     message += ", global metrics: " + ", ".join(metrics_result)
                 print(message)
 
-                with fluid.scope_guard(context["model"][model_dict["name"]][
-                        "scope"]):
+                with paddle.static.scope_guard(context["model"][model_dict[
+                        "name"]]["scope"]):
                     train_prog = context["model"][model_dict["name"]][
                         "default_main_program"]
                     startup_prog = context["model"][model_dict["name"]][
                         "startup_program"]
-                    with fluid.program_guard(train_prog, startup_prog):
+                    with paddle.static.program_guard(train_prog, startup_prog):
                         self.save(context=context, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
 
-class PSRunner(RunnerBase):
+class FleetRunner(RunnerBase):
     def __init__(self, context):
-        print("Running PSRunner.")
-        pass
+        print("Running FleetRunner.")
 
     def run(self, context):
         epochs = int(
@@ -532,130 +441,28 @@ class PSRunner(RunnerBase):
             seconds = end_time - begin_time
             message = "epoch {} done, use time: {}".format(epoch, seconds)
 
-            # TODO, wait for PaddleCloudRoleMaker supports gloo
-            from paddle.fluid.incubate.fleet.base.role_maker import GeneralRoleMaker
-            if context["fleet"] is not None and isinstance(context["fleet"],
-                                                           GeneralRoleMaker):
-                metrics_result = []
-                for key in metrics:
-                    if isinstance(metrics[key], Metric):
-                        _str = metrics[key].calc_global_metrics(
-                            context["fleet"],
-                            context["model"][model_dict["name"]]["scope"])
-                        metrics_result.append(_str)
-                    elif result is not None:
-                        _str = "{}={}".format(key, result[key])
-                        metrics_result.append(_str)
-                if len(metrics_result) > 0:
-                    message += ", global metrics: " + ", ".join(metrics_result)
-            print(message)
-            with fluid.scope_guard(context["model"][model_dict["name"]][
-                    "scope"]):
+            metrics_result = []
+            for key in metrics:
+                if isinstance(metrics[key], Metric):
+                    _str = metrics[key].calc_global_metrics(
+                        context["fleet"],
+                        context["model"][model_dict["name"]]["scope"])
+                    metrics_result.append(_str)
+                elif result is not None:
+                    _str = "{}={}".format(key, result[key])
+                    metrics_result.append(_str)
+            if len(metrics_result) > 0:
+                message += ", global metrics: " + ", ".join(metrics_result)
+            logging.info(message)
+
+            with paddle.static.scope_guard(context["model"][model_dict["name"]]
+                                           ["scope"]):
                 train_prog = context["model"][model_dict["name"]][
                     "main_program"]
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
-                with fluid.program_guard(train_prog, startup_prog):
+                with paddle.static.program_guard(train_prog, startup_prog):
                     self.save(context=context, is_fleet=True, epoch_id=epoch)
-        context["status"] = "terminal_pass"
-
-
-class CollectiveRunner(RunnerBase):
-    def __init__(self, context):
-        print("Running CollectiveRunner.")
-        pass
-
-    def run(self, context):
-        epochs = int(
-            envs.get_global_env("runner." + context["runner_name"] +
-                                ".epochs"))
-        model_dict = context["env"]["phase"][0]
-        for epoch in range(epochs):
-            if "shuffle_filelist" in model_dict:
-                need_shuffle_files = model_dict.get("shuffle_filelist", None)
-                filelist = context["file_list"]
-                context["file_list"] = shuffle_files(need_shuffle_files,
-                                                     filelist)
-            context["current_epoch"] = epoch
-            begin_time = time.time()
-            self._run(context, model_dict)
-            end_time = time.time()
-            seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
-            with fluid.scope_guard(context["model"][model_dict["name"]][
-                    "scope"]):
-                train_prog = context["model"][model_dict["name"]][
-                    "default_main_program"]
-                startup_prog = context["model"][model_dict["name"]][
-                    "startup_program"]
-                with fluid.program_guard(train_prog, startup_prog):
-                    self.save(context=context, is_fleet=True, epoch_id=epoch)
-        context["status"] = "terminal_pass"
-
-
-class PslibRunner(RunnerBase):
-    def __init__(self, context):
-        print("Running PSRunner.")
-        pass
-
-    def run(self, context):
-        context["fleet"].init_worker()
-        model_dict = context["env"]["phase"][0]
-        epochs = int(
-            envs.get_global_env("runner." + context["runner_name"] +
-                                ".epochs"))
-        for epoch in range(epochs):
-            if "shuffle_filelist" in model_dict:
-                need_shuffle_files = model_dict.get("shuffle_filelist", None)
-                filelist = context["file_list"]
-                context["file_list"] = shuffle_files(need_shuffle_files,
-                                                     filelist)
-            context["current_epoch"] = epoch
-            begin_time = time.time()
-            self._run(context, model_dict)
-            end_time = time.time()
-            seconds = end_time - begin_time
-            print("epoch {} done, use time: {}".format(epoch, seconds))
-        """
-        # online Training Can do more, As shown below:
-
-        begin_day = datetime.datetime.strptime("begin_day_d", '%Y%m%d')
-        days = int(
-            envs.get_global_env("runner." + context["runner_name"] + ".days"))
-        for day in range(days):
-            for hour in range(24):
-                day = begin_day + datetime.timedelta(days=day, hours=hour)
-                day_s = day.strftime('%Y%m%d/%H')
-
-                for dataset in envs.get_global_env("dataset"):
-                    if dataset["type"] != "DataLoader":
-                        name = dataset["name"]
-                        train_data_path = envs.get_global_env(name +
-                                                              "data_path")
-                        train_data_path = os.path.join(train_data_path, day_s)
-
-                        file_list = [
-                            os.path.join(train_data_path, x)
-                            for x in os.listdir(train_data_path)
-                        ]
-                        context["dataset"][name].set_filelist(file_list)
-
-                for epoch in range(epochs):
-                    begin_time = time.time()
-                    self._run(context, model_dict)
-                    end_time = time.time()
-                    seconds = end_time - begin_time
-                    print("epoch {} done, use time: {}".format(epoch, seconds))
-                    with fluid.scope_guard(context["model"][model_dict["name"]]
-                                           ["scope"]):
-                        train_prog = context["model"][model_dict["name"]][
-                            "default_main_program"]
-                        startup_prog = context["model"][model_dict["name"]][
-                            "startup_program"]
-                        with fluid.program_guard(train_prog, startup_prog):
-                            self.save(epoch, context, True)
-
-        """
         context["status"] = "terminal_pass"
 
 
@@ -697,20 +504,21 @@ class SingleInferRunner(RunnerBase):
                         metrics_result.append(_str)
                 if len(metrics_result) > 0:
                     message += ", global metrics: " + ", ".join(metrics_result)
-                print(message)
+                logging.info(message)
 
         context["status"] = "terminal_pass"
 
     def _load(self, context, model_dict, model_path):
         if model_path is None or model_path == "":
             return
-        print("load persistables from", model_path)
+        logging.info("load persistables from {}".format(model_path))
 
-        with fluid.scope_guard(context["model"][model_dict["name"]]["scope"]):
+        with paddle.static.scope_guard(context["model"][model_dict["name"]][
+                "scope"]):
             train_prog = context["model"][model_dict["name"]]["main_program"]
             startup_prog = context["model"][model_dict["name"]][
                 "startup_program"]
-            with fluid.program_guard(train_prog, startup_prog):
+            with paddle.static.program_guard(train_prog, startup_prog):
                 fluid.io.load_persistables(
                     context["exe"], model_path, main_program=train_prog)
             clear_metrics = context["model"][model_dict["name"]][
@@ -733,3 +541,6 @@ class SingleInferRunner(RunnerBase):
         if len(self.epoch_model_path_list) == 0:
             self.epoch_model_path_list.append(dirname)
             self.epoch_model_name_list.append(dirname)
+
+        self.epoch_model_path_list.sort()
+        self.epoch_model_name_list.sort()
