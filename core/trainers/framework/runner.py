@@ -30,6 +30,8 @@ from paddlerec.core.metric import Metric
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 __all__ = [
     "RunnerBase", "SingleRunner", "PSRunner", "CollectiveRunner", "PslibRunner"
@@ -335,6 +337,7 @@ class RunnerBase(object):
                          (epoch_id, dirname))
             if is_fleet:
                 if context["fleet"].worker_index() == 0:
+
                     context["fleet"].save_persistables(context["exe"], dirname)
             else:
                 fluid.io.save_persistables(context["exe"], dirname)
@@ -462,6 +465,7 @@ class FleetRunner(RunnerBase):
                 startup_prog = context["model"][model_dict["name"]][
                     "startup_program"]
                 with paddle.static.program_guard(train_prog, startup_prog):
+                    # print("train_prog {}".format(train_prog))
                     self.save(context=context, is_fleet=True, epoch_id=epoch)
         context["status"] = "terminal_pass"
 
