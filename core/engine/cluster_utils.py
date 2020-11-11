@@ -24,8 +24,10 @@ import subprocess
 from contextlib import closing
 import socket
 
-logger = logging.getLogger("root")
-logger.propagate = False
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class Cluster(object):
@@ -213,7 +215,7 @@ def get_cluster(node_ips, node_ip, paddle_ports, selected_gpus):
 
 
 def get_cloud_cluster(selected_gpus, args_port=None):
-    #you can automatically get ip info while using paddlecloud multi nodes mode.
+    # you can automatically get ip info while using paddlecloud multi nodes mode.
     node_ips = os.getenv("PADDLE_TRAINERS")
     assert node_ips is not None, "PADDLE_TRAINERS should not be None"
     print("node_ips:{}".format(node_ips))
@@ -278,10 +280,10 @@ class TrainerProc(object):
 
 def start_local_trainers(cluster, pod, cmd, log_dir=None):
     current_env = copy.copy(os.environ.copy())
-    #paddle broadcast ncclUniqueId use socket, and
-    #proxy maybe make trainers unreachable, so delete them.
-    #if we set them to "", grpc will log error message "bad uri"
-    #so just delete them.
+    # paddle broadcast ncclUniqueId use socket, and
+    # proxy maybe make trainers unreachable, so delete them.
+    # if we set them to "", grpc will log error message "bad uri"
+    # so just delete them.
     current_env.pop("http_proxy", None)
     current_env.pop("https_proxy", None)
 
