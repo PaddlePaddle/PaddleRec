@@ -138,7 +138,6 @@ class GeneralTrainer(Trainer):
         if terminal_class_path:
             terminal_class = envs.lazy_instance_by_fliename(
                 terminal_class_path, "Terminal")(context)
-            terminal_class.terminal(context)
         else:
             terminal_class_name = "TerminalBase"
             if self.engine != EngineMode.SINGLE and self.fleet_mode != FleetMode.COLLECTIVE:

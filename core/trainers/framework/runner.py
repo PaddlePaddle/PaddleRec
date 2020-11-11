@@ -378,8 +378,9 @@ class SingleRunner(RunnerBase):
                                 ".epochs"))
         for epoch in range(epochs):
             for model_dict in context["phases"]:
+                if "running_time" not in context["model"][model_dict["name"]]:
+                    context["model"][model_dict["name"]]["running_time"] = []
                 model_class = context["model"][model_dict["name"]]["model"]
-                context["model"][model_dict["name"]]["running_time"] = []
                 metrics = model_class._metrics
                 if "shuffle_filelist" in model_dict:
                     need_shuffle_files = model_dict.get("shuffle_filelist",
@@ -479,10 +480,11 @@ class SingleInferRunner(RunnerBase):
 
     def run(self, context):
         self._dir_check(context)
-
         for index, epoch_name in enumerate(self.epoch_model_name_list):
             for model_dict in context["phases"]:
                 model_class = context["model"][model_dict["name"]]["model"]
+                context["model"][model_dict["name"]]["running_time"] = []
+
                 metrics = model_class._infer_results
                 self._load(context, model_dict,
                            self.epoch_model_path_list[index])
@@ -498,6 +500,8 @@ class SingleInferRunner(RunnerBase):
                 seconds = end_time - begin_time
                 message = "Infer {} of epoch {} done, use time: {}".format(
                     model_dict["name"], epoch_name, seconds)
+                context["model"][model_dict["name"]]["running_time"].append(
+                    seconds)
                 metrics_result = []
                 for key in metrics:
                     if isinstance(metrics[key], Metric):

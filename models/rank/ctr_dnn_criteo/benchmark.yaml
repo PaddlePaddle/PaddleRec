@@ -28,10 +28,11 @@ mode: [ps_cpu_dataset_async,local_infer]
 runner:
 - name: ps_cpu_dataset_async
   class: cluster_train
-  epochs: 10
+  epochs: 3
   device: cpu
   fleet_mode: ps
   distribute_strategy: async
+  terminal_class_path: "./benchmark_process.py"
   runner_result_dump_path: "ctr_training_metric"
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "ctr_model" # save checkpoint path
@@ -44,6 +45,7 @@ runner:
   device: cpu
   fleet_mode: ps
   distribute_strategy: sync
+  terminal_class_path: "./benchmark_process.py"
   runner_result_dump_path: "ctr_training_metric"
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "ctr_model" # save checkpoint path
@@ -56,6 +58,7 @@ runner:
   device: cpu
   fleet_mode: ps
   distribute_strategy: async
+  terminal_class_path: "./benchmark_process.py"
   runner_result_dump_path: "ctr_training_metric"
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "ctr_model" # save checkpoint path
@@ -68,6 +71,7 @@ runner:
   device: cpu
   fleet_mode: ps
   distribute_strategy: sync
+  terminal_class_path: "./benchmark_process.py"
   runner_result_dump_path: "ctr_training_metric"
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "ctr_model" # save checkpoint path
@@ -77,6 +81,8 @@ runner:
 - name: local_infer
   class: infer
   device: cpu
+  runner_class_path: "./benchmark_process.py"
+  terminal_class_path: "./benchmark_process.py"
   runner_result_dump_path: "ctr_infer_metric"
   init_model_path: "ctr_model"
   phases: [dataloader_infer]
@@ -109,7 +115,7 @@ dataset:
   data_converter: "{workspace}/dataset_generator.py"
   data_path: "{workspace}/train_data"
 - name: dataloader_infer
-  batch_size: 1
+  batch_size: 1000
   type: DataLoader
   data_converter: "{workspace}/dataset_generator.py"
   data_path: "{workspace}/test_data"
