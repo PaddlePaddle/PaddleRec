@@ -14,7 +14,7 @@
 
 import math
 import numpy as np
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -32,21 +32,21 @@ class Model(ModelBase):
         self.embed_size = envs.get_global_env("hyper_parameters.embed_size")
 
     def input_data(self, is_infer=False, **kwargs):
-        user_slot_names = fluid.data(
+        user_slot_names = paddle.fluid.data(
             name='user_slot_names',
             shape=[None, 1],
             dtype='int64',
             lod_level=1)
-        item_slot_names = fluid.data(
+        item_slot_names = paddle.fluid.data(
             name='item_slot_names',
             shape=[None, self.item_len],
             dtype='int64',
             lod_level=1)
-        lens = fluid.data(name='lens', shape=[None], dtype='int64')
-        labels = fluid.data(
+        lens = paddle.fluid.data(name='lens', shape=[None], dtype='int64')
+        labels = paddle.fluid.data(
             name='labels',
             shape=[None, self.item_len],
-            dtype='int64',
+            dtype='float32',
             lod_level=1)
 
         inputs = [user_slot_names] + [item_slot_names] + [lens] + [labels]
@@ -59,108 +59,115 @@ class Model(ModelBase):
 
     def net(self, inputs, is_infer=False):
         # user encode
-        user_embedding = fluid.embedding(
+        user_embedding = paddle.static.nn.embedding(
             input=inputs[0],
             size=[self.user_vocab, self.embed_size],
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.Xavier(),
-                regularizer=fluid.regularizer.L2Decay(1e-5)),
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Xavier(),
+                regularizer=paddle.regularizer.L2Decay(coeff=1e-5)),
             is_sparse=True)
 
-        user_feature = fluid.layers.fc(
-            input=user_embedding,
+        user_feature = paddle.static.nn.fc(
+            x=user_embedding,
             size=self.hidden_size,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.
+                TruncatedNormalInitializer(
                     loc=0.0, scale=np.sqrt(1.0 / self.hidden_size))),
-            bias_attr=fluid.ParamAttr(initializer=fluid.initializer.Constant(
-                value=0.0)),
-            act='relu',
+            bias_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Constant(value=0.0)),
+            activation='relu',
             name='user_feature_fc')
         # item encode
-        item_embedding = fluid.embedding(
+        item_embedding = paddle.static.nn.embedding(
             input=inputs[1],
             size=[self.item_vocab, self.embed_size],
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.Xavier(),
-                regularizer=fluid.regularizer.L2Decay(1e-5)),
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Xavier(),
+                regularizer=paddle.regularizer.L2Decay(coeff=1e-5)),
             is_sparse=True)
 
-        item_embedding = fluid.layers.sequence_unpad(
+        item_embedding = paddle.fluid.layers.sequence_unpad(
             x=item_embedding, length=inputs[2])
 
-        item_fc = fluid.layers.fc(
-            input=item_embedding,
+        item_fc = paddle.static.nn.fc(
+            x=item_embedding,
             size=self.hidden_size,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.
+                TruncatedNormalInitializer(
                     loc=0.0, scale=np.sqrt(1.0 / self.hidden_size))),
-            bias_attr=fluid.ParamAttr(initializer=fluid.initializer.Constant(
-                value=0.0)),
-            act='relu',
+            bias_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Constant(value=0.0)),
+            activation='relu',
             name='item_fc')
 
         pos = self._fluid_sequence_get_pos(item_fc)
-        pos_embed = fluid.embedding(
+        pos_embed = paddle.static.nn.embedding(
             input=pos,
             size=[self.user_vocab, self.embed_size],
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.Xavier(),
-                regularizer=fluid.regularizer.L2Decay(1e-5)),
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Xavier(),
+                regularizer=paddle.regularizer.L2Decay(coeff=1e-5)),
             is_sparse=True)
 
-        pos_embed = fluid.layers.squeeze(pos_embed, [1])
+        pos_embed = paddle.squeeze(x=pos_embed, axis=[1])
 
         # item gru
-        gru_input = fluid.layers.fc(
-            input=fluid.layers.concat([item_fc, pos_embed], 1),
-            size=self.hidden_size * 3,
-            name='item_gru_fc')
+        gru_input = paddle.static.nn.fc(x=paddle.concat(
+            x=[item_fc, pos_embed], axis=1),
+                                        size=self.hidden_size * 3,
+                                        name='item_gru_fc')
 
         # forward gru
-        item_gru_forward = fluid.layers.dynamic_gru(
+        item_gru_forward = paddle.fluid.layers.dynamic_gru(
             input=gru_input,
             size=self.hidden_size,
             is_reverse=False,
             h_0=user_feature)
         # backward gru
-        item_gru_backward = fluid.layers.dynamic_gru(
+        item_gru_backward = paddle.fluid.layers.dynamic_gru(
             input=gru_input,
             size=self.hidden_size,
             is_reverse=True,
             h_0=user_feature)
 
-        item_gru = fluid.layers.concat(
-            [item_gru_forward, item_gru_backward], axis=1)
+        item_gru = paddle.concat(
+            x=[item_gru_forward, item_gru_backward], axis=1)
 
-        out_click_fc1 = fluid.layers.fc(
-            input=item_gru,
+        out_click_fc1 = paddle.static.nn.fc(
+            x=item_gru,
             size=self.hidden_size,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.
+                TruncatedNormalInitializer(
                     loc=0.0, scale=np.sqrt(1.0 / self.hidden_size))),
-            bias_attr=fluid.ParamAttr(initializer=fluid.initializer.Constant(
-                value=0.0)),
-            act='relu',
+            bias_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Constant(value=0.0)),
+            activation='relu',
             name='out_click_fc1')
 
-        click_prob = fluid.layers.fc(input=out_click_fc1,
-                                     size=2,
-                                     act='softmax',
-                                     name='out_click_fc2')
+        click_prob = paddle.static.nn.fc(x=out_click_fc1,
+                                         size=2,
+                                         activation='softmax',
+                                         name='out_click_fc2')
+        click_prob_one = paddle.slice(
+            click_prob, axes=[1], starts=[0], ends=[1])
 
-        labels = fluid.layers.sequence_unpad(x=inputs[3], length=inputs[2])
+        labels = paddle.fluid.layers.sequence_unpad(
+            x=inputs[3], length=inputs[2])
+        labels_one = paddle.slice(labels, axes=[1], starts=[0], ends=[1])
 
-        auc_val, batch_auc, auc_states = fluid.layers.auc(input=click_prob,
-                                                          label=labels)
+        auc_val, batch_auc, auc_states = paddle.fluid.layers.auc(
+            input=click_prob, label=paddle.cast(
+                x=labels, dtype='int64'))
 
         if is_infer:
             self._infer_results["AUC"] = auc_val
             return
 
-        loss = fluid.layers.reduce_mean(
-            fluid.layers.cross_entropy(
-                input=click_prob, label=labels))
+        loss = paddle.mean(x=paddle.nn.functional.log_loss(
+            input=click_prob_one, label=labels_one))
         self._cost = loss
         self._metrics['auc'] = auc_val
 
@@ -171,10 +178,11 @@ class Model(ModelBase):
         returns:
             (batch, max_seq_len, dim)
         """
-        pad_value = fluid.layers.cast(
-            fluid.layers.assign(input=np.array([pad_value], 'float32')),
+        pad_value = paddle.cast(
+            paddle.nn.functional.assign(input=np.array([pad_value],
+                                                       'float32')),
             input.dtype)
-        input_padded, _ = fluid.layers.sequence_pad(
+        input_padded, _ = paddle.fluid.layers.sequence_pad(
             input, pad_value,
             maxlen=maxlen)  # (batch, max_seq_len, 1), (batch, 1)
         # TODO, maxlen=300, used to solve issues: https://github.com/PaddlePaddle/Paddle/issues/14164
@@ -189,23 +197,24 @@ class Model(ModelBase):
                  data = [0,1,2,3,0,1,3]
                  shape = [-1, 1]
         """
-        lodtensor = fluid.layers.reduce_sum(lodtensor, dim=1, keep_dim=True)
+        lodtensor = paddle.sum(x=lodtensor, axis=1, keepdim=True)
         assert lodtensor.shape == (-1, 1), (lodtensor.shape())
-        ones = fluid.layers.cast(lodtensor * 0 + 1,
-                                 'float32')  # (batch*seq_len, 1)
+        ones = paddle.cast(lodtensor * 0 + 1, 'float32')  # (batch*seq_len, 1)
         ones_padded = self._fluid_sequence_pad(ones,
                                                0)  # (batch, max_seq_len, 1)
-        ones_padded = fluid.layers.squeeze(ones_padded,
-                                           [2])  # (batch, max_seq_len)
-        seq_len = fluid.layers.cast(
-            fluid.layers.reduce_sum(
-                ones_padded, 1, keep_dim=True), 'int64')  # (batch, 1)
-        seq_len = fluid.layers.squeeze(seq_len, [1])
+        ones_padded = paddle.squeeze(
+            x=ones_padded, axis=[2])  # (batch, max_seq_len)
+        seq_len = paddle.cast(
+            paddle.sum(x=ones_padded, axis=1, keepdim=True),
+            'int64')  # (batch, 1)
+        seq_len = paddle.squeeze(x=seq_len, axis=[1])
 
-        pos = fluid.layers.cast(
-            fluid.layers.cumsum(
-                ones_padded, 1, exclusive=True), 'int64')
-        pos = fluid.layers.sequence_unpad(pos, seq_len)  # (batch*seq_len, 1)
+        pos = paddle.cast(
+            paddle.fluid.layers.ops.cumsum(
+                ones_padded, 1, exclusive=True),
+            'int64')
+        pos = paddle.fluid.layers.sequence_unpad(pos,
+                                                 seq_len)  # (batch*seq_len, 1)
         pos.stop_gradient = True
         return pos
 
