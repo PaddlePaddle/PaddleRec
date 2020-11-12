@@ -113,19 +113,11 @@ class Model(ModelBase):
             self._infer_results["AUC_marital"] = auc_marital
             return
 
-        cost_income = paddle.fluid.layers.cross_entropy(
-            input=pred_income, label=label_income, soft_label=True)
-        cost_marital = paddle.fluid.layers.cross_entropy(
-            input=pred_marital, label=label_marital, soft_label=True)
-
         cost_income = paddle.nn.functional.log_loss(
             input=pred_income_1, label=label_income_1)
         cost_marital = paddle.nn.functional.log_loss(
             input=pred_marital_1, label=label_marital_1)
-        #cost_income = paddle.fluid.layers.cross_entropy(
-        #    input=pred_income, label=label_income, soft_label=True)
-        #cost_marital = paddle.fluid.layers.cross_entropy(
-        #    input=pred_marital, label=label_marital, soft_label=True)
+
         avg_cost_income = paddle.mean(x=cost_income)
         avg_cost_marital = paddle.mean(x=cost_marital)
 
