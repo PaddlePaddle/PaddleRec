@@ -17,7 +17,6 @@ import sys
 import random
 import numpy as np
 import paddle
-import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 
@@ -48,12 +47,12 @@ class Model(ModelBase):
             "hyper_parameters.pool_padding")
 
     def input_data(self, is_infer=False, **kwargs):
-        sentence_left = fluid.data(
+        sentence_left = paddle.fluid.data(
             name="sentence_left",
             shape=[-1, self.sentence_left_size, 1],
             dtype='int64',
             lod_level=0)
-        sentence_right = fluid.data(
+        sentence_right = paddle.fluid.data(
             name="sentence_right",
             shape=[-1, self.sentence_right_size, 1],
             dtype='int64',
@@ -66,22 +65,22 @@ class Model(ModelBase):
         """
         if os.path.isfile(self.emb_path):
             embedding_array = np.load(self.emb_path)
-            emb = fluid.layers.embedding(
+            emb = paddle.static.nn.embedding(
                 input=input,
                 size=[self.vocab_size, self.emb_size],
                 padding_idx=0,
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name="word_embedding",
-                    initializer=fluid.initializer.NumpyArrayInitializer(
+                    initializer=paddle.fluid.initializer.NumpyArrayInitializer(
                         embedding_array)))
         else:
-            emb = fluid.layers.embedding(
+            emb = paddle.static.nn.embedding(
                 input=input,
                 size=[self.vocab_size, self.emb_size],
                 padding_idx=0,
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name="word_embedding",
-                    initializer=fluid.initializer.Xavier()))
+                    initializer=paddle.fluid.initializer.Xavier()))
 
         return emb
 
@@ -91,14 +90,14 @@ class Model(ModelBase):
         """
         # data format NCHW
         # same padding
-        conv = fluid.layers.conv2d(
+        conv = paddle.fluid.layers.nn.conv2d(
             input=input,
             num_filters=self.kernel_num,
             stride=1,
             padding="SAME",
             filter_size=self.conv_filter,
             act=self.conv_act)
-        pool = fluid.layers.pool2d(
+        pool = paddle.fluid.layers.pool2d(
             input=conv,
             pool_size=self.pool_size,
             pool_stride=self.pool_stride,
@@ -109,34 +108,33 @@ class Model(ModelBase):
     def net(self, inputs, is_infer=False):
         left_emb = self.embedding_layer(inputs[0])
         right_emb = self.embedding_layer(inputs[1])
-        cross = fluid.layers.matmul(left_emb, right_emb, transpose_y=True)
-        cross = fluid.layers.reshape(cross,
-                                     [-1, 1, cross.shape[1], cross.shape[2]])
+        cross = paddle.fluid.layers.matmul(
+            left_emb, right_emb, transpose_y=True)
+        cross = paddle.fluid.layers.reshape(
+            cross, [-1, 1, cross.shape[1], cross.shape[2]])
         conv_pool = self.conv_pool_layer(input=cross)
-        relu_hid = fluid.layers.fc(input=conv_pool,
-                                   size=self.hidden_size,
-                                   act=self.hidden_act)
-        prediction = fluid.layers.fc(
-            input=relu_hid,
+        relu_hid = paddle.static.nn.fc(x=conv_pool,
+                                       size=self.hidden_size,
+                                       activation=self.hidden_act)
+        prediction = paddle.static.nn.fc(
+            x=relu_hid,
             size=self.out_size, )
 
         if is_infer:
             self._infer_results["prediction"] = prediction
             return
 
-        pos = fluid.layers.slice(
+        pos = paddle.slice(
             prediction, axes=[0, 1], starts=[0, 0], ends=[64, 1])
-        neg = fluid.layers.slice(
+        neg = paddle.slice(
             prediction, axes=[0, 1], starts=[64, 0], ends=[128, 1])
-        loss_part1 = fluid.layers.elementwise_sub(
-            fluid.layers.fill_constant(
-                shape=[64, 1], value=1.0, dtype='float32'),
-            pos)
-        loss_part2 = fluid.layers.elementwise_add(loss_part1, neg)
-        loss_part3 = fluid.layers.elementwise_max(
-            fluid.layers.fill_constant(
-                shape=[64, 1], value=0.0, dtype='float32'),
-            loss_part2)
+        loss_part1 = paddle.fluid.layers.nn.elementwise_sub(
+            paddle.full(
+                shape=[64, 1], fill_value=1.0), pos)
+        loss_part2 = paddle.add(x=loss_part1, y=neg)
+        loss_part3 = paddle.maximum(
+            x=paddle.full(
+                shape=[64, 1], fill_value=0.0), y=loss_part2)
 
-        avg_cost = fluid.layers.mean(loss_part3)
+        avg_cost = paddle.mean(x=loss_part3)
         self._cost = avg_cost
