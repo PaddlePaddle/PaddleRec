@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import numpy as np
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -29,14 +29,16 @@ class Model(ModelBase):
 
     def input_data(self, is_infer=False, **kwargs):
         sparse_input_ids = [
-            fluid.data(
+            paddle.fluid.data(
                 name="field_" + str(i),
                 shape=[-1, 1],
                 dtype="int64",
                 lod_level=1) for i in range(0, 23)
         ]
-        label_ctr = fluid.data(name="ctr", shape=[-1, 1], dtype="int64")
-        label_cvr = fluid.data(name="cvr", shape=[-1, 1], dtype="int64")
+        label_ctr = paddle.fluid.data(
+            name="ctr", shape=[-1, 1], dtype="float32")
+        label_cvr = paddle.fluid.data(
+            name="cvr", shape=[-1, 1], dtype="float32")
         inputs = sparse_input_ids + [label_ctr] + [label_cvr]
         if is_infer:
             return inputs
@@ -48,19 +50,19 @@ class Model(ModelBase):
         emb = []
         # input feature data
         for data in inputs[0:-2]:
-            feat_emb = fluid.embedding(
+            feat_emb = paddle.static.nn.embedding(
                 input=data,
                 size=[self.vocab_size, self.embed_size],
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name='dis_emb',
                     learning_rate=5,
-                    initializer=fluid.initializer.Xavier(
+                    initializer=paddle.fluid.initializer.Xavier(
                         fan_in=self.embed_size, fan_out=self.embed_size)),
                 is_sparse=True)
-            field_emb = fluid.layers.sequence_pool(
+            field_emb = paddle.fluid.layers.sequence_pool(
                 input=feat_emb, pool_type='sum')
             emb.append(field_emb)
-        concat_emb = fluid.layers.concat(emb, axis=1)
+        concat_emb = paddle.concat(x=emb, axis=1)
 
         # ctr
         active = 'relu'
@@ -74,33 +76,35 @@ class Model(ModelBase):
         cvr_out = self._fc('cvr_out', cvr_fc2, 2, 'softmax')
 
         ctr_clk = inputs[-2]
+        ctr_clk_one = paddle.slice(ctr_clk, axes=[1], starts=[0], ends=[1])
         ctcvr_buy = inputs[-1]
+        ctcvr_buy_one = paddle.slice(ctcvr_buy, axes=[1], starts=[0], ends=[1])
 
-        ctr_prop_one = fluid.layers.slice(
-            ctr_out, axes=[1], starts=[1], ends=[2])
-        cvr_prop_one = fluid.layers.slice(
-            cvr_out, axes=[1], starts=[1], ends=[2])
+        ctr_prop_one = paddle.slice(ctr_out, axes=[1], starts=[0], ends=[1])
+        cvr_prop_one = paddle.slice(cvr_out, axes=[1], starts=[0], ends=[1])
 
-        ctcvr_prop_one = fluid.layers.elementwise_mul(ctr_prop_one,
-                                                      cvr_prop_one)
-        ctcvr_prop = fluid.layers.concat(
-            input=[1 - ctcvr_prop_one, ctcvr_prop_one], axis=1)
+        ctcvr_prop_one = paddle.multiply(x=ctr_prop_one, y=cvr_prop_one)
+        ctcvr_prop = paddle.concat(
+            x=[1 - ctcvr_prop_one, ctcvr_prop_one], axis=1)
 
-        auc_ctr, batch_auc_ctr, auc_states_ctr = fluid.layers.auc(
-            input=ctr_out, label=ctr_clk)
-        auc_ctcvr, batch_auc_ctcvr, auc_states_ctcvr = fluid.layers.auc(
-            input=ctcvr_prop, label=ctcvr_buy)
+        auc_ctr, batch_auc_ctr, auc_states_ctr = paddle.fluid.layers.auc(
+            input=ctr_out, label=paddle.cast(
+                x=ctr_clk, dtype='int64'))
+        auc_ctcvr, batch_auc_ctcvr, auc_states_ctcvr = paddle.fluid.layers.auc(
+            input=ctcvr_prop, label=paddle.cast(
+                x=ctcvr_buy, dtype='int64'))
 
         if is_infer:
             self._infer_results["AUC_ctr"] = auc_ctr
             self._infer_results["AUC_ctcvr"] = auc_ctcvr
             return
 
-        loss_ctr = fluid.layers.cross_entropy(input=ctr_out, label=ctr_clk)
-        loss_ctcvr = fluid.layers.cross_entropy(
-            input=ctcvr_prop, label=ctcvr_buy)
+        loss_ctr = paddle.nn.functional.log_loss(
+            input=ctr_prop_one, label=ctr_clk_one)
+        loss_ctcvr = paddle.nn.functional.log_loss(
+            input=ctcvr_prop_one, label=ctcvr_buy_one)
         cost = loss_ctr + loss_ctcvr
-        avg_cost = fluid.layers.mean(cost)
+        avg_cost = paddle.mean(x=cost)
 
         self._cost = avg_cost
         self._metrics["AUC_ctr"] = auc_ctr
@@ -113,18 +117,19 @@ class Model(ModelBase):
         init_stddev = 1.0
         scales = 1.0 / np.sqrt(data.shape[1])
 
-        p_attr = fluid.param_attr.ParamAttr(
+        p_attr = paddle.ParamAttr(
             name='%s_weight' % tag,
-            initializer=fluid.initializer.NormalInitializer(
+            initializer=paddle.fluid.initializer.NormalInitializer(
                 loc=0.0, scale=init_stddev * scales))
 
-        b_attr = fluid.ParamAttr(
-            name='%s_bias' % tag, initializer=fluid.initializer.Constant(0.1))
+        b_attr = paddle.ParamAttr(
+            name='%s_bias' % tag,
+            initializer=paddle.nn.initializer.Constant(value=0.1))
 
-        out = fluid.layers.fc(input=data,
-                              size=out_dim,
-                              act=active,
-                              param_attr=p_attr,
-                              bias_attr=b_attr,
-                              name=tag)
+        out = paddle.static.nn.fc(x=data,
+                                  size=out_dim,
+                                  activation=active,
+                                  weight_attr=p_attr,
+                                  bias_attr=b_attr,
+                                  name=tag)
         return out
