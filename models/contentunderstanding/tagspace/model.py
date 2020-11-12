@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
-import paddle.fluid.layers.nn as nn
-import paddle.fluid.layers.tensor as tensor
-import paddle.fluid.layers.control_flow as cf
 from paddlerec.core.model import ModelBase
 from paddlerec.core.utils import envs
+import paddle
 
 
 class Model(ModelBase):
@@ -36,11 +33,11 @@ class Model(ModelBase):
         self.neg_size = envs.get_global_env("hyper_parameters.neg_size")
 
     def input_data(self, is_infer=False, **kwargs):
-        text = fluid.data(
+        text = paddle.fluid.data(
             name="text", shape=[None, 1], lod_level=1, dtype='int64')
-        pos_tag = fluid.data(
+        pos_tag = paddle.fluid.data(
             name="pos_tag", shape=[None, 1], lod_level=1, dtype='int64')
-        neg_tag = fluid.data(
+        neg_tag = paddle.fluid.data(
             name="neg_tag", shape=[None, 1], lod_level=1, dtype='int64')
         return [text, pos_tag, neg_tag]
 
@@ -50,61 +47,63 @@ class Model(ModelBase):
         pos_tag = input[1]
         neg_tag = input[2]
 
-        text_emb = fluid.embedding(
+        text_emb = paddle.static.nn.embedding(
             input=text,
             size=[self.vocab_text_size, self.emb_dim],
             param_attr="text_emb")
-        text_emb = fluid.layers.squeeze(input=text_emb, axes=[1])
-        pos_tag_emb = fluid.embedding(
+        text_emb = paddle.squeeze(x=text_emb, axis=[1])
+        pos_tag_emb = paddle.static.nn.embedding(
             input=pos_tag,
             size=[self.vocab_tag_size, self.emb_dim],
             param_attr="tag_emb")
-        pos_tag_emb = fluid.layers.squeeze(input=pos_tag_emb, axes=[1])
-        neg_tag_emb = fluid.embedding(
+        pos_tag_emb = paddle.squeeze(x=pos_tag_emb, axis=[1])
+        neg_tag_emb = paddle.static.nn.embedding(
             input=neg_tag,
             size=[self.vocab_tag_size, self.emb_dim],
             param_attr="tag_emb")
-        neg_tag_emb = fluid.layers.squeeze(input=neg_tag_emb, axes=[1])
+        neg_tag_emb = paddle.squeeze(x=neg_tag_emb, axis=[1])
 
-        conv_1d = fluid.nets.sequence_conv_pool(
+        conv_1d = paddle.fluid.nets.sequence_conv_pool(
             input=text_emb,
             num_filters=self.hid_dim,
             filter_size=self.win_size,
             act="tanh",
             pool_type="max",
             param_attr="cnn")
-        text_hid = fluid.layers.fc(input=conv_1d,
-                                   size=self.emb_dim,
-                                   param_attr="text_hid")
-        cos_pos = nn.cos_sim(pos_tag_emb, text_hid)
-        mul_text_hid = fluid.layers.sequence_expand_as(
+        text_hid = paddle.static.nn.fc(x=conv_1d,
+                                       size=self.emb_dim,
+                                       weight_attr="text_hid")
+        cos_pos = paddle.fluid.layers.nn.cos_sim(pos_tag_emb, text_hid)
+        mul_text_hid = paddle.fluid.layers.sequence_expand_as(
             x=text_hid, y=neg_tag_emb)
-        mul_cos_neg = nn.cos_sim(neg_tag_emb, mul_text_hid)
-        cos_neg_all = fluid.layers.sequence_reshape(
+        mul_cos_neg = paddle.fluid.layers.nn.cos_sim(neg_tag_emb, mul_text_hid)
+        cos_neg_all = paddle.fluid.layers.sequence_reshape(
             input=mul_cos_neg, new_dim=self.neg_size)
         # choose max negtive cosine
-        cos_neg = nn.reduce_max(cos_neg_all, dim=1, keep_dim=True)
+        cos_neg = paddle.max(x=cos_neg_all, axis=1, keepdim=True)
         # calculate hinge loss
-        loss_part1 = nn.elementwise_sub(
-            tensor.fill_constant_batch_size_like(
+        loss_part1 = paddle.fluid.layers.nn.elementwise_sub(
+            paddle.fluid.layers.tensor.fill_constant_batch_size_like(
                 input=cos_pos,
                 shape=[-1, 1],
                 value=self.margin,
                 dtype='float32'),
             cos_pos)
-        loss_part2 = nn.elementwise_add(loss_part1, cos_neg)
-        loss_part3 = nn.elementwise_max(
-            tensor.fill_constant_batch_size_like(
+        loss_part2 = paddle.add(x=loss_part1, y=cos_neg)
+        loss_part3 = paddle.maximum(
+            x=paddle.fluid.layers.tensor.fill_constant_batch_size_like(
                 input=loss_part2, shape=[-1, 1], value=0.0, dtype='float32'),
-            loss_part2)
-        avg_cost = fluid.layers.mean(loss_part3)
+            y=loss_part2)
+        avg_cost = paddle.mean(x=loss_part3)
 
-        less = tensor.cast(cf.less_than(cos_neg, cos_pos), dtype='float32')
-        label_ones = fluid.layers.fill_constant_batch_size_like(
+        less = paddle.cast(
+            paddle.less_than(
+                x=cos_neg, y=cos_pos), dtype='float32')
+        label_ones = paddle.fluid.layers.fill_constant_batch_size_like(
             input=cos_neg, dtype='float32', shape=[-1, 1], value=1.0)
-        correct = nn.reduce_sum(less)
-        total = fluid.layers.reduce_sum(label_ones)
-        acc = fluid.layers.elementwise_div(correct, total)
+        correct = paddle.sum(x=less)
+        total = paddle.sum(x=label_ones)
+        acc = paddle.divide(x=correct, y=total)
         self._cost = avg_cost
 
         if is_infer:
