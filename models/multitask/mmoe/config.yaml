@@ -46,13 +46,13 @@ runner:
   epochs: 3
   save_checkpoint_interval: 1
   save_inference_interval: 4
-  save_checkpoint_path: "increment"
+  save_checkpoint_path: "increment_mmoe"
   save_inference_path: "inference"
   print_interval: 1
   phases: [train]
 - name: infer_runner
   class: infer
-  init_model_path: "increment/1"
+  init_model_path: "increment_mmoe/1"
   device: cpu
   phases: [infer]
 
