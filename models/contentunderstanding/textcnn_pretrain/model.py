@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 from basemodel import embedding
+import paddle
 
 
 class Model(ModelBase):
@@ -33,10 +33,11 @@ class Model(ModelBase):
         self.is_sparse = True
 
     def input_data(self, is_infer=False, **kwargs):
-        data = fluid.data(
+        data = paddle.fluid.data(
             name="input", shape=[None, self.max_len, 1], dtype='int64')
-        seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
-        label = fluid.data(name="label", shape=[None, 1], dtype='int64')
+        seq_len = paddle.fluid.data(
+            name="seq_len", shape=[None], dtype='int64')
+        label = paddle.fluid.data(name="label", shape=[None, 1], dtype='int64')
         return [data, seq_len, label]
 
     def net(self, input, is_infer=False):
@@ -48,40 +49,43 @@ class Model(ModelBase):
         # embedding layer
         emb = embedding(self.data, self.dict_size, self.emb_dim,
                         self.is_sparse)
-        emb = fluid.layers.sequence_unpad(emb, length=self.seq_len)
+        emb = paddle.fluid.layers.sequence_unpad(emb, length=self.seq_len)
         # convolution layer
-        conv1 = fluid.nets.sequence_conv_pool(
+        conv1 = paddle.fluid.nets.sequence_conv_pool(
             input=emb,
             num_filters=self.cnn_dim,
             filter_size=self.cnn_filter_size1,
             act="tanh",
             pool_type="max")
 
-        conv2 = fluid.nets.sequence_conv_pool(
+        conv2 = paddle.fluid.nets.sequence_conv_pool(
             input=emb,
             num_filters=self.cnn_dim,
             filter_size=self.cnn_filter_size2,
             act="tanh",
             pool_type="max")
 
-        conv3 = fluid.nets.sequence_conv_pool(
+        conv3 = paddle.fluid.nets.sequence_conv_pool(
             input=emb,
             num_filters=self.cnn_dim,
             filter_size=self.cnn_filter_size3,
             act="tanh",
             pool_type="max")
 
-        convs_out = fluid.layers.concat(input=[conv1, conv2, conv3], axis=1)
+        convs_out = paddle.concat(x=[conv1, conv2, conv3], axis=1)
 
         # full connect layer
-        fc_1 = fluid.layers.fc(input=convs_out, size=self.hid_dim, act="tanh")
+        fc_1 = paddle.static.nn.fc(x=convs_out,
+                                   size=self.hid_dim,
+                                   activation="tanh")
         # softmax layer
-        prediction = fluid.layers.fc(input=[fc_1],
-                                     size=self.class_dim,
-                                     act="softmax")
-        cost = fluid.layers.cross_entropy(input=prediction, label=self.label)
-        avg_cost = fluid.layers.mean(x=cost)
-        acc = fluid.layers.accuracy(input=prediction, label=self.label)
+        prediction = paddle.static.nn.fc(x=[fc_1], size=self.class_dim)
+        #act="softmax")
+        # 1.8 api :cost = paddle.fluid.layers.cross_entropy(input=prediction, label=self.label)
+        cost = paddle.nn.functional.loss.cross_entropy(
+            input=prediction, label=label)
+        avg_cost = paddle.mean(x=cost)
+        acc = paddle.metric.accuracy(input=prediction, label=self.label)
 
         self._cost = avg_cost
         if is_infer:
