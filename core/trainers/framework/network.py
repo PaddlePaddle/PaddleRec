@@ -268,6 +268,8 @@ class FleetNetwork(NetworkBase):
             strategy = paddle.distributed.fleet.DistributedStrategy()
             if mode == 'async':
                 strategy.a_sync = True
+            elif mode == 'sync':
+                strategy.a_sync = False
             elif mode == 'geo':
                 strategy.a_sync = True
                 strategy.a_sync_configs = {"k_steps": 400}
