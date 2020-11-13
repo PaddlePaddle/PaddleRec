@@ -15,6 +15,7 @@
 import math
 
 import numpy as np
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.metric import Metric
@@ -50,8 +51,8 @@ class AUC(Metric):
                              topk=topk,
                              slide_steps=slide_steps)
 
-        prob = fluid.layers.slice(input, axes=[1], starts=[1], ends=[2])
-        label_cast = fluid.layers.cast(label, dtype="float32")
+        prob = paddle.slice(input, axes=[1], starts=[1], ends=[2])
+        label_cast = paddle.cast(label, dtype="float32")
         label_cast.stop_gradient = True
         sqrerr, abserr, prob, q, pos, total = \
             fluid.contrib.layers.ctr_metric_bundle(prob, label_cast)
