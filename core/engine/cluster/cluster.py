@@ -27,8 +27,10 @@ from paddlerec.core.factory import TrainerFactory
 from paddlerec.core.utils import envs
 import paddlerec.core.engine.cluster_utils as cluster_utils
 
-logger = logging.getLogger("root")
-logger.propagate = False
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class ClusterEngine(Engine):
@@ -54,19 +56,19 @@ class ClusterEngine(Engine):
 
     def start_worker_procs(self):
         if (envs.get_runtime_environ("fleet_mode") == "COLLECTIVE"):
-            #trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")                                            
+            #trainer_ports = os.getenv("TRAINER_PORTS", None).split(",")
             cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
             if cuda_visible_devices is None or cuda_visible_devices == "":
                 selected_gpus = range(int(os.getenv("TRAINER_GPU_CARD_COUNT")))
             else:
-                # change selected_gpus into relative values                                                         
-                # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;                                    
-                # therefore selected_gpus=0,1,2,3                                                                   
+                # change selected_gpus into relative values
+                # e.g. CUDA_VISIBLE_DEVICES=4,5,6,7; args.selected_gpus=4,5,6,7;
+                # therefore selected_gpus=0,1,2,3
                 cuda_visible_devices_list = cuda_visible_devices.split(',')
                 for x in range(int(os.getenv("TRAINER_GPU_CARD_COUNT"))):
                     assert x in cuda_visible_devices_list, "Can't find "\
-                    "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
-                    % (x, cuda_visible_devices)
+                        "your selected_gpus %s in CUDA_VISIBLE_DEVICES[%s]."\
+                        % (x, cuda_visible_devices)
                 selected_gpus = [cuda_visible_devices_list.index(x)]
             print("selected_gpus:{}".format(selected_gpus))
 
