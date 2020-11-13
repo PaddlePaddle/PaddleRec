@@ -7,11 +7,11 @@ config:
   end_hook_file_path: "./end_hook.sh"
 
   # hdfs/afs的配置信息填写
-  fs_name: "afs://yinglong.afs.baidu.com:9902"
-  fs_ugi: "paddle,paddle"
+  fs_name: ""
+  fs_ugi: ""
 
   # 填任务输出目录的远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
-  output_path: "/user/paddle/chengmo/heter_ps/ctr_dnn/output"
+  output_path: ""
   
   # for mpi
   # 填远程数据及地址，如afs:/user/your/path/ 则此处填 /user/your/path
@@ -21,8 +21,8 @@ config:
 
 submit:
   # PaddleCloud 个人信息 AK 及 SK
-  ak: "3acae1baa7505ca1b074e7c93b81e2d2"
-  sk: "9a4262b4de7557c086e4ddfa778ae5a3"
+  ak: ""
+  sk: ""
   
   # 任务运行优先级，默认high
   priority: "high"
