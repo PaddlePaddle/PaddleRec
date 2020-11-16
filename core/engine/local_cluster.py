@@ -27,8 +27,10 @@ from paddlerec.core.engine.engine import Engine
 from paddlerec.core.utils import envs
 import paddlerec.core.engine.cluster_utils as cluster_utils
 
-logger = logging.getLogger("root")
-logger.propagate = False
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class LocalClusterEngine(Engine):
