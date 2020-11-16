@@ -21,6 +21,7 @@ import six
 import paddle.fluid as fluid
 import paddle
 import utils
+import collections
 if six.PY2:
     reload(sys)
     sys.setdefaultencoding('utf-8')
@@ -81,6 +82,7 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     exe = fluid.Executor(place)
     emb_size = args.emb_size
     batch_size = args.batch_size
+    result_dict = collections.OrderedDict()
     with fluid.scope_guard(fluid.Scope()):
         main_program = fluid.Program()
         with fluid.program_guard(main_program):
@@ -129,9 +131,10 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
                             break
                     if step_id % 1 == 0:
                         print("step:%d %d " % (step_id, accum_num))
-
                 print("epoch:%d \t acc:%.3f " %
                       (epoch, 1.0 * accum_num / accum_num_sum))
+                epoch_acc = 1.0 * accum_num / accum_num_sum
+                result_dict[epoch] = epoch_acc
 
 
 if __name__ == "__main__":

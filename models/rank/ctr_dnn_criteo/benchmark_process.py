@@ -88,7 +88,6 @@ class Terminal(TerminalBase):
             result['cost_time'] = np.mean(running_time)
             result['cost_time_list'] = running_time
 
-            result['file_list'] = file_list
             result['examples'] = train_examples
 
             file_path = "./benchmark_logs/training_log"
@@ -110,12 +109,14 @@ class Runner(SingleInferRunner):
         pass
 
     def run(self, context):
-        role = os.getenv("TRAINING_ROLE", "TRAINER")
+        role = os.getenv("TRAINING_ROLE", None)
+        logger.info("TRAINING_ROLE {}".format(role))
         if role != 'TRAINER':
             context["status"] = "terminal_pass"
             return
 
-        worker_id = int(os.getenv("PADDLE_TRAINER_ID", '0'))
+        worker_id = int(os.getenv("PADDLE_TRAINER_ID", None))
+        logger.info("PADDLE_TRAINER_ID {}".format(worker_id))
         if worker_id != 0:
             context["status"] = "terminal_pass"
             return
