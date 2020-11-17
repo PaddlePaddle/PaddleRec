@@ -4,14 +4,13 @@ cluster_type: mpi
 config:
   paddlecloud_job_version: "paddle-fluid-v1.8.2"
   before_hook_file_path: "./before_hook.sh"
-  end_hook_file_path: "./end_hook.sh"
 
   # hdfs/afs的配置信息填写
   fs_name: ""
   fs_ugi: ""
 
   # 填任务输出目录的远程地址，如afs:/user/your/path/ 则此处填 /user/your/path
-  output_path: ""
+  output_path: "/user/paddle/benchmark/ctr/output"
   
   # for mpi
   # 填远程数据及地址，如afs:/user/your/path/ 则此处填 /user/your/path

@@ -31,7 +31,7 @@ mode: [ps_cpu_dataset_async]
 # runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
 - name: ps_cpu_dataset_async
-  class: cluster
+  class: cluster_train
   epochs: 5
   device: cpu
   fleet_mode: ps
@@ -103,18 +103,18 @@ dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 100
   type: QueueDataset # or QueueDataset
-  data_path: "{workspace}/data/train"
-  word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
+  data_path: "{workspace}/train_data"
+  word_count_dict_path: "{workspace}/thirdparty/word_count_dict.txt"
   data_converter: "{workspace}/w2v_reader.py"
 - name: dataloader_train # name of dataset to distinguish different datasets
   batch_size: 100
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
+  data_path: "{workspace}/train_data"
+  word_count_dict_path: "{workspace}/thirdparty/word_count_dict.txt"
   data_converter: "{workspace}/w2v_reader.py"
 - name: dataset_infer # name
   batch_size: 2000
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/test"
-  word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
+  data_path: "{workspace}/test_data"
+  word_id_dict_path: "{workspace}/thirdparty/word_id_dict.txt"
   data_converter: "{workspace}/w2v_evaluate_reader.py"

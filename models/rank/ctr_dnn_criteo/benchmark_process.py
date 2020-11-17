@@ -63,6 +63,18 @@ class Terminal(TerminalBase):
 
         if context['is_infer']:
             # 1. Save infer result
+            role = os.getenv("TRAINING_ROLE", None)
+            logger.info("TRAINING_ROLE {}".format(role))
+            if role != 'TRAINER':
+                context["status"] = "terminal_pass"
+                return
+
+            worker_id = int(os.getenv("PADDLE_TRAINER_ID", None))
+            logger.info("PADDLE_TRAINER_ID {}".format(worker_id))
+            if worker_id != 0:
+                context["status"] = "terminal_pass"
+                return
+
             auc_result = []
             for epoch in sorted(context['infer_result']):
                 auc_result.append(context['infer_result'][epoch]['AUC'])

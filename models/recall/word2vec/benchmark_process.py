@@ -65,6 +65,7 @@ class Terminal(TerminalBase):
         result = {}
 
         model_path = "word2vec_model"
+        dict_path = "./thirdparty/test_build_dict_word_to_id_"
         if os.path.exists(model_path):
             # do infer
             args = parse_args()
@@ -73,7 +74,7 @@ class Terminal(TerminalBase):
             test_dir = args.test_dir
             args.model_dir = model_path
             batch_size = args.batch_size
-            dict_path = args.dict_path
+            args.dict_path = dict_path
             use_cuda = True if args.use_cuda else False
             print("start index: ", start_index, " last_index:", last_index)
             vocab_size, test_reader, id2word = utils.prepare_data(
