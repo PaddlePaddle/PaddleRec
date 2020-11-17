@@ -66,14 +66,19 @@ class Terminal(TerminalBase):
 
         model_path = "word2vec_model"
         dict_path = "./thirdparty/test_build_dict_word_to_id_"
+        batch_size = 20000
+        start_index = 0
+        last_index = 5
+        emb_size = 300
         if os.path.exists(model_path):
             # do infer
             args = parse_args()
-            start_index = args.start_index
-            last_index = args.last_index
             test_dir = args.test_dir
             args.model_dir = model_path
-            batch_size = args.batch_size
+            args.batch_size = batch_size
+            args.start_index = start_index
+            args.last_index = last_index
+            args.emb_size = emb_size
             args.dict_path = dict_path
             use_cuda = True if args.use_cuda else False
             print("start index: ", start_index, " last_index:", last_index)
