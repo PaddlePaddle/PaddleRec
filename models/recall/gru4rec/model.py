@@ -75,12 +75,13 @@ class Model(ModelBase):
         fc = paddle.static.nn.fc(
             x=gru_h0,
             size=self.vocab_size,
-            activation='softmax',
+            #activation='softmax',
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.fluid.initializer.Uniform(
                     low=self.init_low_bound, high=self.init_high_bound),
                 learning_rate=self.fc_lr_x))
-        cost = paddle.fluid.layers.cross_entropy(input=fc, label=dst_wordseq)
+        # 1.8 api cost = paddle.fluid.layers.cross_entropy(input=fc, label=dst_wordseq)
+        cost = paddle.nn.functional.cross_entropy(input=fc, label=dst_wordseq)
         acc = RecallK(input=fc, label=dst_wordseq, k=self.recall_k)
 
         if is_infer:

@@ -84,7 +84,7 @@ class Model(ModelBase):
         #act="softmax")
         # 1.8 api :cost = paddle.fluid.layers.cross_entropy(input=prediction, label=self.label)
         cost = paddle.nn.functional.loss.cross_entropy(
-            input=prediction, label=label)
+            input=prediction, label=self.label)
         avg_cost = paddle.mean(x=cost)
         acc = paddle.metric.accuracy(input=prediction, label=self.label)
 

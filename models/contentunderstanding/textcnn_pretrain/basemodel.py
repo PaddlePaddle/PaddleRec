@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 from paddlerec.core.metrics import RecallK
+import paddle
 
 
 class Model(ModelBase):
@@ -33,10 +33,12 @@ class Model(ModelBase):
 
     def input_data(self, is_infer=False, **kwargs):
 
-        text = fluid.data(
+        text = paddle.static.data(
             name="text", shape=[None, self.max_seq_len, 1], dtype='int64')
-        label = fluid.data(name="category", shape=[None, 1], dtype='int64')
-        seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
+        label = paddle.static.data(
+            name="category", shape=[None, 1], dtype='int64')
+        seq_len = paddle.static.data(
+            name="seq_len", shape=[None], dtype='int64')
         return [text, label, seq_len]
 
     def net(self, inputs, is_infer=False):
@@ -55,13 +57,16 @@ class Model(ModelBase):
     def metrics(self, is_infer=False):
         """ classification and metrics """
         # softmax layer
-        prediction = fluid.layers.fc(input=[self.fc_1],
-                                     size=self.class_dim,
-                                     act="softmax",
-                                     name="pretrain_fc_1")
-        cost = fluid.layers.cross_entropy(input=prediction, label=self.label)
-        avg_cost = fluid.layers.mean(x=cost)
-        acc = fluid.layers.accuracy(input=prediction, label=self.label)
+        prediction = paddle.static.nn.fc(
+            x=[self.fc_1],
+            size=self.class_dim,
+            #  activation="softmax",
+            name="pretrain_fc_1")
+        cost = paddle.nn.functional.loss.cross_entropy(
+            input=prediction, label=self.label)
+        # 1.8 api: cost = paddle.fluid.layers.cross_entropy(input=prediction, label=self.label)
+        avg_cost = paddle.mean(x=cost)
+        acc = paddle.metric.accuracy(input=prediction, label=self.label)
         #acc = RecallK(input=prediction, label=label, k=1)
 
         self._cost = avg_cost
@@ -73,46 +78,45 @@ class Model(ModelBase):
 
 def embedding(inputs, dict_size, emb_dim, is_sparse):
     """ embeding definition """
-    emb = fluid.layers.embedding(
+    emb = paddle.static.nn.embedding(
         input=inputs,
         size=[dict_size, emb_dim],
         is_sparse=is_sparse,
-        param_attr=fluid.ParamAttr(
+        param_attr=paddle.ParamAttr(
             name='pretrain_word_embedding',
-            initializer=fluid.initializer.Xavier()))
+            initializer=paddle.fluid.initializer.Xavier()))
     return emb
 
 
 def multi_convs(input_layer, seq_len, cnn_hid_dim, cnn_win_size,
                 cnn_win_size2):
     """conv and concat"""
-    emb = fluid.layers.sequence_unpad(
+    emb = paddle.fluid.layers.sequence_unpad(
         input_layer, length=seq_len, name="pretrain_unpad")
-    conv = fluid.nets.sequence_conv_pool(
-        param_attr=fluid.ParamAttr(name="pretrain_conv0_w"),
-        bias_attr=fluid.ParamAttr(name="pretrain_conv0_b"),
+    conv = paddle.fluid.nets.sequence_conv_pool(
+        param_attr=paddle.ParamAttr(name="pretrain_conv0_w"),
+        bias_attr=paddle.ParamAttr(name="pretrain_conv0_b"),
         input=emb,
         num_filters=cnn_hid_dim,
         filter_size=cnn_win_size,
         act="tanh",
         pool_type="max")
-    conv2 = fluid.nets.sequence_conv_pool(
-        param_attr=fluid.ParamAttr(name="pretrain_conv1_w"),
-        bias_attr=fluid.ParamAttr(name="pretrain_conv1_b"),
+    conv2 = paddle.fluid.nets.sequence_conv_pool(
+        param_attr=paddle.ParamAttr(name="pretrain_conv1_w"),
+        bias_attr=paddle.ParamAttr(name="pretrain_conv1_b"),
         input=emb,
         num_filters=cnn_hid_dim,
         filter_size=cnn_win_size2,
         act="tanh",
         pool_type="max")
-    concat = fluid.layers.concat(
-        input=[conv, conv2], axis=1, name="pretrain_concat")
+    concat = paddle.concat(x=[conv, conv2], axis=1, name="pretrain_concat")
     return concat
 
 
 def full_connect(input_layer, hid_dim1):
     """full connect layer"""
-    fc_1 = fluid.layers.fc(name="pretrain_fc_0",
-                           input=input_layer,
-                           size=hid_dim1,
-                           act="tanh")
+    fc_1 = paddle.static.nn.fc(name="pretrain_fc_0",
+                               x=input_layer,
+                               size=hid_dim1,
+                               activation="tanh")
     return fc_1
