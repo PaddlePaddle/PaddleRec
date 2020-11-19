@@ -32,18 +32,18 @@ class Model(ModelBase):
         self.embed_size = envs.get_global_env("hyper_parameters.embed_size")
 
     def input_data(self, is_infer=False, **kwargs):
-        user_slot_names = paddle.fluid.data(
+        user_slot_names = paddle.static.data(
             name='user_slot_names',
             shape=[None, 1],
             dtype='int64',
             lod_level=1)
-        item_slot_names = paddle.fluid.data(
+        item_slot_names = paddle.static.data(
             name='item_slot_names',
             shape=[None, self.item_len],
             dtype='int64',
             lod_level=1)
-        lens = paddle.fluid.data(name='lens', shape=[None], dtype='int64')
-        labels = paddle.fluid.data(
+        lens = paddle.static.data(name='lens', shape=[None], dtype='int64')
+        labels = paddle.static.data(
             name='labels',
             shape=[None, self.item_len],
             dtype='float32',
