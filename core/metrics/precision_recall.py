@@ -15,6 +15,7 @@
 import math
 
 import numpy as np
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.metric import Metric
@@ -44,10 +45,10 @@ class PrecisionRecall(Metric):
                              type(label))
 
         helper = LayerHelper("PaddleRec_PrecisionRecall", **kwargs)
-        label = fluid.layers.cast(label, dtype="int32")
+        label = paddle.cast(label, dtype="int32")
         label.stop_gradient = True
-        max_probs, indices = fluid.layers.nn.topk(input, k=1)
-        indices = fluid.layers.cast(indices, dtype="int32")
+        max_probs, indices = paddle.topk(input, k=1)
+        indices = paddle.cast(indices, dtype="int32")
         indices.stop_gradient = True
 
         states_info, _ = helper.create_or_get_global_variable(
@@ -72,8 +73,7 @@ class PrecisionRecall(Metric):
             dtype='float32',
             shape=[6])
 
-        batch_states = fluid.layers.fill_constant(
-            shape=[self.num_cls, 4], value=0.0, dtype="float32")
+        batch_states = paddle.full(shape=[self.num_cls, 4], fill_value=0.0)
         batch_states.stop_gradient = True
 
         helper.append_op(

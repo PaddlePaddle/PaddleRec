@@ -17,7 +17,7 @@ import os
 import time
 import sys
 import traceback
-
+import paddle
 from paddle import fluid
 
 from paddlerec.core.utils import envs
@@ -105,13 +105,13 @@ class Trainer(object):
             self.check_gpu()
             self.device = Device.GPU
             gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
-            self._place = fluid.CUDAPlace(gpu_id)
+            self._place = paddle.CUDAPlace(gpu_id)
             print("PaddleRec run on device GPU: {}".format(gpu_id))
-            self._exe = fluid.Executor(self._place)
+            self._exe = paddle.static.Executor(self._place)
         elif device == "CPU":
             self.device = Device.CPU
-            self._place = fluid.CPUPlace()
-            self._exe = fluid.Executor(self._place)
+            self._place = paddle.CPUPlace()
+            self._exe = paddle.static.Executor(self._place)
         else:
             raise ValueError("Not Support device {}".format(device))
         self._context["device"] = device
@@ -130,7 +130,7 @@ class Trainer(object):
             "model on CPU"
 
         try:
-            if not fluid.is_compiled_with_cuda():
+            if not paddle.is_compiled_with_cuda():
                 raise RuntimeError(err)
         except Exception as e:
             pass

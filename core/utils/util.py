@@ -19,12 +19,18 @@ import time
 import warnings
 import random
 import numpy as np
+import logging
 from paddle import fluid
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def save_program_proto(path, program=None):
     if program is None:
-        _program = fluid.default_main_program()
+        _program = paddle.static.default_main_program()
     else:
         _program = program
 

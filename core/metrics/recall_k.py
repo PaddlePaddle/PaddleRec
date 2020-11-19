@@ -15,6 +15,7 @@
 import math
 
 import numpy as np
+import paddle
 import paddle.fluid as fluid
 
 from paddlerec.core.metric import Metric
@@ -54,9 +55,8 @@ class RecallK(Metric):
                 var, Constant(
                     value=0.0, force_cpu=True))
 
-        tmp_ones = fluid.layers.fill_constant(
-            shape=fluid.layers.shape(label), dtype="float32", value=1.0)
-        batch_ins = fluid.layers.reduce_sum(tmp_ones)
+        tmp_ones = paddle.full(shape=paddle.shape(label), fill_value=1.0)
+        batch_ins = paddle.sum(tmp_ones)
         batch_pos = batch_ins * batch_accuracy
 
         helper.append_op(
