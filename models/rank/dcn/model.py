@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from collections import OrderedDict
-
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -44,7 +43,7 @@ class Model(ModelBase):
         # sparse embedding
         sparse_emb_dict = OrderedDict()
         for var in self.sparse_inputs:
-            sparse_emb_dict[var.name] = fluid.embedding(
+            sparse_emb_dict[var.name] = paddle.static.nn.embedding(
                 input=var,
                 size=[
                     self.feat_dims_dict[var.name] + 1,
@@ -56,32 +55,32 @@ class Model(ModelBase):
         dense_input_list = self.dense_inputs
         sparse_emb_list = list(sparse_emb_dict.values())
 
-        sparse_input = fluid.layers.concat(sparse_emb_list, axis=-1)
-        sparse_input = fluid.layers.flatten(sparse_input)
+        sparse_input = paddle.concat(x=sparse_emb_list, axis=-1)
+        sparse_input = paddle.fluid.layers.flatten(sparse_input)
 
-        dense_input = fluid.layers.concat(dense_input_list, axis=-1)
-        dense_input = fluid.layers.flatten(dense_input)
-        dense_input = fluid.layers.cast(dense_input, 'float32')
+        dense_input = paddle.concat(x=dense_input_list, axis=-1)
+        dense_input = paddle.fluid.layers.flatten(dense_input)
+        dense_input = paddle.cast(dense_input, 'float32')
 
-        net_input = fluid.layers.concat([dense_input, sparse_input], axis=-1)
+        net_input = paddle.concat(x=[dense_input, sparse_input], axis=-1)
 
         return net_input
 
     def _deep_net(self, input, hidden_units, use_bn=False, is_test=False):
         for units in hidden_units:
-            input = fluid.layers.fc(input=input, size=units)
+            input = paddle.static.nn.fc(x=input, size=units)
             if use_bn:
-                input = fluid.layers.batch_norm(input, is_test=is_test)
-            input = fluid.layers.relu(input)
+                input = paddle.fluid.layers.batch_norm(input, is_test=is_test)
+            input = paddle.nn.functional.relu(input)
         return input
 
     def _cross_layer(self, x0, x, prefix):
         input_dim = x0.shape[-1]
-        w = fluid.layers.create_parameter(
+        w = paddle.create_parameter(
             [input_dim], dtype='float32', name=prefix + "_w")
-        b = fluid.layers.create_parameter(
+        b = paddle.create_parameter(
             [input_dim], dtype='float32', name=prefix + "_b")
-        xw = fluid.layers.reduce_sum(x * w, dim=1, keep_dim=True)  # (N, 1)
+        xw = paddle.sum(x=x * w, axis=1, keepdim=True)  # (N, 1)
         return x0 * xw + b + x, w
 
     def _cross_net(self, input, num_corss_layers):
@@ -90,13 +89,12 @@ class Model(ModelBase):
         for i in range(num_corss_layers):
             x, w = self._cross_layer(x0, x, "cross_layer_{}".format(i))
             l2_reg_cross_list.append(self._l2_loss(w))
-        l2_reg_cross_loss = fluid.layers.reduce_sum(
-            fluid.layers.concat(
-                l2_reg_cross_list, axis=-1))
+        l2_reg_cross_loss = paddle.sum(x=paddle.concat(
+            x=l2_reg_cross_list, axis=-1))
         return x, l2_reg_cross_loss
 
     def _l2_loss(self, w):
-        return fluid.layers.reduce_sum(fluid.layers.square(w))
+        return paddle.sum(x=paddle.square(w))
 
     def net(self, inputs, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]
@@ -130,15 +128,15 @@ class Model(ModelBase):
         cross_out, l2_reg_cross_loss = self._cross_net(self.net_input,
                                                        self.cross_num)
 
-        last_out = fluid.layers.concat([deep_out, cross_out], axis=-1)
-        logit = fluid.layers.fc(last_out, 1)
+        last_out = paddle.concat(x=[deep_out, cross_out], axis=-1)
+        logit = paddle.static.nn.fc(x=last_out, size=1)
 
-        self.prob = fluid.layers.sigmoid(logit)
+        self.prob = paddle.nn.functional.sigmoid(logit)
 
         # auc
-        prob_2d = fluid.layers.concat([1 - self.prob, self.prob], 1)
-        label_int = fluid.layers.cast(self.target_input, 'int64')
-        auc_var, batch_auc_var, self.auc_states = fluid.layers.auc(
+        prob_2d = paddle.concat(x=[1 - self.prob, self.prob], axis=1)
+        label_int = paddle.cast(self.target_input, 'int64')
+        auc_var, batch_auc_var, self.auc_states = paddle.fluid.layers.auc(
             input=prob_2d, label=label_int, slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
@@ -147,10 +145,10 @@ class Model(ModelBase):
             self._infer_results["AUC"] = auc_var
 
         # logloss
-        logloss = fluid.layers.log_loss(
-            self.prob, fluid.layers.cast(
+        logloss = paddle.nn.functional.log_loss(
+            self.prob, paddle.cast(
                 self.target_input, dtype='float32'))
-        self.avg_logloss = fluid.layers.reduce_mean(logloss)
+        self.avg_logloss = paddle.mean(x=logloss)
 
         # reg_coeff * l2_reg_cross
         l2_reg_cross_loss = self.l2_reg_cross * l2_reg_cross_loss

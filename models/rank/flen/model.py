@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
 import itertools
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+import paddle
 
 
 class Model(ModelBase):
@@ -37,8 +37,7 @@ class Model(ModelBase):
         field_wise_embeds_list = inputs
 
         field_wise_vectors = [
-            fluid.layers.reduce_sum(
-                field_i_vectors, dim=1, keep_dim=True)
+            paddle.sum(x=field_i_vectors, axis=1, keepdim=True)
             for field_i_vectors in field_wise_embeds_list
         ]
         num_fields = len(field_wise_vectors)
@@ -46,63 +45,65 @@ class Model(ModelBase):
         h_mf_list = []
         for emb_left, emb_right in itertools.combinations(field_wise_vectors,
                                                           2):
-            embeddings_prod = fluid.layers.elementwise_mul(emb_left, emb_right)
+            embeddings_prod = paddle.multiply(x=emb_left, y=emb_right)
 
-            field_weighted_embedding = fluid.layers.fc(
-                input=embeddings_prod,
+            field_weighted_embedding = paddle.static.nn.fc(
+                x=embeddings_prod,
                 size=self.sparse_feature_dim,
-                param_attr=fluid.initializer.ConstantInitializer(value=1),
+                weight_attr=paddle.nn.initializer.Constant(value=1),
                 name='kernel_mf')
             h_mf_list.append(field_weighted_embedding)
-        h_mf = fluid.layers.concat(h_mf_list, axis=1)
-        h_mf = fluid.layers.reshape(
+        h_mf = paddle.concat(x=h_mf_list, axis=1)
+        h_mf = paddle.fluid.layers.nn.reshape(
             x=h_mf, shape=[-1, num_fields, self.sparse_feature_dim])
-        h_mf = fluid.layers.reduce_sum(h_mf, dim=1)
+        h_mf = paddle.sum(x=h_mf, axis=1)
 
         square_of_sum_list = [
-            fluid.layers.square(
-                fluid.layers.reduce_sum(
-                    field_i_vectors, dim=1, keep_dim=True))
+            paddle.square(
+                paddle.sum(x=field_i_vectors, axis=1, keepdim=True))
             for field_i_vectors in field_wise_embeds_list
         ]
 
         sum_of_square_list = [
-            fluid.layers.reduce_sum(
-                fluid.layers.elementwise_mul(field_i_vectors, field_i_vectors),
-                dim=1,
-                keep_dim=True) for field_i_vectors in field_wise_embeds_list
+            paddle.sum(x=paddle.multiply(
+                x=field_i_vectors, y=field_i_vectors),
+                       axis=1,
+                       keepdim=True)
+            for field_i_vectors in field_wise_embeds_list
         ]
 
         field_fm_list = []
         for square_of_sum, sum_of_square in zip(square_of_sum_list,
                                                 sum_of_square_list):
-            field_fm = fluid.layers.reshape(
-                fluid.layers.elementwise_sub(square_of_sum, sum_of_square),
+            field_fm = paddle.fluid.layers.nn.reshape(
+                paddle.fluid.layers.nn.elementwise_sub(square_of_sum,
+                                                       sum_of_square),
                 shape=[-1, self.sparse_feature_dim])
-            field_fm = fluid.layers.fc(
-                input=field_fm,
+            field_fm = paddle.static.nn.fc(
+                x=field_fm,
                 size=self.sparse_feature_dim,
-                param_attr=fluid.initializer.ConstantInitializer(value=0.5),
+                weight_attr=paddle.nn.initializer.Constant(value=0.5),
                 name='kernel_fm')
             field_fm_list.append(field_fm)
 
-        h_fm = fluid.layers.concat(field_fm_list, axis=1)
-        h_fm = fluid.layers.reshape(
+        h_fm = paddle.concat(x=field_fm_list, axis=1)
+        h_fm = paddle.fluid.layers.nn.reshape(
             x=h_fm, shape=[-1, num_fields, self.sparse_feature_dim])
-        h_fm = fluid.layers.reduce_sum(h_fm, dim=1)
+        h_fm = paddle.sum(x=h_fm, axis=1)
 
-        return fluid.layers.elementwise_add(h_mf, h_fm)
+        return paddle.add(x=h_mf, y=h_fm)
 
     def _DNNLayer(self, inputs, dropout_rate=0.2):
         deep_input = inputs
         for i, hidden_unit in enumerate([64, 32]):
-            fc_out = fluid.layers.fc(
-                input=deep_input,
+            fc_out = paddle.static.nn.fc(
+                x=deep_input,
                 size=hidden_unit,
-                param_attr=fluid.initializer.Xavier(uniform=False),
-                act='relu',
+                weight_attr=paddle.fluid.initializer.Xavier(uniform=False),
+                activation='relu',
                 name='d_' + str(i))
-            fc_out = fluid.layers.dropout(fc_out, dropout_prob=dropout_rate)
+            fc_out = paddle.fluid.layers.nn.dropout(
+                fc_out, dropout_prob=dropout_rate)
             deep_input = fc_out
 
         return deep_input
@@ -111,19 +112,19 @@ class Model(ModelBase):
         emb_list = []
         in_len = len(inputs)
         for data in inputs:
-            feat_emb = fluid.embedding(
+            feat_emb = paddle.static.nn.embedding(
                 input=data,
                 size=[self.sparse_feature_number, self.sparse_feature_dim],
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name='item_emb',
                     learning_rate=5,
-                    initializer=fluid.initializer.Xavier(
+                    initializer=paddle.fluid.initializer.Xavier(
                         fan_in=self.sparse_feature_dim,
                         fan_out=self.sparse_feature_dim)),
                 is_sparse=True)
             emb_list.append(feat_emb)
-        concat_emb = fluid.layers.concat(emb_list, axis=1)
-        field_emb = fluid.layers.reshape(
+        concat_emb = paddle.concat(x=emb_list, axis=1)
+        field_emb = paddle.fluid.layers.nn.reshape(
             x=concat_emb, shape=[-1, in_len, self.sparse_feature_dim])
 
         return field_emb
@@ -141,9 +142,9 @@ class Model(ModelBase):
             field_emb = self._embeddingLayer(inputs)
             field_wise_embeds_list.append(field_emb)
 
-        dnn_input = fluid.layers.concat(
-            [
-                fluid.layers.flatten(
+        dnn_input = paddle.concat(
+            x=[
+                paddle.fluid.layers.flatten(
                     x=field_i_vectors, axis=1)
                 for field_i_vectors in field_wise_embeds_list
             ],
@@ -154,20 +155,20 @@ class Model(ModelBase):
 
         #field-weighted embedding
         fm_mf_out = self._FieldWiseBiInteraction(field_wise_embeds_list)
-        logits = fluid.layers.concat([fm_mf_out, dnn_output], axis=1)
+        logits = paddle.concat(x=[fm_mf_out, dnn_output], axis=1)
 
-        y_pred = fluid.layers.fc(
-            input=logits,
+        y_pred = paddle.static.nn.fc(
+            x=logits,
             size=1,
-            param_attr=fluid.initializer.Xavier(uniform=False),
-            act='sigmoid',
+            weight_attr=paddle.fluid.initializer.Xavier(uniform=False),
+            activation='sigmoid',
             name='logit')
 
         self.predict = y_pred
-        auc, batch_auc, _ = fluid.layers.auc(input=self.predict,
-                                             label=self.label_input,
-                                             num_thresholds=2**12,
-                                             slide_steps=20)
+        auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
+                                                    label=self.label_input,
+                                                    num_thresholds=2**12,
+                                                    slide_steps=20)
 
         if is_infer:
             self._infer_results["AUC"] = auc
@@ -176,9 +177,9 @@ class Model(ModelBase):
 
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
-        cost = fluid.layers.log_loss(
+        cost = paddle.nn.functional.log_loss(
             input=self.predict,
-            label=fluid.layers.cast(
+            label=paddle.cast(
                 x=self.label_input, dtype='float32'))
-        avg_cost = fluid.layers.reduce_mean(cost)
+        avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost

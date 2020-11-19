@@ -14,9 +14,7 @@
 
 import math
 import numpy as np
-
-import paddle.fluid as fluid
-import paddle.fluid.layers as layers
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -55,24 +53,24 @@ class Model(ModelBase):
             bs = self.evaluate_batch_size
         else:
             bs = self.train_batch_size
-        items = fluid.data(
+        items = paddle.static.data(
             name="items", shape=[bs, -1],
             dtype="int64")  # [batch_size, uniq_max]
-        seq_index = fluid.data(
+        seq_index = paddle.static.data(
             name="seq_index", shape=[bs, -1, 2],
             dtype="int32")  # [batch_size, seq_max, 2]
-        last_index = fluid.data(
+        last_index = paddle.static.data(
             name="last_index", shape=[bs, 2], dtype="int32")  # [batch_size, 2]
-        adj_in = fluid.data(
+        adj_in = paddle.static.data(
             name="adj_in", shape=[bs, -1, -1],
             dtype="float32")  # [batch_size, seq_max, seq_max]
-        adj_out = fluid.data(
+        adj_out = paddle.static.data(
             name="adj_out", shape=[bs, -1, -1],
             dtype="float32")  # [batch_size, seq_max, seq_max]
-        mask = fluid.data(
+        mask = paddle.static.data(
             name="mask", shape=[bs, -1, 1],
             dtype="float32")  # [batch_size, seq_max, 1]
-        label = fluid.data(
+        label = paddle.static.data(
             name="label", shape=[bs, 1], dtype="int64")  # [batch_size, 1]
 
         res = [items, seq_index, last_index, adj_in, adj_out, mask, label]
@@ -90,146 +88,151 @@ class Model(ModelBase):
                             table_name,
                             emb_dim,
                             initializer_instance=None):
-            emb = fluid.embedding(
+            emb = paddle.static.nn.embedding(
                 input=input,
                 size=[self.dict_size, emb_dim],
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name=table_name, initializer=initializer_instance))
             return emb
 
-        sparse_initializer = fluid.initializer.Uniform(low=-stdv, high=stdv)
+        sparse_initializer = paddle.fluid.initializer.Uniform(
+            low=-stdv, high=stdv)
         items_emb = embedding_layer(inputs[0], "emb", self.hidden_size,
                                     sparse_initializer)
         pre_state = items_emb
         for i in range(self.step):
-            pre_state = layers.reshape(
+            pre_state = paddle.fluid.layers.nn.reshape(
                 x=pre_state, shape=[bs, -1, self.hidden_size])
-            state_in = layers.fc(
-                input=pre_state,
+            state_in = paddle.static.nn.fc(
+                x=pre_state,
                 name="state_in",
                 size=self.hidden_size,
-                act=None,
+                activation=None,
                 num_flatten_dims=2,
-                param_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.Uniform(
+                weight_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.Uniform(
                         low=-stdv, high=stdv)),
-                bias_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.Uniform(
+                bias_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.Uniform(
                         low=-stdv, high=stdv)))  # [batch_size, uniq_max, h]
-            state_out = layers.fc(
-                input=pre_state,
+            state_out = paddle.static.nn.fc(
+                x=pre_state,
                 name="state_out",
                 size=self.hidden_size,
-                act=None,
+                activation=None,
                 num_flatten_dims=2,
-                param_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.Uniform(
+                weight_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.Uniform(
                         low=-stdv, high=stdv)),
-                bias_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.Uniform(
+                bias_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.Uniform(
                         low=-stdv, high=stdv)))  # [batch_size, uniq_max, h]
 
-            state_adj_in = layers.matmul(inputs[3],
-                                         state_in)  # [batch_size, uniq_max, h]
-            state_adj_out = layers.matmul(
+            state_adj_in = paddle.fluid.layers.matmul(
+                inputs[3], state_in)  # [batch_size, uniq_max, h]
+            state_adj_out = paddle.fluid.layers.matmul(
                 inputs[4], state_out)  # [batch_size, uniq_max, h]
 
-            gru_input = layers.concat([state_adj_in, state_adj_out], axis=2)
+            gru_input = paddle.concat(x=[state_adj_in, state_adj_out], axis=2)
 
-            gru_input = layers.reshape(
+            gru_input = paddle.fluid.layers.nn.reshape(
                 x=gru_input, shape=[-1, self.hidden_size * 2])
-            gru_fc = layers.fc(input=gru_input,
-                               name="gru_fc",
-                               size=3 * self.hidden_size,
-                               bias_attr=False)
-            pre_state, _, _ = fluid.layers.gru_unit(
+            gru_fc = paddle.static.nn.fc(x=gru_input,
+                                         name="gru_fc",
+                                         size=3 * self.hidden_size,
+                                         bias_attr=False)
+            pre_state, _, _ = paddle.fluid.layers.gru_unit(
                 input=gru_fc,
-                hidden=layers.reshape(
+                hidden=paddle.fluid.layers.nn.reshape(
                     x=pre_state, shape=[-1, self.hidden_size]),
                 size=3 * self.hidden_size)
 
-        final_state = layers.reshape(
+        final_state = paddle.fluid.layers.nn.reshape(
             pre_state, shape=[bs, -1, self.hidden_size])
-        seq = layers.gather_nd(final_state, inputs[1])
-        last = layers.gather_nd(final_state, inputs[2])
+        seq = paddle.gather_nd(x=final_state, index=inputs[1])
+        last = paddle.gather_nd(x=final_state, index=inputs[2])
 
-        seq_fc = layers.fc(
-            input=seq,
+        seq_fc = paddle.static.nn.fc(
+            x=seq,
             name="seq_fc",
             size=self.hidden_size,
             bias_attr=False,
-            act=None,
+            activation=None,
             num_flatten_dims=2,
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Uniform(
-                low=-stdv, high=stdv)))  # [batch_size, seq_max, h]
-        last_fc = layers.fc(input=last,
-                            name="last_fc",
-                            size=self.hidden_size,
-                            bias_attr=False,
-                            act=None,
-                            num_flatten_dims=1,
-                            param_attr=fluid.ParamAttr(
-                                initializer=fluid.initializer.Uniform(
-                                    low=-stdv, high=stdv)))  # [bathc_size, h]
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
+                    low=-stdv, high=stdv)))  # [batch_size, seq_max, h]
+        last_fc = paddle.static.nn.fc(
+            x=last,
+            name="last_fc",
+            size=self.hidden_size,
+            bias_attr=False,
+            activation=None,
+            num_flatten_dims=1,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
+                    low=-stdv, high=stdv)))  # [bathc_size, h]
 
-        seq_fc_t = layers.transpose(
+        seq_fc_t = paddle.transpose(
             seq_fc, perm=[1, 0, 2])  # [seq_max, batch_size, h]
-        add = layers.elementwise_add(seq_fc_t,
-                                     last_fc)  # [seq_max, batch_size, h]
-        b = layers.create_parameter(
+        add = paddle.add(x=seq_fc_t, y=last_fc)  # [seq_max, batch_size, h]
+        b = paddle.create_parameter(
             shape=[self.hidden_size],
             dtype='float32',
-            default_initializer=fluid.initializer.Constant(value=0.0))  # [h]
-        add = layers.elementwise_add(add, b)  # [seq_max, batch_size, h]
+            default_initializer=paddle.nn.initializer.Constant(
+                value=0.0))  # [h]
+        add = paddle.add(x=add, y=b)  # [seq_max, batch_size, h]
 
-        add_sigmoid = layers.sigmoid(add)  # [seq_max, batch_size, h]
-        add_sigmoid = layers.transpose(
+        add_sigmoid = paddle.nn.functional.sigmoid(
+            add)  # [seq_max, batch_size, h]
+        add_sigmoid = paddle.transpose(
             add_sigmoid, perm=[1, 0, 2])  # [batch_size, seq_max, h]
 
-        weight = layers.fc(
-            input=add_sigmoid,
+        weight = paddle.static.nn.fc(
+            x=add_sigmoid,
             name="weight_fc",
             size=1,
-            act=None,
+            activation=None,
             num_flatten_dims=2,
             bias_attr=False,
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Uniform(
-                low=-stdv, high=stdv)))  # [batch_size, seq_max, 1]
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
+                    low=-stdv, high=stdv)))  # [batch_size, seq_max, 1]
         weight *= inputs[5]
-        weight_mask = layers.elementwise_mul(
-            seq, weight, axis=0)  # [batch_size, seq_max, h]
-        global_attention = layers.reduce_sum(
-            weight_mask, dim=1)  # [batch_size, h]
+        weight_mask = paddle.multiply(
+            x=seq, y=weight, axis=0)  # [batch_size, seq_max, h]
+        global_attention = paddle.sum(x=weight_mask, axis=1)  # [batch_size, h]
 
-        final_attention = layers.concat(
-            [global_attention, last], axis=1)  # [batch_size, 2*h]
-        final_attention_fc = layers.fc(
-            input=final_attention,
+        final_attention = paddle.concat(
+            x=[global_attention, last], axis=1)  # [batch_size, 2*h]
+        final_attention_fc = paddle.static.nn.fc(
+            x=final_attention,
             name="final_attention_fc",
             size=self.hidden_size,
             bias_attr=False,
-            act=None,
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Uniform(
-                low=-stdv, high=stdv)))  # [batch_size, h]
+            activation=None,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
+                    low=-stdv, high=stdv)))  # [batch_size, h]
 
         all_vocab = np.arange(1, self.dict_size).reshape((-1)).astype('int32')
-        all_vocab = fluid.layers.cast(
-            x=fluid.layers.assign(all_vocab), dtype='int64')
+        all_vocab = paddle.cast(
+            x=paddle.nn.functional.assign(all_vocab), dtype='int64')
 
-        all_emb = fluid.embedding(
+        all_emb = paddle.static.nn.embedding(
             input=all_vocab,
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name="emb",
-                initializer=fluid.initializer.Uniform(
+                initializer=paddle.fluid.initializer.Uniform(
                     low=-stdv, high=stdv)),
             size=[self.dict_size, self.hidden_size])  # [all_vocab, h]
 
-        logits = layers.matmul(
+        logits = paddle.fluid.layers.matmul(
             x=final_attention_fc, y=all_emb,
             transpose_y=True)  # [batch_size, all_vocab]
-        softmax = layers.softmax_with_cross_entropy(
+        softmax = paddle.nn.functional.softmax_with_cross_entropy(
             logits=logits, label=inputs[6])  # [batch_size, 1]
-        self.loss = layers.reduce_mean(softmax)  # [1]
+        self.loss = paddle.mean(x=softmax)  # [1]
         acc = RecallK(input=logits, label=inputs[6], k=20)
         self._cost = self.loss
 
@@ -243,11 +246,10 @@ class Model(ModelBase):
 
     def optimizer(self):
         step_per_epoch = self.corpus_size // self.train_batch_size
-        optimizer = fluid.optimizer.Adam(
-            learning_rate=fluid.layers.exponential_decay(
+        optimizer = paddle.optimizer.Adam(
+            learning_rate=paddle.fluid.layers.exponential_decay(
                 learning_rate=self.learning_rate,
                 decay_steps=self.decay_steps * step_per_epoch,
                 decay_rate=self.decay_rate),
-            regularization=fluid.regularizer.L2DecayRegularizer(
-                regularization_coeff=self.l2))
+            weight_decay=paddle.regularizer.L2Decay(coeff=self.l2))
         return optimizer

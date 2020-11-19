@@ -16,8 +16,7 @@ import math
 from functools import partial
 
 import numpy as np
-import paddle.fluid as fluid
-import paddle.fluid.layers as layers
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -29,17 +28,17 @@ def positionwise_feed_forward(x, d_inner_hid, d_hid, dropout_rate):
     This module consists of two linear transformations with a ReLU activation
     in between, which is applied to each position separately and identically.
     """
-    hidden = layers.fc(input=x,
-                       size=d_inner_hid,
-                       num_flatten_dims=2,
-                       act="relu")
+    hidden = paddle.static.nn.fc(x=x,
+                                 size=d_inner_hid,
+                                 num_flatten_dims=2,
+                                 activation="relu")
     if dropout_rate:
-        hidden = layers.dropout(
+        hidden = paddle.fluid.layers.nn.dropout(
             hidden,
             dropout_prob=dropout_rate,
             seed=dropout_seed,
             is_test=False)
-    out = layers.fc(input=hidden, size=d_hid, num_flatten_dims=2)
+    out = paddle.static.nn.fc(x=hidden, size=d_hid, num_flatten_dims=2)
     return out
 
 
@@ -54,14 +53,14 @@ def pre_post_process_layer(prev_out, out, process_cmd, dropout_rate=0.):
         if cmd == "a":  # add residual connection
             out = out + prev_out if prev_out else out
         elif cmd == "n":  # add layer normalization
-            out = layers.layer_norm(
+            out = paddle.static.nn.layer_norm(
                 out,
                 begin_norm_axis=len(out.shape) - 1,
-                param_attr=fluid.initializer.Constant(1.),
-                bias_attr=fluid.initializer.Constant(0.))
+                param_attr=paddle.nn.initializer.Constant(value=1.),
+                bias_attr=paddle.nn.initializer.Constant(value=0.))
         elif cmd == "d":  # add dropout
             if dropout_rate:
-                out = layers.dropout(
+                out = paddle.fluid.layers.nn.dropout(
                     out,
                     dropout_prob=dropout_rate,
                     seed=dropout_seed,
@@ -129,18 +128,18 @@ class Model(ModelBase):
             """
             Add linear projection to queries, keys, and values.
             """
-            q = fluid.layers.fc(input=queries,
-                                size=d_key * n_head,
-                                bias_attr=False,
-                                num_flatten_dims=2)
-            k = fluid.layers.fc(input=keys,
-                                size=d_key * n_head,
-                                bias_attr=False,
-                                num_flatten_dims=2)
-            v = fluid.layers.fc(input=values,
-                                size=d_value * n_head,
-                                bias_attr=False,
-                                num_flatten_dims=2)
+            q = paddle.static.nn.fc(x=queries,
+                                    size=d_key * n_head,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
+            k = paddle.static.nn.fc(x=keys,
+                                    size=d_key * n_head,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
+            v = paddle.static.nn.fc(x=values,
+                                    size=d_value * n_head,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
             return q, k, v
 
         def __split_heads_qkv(queries, keys, values, n_head, d_key, d_value):
@@ -152,19 +151,19 @@ class Model(ModelBase):
             """
             # The value 0 in shape attr means copying the corresponding dimension
             # size of the input as the output dimension size.
-            reshaped_q = fluid.layers.reshape(
+            reshaped_q = paddle.fluid.layers.nn.reshape(
                 x=queries, shape=[0, 0, n_head, d_key], inplace=True)
             # permuate the dimensions into:
             # [batch_size, n_head, max_sequence_len, hidden_size_per_head]
-            q = fluid.layers.transpose(x=reshaped_q, perm=[0, 2, 1, 3])
+            q = paddle.transpose(x=reshaped_q, perm=[0, 2, 1, 3])
             # For encoder-decoder attention in inference, insert the ops and vars
             # into global block to use as cache among beam search.
-            reshaped_k = fluid.layers.reshape(
+            reshaped_k = paddle.fluid.layers.nn.reshape(
                 x=keys, shape=[0, 0, n_head, d_key], inplace=True)
-            k = fluid.layers.transpose(x=reshaped_k, perm=[0, 2, 1, 3])
-            reshaped_v = fluid.layers.reshape(
+            k = paddle.transpose(x=reshaped_k, perm=[0, 2, 1, 3])
+            reshaped_v = paddle.fluid.layers.nn.reshape(
                 x=values, shape=[0, 0, n_head, d_value], inplace=True)
-            v = fluid.layers.transpose(x=reshaped_v, perm=[0, 2, 1, 3])
+            v = paddle.transpose(x=reshaped_v, perm=[0, 2, 1, 3])
 
             return q, k, v
 
@@ -172,17 +171,17 @@ class Model(ModelBase):
             """
             Scaled Dot-Product Attention
             """
-            product = fluid.layers.matmul(
+            product = paddle.fluid.layers.matmul(
                 x=q, y=k, transpose_y=True, alpha=d_key**-0.5)
 
-            weights = fluid.layers.softmax(product)
+            weights = paddle.nn.functional.softmax(x=product)
             if dropout_rate:
-                weights = fluid.layers.dropout(
+                weights = paddle.fluid.layers.nn.dropout(
                     weights,
                     dropout_prob=dropout_rate,
                     seed=None,
                     is_test=False)
-            out = fluid.layers.matmul(weights, v)
+            out = paddle.fluid.layers.matmul(weights, v)
             return out
 
         def __combine_heads(x):
@@ -193,10 +192,10 @@ class Model(ModelBase):
             if len(x.shape) != 4:
                 raise ValueError("Input(x) should be a 4-D Tensor.")
 
-            trans_x = fluid.layers.transpose(x, perm=[0, 2, 1, 3])
+            trans_x = paddle.transpose(x, perm=[0, 2, 1, 3])
             # The value 0 in shape attr means copying the corresponding dimension
             # size of the input as the output dimension size.
-            return fluid.layers.reshape(
+            return paddle.fluid.layers.nn.reshape(
                 x=trans_x,
                 shape=[0, 0, trans_x.shape[2] * trans_x.shape[3]],
                 inplace=True)
@@ -209,10 +208,10 @@ class Model(ModelBase):
 
         out = __combine_heads(ctx_multiheads)
 
-        proj_out = fluid.layers.fc(input=out,
-                                   size=d_model,
-                                   bias_attr=False,
-                                   num_flatten_dims=2)
+        proj_out = paddle.static.nn.fc(x=out,
+                                       size=d_model,
+                                       bias_attr=False,
+                                       num_flatten_dims=2)
 
         return proj_out
 
@@ -245,67 +244,68 @@ class Model(ModelBase):
         target_position = self._sparse_data_var[6]
         self.label = self._sparse_data_var[0]
 
-        item_emb_attr = fluid.ParamAttr(name="item_emb")
-        cat_emb_attr = fluid.ParamAttr(name="cat_emb")
-        position_emb_attr = fluid.ParamAttr(name="position_emb")
+        item_emb_attr = paddle.ParamAttr(name="item_emb")
+        cat_emb_attr = paddle.ParamAttr(name="cat_emb")
+        position_emb_attr = paddle.ParamAttr(name="position_emb")
 
-        hist_item_emb = fluid.embedding(
+        hist_item_emb = paddle.static.nn.embedding(
             input=hist_item_seq,
             size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
-        hist_cat_emb = fluid.embedding(
+        hist_cat_emb = paddle.static.nn.embedding(
             input=hist_cat_seq,
             size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
-        hist_position_emb = fluid.embedding(
+        hist_position_emb = paddle.static.nn.embedding(
             input=hist_cat_seq,
             size=[self.position_count, self.position_emb_size],
             param_attr=position_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_item_emb = fluid.embedding(
+        target_item_emb = paddle.static.nn.embedding(
             input=target_item,
             size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_cat_emb = fluid.embedding(
+        target_cat_emb = paddle.static.nn.embedding(
             input=target_cat,
             size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_position_emb = fluid.embedding(
+        target_position_emb = paddle.static.nn.embedding(
             input=target_position,
             size=[self.position_count, self.position_emb_size],
             param_attr=position_emb_attr,
             is_sparse=self.is_sparse)
 
-        item_sequence_target = fluid.layers.reduce_sum(
-            fluid.layers.sequence_concat([hist_item_emb, target_item_emb]),
-            dim=1)
-        cat_sequence_target = fluid.layers.reduce_sum(
-            fluid.layers.sequence_concat([hist_cat_emb, target_cat_emb]),
-            dim=1)
-        position_sequence_target = fluid.layers.reduce_sum(
-            fluid.layers.sequence_concat(
+        item_sequence_target = paddle.sum(
+            x=paddle.fluid.layers.sequence_concat(
+                [hist_item_emb, target_item_emb]),
+            axis=1)
+        cat_sequence_target = paddle.sum(x=paddle.fluid.layers.sequence_concat(
+            [hist_cat_emb, target_cat_emb]),
+                                         axis=1)
+        position_sequence_target = paddle.sum(
+            x=paddle.fluid.layers.sequence_concat(
                 [hist_position_emb, target_position_emb]),
-            dim=1)
+            axis=1)
 
-        whole_embedding_withlod = fluid.layers.concat(
-            [
+        whole_embedding_withlod = paddle.concat(
+            x=[
                 item_sequence_target, cat_sequence_target,
                 position_sequence_target
             ],
             axis=1)
-        pad_value = fluid.layers.assign(input=np.array(
+        pad_value = paddle.nn.functional.assign(input=np.array(
             [0.0], dtype=np.float32))
-        whole_embedding, _ = fluid.layers.sequence_pad(whole_embedding_withlod,
-                                                       pad_value)
+        whole_embedding, _ = paddle.fluid.layers.sequence_pad(
+            whole_embedding_withlod, pad_value)
 
         for _ in range(self.n_encoder_layers):
             enc_output = self.encoder_layer(whole_embedding)
@@ -313,34 +313,36 @@ class Model(ModelBase):
         enc_output = pre_process_layer(enc_output, self.preprocess_cmd,
                                        self.prepostprocess_dropout)
 
-        dnn_input = fluid.layers.reduce_sum(enc_output, dim=1)
+        dnn_input = paddle.sum(x=enc_output, axis=1)
 
         for s in self.layer_sizes:
-            dnn_input = fluid.layers.fc(
-                input=dnn_input,
+            dnn_input = paddle.static.nn.fc(
+                x=dnn_input,
                 size=s,
-                act=self.act,
-                param_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.TruncatedNormalInitializer(
+                activation=self.act,
+                weight_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.
+                    TruncatedNormalInitializer(
                         loc=0.0, scale=init_value_ / math.sqrt(float(10)))),
-                bias_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.TruncatedNormalInitializer(
+                bias_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.
+                    TruncatedNormalInitializer(
                         loc=0.0, scale=init_value_)))
 
-        y_dnn = fluid.layers.fc(input=dnn_input, size=1, act=None)
+        y_dnn = paddle.static.nn.fc(x=dnn_input, size=1, activation=None)
 
-        self.predict = fluid.layers.sigmoid(y_dnn)
-        cost = fluid.layers.log_loss(
-            input=self.predict, label=fluid.layers.cast(self.label, "float32"))
-        avg_cost = fluid.layers.reduce_sum(cost)
+        self.predict = paddle.nn.functional.sigmoid(y_dnn)
+        cost = paddle.nn.functional.log_loss(
+            input=self.predict, label=paddle.cast(self.label, "float32"))
+        avg_cost = paddle.sum(x=cost)
 
         self._cost = avg_cost
 
-        predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
-        label_int = fluid.layers.cast(self.label, 'int64')
-        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                     label=label_int,
-                                                     slide_steps=0)
+        predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
+        label_int = paddle.cast(self.label, 'int64')
+        auc_var, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                            label=label_int,
+                                                            slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
         if is_infer:

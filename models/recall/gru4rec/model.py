@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
-
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 from paddlerec.core.metrics import RecallK
+import paddle
 
 
 class Model(ModelBase):
@@ -38,9 +37,9 @@ class Model(ModelBase):
     def input_data(self, is_infer=False, **kwargs):
 
         # Input data
-        src_wordseq = fluid.data(
+        src_wordseq = paddle.static.data(
             name="src_wordseq", shape=[None, 1], dtype="int64", lod_level=1)
-        dst_wordseq = fluid.data(
+        dst_wordseq = paddle.static.data(
             name="dst_wordseq", shape=[None, 1], dtype="int64", lod_level=1)
 
         return [src_wordseq, dst_wordseq]
@@ -49,45 +48,45 @@ class Model(ModelBase):
         src_wordseq = inputs[0]
         dst_wordseq = inputs[1]
 
-        emb = fluid.embedding(
+        emb = paddle.static.nn.embedding(
             input=src_wordseq,
             size=[self.vocab_size, self.hid_size],
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name="emb",
-                initializer=fluid.initializer.Uniform(
+                initializer=paddle.fluid.initializer.Uniform(
                     low=self.init_low_bound, high=self.init_high_bound),
                 learning_rate=self.emb_lr_x),
             is_sparse=True)
-        fc0 = fluid.layers.fc(input=emb,
-                              size=self.hid_size * 3,
-                              param_attr=fluid.ParamAttr(
-                                  initializer=fluid.initializer.Uniform(
-                                      low=self.init_low_bound,
-                                      high=self.init_high_bound),
-                                  learning_rate=self.gru_lr_x))
-        gru_h0 = fluid.layers.dynamic_gru(
+        fc0 = paddle.static.nn.fc(
+            x=emb,
+            size=self.hid_size * 3,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
+                    low=self.init_low_bound, high=self.init_high_bound),
+                learning_rate=self.gru_lr_x))
+        gru_h0 = paddle.fluid.layers.dynamic_gru(
             input=fc0,
             size=self.hid_size,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.Uniform(
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
                     low=self.init_low_bound, high=self.init_high_bound),
                 learning_rate=self.gru_lr_x))
 
-        fc = fluid.layers.fc(input=gru_h0,
-                             size=self.vocab_size,
-                             act='softmax',
-                             param_attr=fluid.ParamAttr(
-                                 initializer=fluid.initializer.Uniform(
-                                     low=self.init_low_bound,
-                                     high=self.init_high_bound),
-                                 learning_rate=self.fc_lr_x))
-        cost = fluid.layers.cross_entropy(input=fc, label=dst_wordseq)
+        fc = paddle.static.nn.fc(
+            x=gru_h0,
+            size=self.vocab_size,
+            activation='softmax',
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Uniform(
+                    low=self.init_low_bound, high=self.init_high_bound),
+                learning_rate=self.fc_lr_x))
+        cost = paddle.fluid.layers.cross_entropy(input=fc, label=dst_wordseq)
         acc = RecallK(input=fc, label=dst_wordseq, k=self.recall_k)
 
         if is_infer:
             self._infer_results['Recall@20'] = acc
             return
-        avg_cost = fluid.layers.mean(x=cost)
+        avg_cost = paddle.mean(x=cost)
 
         self._cost = avg_cost
         self._metrics["cost"] = avg_cost

@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
-
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+import paddle
 
 
 class Model(ModelBase):
@@ -40,33 +39,35 @@ class Model(ModelBase):
     def input_data(self, is_infer=False, **kwargs):
         seq_len = -1
         self.data_var = []
-        hist_item_seq = fluid.data(
+        hist_item_seq = paddle.static.data(
             name="hist_item_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(hist_item_seq)
 
-        hist_cat_seq = fluid.data(
+        hist_cat_seq = paddle.static.data(
             name="hist_cat_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(hist_cat_seq)
 
-        target_item = fluid.data(
+        target_item = paddle.static.data(
             name="target_item", shape=[None], dtype="int64")
         self.data_var.append(target_item)
 
-        target_cat = fluid.data(name="target_cat", shape=[None], dtype="int64")
+        target_cat = paddle.static.data(
+            name="target_cat", shape=[None], dtype="int64")
         self.data_var.append(target_cat)
 
-        label = fluid.data(name="label", shape=[None, 1], dtype="float32")
+        label = paddle.static.data(
+            name="label", shape=[None, 1], dtype="float32")
         self.data_var.append(label)
 
-        mask = fluid.data(
+        mask = paddle.static.data(
             name="mask", shape=[None, seq_len, 1], dtype="float32")
         self.data_var.append(mask)
 
-        target_item_seq = fluid.data(
+        target_item_seq = paddle.static.data(
             name="target_item_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(target_item_seq)
 
-        target_cat_seq = fluid.data(
+        target_cat_seq = paddle.static.data(
             name="target_cat_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(target_cat_seq)
 
@@ -80,29 +81,31 @@ class Model(ModelBase):
 
         hidden_size = hist.shape[-1]
 
-        concat = fluid.layers.concat(
-            [hist, target_expand, hist - target_expand, hist * target_expand],
+        concat = paddle.concat(
+            x=[
+                hist, target_expand, hist - target_expand, hist * target_expand
+            ],
             axis=2)
-        atten_fc1 = fluid.layers.fc(name="atten_fc1",
-                                    input=concat,
-                                    size=80,
-                                    act=self.act,
-                                    num_flatten_dims=2)
-        atten_fc2 = fluid.layers.fc(name="atten_fc2",
-                                    input=atten_fc1,
-                                    size=40,
-                                    act=self.act,
-                                    num_flatten_dims=2)
-        atten_fc3 = fluid.layers.fc(name="atten_fc3",
-                                    input=atten_fc2,
-                                    size=1,
-                                    num_flatten_dims=2)
+        atten_fc1 = paddle.static.nn.fc(name="atten_fc1",
+                                        x=concat,
+                                        size=80,
+                                        activation=self.act,
+                                        num_flatten_dims=2)
+        atten_fc2 = paddle.static.nn.fc(name="atten_fc2",
+                                        x=atten_fc1,
+                                        size=40,
+                                        activation=self.act,
+                                        num_flatten_dims=2)
+        atten_fc3 = paddle.static.nn.fc(name="atten_fc3",
+                                        x=atten_fc2,
+                                        size=1,
+                                        num_flatten_dims=2)
         atten_fc3 += mask
-        atten_fc3 = fluid.layers.transpose(x=atten_fc3, perm=[0, 2, 1])
-        atten_fc3 = fluid.layers.scale(x=atten_fc3, scale=hidden_size**-0.5)
-        weight = fluid.layers.softmax(atten_fc3)
-        out = fluid.layers.matmul(weight, hist)
-        out = fluid.layers.reshape(x=out, shape=[0, hidden_size])
+        atten_fc3 = paddle.transpose(x=atten_fc3, perm=[0, 2, 1])
+        atten_fc3 = paddle.scale(x=atten_fc3, scale=hidden_size**-0.5)
+        weight = paddle.nn.functional.softmax(x=atten_fc3)
+        out = paddle.fluid.layers.matmul(weight, hist)
+        out = paddle.fluid.layers.nn.reshape(x=out, shape=[0, hidden_size])
         return out
 
     def net(self, inputs, is_infer=False):
@@ -115,84 +118,88 @@ class Model(ModelBase):
         target_item_seq = inputs[6]
         target_cat_seq = inputs[7]
 
-        item_emb_attr = fluid.ParamAttr(name="item_emb")
-        cat_emb_attr = fluid.ParamAttr(name="cat_emb")
+        item_emb_attr = paddle.ParamAttr(name="item_emb")
+        cat_emb_attr = paddle.ParamAttr(name="cat_emb")
 
-        hist_item_emb = fluid.embedding(
+        hist_item_emb = paddle.static.nn.embedding(
             input=hist_item_seq,
             size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
-        hist_cat_emb = fluid.embedding(
+        hist_cat_emb = paddle.static.nn.embedding(
             input=hist_cat_seq,
             size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_item_emb = fluid.embedding(
+        target_item_emb = paddle.static.nn.embedding(
             input=target_item,
             size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_cat_emb = fluid.embedding(
+        target_cat_emb = paddle.static.nn.embedding(
             input=target_cat,
             size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_item_seq_emb = fluid.embedding(
+        target_item_seq_emb = paddle.static.nn.embedding(
             input=target_item_seq,
             size=[self.item_count, self.item_emb_size],
             param_attr=item_emb_attr,
             is_sparse=self.is_sparse)
 
-        target_cat_seq_emb = fluid.embedding(
+        target_cat_seq_emb = paddle.static.nn.embedding(
             input=target_cat_seq,
             size=[self.cat_count, self.cat_emb_size],
             param_attr=cat_emb_attr,
             is_sparse=self.is_sparse)
 
-        item_b = fluid.embedding(
+        item_b = paddle.static.nn.embedding(
             input=target_item,
             size=[self.item_count, 1],
-            param_attr=fluid.initializer.Constant(value=0.0))
+            param_attr=paddle.nn.initializer.Constant(value=0.0))
 
-        hist_seq_concat = fluid.layers.concat(
-            [hist_item_emb, hist_cat_emb], axis=2)
-        target_seq_concat = fluid.layers.concat(
-            [target_item_seq_emb, target_cat_seq_emb], axis=2)
-        target_concat = fluid.layers.concat(
-            [target_item_emb, target_cat_emb], axis=1)
+        hist_seq_concat = paddle.concat(
+            x=[hist_item_emb, hist_cat_emb], axis=2)
+        target_seq_concat = paddle.concat(
+            x=[target_item_seq_emb, target_cat_seq_emb], axis=2)
+        target_concat = paddle.concat(
+            x=[target_item_emb, target_cat_emb], axis=1)
 
         out = self.din_attention(hist_seq_concat, target_seq_concat, mask)
-        out_fc = fluid.layers.fc(name="out_fc",
-                                 input=out,
-                                 size=self.item_emb_size + self.cat_emb_size,
-                                 num_flatten_dims=1)
-        embedding_concat = fluid.layers.concat([out_fc, target_concat], axis=1)
+        out_fc = paddle.static.nn.fc(
+            name="out_fc",
+            x=out,
+            size=self.item_emb_size + self.cat_emb_size,
+            num_flatten_dims=1)
+        embedding_concat = paddle.concat(x=[out_fc, target_concat], axis=1)
 
-        fc1 = fluid.layers.fc(name="fc1",
-                              input=embedding_concat,
-                              size=80,
-                              act=self.act)
-        fc2 = fluid.layers.fc(name="fc2", input=fc1, size=40, act=self.act)
-        fc3 = fluid.layers.fc(name="fc3", input=fc2, size=1)
+        fc1 = paddle.static.nn.fc(name="fc1",
+                                  x=embedding_concat,
+                                  size=80,
+                                  activation=self.act)
+        fc2 = paddle.static.nn.fc(name="fc2",
+                                  x=fc1,
+                                  size=40,
+                                  activation=self.act)
+        fc3 = paddle.static.nn.fc(name="fc3", x=fc2, size=1)
         logit = fc3 + item_b
 
-        loss = fluid.layers.sigmoid_cross_entropy_with_logits(
+        loss = paddle.fluid.layers.sigmoid_cross_entropy_with_logits(
             x=logit, label=label)
 
-        avg_loss = fluid.layers.mean(loss)
+        avg_loss = paddle.mean(x=loss)
         self._cost = avg_loss
 
-        self.predict = fluid.layers.sigmoid(logit)
-        predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
-        label_int = fluid.layers.cast(label, 'int64')
-        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                     label=label_int,
-                                                     slide_steps=0)
+        self.predict = paddle.nn.functional.sigmoid(logit)
+        predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
+        label_int = paddle.cast(label, 'int64')
+        auc_var, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                            label=label_int,
+                                                            slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
         if is_infer:

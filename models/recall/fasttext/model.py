@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import numpy as np
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -42,24 +42,24 @@ class Model(ModelBase):
 
     def input_data(self, is_infer=False, **kwargs):
         if is_infer:
-            analogy_a = fluid.data(
+            analogy_a = paddle.static.data(
                 name="analogy_a", shape=[None, 1], lod_level=1, dtype='int64')
-            analogy_b = fluid.data(
+            analogy_b = paddle.static.data(
                 name="analogy_b", shape=[None, 1], lod_level=1, dtype='int64')
-            analogy_c = fluid.data(
+            analogy_c = paddle.static.data(
                 name="analogy_c", shape=[None, 1], lod_level=1, dtype='int64')
-            analogy_d = fluid.data(
+            analogy_d = paddle.static.data(
                 name="analogy_d", shape=[None, 1], dtype='int64')
             return [analogy_a, analogy_b, analogy_c, analogy_d]
 
-        input_word = fluid.data(
+        input_word = paddle.static.data(
             name="input_word", shape=[None, 1], lod_level=1, dtype='int64')
-        true_word = fluid.data(
+        true_word = paddle.static.data(
             name='true_label', shape=[None, 1], lod_level=1, dtype='int64')
         if self.with_shuffle_batch:
             return [input_word, true_word]
 
-        neg_word = fluid.data(
+        neg_word = paddle.static.data(
             name="neg_label", shape=[None, self.neg_num], dtype='int64')
         return [input_word, true_word, neg_word]
 
@@ -72,73 +72,71 @@ class Model(ModelBase):
                             table_name,
                             initializer_instance=None,
                             sequence_pool=False):
-            emb = fluid.embedding(
+            emb = paddle.static.nn.embedding(
                 input=input,
                 is_sparse=True,
                 is_distributed=self.is_distributed,
                 size=[self.sparse_feature_number, self.sparse_feature_dim],
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name=table_name, initializer=initializer_instance), )
             if sequence_pool:
-                emb = fluid.layers.sequence_pool(
+                emb = paddle.fluid.layers.sequence_pool(
                     input=emb, pool_type='average')
             return emb
 
         init_width = 1.0 / self.sparse_feature_dim
-        emb_initializer = fluid.initializer.Uniform(-init_width, init_width)
-        emb_w_initializer = fluid.initializer.Constant(value=0.0)
+        emb_initializer = paddle.fluid.initializer.Uniform(-init_width,
+                                                           init_width)
+        emb_w_initializer = paddle.nn.initializer.Constant(value=0.0)
 
         input_emb = embedding_layer(inputs[0], "emb", emb_initializer, True)
-        input_emb = fluid.layers.squeeze(input=input_emb, axes=[1])
+        input_emb = paddle.squeeze(x=input_emb, axis=[1])
         true_emb_w = embedding_layer(inputs[1], "emb_w", emb_w_initializer,
                                      True)
-        true_emb_w = fluid.layers.squeeze(input=true_emb_w, axes=[1])
+        true_emb_w = paddle.squeeze(x=true_emb_w, axis=[1])
 
         if self.with_shuffle_batch:
             neg_emb_w_list = []
             for i in range(self.neg_num):
                 neg_emb_w_list.append(
-                    fluid.contrib.layers.shuffle_batch(
+                    paddle.fluid.contrib.layers.shuffle_batch(
                         true_emb_w))  # shuffle true_word
-            neg_emb_w_concat = fluid.layers.concat(neg_emb_w_list, axis=0)
-            neg_emb_w = fluid.layers.reshape(
+            neg_emb_w_concat = paddle.concat(x=neg_emb_w_list, axis=0)
+            neg_emb_w = paddle.fluid.layers.nn.reshape(
                 neg_emb_w_concat,
                 shape=[-1, self.neg_num, self.sparse_feature_dim])
         else:
             neg_emb_w = embedding_layer(inputs[2], "emb_w", emb_w_initializer)
-        true_logits = fluid.layers.reduce_sum(
-            fluid.layers.elementwise_mul(input_emb, true_emb_w),
-            dim=1,
-            keep_dim=True)
+        true_logits = paddle.sum(x=paddle.multiply(
+            x=input_emb, y=true_emb_w),
+                                 axis=1,
+                                 keepdim=True)
 
-        input_emb_re = fluid.layers.reshape(
+        input_emb_re = paddle.fluid.layers.nn.reshape(
             input_emb, shape=[-1, 1, self.sparse_feature_dim])
-        neg_matmul = fluid.layers.matmul(
+        neg_matmul = paddle.fluid.layers.matmul(
             input_emb_re, neg_emb_w, transpose_y=True)
-        neg_logits = fluid.layers.reshape(neg_matmul, shape=[-1, 1])
+        neg_logits = paddle.fluid.layers.nn.reshape(neg_matmul, shape=[-1, 1])
 
-        logits = fluid.layers.concat([true_logits, neg_logits], axis=0)
-        label_ones = fluid.layers.fill_constant(
-            shape=[fluid.layers.shape(true_logits)[0], 1],
-            value=1.0,
-            dtype='float32')
-        label_zeros = fluid.layers.fill_constant(
-            shape=[fluid.layers.shape(neg_logits)[0], 1],
-            value=0.0,
-            dtype='float32')
-        label = fluid.layers.concat([label_ones, label_zeros], axis=0)
+        logits = paddle.concat(x=[true_logits, neg_logits], axis=0)
+        label_ones = paddle.full(
+            shape=[paddle.shape(true_logits)[0], 1], fill_value=1.0)
+        label_zeros = paddle.full(
+            shape=[paddle.shape(neg_logits)[0], 1], fill_value=0.0)
+        label = paddle.concat(x=[label_ones, label_zeros], axis=0)
         label.stop_gradient = True
 
-        loss = fluid.layers.log_loss(fluid.layers.sigmoid(logits), label)
-        avg_cost = fluid.layers.reduce_sum(loss)
+        loss = paddle.nn.functional.log_loss(
+            paddle.nn.functional.sigmoid(logits), label)
+        avg_cost = paddle.sum(x=loss)
 
-        global_right_cnt = fluid.layers.create_global_var(
+        global_right_cnt = paddle.fluid.layers.create_global_var(
             name="global_right_cnt",
             persistable=True,
             dtype='float32',
             shape=[1],
             value=0)
-        global_total_cnt = fluid.layers.create_global_var(
+        global_total_cnt = paddle.fluid.layers.create_global_var(
             name="global_total_cnt",
             persistable=True,
             dtype='float32',
@@ -150,8 +148,8 @@ class Model(ModelBase):
         self._metrics["LOSS"] = avg_cost
 
     def optimizer(self):
-        optimizer = fluid.optimizer.SGD(
-            learning_rate=fluid.layers.exponential_decay(
+        optimizer = paddle.fluid.optimizer.SGD(
+            learning_rate=paddle.fluid.layers.exponential_decay(
                 learning_rate=self.learning_rate,
                 decay_steps=self.decay_steps,
                 decay_rate=self.decay_rate,
@@ -163,45 +161,47 @@ class Model(ModelBase):
                             table_name,
                             initializer_instance=None,
                             sequence_pool=False):
-            emb = fluid.embedding(
+            emb = paddle.static.nn.embedding(
                 input=input,
                 size=[self.sparse_feature_number, self.sparse_feature_dim],
                 param_attr=table_name)
             if sequence_pool:
-                emb = fluid.layers.sequence_pool(
+                emb = paddle.fluid.layers.sequence_pool(
                     input=emb, pool_type='average')
             return emb
 
         all_label = np.arange(self.sparse_feature_number).reshape(
             self.sparse_feature_number).astype('int32')
-        self.all_label = fluid.layers.cast(
-            x=fluid.layers.assign(all_label), dtype='int64')
+        self.all_label = paddle.cast(
+            x=paddle.nn.functional.assign(all_label), dtype='int64')
         emb_all_label = embedding_layer(self.all_label, "emb")
         emb_a = embedding_layer(inputs[0], "emb", sequence_pool=True)
         emb_b = embedding_layer(inputs[1], "emb", sequence_pool=True)
         emb_c = embedding_layer(inputs[2], "emb", sequence_pool=True)
 
-        target = fluid.layers.elementwise_add(
-            fluid.layers.elementwise_sub(emb_b, emb_a), emb_c)
+        target = paddle.add(
+            x=paddle.fluid.layers.nn.elementwise_sub(emb_b, emb_a), y=emb_c)
 
-        emb_all_label_l2 = fluid.layers.l2_normalize(x=emb_all_label, axis=1)
-        dist = fluid.layers.matmul(
+        emb_all_label_l2 = paddle.fluid.layers.l2_normalize(
+            x=emb_all_label, axis=1)
+        dist = paddle.fluid.layers.matmul(
             x=target, y=emb_all_label_l2, transpose_y=True)
-        values, pred_idx = fluid.layers.topk(input=dist, k=4)
-        label = fluid.layers.expand(inputs[3], expand_times=[1, 4])
-        label_ones = fluid.layers.fill_constant_batch_size_like(
+        values, pred_idx = paddle.topk(x=dist, k=4)
+        label = paddle.fluid.layers.expand(inputs[3], expand_times=[1, 4])
+        label_ones = paddle.fluid.layers.fill_constant_batch_size_like(
             label, shape=[-1, 1], value=1.0, dtype='float32')
-        right_cnt = fluid.layers.reduce_sum(input=fluid.layers.cast(
-            fluid.layers.equal(pred_idx, label), dtype='float32'))
-        total_cnt = fluid.layers.reduce_sum(label_ones)
+        right_cnt = paddle.sum(x=paddle.cast(
+            paddle.equal(
+                x=pred_idx, y=label), dtype='float32'))
+        total_cnt = paddle.sum(x=label_ones)
 
-        global_right_cnt = fluid.layers.create_global_var(
+        global_right_cnt = paddle.fluid.layers.create_global_var(
             name="global_right_cnt",
             persistable=True,
             dtype='float32',
             shape=[1],
             value=0)
-        global_total_cnt = fluid.layers.create_global_var(
+        global_total_cnt = paddle.fluid.layers.create_global_var(
             name="global_total_cnt",
             persistable=True,
             dtype='float32',
@@ -210,12 +210,12 @@ class Model(ModelBase):
         global_right_cnt.stop_gradient = True
         global_total_cnt.stop_gradient = True
 
-        tmp1 = fluid.layers.elementwise_add(right_cnt, global_right_cnt)
-        fluid.layers.assign(tmp1, global_right_cnt)
+        tmp1 = paddle.add(x=right_cnt, y=global_right_cnt)
+        paddle.nn.functional.assign(tmp1, global_right_cnt)
 
-        tmp2 = fluid.layers.elementwise_add(total_cnt, global_total_cnt)
-        fluid.layers.assign(tmp2, global_total_cnt)
+        tmp2 = paddle.add(x=total_cnt, y=global_total_cnt)
+        paddle.nn.functional.assign(tmp2, global_total_cnt)
 
-        acc = fluid.layers.elementwise_div(
-            global_right_cnt, global_total_cnt, name="total_acc")
+        acc = paddle.divide(
+            x=global_right_cnt, y=global_total_cnt, name="total_acc")
         self._infer_results['acc'] = acc

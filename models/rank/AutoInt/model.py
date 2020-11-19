@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import math
-
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -53,18 +52,18 @@ class Model(ModelBase):
             """
             Add linear projection to queries, keys, and values.
             """
-            q = fluid.layers.fc(input=queries,
-                                size=d_key * n_head,
-                                bias_attr=False,
-                                num_flatten_dims=2)
-            k = fluid.layers.fc(input=keys,
-                                size=d_key * n_head,
-                                bias_attr=False,
-                                num_flatten_dims=2)
-            v = fluid.layers.fc(input=values,
-                                size=d_value * n_head,
-                                bias_attr=False,
-                                num_flatten_dims=2)
+            q = paddle.static.nn.fc(x=queries,
+                                    size=d_key * n_head,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
+            k = paddle.static.nn.fc(x=keys,
+                                    size=d_key * n_head,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
+            v = paddle.static.nn.fc(x=values,
+                                    size=d_value * n_head,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
             return q, k, v
 
         def __split_heads_qkv(queries, keys, values, n_head, d_key, d_value):
@@ -76,19 +75,19 @@ class Model(ModelBase):
             """
             # The value 0 in shape attr means copying the corresponding dimension
             # size of the input as the output dimension size.
-            reshaped_q = fluid.layers.reshape(
+            reshaped_q = paddle.fluid.layers.nn.reshape(
                 x=queries, shape=[0, 0, n_head, d_key], inplace=True)
             # permuate the dimensions into:
             # [batch_size, n_head, max_sequence_len, hidden_size_per_head]
-            q = fluid.layers.transpose(x=reshaped_q, perm=[0, 2, 1, 3])
+            q = paddle.transpose(x=reshaped_q, perm=[0, 2, 1, 3])
             # For encoder-decoder attention in inference, insert the ops and vars
             # into global block to use as cache among beam search.
-            reshaped_k = fluid.layers.reshape(
+            reshaped_k = paddle.fluid.layers.nn.reshape(
                 x=keys, shape=[0, 0, n_head, d_key], inplace=True)
-            k = fluid.layers.transpose(x=reshaped_k, perm=[0, 2, 1, 3])
-            reshaped_v = fluid.layers.reshape(
+            k = paddle.transpose(x=reshaped_k, perm=[0, 2, 1, 3])
+            reshaped_v = paddle.fluid.layers.nn.reshape(
                 x=values, shape=[0, 0, n_head, d_value], inplace=True)
-            v = fluid.layers.transpose(x=reshaped_v, perm=[0, 2, 1, 3])
+            v = paddle.transpose(x=reshaped_v, perm=[0, 2, 1, 3])
 
             return q, k, v
 
@@ -96,17 +95,17 @@ class Model(ModelBase):
             """
             Scaled Dot-Product Attention
             """
-            product = fluid.layers.matmul(
+            product = paddle.fluid.layers.matmul(
                 x=q, y=k, transpose_y=True, alpha=d_key**-0.5)
 
-            weights = fluid.layers.softmax(product)
+            weights = paddle.nn.functional.softmax(x=product)
             if dropout_rate:
-                weights = fluid.layers.dropout(
+                weights = paddle.fluid.layers.nn.dropout(
                     weights,
                     dropout_prob=dropout_rate,
                     seed=None,
                     is_test=False)
-            out = fluid.layers.matmul(weights, v)
+            out = paddle.fluid.layers.matmul(weights, v)
             return out
 
         def __combine_heads(x):
@@ -117,10 +116,10 @@ class Model(ModelBase):
             if len(x.shape) != 4:
                 raise ValueError("Input(x) should be a 4-D Tensor.")
 
-            trans_x = fluid.layers.transpose(x, perm=[0, 2, 1, 3])
+            trans_x = paddle.transpose(x, perm=[0, 2, 1, 3])
             # The value 0 in shape attr means copying the corresponding dimension
             # size of the input as the output dimension size.
-            return fluid.layers.reshape(
+            return paddle.fluid.layers.nn.reshape(
                 x=trans_x,
                 shape=[0, 0, trans_x.shape[2] * trans_x.shape[3]],
                 inplace=True)
@@ -139,11 +138,11 @@ class Model(ModelBase):
         attention_out = self.multi_head_attention(
             x, None, None, self.d_key, self.d_value, self.d_model, self.n_head,
             self.dropout_rate)
-        W_0_x = fluid.layers.fc(input=x,
-                                size=self.d_model,
-                                bias_attr=False,
-                                num_flatten_dims=2)
-        res_out = fluid.layers.relu(attention_out + W_0_x)
+        W_0_x = paddle.static.nn.fc(x=x,
+                                    size=self.d_model,
+                                    bias_attr=False,
+                                    num_flatten_dims=2)
+        res_out = paddle.nn.functional.relu(attention_out + W_0_x)
 
         return res_out
 
@@ -158,24 +157,25 @@ class Model(ModelBase):
         self.label = self._sparse_data_var[0]
 
         feat_idx = raw_feat_idx
-        feat_value = fluid.layers.reshape(
+        feat_value = paddle.fluid.layers.nn.reshape(
             raw_feat_value, [-1, self.num_field, 1])  # None * num_field * 1
 
         # ------------------------- Embedding --------------------------
 
-        feat_embeddings_re = fluid.embedding(
+        feat_embeddings_re = paddle.static.nn.embedding(
             input=feat_idx,
             is_sparse=True,
             is_distributed=is_distributed,
             dtype='float32',
             size=[self.sparse_feature_number + 1, self.sparse_feature_dim],
             padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.
+                TruncatedNormalInitializer(
                     loc=0.0,
                     scale=init_value_ /
                     math.sqrt(float(self.sparse_feature_dim)))))
-        feat_embeddings = fluid.layers.reshape(
+        feat_embeddings = paddle.fluid.layers.nn.reshape(
             feat_embeddings_re,
             shape=[-1, self.num_field, self.sparse_feature_dim
                    ])  # None * num_field * embedding_size
@@ -192,31 +192,31 @@ class Model(ModelBase):
 
         # ------------------------- DNN --------------------------
 
-        dnn_input = fluid.layers.flatten(interacting_layer_out, axis=1)
+        dnn_input = paddle.fluid.layers.flatten(interacting_layer_out, axis=1)
 
-        y_dnn = fluid.layers.fc(
-            input=dnn_input,
+        y_dnn = paddle.static.nn.fc(
+            x=dnn_input,
             size=1,
-            act=None,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_)),
-            bias_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_)))
+            activation=None,
+            weight_attr=paddle.ParamAttr(initializer=paddle.fluid.initializer.
+                                         TruncatedNormalInitializer(
+                                             loc=0.0, scale=init_value_)),
+            bias_attr=paddle.ParamAttr(initializer=paddle.fluid.initializer.
+                                       TruncatedNormalInitializer(
+                                           loc=0.0, scale=init_value_)))
 
-        self.predict = fluid.layers.sigmoid(y_dnn)
-        cost = fluid.layers.log_loss(
-            input=self.predict, label=fluid.layers.cast(self.label, "float32"))
-        avg_cost = fluid.layers.reduce_sum(cost)
+        self.predict = paddle.nn.functional.sigmoid(y_dnn)
+        cost = paddle.nn.functional.log_loss(
+            input=self.predict, label=paddle.cast(self.label, "float32"))
+        avg_cost = paddle.sum(x=cost)
 
         self._cost = avg_cost
 
-        predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
-        label_int = fluid.layers.cast(self.label, 'int64')
-        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                     label=label_int,
-                                                     slide_steps=0)
+        predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
+        label_int = paddle.cast(self.label, 'int64')
+        auc_var, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                            label=label_int,
+                                                            slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
         if is_infer:

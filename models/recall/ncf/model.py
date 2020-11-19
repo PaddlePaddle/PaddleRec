@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import math
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -31,11 +31,11 @@ class Model(ModelBase):
         self.layers = envs.get_global_env("hyper_parameters.fc_layers")
 
     def input_data(self, is_infer=False, **kwargs):
-        user_input = fluid.data(
+        user_input = paddle.static.data(
             name="user_input", shape=[-1, 1], dtype="int64", lod_level=0)
-        item_input = fluid.data(
+        item_input = paddle.static.data(
             name="item_input", shape=[-1, 1], dtype="int64", lod_level=0)
-        label = fluid.data(
+        label = paddle.static.data(
             name="label", shape=[-1, 1], dtype="int64", lod_level=0)
         if is_infer:
             inputs = [user_input] + [item_input]
@@ -48,77 +48,78 @@ class Model(ModelBase):
 
         num_layer = len(self.layers)  # Number of layers in the MLP
 
-        MF_Embedding_User = fluid.embedding(
+        MF_Embedding_User = paddle.static.nn.embedding(
             input=inputs[0],
             size=[self.num_users, self.latent_dim],
-            param_attr=fluid.initializer.Normal(
+            param_attr=paddle.fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
-        MF_Embedding_Item = fluid.embedding(
+        MF_Embedding_Item = paddle.static.nn.embedding(
             input=inputs[1],
             size=[self.num_items, self.latent_dim],
-            param_attr=fluid.initializer.Normal(
+            param_attr=paddle.fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
 
-        MLP_Embedding_User = fluid.embedding(
+        MLP_Embedding_User = paddle.static.nn.embedding(
             input=inputs[0],
             size=[self.num_users, int(self.layers[0] / 2)],
-            param_attr=fluid.initializer.Normal(
+            param_attr=paddle.fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
-        MLP_Embedding_Item = fluid.embedding(
+        MLP_Embedding_Item = paddle.static.nn.embedding(
             input=inputs[1],
             size=[self.num_items, int(self.layers[0] / 2)],
-            param_attr=fluid.initializer.Normal(
+            param_attr=paddle.fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
 
         # MF part
-        mf_user_latent = fluid.layers.flatten(x=MF_Embedding_User, axis=1)
-        mf_item_latent = fluid.layers.flatten(x=MF_Embedding_Item, axis=1)
-        mf_vector = fluid.layers.elementwise_mul(mf_user_latent,
-                                                 mf_item_latent)
+        mf_user_latent = paddle.fluid.layers.flatten(
+            x=MF_Embedding_User, axis=1)
+        mf_item_latent = paddle.fluid.layers.flatten(
+            x=MF_Embedding_Item, axis=1)
+        mf_vector = paddle.multiply(x=mf_user_latent, y=mf_item_latent)
 
         # MLP part
         # The 0-th layer is the concatenation of embedding layers
-        mlp_user_latent = fluid.layers.flatten(x=MLP_Embedding_User, axis=1)
-        mlp_item_latent = fluid.layers.flatten(x=MLP_Embedding_Item, axis=1)
-        mlp_vector = fluid.layers.concat(
-            input=[mlp_user_latent, mlp_item_latent], axis=-1)
+        mlp_user_latent = paddle.fluid.layers.flatten(
+            x=MLP_Embedding_User, axis=1)
+        mlp_item_latent = paddle.fluid.layers.flatten(
+            x=MLP_Embedding_Item, axis=1)
+        mlp_vector = paddle.concat(
+            x=[mlp_user_latent, mlp_item_latent], axis=-1)
 
         for i in range(1, num_layer):
-            mlp_vector = fluid.layers.fc(
-                input=mlp_vector,
+            mlp_vector = paddle.static.nn.fc(
+                x=mlp_vector,
                 size=self.layers[i],
-                act='relu',
-                param_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.TruncatedNormal(
+                activation='relu',
+                weight_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.
+                    TruncatedNormalInitializer(
                         loc=0.0, scale=1.0 / math.sqrt(mlp_vector.shape[1])),
-                    regularizer=fluid.regularizer.L2DecayRegularizer(
-                        regularization_coeff=1e-4)),
+                    regularizer=paddle.regularizer.L2Decay(coeff=1e-4)),
                 name='layer_' + str(i))
 
         # Concatenate MF and MLP parts
-        predict_vector = fluid.layers.concat(
-            input=[mf_vector, mlp_vector], axis=-1)
+        predict_vector = paddle.concat(x=[mf_vector, mlp_vector], axis=-1)
 
         # Final prediction layer
-        prediction = fluid.layers.fc(
-            input=predict_vector,
+        prediction = paddle.static.nn.fc(
+            x=predict_vector,
             size=1,
-            act='sigmoid',
-            param_attr=fluid.initializer.MSRAInitializer(uniform=True),
+            activation='sigmoid',
+            weight_attr=paddle.fluid.initializer.MSRAInitializer(uniform=True),
             name='prediction')
         if is_infer:
             self._infer_results["prediction"] = prediction
             return
 
-        cost = fluid.layers.log_loss(
-            input=prediction,
-            label=fluid.layers.cast(
+        cost = paddle.nn.functional.log_loss(
+            input=prediction, label=paddle.cast(
                 x=inputs[2], dtype='float32'))
-        avg_cost = fluid.layers.mean(cost)
+        avg_cost = paddle.mean(x=cost)
 
         self._cost = avg_cost
         self._metrics["cost"] = avg_cost

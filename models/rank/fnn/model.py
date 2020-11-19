@@ -14,8 +14,7 @@
 
 import math
 from collections import OrderedDict
-
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -44,53 +43,54 @@ class Model(ModelBase):
         init_value_ = 0.1
 
         feat_idx = raw_feat_idx
-        feat_value = fluid.layers.reshape(
+        feat_value = paddle.fluid.layers.nn.reshape(
             raw_feat_value,
             [-1, self.num_field, 1])  # batch_size * num_field * 1
 
         # ------------------------- first order term --------------------------
 
-        first_weights_re = fluid.embedding(
+        first_weights_re = paddle.static.nn.embedding(
             input=feat_idx,
             is_sparse=True,
             is_distributed=self.is_distributed,
             dtype='float32',
             size=[self.sparse_feature_number + 1, 1],
             padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.
+                TruncatedNormalInitializer(
                     loc=0.0, scale=init_value_),
-                regularizer=fluid.regularizer.L1DecayRegularizer(self.reg))
+                regularizer=paddle.regularizer.L1Decay(coeff=self.reg))
         )  # (batch_size * num_field) * 1 * 1(embedding_size)
-        first_weights = fluid.layers.reshape(
+        first_weights = paddle.fluid.layers.nn.reshape(
             first_weights_re,
             shape=[-1, self.num_field, 1])  # batch_size * num_field * 1
 
         # ------------------------- second order term --------------------------
 
-        feat_embeddings_re = fluid.embedding(
+        feat_embeddings_re = paddle.static.nn.embedding(
             input=feat_idx,
             is_sparse=True,
             is_distributed=self.is_distributed,
             dtype='float32',
             size=[self.sparse_feature_number + 1, self.sparse_feature_dim],
             padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
+            param_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.
+                TruncatedNormalInitializer(
                     loc=0.0,
                     scale=init_value_ /
                     math.sqrt(float(self.sparse_feature_dim))))
         )  # (batch_size * num_field) * 1 * embedding_size
-        feat_embeddings = fluid.layers.reshape(
+        feat_embeddings = paddle.fluid.layers.nn.reshape(
             feat_embeddings_re,
             shape=[-1, self.num_field, self.sparse_feature_dim
                    ])  # batch_size * num_field * embedding_size
         # batch_size * num_field * embedding_size
         feat_embeddings = feat_embeddings * feat_value
 
-        concated = fluid.layers.concat(
-            [feat_embeddings, first_weights], axis=2)
-        concated = fluid.layers.reshape(
+        concated = paddle.concat(x=[feat_embeddings, first_weights], axis=2)
+        concated = paddle.fluid.layers.nn.reshape(
             concated,
             shape=[-1, self.num_field * (self.sparse_feature_dim + 1)])
 
@@ -98,36 +98,37 @@ class Model(ModelBase):
         hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
 
         for size in hidden_layers:
-            output = fluid.layers.fc(
-                input=fcs[-1],
+            output = paddle.static.nn.fc(
+                x=fcs[-1],
                 size=size,
-                act='relu',
-                param_attr=fluid.ParamAttr(
-                    initializer=fluid.initializer.Normal(
+                activation='relu',
+                weight_attr=paddle.ParamAttr(
+                    initializer=paddle.fluid.initializer.Normal(
                         scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
             fcs.append(output)
 
-        predict = fluid.layers.fc(
-            input=fcs[-1],
+        predict = paddle.static.nn.fc(
+            x=fcs[-1],
             size=1,
-            act="sigmoid",
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-                scale=1 / math.sqrt(fcs[-1].shape[1]))))
+            activation="sigmoid",
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.fluid.initializer.Normal(
+                    scale=1 / math.sqrt(fcs[-1].shape[1]))))
 
         self.predict = predict
 
-        cost = fluid.layers.log_loss(
-            input=self.predict, label=fluid.layers.cast(self.label,
-                                                        "float32"))  # log_loss
-        avg_cost = fluid.layers.reduce_sum(cost)
+        cost = paddle.nn.functional.log_loss(
+            input=self.predict, label=paddle.cast(self.label,
+                                                  "float32"))  # log_loss
+        avg_cost = paddle.sum(x=cost)
 
         self._cost = avg_cost
 
-        predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
-        label_int = fluid.layers.cast(self.label, 'int64')
-        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                     label=label_int,
-                                                     slide_steps=0)
+        predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
+        label_int = paddle.cast(self.label, 'int64')
+        auc_var, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                            label=label_int,
+                                                            slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
         if is_infer:
