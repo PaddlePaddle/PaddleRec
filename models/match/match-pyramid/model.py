@@ -47,12 +47,12 @@ class Model(ModelBase):
             "hyper_parameters.pool_padding")
 
     def input_data(self, is_infer=False, **kwargs):
-        sentence_left = paddle.fluid.data(
+        sentence_left = paddle.static.data(
             name="sentence_left",
             shape=[-1, self.sentence_left_size, 1],
             dtype='int64',
             lod_level=0)
-        sentence_right = paddle.fluid.data(
+        sentence_right = paddle.static.data(
             name="sentence_right",
             shape=[-1, self.sentence_right_size, 1],
             dtype='int64',
@@ -110,7 +110,7 @@ class Model(ModelBase):
         right_emb = self.embedding_layer(inputs[1])
         cross = paddle.fluid.layers.matmul(
             left_emb, right_emb, transpose_y=True)
-        cross = paddle.fluid.layers.reshape(
+        cross = paddle.fluid.layers.nn.reshape(
             cross, [-1, 1, cross.shape[1], cross.shape[2]])
         conv_pool = self.conv_pool_layer(input=cross)
         relu_hid = paddle.static.nn.fc(x=conv_pool,

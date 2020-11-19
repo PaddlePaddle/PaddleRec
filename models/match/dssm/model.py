@@ -31,12 +31,12 @@ class Model(ModelBase):
         self.slice_end = envs.get_global_env("hyper_parameters.slice_end")
 
     def input_data(self, is_infer=False, **kwargs):
-        query = paddle.fluid.data(
+        query = paddle.static.data(
             name="query",
             shape=[-1, self.trigram_d],
             dtype='float32',
             lod_level=0)
-        doc_pos = paddle.fluid.data(
+        doc_pos = paddle.static.data(
             name="doc_pos",
             shape=[-1, self.trigram_d],
             dtype='float32',
@@ -46,7 +46,7 @@ class Model(ModelBase):
             return [query, doc_pos]
 
         doc_negs = [
-            paddle.fluid.data(
+            paddle.static.data(
                 name="doc_neg_" + str(i),
                 shape=[-1, self.trigram_d],
                 dtype="float32",

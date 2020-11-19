@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
-import paddle.fluid.layers.tensor as tensor
-import paddle.fluid.layers.control_flow as cf
-
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+import paddle
 
 
 class BowEncoder(object):
@@ -27,7 +24,7 @@ class BowEncoder(object):
         self.param_name = ""
 
     def forward(self, emb):
-        return fluid.layers.sequence_pool(input=emb, pool_type='sum')
+        return paddle.fluid.layers.sequence_pool(input=emb, pool_type='sum')
 
 
 class CNNEncoder(object):
@@ -46,7 +43,7 @@ class CNNEncoder(object):
         self.pool_type = pool_type
 
     def forward(self, emb):
-        return fluid.nets.sequence_conv_pool(
+        return paddle.fluid.nets.sequence_conv_pool(
             input=emb,
             num_filters=self.ksize,
             filter_size=self.win_size,
@@ -64,18 +61,18 @@ class GrnnEncoder(object):
         self.hidden_size = hidden_size
 
     def forward(self, emb):
-        fc0 = fluid.layers.fc(input=emb,
-                              size=self.hidden_size * 3,
-                              param_attr=self.param_name + "_fc.w",
-                              bias_attr=False)
+        fc0 = paddle.static.nn.fc(x=emb,
+                                  size=self.hidden_size * 3,
+                                  weight_attr=self.param_name + "_fc.w",
+                                  bias_attr=False)
 
-        gru_h = fluid.layers.dynamic_gru(
+        gru_h = paddle.fluid.layers.dynamic_gru(
             input=fc0,
             size=self.hidden_size,
             is_reverse=False,
             param_attr=self.param_name + ".param",
             bias_attr=self.param_name + ".bias")
-        return fluid.layers.sequence_pool(input=gru_h, pool_type='max')
+        return paddle.fluid.layers.sequence_pool(input=gru_h, pool_type='max')
 
 
 class SimpleEncoderFactory(object):
@@ -126,7 +123,7 @@ class Model(ModelBase):
             for _ in self.q_slots
         ]
         q_embs = [
-            fluid.embedding(
+            paddle.static.nn.embedding(
                 input=query, size=self.emb_shape, param_attr="emb")
             for query in self.q_slots
         ]
@@ -135,19 +132,19 @@ class Model(ModelBase):
             self.query_encoders[i].forward(emb) for i, emb in enumerate(q_embs)
         ]
         # concat multi view for query, pos_title, neg_title
-        q_concat = fluid.layers.concat(q_encodes)
+        q_concat = paddle.concat(x=q_encodes)
         # projection of hidden layer
-        q_hid = fluid.layers.fc(q_concat,
-                                size=self.hidden_size,
-                                param_attr='q_fc.w',
-                                bias_attr='q_fc.b')
+        q_hid = paddle.static.nn.fc(x=q_concat,
+                                    size=self.hidden_size,
+                                    weight_attr='q_fc.w',
+                                    bias_attr='q_fc.b')
 
         self.pt_slots = self._sparse_data_var[1:2]
         self.title_encoders = [
             factory.create(self.title_encoder, self.title_encode_dim)
         ]
         pt_embs = [
-            fluid.embedding(
+            paddle.static.nn.embedding(
                 input=title, size=self.emb_shape, param_attr="emb")
             for title in self.pt_slots
         ]
@@ -155,13 +152,13 @@ class Model(ModelBase):
             self.title_encoders[i].forward(emb)
             for i, emb in enumerate(pt_embs)
         ]
-        pt_concat = fluid.layers.concat(pt_encodes)
-        pt_hid = fluid.layers.fc(pt_concat,
-                                 size=self.hidden_size,
-                                 param_attr='t_fc.w',
-                                 bias_attr='t_fc.b')
+        pt_concat = paddle.concat(x=pt_encodes)
+        pt_hid = paddle.static.nn.fc(x=pt_concat,
+                                     size=self.hidden_size,
+                                     weight_attr='t_fc.w',
+                                     bias_attr='t_fc.b')
         # cosine of hidden layers
-        cos_pos = fluid.layers.cos_sim(q_hid, pt_hid)
+        cos_pos = paddle.fluid.layers.cos_sim(q_hid, pt_hid)
 
         if is_infer:
             self._infer_results['query_pt_sim'] = cos_pos
@@ -169,7 +166,7 @@ class Model(ModelBase):
 
         self.nt_slots = self._sparse_data_var[2:3]
         nt_embs = [
-            fluid.embedding(
+            paddle.static.nn.embedding(
                 input=title, size=self.emb_shape, param_attr="emb")
             for title in self.nt_slots
         ]
@@ -177,39 +174,39 @@ class Model(ModelBase):
             self.title_encoders[i].forward(emb)
             for i, emb in enumerate(nt_embs)
         ]
-        nt_concat = fluid.layers.concat(nt_encodes)
-        nt_hid = fluid.layers.fc(nt_concat,
-                                 size=self.hidden_size,
-                                 param_attr='t_fc.w',
-                                 bias_attr='t_fc.b')
-        cos_neg = fluid.layers.cos_sim(q_hid, nt_hid)
+        nt_concat = paddle.concat(x=nt_encodes)
+        nt_hid = paddle.static.nn.fc(x=nt_concat,
+                                     size=self.hidden_size,
+                                     weight_attr='t_fc.w',
+                                     bias_attr='t_fc.b')
+        cos_neg = paddle.fluid.layers.cos_sim(q_hid, nt_hid)
 
         # pairwise hinge_loss
-        loss_part1 = fluid.layers.elementwise_sub(
-            tensor.fill_constant_batch_size_like(
+        loss_part1 = paddle.fluid.layers.nn.elementwise_sub(
+            paddle.fluid.layers.tensor.fill_constant_batch_size_like(
                 input=cos_pos,
                 shape=[-1, 1],
                 value=self.margin,
                 dtype='float32'),
             cos_pos)
 
-        loss_part2 = fluid.layers.elementwise_add(loss_part1, cos_neg)
+        loss_part2 = paddle.add(x=loss_part1, y=cos_neg)
 
-        loss_part3 = fluid.layers.elementwise_max(
-            tensor.fill_constant_batch_size_like(
+        loss_part3 = paddle.maximum(
+            x=paddle.fluid.layers.tensor.fill_constant_batch_size_like(
                 input=loss_part2, shape=[-1, 1], value=0.0, dtype='float32'),
-            loss_part2)
+            y=loss_part2)
 
-        self._cost = fluid.layers.mean(loss_part3)
+        self._cost = paddle.mean(x=loss_part3)
         self.acc = self.get_acc(cos_neg, cos_pos)
         self._metrics["loss"] = self._cost
         self._metrics["acc"] = self.acc
 
     def get_acc(self, x, y):
-        less = tensor.cast(cf.less_than(x, y), dtype='float32')
-        label_ones = fluid.layers.fill_constant_batch_size_like(
+        less = paddle.cast(paddle.less_than(x=x, y=y), dtype='float32')
+        label_ones = paddle.fluid.layers.fill_constant_batch_size_like(
             input=x, dtype='float32', shape=[-1, 1], value=1.0)
-        correct = fluid.layers.reduce_sum(less)
-        total = fluid.layers.reduce_sum(label_ones)
-        acc = fluid.layers.elementwise_div(correct, total)
+        correct = paddle.sum(x=less)
+        total = paddle.sum(x=label_ones)
+        acc = paddle.divide(x=correct, y=total)
         return acc
