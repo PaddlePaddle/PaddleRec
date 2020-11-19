@@ -29,15 +29,15 @@ class Model(ModelBase):
 
     def input_data(self, is_infer=False, **kwargs):
         sparse_input_ids = [
-            paddle.fluid.data(
+            paddle.static.data(
                 name="field_" + str(i),
                 shape=[-1, 1],
                 dtype="int64",
                 lod_level=1) for i in range(0, 23)
         ]
-        label_ctr = paddle.fluid.data(
+        label_ctr = paddle.static.data(
             name="ctr", shape=[-1, 1], dtype="float32")
-        label_cvr = paddle.fluid.data(
+        label_cvr = paddle.static.data(
             name="cvr", shape=[-1, 1], dtype="float32")
         inputs = sparse_input_ids + [label_ctr] + [label_cvr]
         if is_infer:

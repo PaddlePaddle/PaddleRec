@@ -30,11 +30,11 @@ class Model(ModelBase):
         self.tower_size = envs.get_global_env("hyper_parameters.tower_size")
 
     def input_data(self, is_infer=False, **kwargs):
-        inputs = paddle.fluid.data(
+        inputs = paddle.static.data(
             name="input", shape=[-1, self.feature_size], dtype="float32")
-        label_income = paddle.fluid.data(
+        label_income = paddle.static.data(
             name="label_income", shape=[-1, 2], dtype="float32", lod_level=0)
-        label_marital = paddle.fluid.data(
+        label_marital = paddle.static.data(
             name="label_marital", shape=[-1, 2], dtype="float32", lod_level=0)
         if is_infer:
             return [inputs, label_income, label_marital]
@@ -57,7 +57,6 @@ class Model(ModelBase):
                 name='expert_' + str(i))
             expert_outputs.append(expert_output)
         expert_concat = paddle.concat(x=expert_outputs, axis=1)
-        #expert_concat = paddle.fluid.layers.nn.reshape(
         expert_concat = paddle.reshape(
             expert_concat, [-1, self.expert_num, self.expert_size])
 
@@ -86,11 +85,10 @@ class Model(ModelBase):
 
             output_layers.append(out)
 
-        pred_income = paddle.fluid.layers.clip(
-            output_layers[0], min=1e-15, max=1.0 - 1e-15)
+        pred_income = paddle.clip(output_layers[0], min=1e-15, max=1.0 - 1e-15)
         pred_income_1 = paddle.slice(
             pred_income, axes=[1], starts=[0], ends=[1])
-        pred_marital = paddle.fluid.layers.clip(
+        pred_marital = paddle.clip(
             output_layers[1], min=1e-15, max=1.0 - 1e-15)
         pred_marital_1 = paddle.slice(
             pred_marital, axes=[1], starts=[0], ends=[1])
