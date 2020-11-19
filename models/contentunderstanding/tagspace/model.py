@@ -33,11 +33,11 @@ class Model(ModelBase):
         self.neg_size = envs.get_global_env("hyper_parameters.neg_size")
 
     def input_data(self, is_infer=False, **kwargs):
-        text = paddle.fluid.data(
+        text = paddle.static.data(
             name="text", shape=[None, 1], lod_level=1, dtype='int64')
-        pos_tag = paddle.fluid.data(
+        pos_tag = paddle.static.data(
             name="pos_tag", shape=[None, 1], lod_level=1, dtype='int64')
-        neg_tag = paddle.fluid.data(
+        neg_tag = paddle.static.data(
             name="neg_tag", shape=[None, 1], lod_level=1, dtype='int64')
         return [text, pos_tag, neg_tag]
 

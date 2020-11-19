@@ -35,11 +35,12 @@ class Model(ModelBase):
         self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse")
 
     def input_data(self, is_infer=False, **kwargs):
-        data = paddle.fluid.data(
+        data = paddle.static.data(
             name="input", shape=[None, self.max_len], dtype='int64')
-        seq_len = paddle.fluid.data(
+        seq_len = paddle.static.data(
             name="seq_len", shape=[None], dtype='int64')
-        label = paddle.fluid.data(name="label", shape=[None, 1], dtype='int64')
+        label = paddle.static.data(
+            name="label", shape=[None, 1], dtype='int64')
         return [data, seq_len, label]
 
     def net(self, input, is_infer=False):
