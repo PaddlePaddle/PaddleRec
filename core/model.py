@@ -20,6 +20,7 @@ from paddle.fluid.framework import Variable
 
 from paddlerec.core.metric import Metric
 from paddlerec.core.utils import envs
+paddle.enable_static()
 
 
 class ModelBase(object):
