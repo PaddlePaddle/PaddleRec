@@ -20,6 +20,8 @@ import os
 
 from paddlerec.core.utils import envs
 from paddlerec.core.trainer import Trainer, EngineMode, FleetMode
+import paddle
+paddle.enable_static()
 
 
 class GeneralTrainer(Trainer):
@@ -50,12 +52,10 @@ class GeneralTrainer(Trainer):
         else:
             if self.engine == EngineMode.SINGLE:
                 instance_class_name = "SingleInstance"
-            elif self.fleet_mode == FleetMode.PSLIB:
-                instance_class_name = "PslibInstance"
-            elif self.fleet_mode == FleetMode.PS:
-                instance_class_name = "PSInstance"
-            elif self.fleet_mode == FleetMode.COLLECTIVE:
-                instance_class_name = "CollectiveInstance"
+            elif self.fleet_mode in [
+                    FleetMode.PSLIB, FleetMode.PS, FleetMode.COLLECTIVE
+            ]:
+                instance_class_name = "FleetInstance"
             else:
                 raise ValueError("Instance Init Error")
             instance_path = os.path.join(self.abs_dir, "framework",
@@ -74,12 +74,10 @@ class GeneralTrainer(Trainer):
         else:
             if self.engine == EngineMode.SINGLE:
                 network_class_name = "SingleNetwork"
-            elif self.fleet_mode == FleetMode.PSLIB:
-                network_class_name = "PslibNetwork"
-            elif self.fleet_mode == FleetMode.PS:
-                network_class_name = "PSNetwork"
-            elif self.fleet_mode == FleetMode.COLLECTIVE:
-                network_class_name = "CollectiveNetwork"
+            elif self.fleet_mode in [
+                    FleetMode.PSLIB, FleetMode.PS, FleetMode.COLLECTIVE
+            ]:
+                network_class_name = "FleetNetwork"
             else:
                 raise ValueError("NetWork Init Error")
             network_path = os.path.join(self.abs_dir, "framework",
@@ -100,10 +98,10 @@ class GeneralTrainer(Trainer):
                 startup_class_name = "SingleInferStartup"
             elif self.engine == EngineMode.SINGLE and not context["is_infer"]:
                 startup_class_name = "SingleStartup"
-            elif self.fleet_mode == FleetMode.PS or self.fleet_mode == FleetMode.PSLIB:
-                startup_class_name = "PSStartup"
-            elif self.fleet_mode == FleetMode.COLLECTIVE:
-                startup_class_name = "CollectiveStartup"
+            elif self.fleet_mode in [
+                    FleetMode.PSLIB, FleetMode.PS, FleetMode.COLLECTIVE
+            ]:
+                startup_class_name = "FleetStartup"
             else:
                 raise ValueError("Startup Init Error")
             startup_path = os.path.join(self.abs_dir, "framework",
@@ -123,12 +121,10 @@ class GeneralTrainer(Trainer):
                 runner_class_name = "SingleInferRunner"
             elif self.engine == EngineMode.SINGLE and not context["is_infer"]:
                 runner_class_name = "SingleRunner"
-            elif self.fleet_mode == FleetMode.PSLIB:
-                runner_class_name = "PslibRunner"
-            elif self.fleet_mode == FleetMode.PS:
-                runner_class_name = "PSRunner"
-            elif self.fleet_mode == FleetMode.COLLECTIVE:
-                runner_class_name = "CollectiveRunner"
+            elif self.fleet_mode in [
+                    FleetMode.PSLIB, FleetMode.PS, FleetMode.COLLECTIVE
+            ]:
+                runner_class_name = "FleetRunner"
             else:
                 raise ValueError("Runner Init Error")
             runner_path = os.path.join(self.abs_dir, "framework", "runner.py")
