@@ -110,7 +110,7 @@ class Model(ModelBase):
             self._infer_results["AUC_income"] = auc_income
             self._infer_results["AUC_marital"] = auc_marital
             return
-
+        # 1.8 cross_entropy
         cost_income = paddle.nn.functional.log_loss(
             input=pred_income_1, label=label_income_1)
         cost_marital = paddle.nn.functional.log_loss(
