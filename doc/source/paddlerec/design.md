@@ -14,7 +14,7 @@
 PaddleRec将推荐模型的训练与预测流程，整体抽象为了五个大模块：
 
 <p align="center">
-<img align="center" src="imgs/design.png">
+<img align="center" src="../media/design.png">
 <p>
 
 core的文件结构如下，后续分别对各个模块进行介绍。
@@ -53,7 +53,7 @@ Engine是整体训练的执行引擎，与组网逻辑及数据无关，只与�
 - GPU
 - 其他AI芯片
 
-在用户调用`python -m paddlerec.run`时，首先会根据`yaml`文件中的配置信息选择合适的执行引擎， 以下代码位于[run.py](../run.py)：
+在用户调用`python -m paddlerec.run`时，首先会根据`yaml`文件中的配置信息选择合适的执行引擎， 以下代码位于[run.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/run.py)：
 ```python
 engine_registry()
 which_engine = get_engine(args)
@@ -107,7 +107,7 @@ single_engine被调用后，主要进行了以下两个工作：
 - 本地模拟分布式引擎会在单机环境变量的基础上，额外设置本地模拟分布式的环境变量，比如：为各个进程设置不同通信端口，分配ID。最后会启动多个`Trainer`完成本地模拟分布式的工作。
 - 分布式引擎会在单机环境变量的基础上，基于运行参数`-b --backend`所指定的脚本或配置文件，完成分布式任务的文件打包，上传，提交等操作。该脚本格式与分布式任务运行的集群有关，如MPI/K8S/PaddleCloud等，用户可以自定义分布式运行逻辑。
 
-Engine的自定义实现，可以参考[local_cluster.py](../core/engine/local_cluster.py)
+Engine的自定义实现，可以参考[local_cluster.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/engine/local_cluster.py)
 
 ## Trainer
 
@@ -137,7 +137,7 @@ SingleTrainer指定了以下5个步骤：
 
 各个步骤的详细介绍及自定义方法，可以参照[自定义流程](./trainer_develop.md)
 
-Trainer的自定义实现，可以参照[general_trainer.py](../core/trainers/general_trainer.py)
+Trainer的自定义实现，可以参照[general_trainer.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/trainers/general_trainer.py)
 
 ## Model
 
@@ -192,7 +192,7 @@ def get_fetch_period(self):
     return self._fetch_interval
 ```
 
-model的具体实现，可以参考dnn的示例[model.py](../../models/rank/dnn/../../../paddlerec/core/model.py)
+model的具体实现，可以参考dnn的示例[model.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/dnn/model.py)
 
 
 ## Reader
@@ -231,8 +231,8 @@ class Reader(dg.MultiSlotDataGenerator):
 用户需要关注并实现的是`def init(self)`与`def generate_sample(self,line)`函数，分别执行数据读取中预处理所需变量的初始化，以及每一行string的切分及处理逻辑。
 
 当用户定义好以上两个函数，完成自己的Reader后，PaddleRec分别使用
-- [dataset_instance.py](../core/utils/dataset_instance.py)
-- [dataloader_instance.py](../core/utils/dataloader_instance.py)
+- [dataset_instance.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/utils/dataset_instance.py)
+- [dataloader_instance.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/utils/dataloader_instance.py)
 
 完成reader的构建工作。
 
@@ -287,4 +287,4 @@ class Metric(object):
         pass
 ```
 
-全局指标的计算及输出，需要分别继承并实现以上四个成员函数。具体实现的例子，可以参考[auc_metric.py](../core/metrics/auc_metrics.py)
+全局指标的计算及输出，需要分别继承并实现以上四个成员函数。具体实现的例子，可以参考[auc_metric.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/metrics/auc.py)
