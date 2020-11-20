@@ -9,7 +9,7 @@
 在安装好`paddlepaddle`及`paddlerec`后，可以直接使用一行命令快速启动内置模型的默认配置训练，命令如下;
 
 ```shell
-python -m paddlerec.run -m paddlerec.models.xxx.yyy
+python -m paddlerec.run -m models/xxx/yyy/config.yaml
 ```
 
 注意事项：
