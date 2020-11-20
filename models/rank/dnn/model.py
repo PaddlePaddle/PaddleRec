@@ -57,6 +57,7 @@ class Model(ModelBase):
                         name="SparseFeatFactors",
                         initializer=paddle.fluid.initializer.Uniform()))
             else:
+                input = paddle.reshape(input, shape=[-1])
                 emb = paddle.static.nn.embedding(
                     input=input,
                     is_sparse=True,
