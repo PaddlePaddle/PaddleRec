@@ -57,7 +57,6 @@ class Model(ModelBase):
                         name="SparseFeatFactors",
                         initializer=paddle.fluid.initializer.Uniform()))
             else:
-                input = paddle.reshape(input, shape=[-1])
                 emb = paddle.static.nn.embedding(
                     input=input,
                     is_sparse=True,
@@ -68,6 +67,7 @@ class Model(ModelBase):
                     param_attr=paddle.ParamAttr(
                         name="SparseFeatFactors",
                         initializer=paddle.fluid.initializer.Uniform()))
+                emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
             emb_sum = paddle.fluid.layers.sequence_pool(
                 input=emb, pool_type='sum')
             return emb_sum
