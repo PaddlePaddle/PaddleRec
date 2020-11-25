@@ -30,8 +30,9 @@ class Model(ModelBase):
 
 ## Metrics
 ### AUC
-> AUC(input ,label, curve='ROC', num_thresholds=2**12 - 1, topk=1, slide_steps=1)
-
+```python
+AUC(input ,label, curve='ROC', num_thresholds=2**12 - 1, topk=1, slide_steps=1)
+```
 Auc，全称Area Under the Curve(AUC)，该层根据前向输出和标签计算AUC，在二分类(binary classification)估计中广泛使用。在二分类(binary classification)中广泛使用。相关定义参考 https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Area_under_the_curve 。
 
 #### 参数
@@ -49,8 +50,9 @@ Auc，全称Area Under the Curve(AUC)，该层根据前向输出和标签计算A
 
 
 ### PrecisionRecall
-> PrecisionRecall(input, label, class_num)
-
+```python
+PrecisionRecall(input, label, class_num)
+```
 计算precison, recall, f1。
 
 #### 参数
@@ -66,8 +68,9 @@ precision = TP / (TP + FP); recall = TP = TP / (TP + FN); F1 = 2 * precision * r
 
 
 ### RecallK
-> RecallK(input, label, k=20)
-
+```python
+RecallK(input, label, k=20)
+```
 TopK的召回准确率，对于任意一条样本来说，若前top_k个分类结果中包含正确分类标签，则视为正样本。
 
 #### 参数
@@ -81,8 +84,9 @@ TopK的召回准确率，对于任意一条样本来说，若前top_k个分类�
 - **Acc(Recall@k)**: RecallCnt/InsCnt，即Topk召回准确率。
 
 ## PairWise_PN
-> PosNegRatio(pos_score, neg_score)
-
+```python
+PosNegRatio(pos_score, neg_score)
+```
 正逆序指标，一般用在输入是pairwise的模型中。例如输入既包含正样本，也包含负样本，模型需要去学习最大化正负样本打分的差异。
 
 #### 参数

@@ -11,7 +11,7 @@ PaddleRec可自定义的流程有如下5个：
 
 ## instance
 
-instance由GeneralTrainer首先调用，执行模型组网前的所有操作。用户可以在这里进行下载数据，import不同的包，配置环境变量等操作。instance的官方实现位于[instance.py](../core/trainers/framework/instance.py)，instance基类定义如下：
+instance由GeneralTrainer首先调用，执行模型组网前的所有操作。用户可以在这里进行下载数据，import不同的包，配置环境变量等操作。instance的官方实现位于[instance.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/trainers/framework/instance.py)，instance基类定义如下：
 
 ```python
 class InstanceBase(object):
@@ -26,7 +26,7 @@ class InstanceBase(object):
 
 ## network
 
-network将在instanc后调用，执行模型的组网。network的官方实现位于[network.py](../core/trainers/framework/network.py)，network基类定义如下：
+network将在instanc后调用，执行模型的组网。network的官方实现位于[network.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/trainers/framework/network.py)，network基类定义如下：
 
 ```python
 class NetworkBase(object):
@@ -52,7 +52,7 @@ context["model"][model_dict["name"]][
 
 ## startup
 
-startup执行网络参数的初始化，或者模型的热启动，主要功能是执行`exe.run(fluid.default_startup_program())`。 startup的官方实现在[startup](../core/trainers/framework/startup.py)
+startup执行网络参数的初始化，或者模型的热启动，主要功能是执行`exe.run(fluid.default_startup_program())`。 startup的官方实现在[startup](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/trainers/framework/startup.py)
 
 ```python
 class StartupBase(object):
@@ -113,7 +113,7 @@ class PSRunner(RunnerBase):
         context["status"] = "terminal_pass"
 ```
 
-自定义runner需要参照官方实现[runner.py](../core/trainers/framework/runner.py)，继承基类`RunnerBase`，命名为`Runner`，并实现`run`成员函数。
+自定义runner需要参照官方实现[runner.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/core/trainers/framework/runner.py)，继承基类`RunnerBase`，命名为`Runner`，并实现`run`成员函数。
 
 ## terminal
 
@@ -150,7 +150,7 @@ runner:
 
 ## 示例
 
-官方模型中的TDM是一个很好的示例，该模型自定义了`startup`的实现，可以参考[tdm_startup.py](../models/treebased/tdm/tdm_startup.py)
+官方模型中的TDM是一个很好的示例，该模型自定义了`startup`的实现，可以参考[tdm_startup.py](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/treebased/tdm/tdm_startup.py)
 
 ```python
 class Startup(StartupBase):
