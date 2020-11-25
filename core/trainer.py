@@ -21,6 +21,7 @@ import paddle
 from paddle import fluid
 
 from paddlerec.core.utils import envs
+paddle.enable_static()
 
 
 class EngineMode:

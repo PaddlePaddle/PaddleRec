@@ -88,7 +88,7 @@ class YamlModel(Model):
                     if self._build_nodes[phase] is None:
                         continue
                     for node in self._build_nodes[phase]:
-                        exec("layer=layer.{}(node)".format(node['class']))
+                        exec ("""layer=layer.{}(node)""".format(node['class']))
                         layer_output, extend_output = layer.generate(
                             self._config['mode'], self._build_param)
                         self._build_param['layer'][node['name']] = layer_output
@@ -140,10 +140,10 @@ class YamlModel(Model):
                     for metric in model_metrics
                 ]
             strategy['stat_var_names'] = list(set(stat_var_names))
-        optimizer_generator = 'optimizer = fluid.optimizer.' + optimizer_conf['class'] + \
-                              '(learning_rate=' + \
+        optimizer_generator = 'optimizer = fluid.optimizer.' + \
+            optimizer_conf['class'] + '(learning_rate=' + \
             str(optimizer_conf['learning_rate']) + ')'
-        exec(optimizer_generator)
+        exec (optimizer_generator)
         optimizer = fleet.distributed_optimizer(optimizer, strategy=strategy)
         return optimizer
 
