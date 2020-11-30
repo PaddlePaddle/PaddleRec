@@ -320,7 +320,13 @@ class RunnerBase(object):
                     context["fleet"].save_inference_model(
                         context["exe"], dirname, feed_varnames, fetch_vars)
             else:
-                paddle.static.save_inference_model(dirname, feed_varnames,
+                feed_varnames_vars = []
+                for fv in feed_varnames:
+                    feed_varnames_vars.append(
+                        paddle.static.default_main_program()
+                        .global_block().vars[fv])
+
+                paddle.static.save_inference_model(dirname, feed_varnames_vars,
                                                    fetch_vars, context["exe"])
 
         def save_persistables():
