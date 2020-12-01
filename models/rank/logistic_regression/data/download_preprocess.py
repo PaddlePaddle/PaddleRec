@@ -23,13 +23,14 @@ sys.path.append(TOOLS_PATH)
 from paddlerec.tools.tools import download_file_and_uncompress, download_file
 
 if __name__ == '__main__':
-    url = "https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz"
+    url = "https://paddlerec.bj.bcebos.com/deepfm%2Fdac.tar.gz"
     url2 = "https://paddlerec.bj.bcebos.com/deepfm%2Ffeat_dict_10.pkl2"
 
     print("download and extract starting...")
     download_file_and_uncompress(url)
     download_file(url2, "./deepfm%2Ffeat_dict_10.pkl2", True)
     print("download and extract finished")
+    os.system("mv deepfm%2Fdac.tar.gz dac.tar.gz")
 
     print("preprocessing...")
     os.system("python preprocess.py")
