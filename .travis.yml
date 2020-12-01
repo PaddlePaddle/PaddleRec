@@ -10,7 +10,7 @@ os:
 
 env:
   - JOB=check_style
-  - JOB=model_test
+    #  - JOB=model_test
 
 before_install:
   # For pylint dockstring checker
