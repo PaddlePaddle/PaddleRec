@@ -1,0 +1,11 @@
+// user_info.proto
+syntax = "proto3";
+package user_info;
+
+message UserInfo {
+    string user_id = 1;
+    string gender = 2;
+    uint32 age = 3;
+    string job = 4;
+    string zipcode = 5;
+}

@@ -1,0 +1,30 @@
+// recall.proto
+syntax = "proto3";
+import "user_info.proto";
+package recall;
+option cc_generic_services = false;
+
+message RecallRequest{
+  string log_id = 1;
+  user_info.UserInfo user_info = 2;
+  string recall_type= 3;
+  uint32 request_num= 4;
+}
+
+message RecallResponse{
+   message Error {
+        uint32 code = 1; 
+        string text = 2;
+   }
+   message ScorePair {
+        string nid = 1;
+        float score = 2;
+    };
+   Error error = 1;
+    repeated ScorePair score_pairs = 2;
+}
+
+service RecallService {
+    rpc recall(RecallRequest) returns (RecallResponse);
+};
+

@@ -1,0 +1,25 @@
+// gr.proto
+syntax = "proto3";
+import "item_info.proto";
+package gr;
+option cc_generic_services = false;
+
+
+message GRRequest{
+  string log_id = 1;
+  string user_id = 2;
+}
+
+message GRResponse {
+   message Error {
+        uint32 code = 1; 
+        string text = 2;
+   }
+   Error error = 1;
+   repeated item_info.ItemInfo item_infos = 2;
+}
+
+service GRService {
+    rpc gr_call(GRRequest) returns (GRResponse);
+};
+

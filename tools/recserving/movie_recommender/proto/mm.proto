@@ -1,0 +1,24 @@
+// mm.proto
+syntax = "proto3";
+import "item_info.proto";
+package mm;
+option cc_generic_services = false;
+
+message MMRequest {
+    string log_id = 1;
+    repeated string item_ids = 2;
+};
+
+message MMResponse {
+    message Error {
+        uint32 code = 1;
+        string text = 2;
+    };
+    Error error = 1;                                       
+    repeated item_info.ItemInfo item_infos = 2;                         
+};
+
+service MMService {
+    rpc mm_call(MMRequest) returns (MMResponse);
+};
+

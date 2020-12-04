@@ -1,0 +1,23 @@
+// um.proto
+syntax = "proto3";
+import "user_info.proto";
+package um;
+option cc_generic_services = false;
+
+message UserModelRequest {
+    string log_id = 1;
+    string user_id = 2;
+};
+
+message UserModelResponse {
+    message Error {
+        uint32 code = 1;
+        string text = 2;
+    };
+    Error error = 1;                                       
+    user_info.UserInfo user_info = 2;                         
+};
+
+service UMService {
+    rpc um_call(UserModelRequest) returns (UserModelResponse);
+};
