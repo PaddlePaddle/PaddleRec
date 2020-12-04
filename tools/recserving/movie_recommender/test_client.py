@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
+# Unless required by applicable law or aaseed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
@@ -18,14 +18,14 @@ import sys
 import grpc
 import proto.um_pb2 as um_pb2
 import proto.um_pb2_grpc as um_pb2_grpc
-import proto.mm_pb2 as mm_pb2
-import proto.mm_pb2_grpc as mm_pb2_grpc
+import proto.cm_pb2 as cm_pb2
+import proto.cm_pb2_grpc as cm_pb2_grpc
 import proto.rank_pb2 as rank_pb2
 import proto.rank_pb2_grpc as rank_pb2_grpc
 import proto.recall_pb2 as recall_pb2
 import proto.recall_pb2_grpc as recall_pb2_grpc
-import proto.gr_pb2 as gr_pb2
-import proto.gr_pb2_grpc as gr_pb2_grpc
+import proto.as_pb2 as as_pb2
+import proto.as_pb2_grpc as as_pb2_grpc
 import json
 from google.protobuf.json_format import MessageToJson, Parse
 
@@ -45,14 +45,14 @@ def get_recall(request):
     response = stub.recall(request)
     return response
 
-def get_mm(nid_list):
+def get_cm(nid_list):
     channel = grpc.insecure_channel('127.0.0.1:8920')
-    stub = mm_pb2_grpc.MMServiceStub(channel)
-    mm_request = mm_pb2.MMRequest()
+    stub = cm_pb2_grpc.CMServiceStub(channel)
+    cm_request = cm_pb2.CMRequest()
     for nid in nid_list:
-        mm_request.item_ids.append(str(nid).encode(encoding='utf-8'))
-    mm_response = stub.mm_call(mm_request,timeout=10)
-    return mm_response
+        cm_request.item_ids.append(str(nid).encode(encoding='utf-8'))
+    cm_response = stub.cm_call(cm_request,timeout=10)
+    return cm_response
 
 def get_rank(request):
     channel = grpc.insecure_channel('127.0.0.1:8960')
@@ -61,26 +61,26 @@ def get_rank(request):
     return response
 
 
-def get_gr(request):
+def get_as(request):
     channel = grpc.insecure_channel("127.0.0.1:8930")
-    stub = gr_pb2_grpc.GRServiceStub(channel)
-    response = stub.gr_call(request)
+    stub = as_pb2_grpc.ASServiceStub(channel)
+    response = stub.as_call(request)
     return response
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == 'gr':
+    if sys.argv[1] == 'as':
         uid = sys.argv[2]
-        req = gr_pb2.GRRequest()
+        req = as_pb2.ASRequest()
         req.user_id = uid
-        print(get_gr(req))
+        print(get_as(req))
     if sys.argv[1] == 'um':
         uid = sys.argv[2]
         print(get_ums(uid))
-    if sys.argv[1] == 'mm':
+    if sys.argv[1] == 'cm':
         nid_list_str= sys.argv[2]
         nid_list = nid_list_str.strip().split(",")
-        print(get_mm(nid_list))
+        print(get_cm(nid_list))
     if sys.argv[1] == "recall":
         request = recall_pb2.RecallRequest()
         request.user_info.user_id="1"
