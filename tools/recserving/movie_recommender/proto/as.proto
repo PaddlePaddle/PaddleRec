@@ -1,16 +1,16 @@
-// gr.proto
+// as.proto
 syntax = "proto3";
 import "item_info.proto";
-package gr;
+package as;
 option cc_generic_services = false;
 
 
-message GRRequest{
+message ASRequest{
   string log_id = 1;
   string user_id = 2;
 }
 
-message GRResponse {
+message ASResponse {
    message Error {
         uint32 code = 1; 
         string text = 2;
@@ -19,7 +19,7 @@ message GRResponse {
    repeated item_info.ItemInfo item_infos = 2;
 }
 
-service GRService {
-    rpc gr_call(GRRequest) returns (GRResponse);
+service ASService {
+    rpc as_call(ASRequest) returns (ASResponse);
 };
 

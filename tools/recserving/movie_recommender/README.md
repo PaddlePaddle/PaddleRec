@@ -11,10 +11,10 @@ Python 版本：2.7/3.6
 ### 名词解释
 
 **um**: 用户模型(User Model)
-**mm**：电影模型(Movie Model)
+**cm**：内容模型(Content Model)
 **recall**：召回
-**rank**：精排序
-**gr**：通用排序服务
+**rank**：排序
+**as**：应用服务(App Service)
 
 ### 操作步骤
 
@@ -44,13 +44,13 @@ sh start_server.sh
 4. 运行客户端
 ```
 export PYTHONPATH=$PYTHONPATH:$PWD/proto
-python test_client.py gr 5 # 获得 5号用户的推荐信息
+python test_client.py as 5 # 获得 5号用户的推荐信息
 ```
 
 这里我们给出了几种模式。
 ```
 python test_client.py um 5 # 查询user-id 为1的用户信息
-python test_client.py mm 5 # 查询movie-id 为1的电影信息
+python test_client.py cm 5 # 查询movie-id 为1的电影信息
 python test_client.py recall 5 # demo召回服务预测，user id=5
 python test_client.py rank # demo排序服务预测，由于rank服务参数较多，如需定制可参考代码
 ```
