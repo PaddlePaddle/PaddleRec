@@ -1,0 +1,8 @@
+syntax = "proto3";
+package item_info;
+
+message ItemInfo {
+    string movie_id = 1;
+    string title = 2;
+    string genre = 3;
+}
