@@ -118,6 +118,18 @@ wget https://paddlerec.bj.bcebos.com/mmoe/config_all.yaml
 python -m paddlerec.run -m /home/your/dir/config_all.yaml #调试模式 直接指定本地config的绝对路径
 ```
 
+## 动态图
+
+```
+# 训练
+python -u train.py -m config.yaml 
+# 预测
+python -u infer.py -m config.yaml
+```
+
+
 ## 进阶使用
+
+
 
 ## FAQ
