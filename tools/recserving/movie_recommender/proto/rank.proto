@@ -1,0 +1,27 @@
+// rank.proto
+syntax = "proto3";
+import "user_info.proto";
+import "item_info.proto";
+
+message RankRequest {
+  string log_id = 1;
+  user_info.UserInfo user_info = 2;
+  repeated item_info.ItemInfo item_infos = 3;
+}
+
+message RankResponse {
+    message Error {
+        uint32 code = 1;
+        string text = 2;
+    }
+    message ScorePair {
+        string nid = 1;
+        float score = 2;
+    };
+    Error error = 1;
+    repeated ScorePair score_pairs = 2;
+};
+
+service RankService {
+    rpc rank_predict(RankRequest) returns (RankResponse);
+};

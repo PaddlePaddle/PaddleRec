@@ -1,0 +1,24 @@
+// cm.proto
+syntax = "proto3";
+import "item_info.proto";
+package cm;
+option cc_generic_services = false;
+
+message CMRequest {
+    string log_id = 1;
+    repeated string item_ids = 2;
+};
+
+message CMResponse {
+    message Error {
+        uint32 code = 1;
+        string text = 2;
+    };
+    Error error = 1;                                       
+    repeated item_info.ItemInfo item_infos = 2;                         
+};
+
+service CMService {
+    rpc cm_call(CMRequest) returns (CMResponse);
+};
+
