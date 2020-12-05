@@ -112,7 +112,7 @@ wget https://paddlerec.bj.bcebos.com/mmoe/config_all.yaml
 
 用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=32 gpu配置等，可参考config_all.yaml
 
-使用gpu p100 单卡训练 6.5h 测试auc: best:0.9940, mean:0.9932
+使用gpu p100 单卡训练 6.5h 测试auc marital: 0.99+
 
 ```
 python -m paddlerec.run -m /home/your/dir/config_all.yaml #调试模式 直接指定本地config的绝对路径
