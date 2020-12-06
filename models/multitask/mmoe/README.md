@@ -121,6 +121,8 @@ python -m paddlerec.run -m /home/your/dir/config_all.yaml #调试模式 直接�
 ## 动态图
 
 ```
+# 进入模型目录
+cd models/multi_task/mmoe 
 # 训练
 python -u train.py -m config.yaml 
 # 预测

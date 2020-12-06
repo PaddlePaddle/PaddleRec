@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "/root/git_dir/PaddleRec/test_dygraph"
+workspace: "models/multitask/mmoe"
 
 dygraph:
   train_data_dir: "data/train"
@@ -25,18 +25,16 @@ dygraph:
   infer_start_epoch: -1
   infer_end_epoch: 10
 
-
 dataset:
 - name: dataset_train
-  batch_size: 32
-  #type: QueueDataset
-  type: DataLoader
-  data_path: "{workspace}/data/train_all"
+  batch_size: 5
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/train"
   data_converter: "{workspace}/census_reader.py"
 - name: dataset_infer
-  batch_size: 32
-  type: DataLoader
-  data_path: "{workspace}/data/test_all"
+  batch_size: 5
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/train"
   data_converter: "{workspace}/census_reader.py"
 
 hyper_parameters:
@@ -50,27 +48,23 @@ hyper_parameters:
     learning_rate: 0.001
     strategy: async
 
-#use infer_runner mode and modify 'phase' below if infer
 mode: [train_runner, infer_runner]
-#mode: infer_runner
 
 runner:
 - name: train_runner
   class: train
-  device: gpu
-  selected_gpus: "0"
-  epochs: 100
+  device: cpu
+  epochs: 3
   save_checkpoint_interval: 1
   save_inference_interval: 4
   save_checkpoint_path: "increment_mmoe"
   save_inference_path: "inference"
-  print_interval: 100
+  print_interval: 1
   phases: [train]
 - name: infer_runner
   class: infer
-  init_model_path: "increment/99"
-  device: gpu
-  selected_gpus: "0"
+  init_model_path: "increment_mmoe/1"
+  device: cpu
   phases: [infer]
 
 phase:
