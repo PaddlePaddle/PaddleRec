@@ -37,13 +37,13 @@ class Reader(ReaderBase):
             label_marital = []
             data = l[2:]
             if int(l[1]) == 0:
-                label_income = [1, 0]
+                label_income = [0]
             elif int(l[1]) == 1:
-                label_income = [0, 1]
+                label_income = [1]
             if int(l[0]) == 0:
-                label_marital = [1, 0]
+                label_marital = [0]
             elif int(l[0]) == 1:
-                label_marital = [0, 1]
+                label_marital = [1]
             # label_income = np.array(label_income)
             # label_marital = np.array(label_marital)
             feature_name = ["input", "label_income", "label_marital"]
