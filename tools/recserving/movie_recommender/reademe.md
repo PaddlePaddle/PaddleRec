@@ -1,7 +1,7 @@
-# Demo演示
+# 推荐服务
 
 ## 简介
-本Demo基于paddlerec/models/demo/movie_recommand项目，以及AI Studio中的公开项目[《十分钟！全流程！从零搭建推荐系统》](https://aistudio.baidu.com/aistudio/projectdetail/559336)，[《PaddleRec公开教程》](https://aistudio.baidu.com/aistudio/projectdetail/1268461)。展示了使用PaddleRec搭建的一个电影推荐系统的全部流程和效果。使用者可以通过我们构建的五种服务（用户模型服务，内容模型服务，召回服务，排序服务，还有应用服务）直观的体验到一个完整的推荐系统的运作方式。我们欢迎大家直接点击上面的链接前来AI Studio上体验。
+本工具用于构建一个完整的推荐服务。以电影推荐系统为例，展示了使用PaddleRec搭建一个电影推荐系统的全部流程和效果。使用者可以通过我们构建的五种服务（用户模型服务，内容模型服务，召回服务，排序服务，还有应用服务）直观的体验到一个完整的推荐系统的运作方式。我们欢迎大家前往paddlerec/models/demo/movie_recommand项目，以及AI Studio中的公开项目[《十分钟！全流程！从零搭建推荐系统》](https://aistudio.baidu.com/aistudio/projectdetail/559336)，[《PaddleRec公开教程》](https://aistudio.baidu.com/aistudio/projectdetail/1268461)上体验。
 
 ## 目录结构
 以下是本例的简要目录结构及说明： 
@@ -20,13 +20,13 @@
 ├── proto
     ├── __init__.py
     ├── run_codegen.py #将proto转换为python格式
-    ├── as.proto #protobuf信息的数据结构表示
-    ├── cm.proto #protobuf信息的数据结构表示
-    ├── item_info.proto #protobuf信息的数据结构表示
-    ├──rank.proto #protobuf信息的数据结构表示
-    ├──recall.proto #protobuf信息的数据结构表示
-    ├──um.proto #protobuf信息的数据结构表示
-    ├──user_info.proto #protobuf信息的数据结构表示
+    ├── as.proto #应用服务中发出请求获得protobuf信息的数据结构
+    ├── cm.proto #内容模型服务中发出请求获得protobuf信息的数据结构
+    ├── item_info.proto #电影数据的数据结构表示
+    ├──rank.proto #排序服务中发出请求获得protobuf信息的数据结构
+    ├──recall.proto #召回服务中发出请求获得protobuf信息的数据结构
+    ├──um.proto #用户模型服务中发出请求获得protobuf信息的数据结构
+    ├──user_info.proto #用户数据的数据结构表示
 ```
 
 ## 运行环境
@@ -43,16 +43,56 @@ Python 版本：2.7/3.6
 <p>
 
 ### 名词解释
-本demo系统一共启动了5个在线服务，分别是用户模型服务，内容模型服务，召回服务，排序服务，还有应用服务。  
+本工具一共启动了5个在线服务，分别是用户模型服务，内容模型服务，召回服务，排序服务，还有应用服务。  
 **um**: 用户模型服务(User Model)  
 **cm**：内容模型服务(Content Model)  
 **recall**：召回服务  
 **rank**：排序服务  
 **as**：应用服务（application service）  
-用户模型和内容模型分别是数据集当中的users.dat和movies.dat数据，经过解析之后保存在redis当中，用户模型以user_id作为key，内容模型以movie_id作为key。用户模型服务和内容模型服务的逻辑分别是从redis当中按照用户传入的key来寻找对应的value并封装成protobuf结果返回。  
-召回服务目前是用离线把每个用户的召回结果计算好。  
+
+### 业务场景
+以电影推荐系统为例，讲解如何处理数据以及每个服务的实现思路
+1. 电影推荐系统使用的数据：  
+[MovieLens数据集](https://grouplens.org/datasets/movielens/)是一个关于电影评分的数据集，数据来自于IMDB等电影评分网站。该数据集中包含用户对电影的评分信息，用户的人口统计学特征以及电影的描述特征，非常适合用来入门推荐系统。MovieLens数据集包含多个子数据集，为了后面能够快速展示一个完整的训练流程，教程中我们选取了其中一个较小的子数据集[ml-1m](https://grouplens.org/datasets/movielens/1m/)，大小在1M左右。该数据集共包含了6000多位用户对近3900个电影的100多万条评分数据，评分为1～5的整数，其中每个电影的评分数据至少有20条，基本可以满足教学演示的需求。该数据集包含三个数据文件，分别是：
+- users.dat：存储用户属性信息的txt格式文件，格式为“UserID::Gender::Age::Occupation”，其中原始数据中对用户年龄和职业做了离散化处理。      
+    
+| user_id | 性别 | 年龄 | 职业 |      
+| -------- | -------- | -------- | -------- |       
+| 2181 |  男  | 25  | 自由职业 |  
+| 2182 |  女  | 25  | 学生 |          
+| 2183 |  女  | 56  | 教师 |   
+| ... |  ...  | ...  | ... |           
+
+- movies.dat：存储电影属性信息的txt格式文件，格式：“MovieID::Title::Genres”。   
+     
+| movie_id | title | 类别 |      
+| -------- | -------- | -------- |      
+| 260     |Star Wars:Episode IV(1977)| 动作，科幻  |      
+| 1270    | Three Amigos!(1986)| 喜剧  |    
+| 2763    | Thomas Crown Affair,The(1999)| 动作，惊悚 |     
+| 2858    | American Beauty(1999)| 喜剧  |     
+| ...   | ... | ... |    
+     
+- ratings.dat：存储电影评分信息的txt格式文件，格式：“UserID::MovieID::Rating::time”。  
+               
+| user_id | movie_id | 评分 | 评分时间 |   
+| ----- | -------- | -------- | -------- |      
+| 2181   | 2858    | 4分     | 974609869 | 
+| 2181   | 260    | 5分     | 974608048 |     
+| 2181   | 1270    | 5分     | 974666558 |    
+| 2182   | 3481    | 2分     | 974607734 |     
+| 2183   | 2605   | 3分     | 974608443 |       
+| 2183   | 1210    | 4分     | 974607751 |      
+| ...   | ...    | ...     |   ...     |    
+
+2. 用户模型服务和内容模型服务的实现思路  
+用户模型和内容模型分别使用了数据集当中的users.dat和movies.dat数据，我们会首先使用get_data.sh脚本获取数据集，在to_redis.py中将数据经过解析之后保存在redis当中，用户模型以user_id作为key，内容模型以movie_id作为key。用户模型服务和内容模型服务的逻辑分别是从redis当中按照用户传入的key来寻找对应的value并封装成protobuf结果返回。  
+3. 召回服务的实现思路  
+召回服务使用离线计算把每个用户的召回结果计算好，我们会首先使用get_data.sh脚本下载计算好的结果，再将结果灌入redis中。最后在使用召回服务时，从redis当中按照传入的用户id来寻找对应的评分结果并封装成protobuf返回。但是由于数据量过大，如果将全部用户的召回数据加载入redis中，需要花费很长时间。因此我们只加载了user_id为1-13的用户的召回结果，方便大家快速体验。  
+4. 排序服务的实现思路
 排序服务是用PaddleRec训练好的CTR模型，用Paddle Serving启动来提供预测服务能力，用户传入一个用户信息和一组内容信息，接下来就能经过特征抽取和排序计算，求得最终的打分，按从高到低排序返回给用户。  
-应用服务就是以上流程的串联，设计的流程是用户传入自己的user id，查找到对应的用户模型，再从召回服务中得到召回movie列表，接下来查询到所有的内容模型信息，最终两个结合在排序服务中得到所有候选电影的从高到低的打分，最终还原成原始的电影信息返回给用户。  
+5. 应用服务的实现思路
+应用服务就是以上流程的串联，设计的流程是用户传入自己的user id，查找到对应的用户模型，再从召回服务中得到召回movie列表，接下来查询内容模型得到列表中所有电影的信息，最终两个结合在排序服务中得到所有候选电影的从高到低的打分，最终还原成原始的电影信息返回给用户。  
 
 ### 支持的输入范围
 目前支持的输入为：  
