@@ -14,6 +14,17 @@
 
 workspace: "models/multitask/mmoe"
 
+dygraph:
+  train_data_dir: "data/train"
+  batch_size: 5
+  epochs: 10
+  print_interval: 1
+  model_save_path: "output_model"
+  test_data_dir: "data/train"
+  infer_load_path: "output_model"
+  infer_start_epoch: -1
+  infer_end_epoch: 10
+
 dataset:
 - name: dataset_train
   batch_size: 5
@@ -46,13 +57,13 @@ runner:
   epochs: 3
   save_checkpoint_interval: 1
   save_inference_interval: 4
-  save_checkpoint_path: "increment"
+  save_checkpoint_path: "increment_mmoe"
   save_inference_path: "inference"
   print_interval: 1
   phases: [train]
 - name: infer_runner
   class: infer
-  init_model_path: "increment/1"
+  init_model_path: "increment_mmoe/1"
   device: cpu
   phases: [infer]
 
