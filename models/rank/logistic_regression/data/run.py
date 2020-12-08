@@ -16,6 +16,7 @@ import os
 import glob
 import platform
 import shutil
+
 os.system("python download_preprocess.py")
 shutil.move("./deepfm%2Ffeat_dict_10.pkl2", "sample_data/feat_dict_10.pkl2")
 
