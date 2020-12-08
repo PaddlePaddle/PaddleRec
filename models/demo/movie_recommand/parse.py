@@ -1,11 +1,11 @@
 #coding=utf8
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import random
 import json
 import numpy as np
 import operator
+from functools import reduce
+from py27hash.hash import hash27
 
 user_fea = ["userid", "gender", "age", "occupation"]
 movie_fea = ["movieid", "title", "genres"]
@@ -36,7 +36,7 @@ def read_raw_data():
 
 def parse_data(file_name, feas):
     res = {}
-    for line in open(file_name):
+    for line in open(file_name, encoding='ISO-8859-1'):
         line = line.strip()
         arr = line.split("::")
         res[arr[0]] = dict()
@@ -48,7 +48,7 @@ def parse_data(file_name, feas):
 
 def to_hash(feas, arr):
     out_str = "%s:%s" % (feas, (arr + arr[::-1] + arr[::-2] + arr[::-3]))
-    hash_id = hash(out_str) % dict_size
+    hash_id = hash27(out_str) % dict_size
     if hash_id in hash_dict and hash_dict[hash_id] != out_str:
         print(hash_id, out_str, hash(out_str), hash_dict[hash_id])
         print("conflict")
@@ -87,7 +87,7 @@ def load_infer_results(path, feas, movie_dict):
         userid = reduce(operator.add, item[feas["userid"]])
         movieid = reduce(operator.add, item[feas["movieid"]])
         ratings = reduce(operator.add, item[feas["ratings"]])
-        predict = map(int, ratings)
+        predict = list(map(int, ratings))
         label = reduce(operator.add, item[feas["label"]])
 
         mae += sum(np.square(np.array(ratings) - np.array(label)))
@@ -100,9 +100,9 @@ def load_infer_results(path, feas, movie_dict):
             if hash_uid not in hash_dict or hash_mid not in hash_dict:
                 continue
             tmp = hash_dict[hash_uid].split(':')[1]
-            uid = tmp[:len(tmp) / 3]
+            uid = tmp[:int(len(tmp) / 3)]
             tmp = hash_dict[hash_mid].split(':')[1]
-            mid = tmp[:len(tmp) / 3]
+            mid = tmp[:int(len(tmp) / 3)]
             if uid not in res:
                 res[uid] = []
             item = {"score": ratings[i]}
