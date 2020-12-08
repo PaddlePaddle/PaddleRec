@@ -1,0 +1,121 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+workspace: "./"
+
+hyper_parameters:
+  optimizer:
+    class: Adam
+    learning_rate: 0.0001
+  sparse_inputs_slots: 27
+  sparse_feature_number: 1000001
+  sparse_feature_dim: 10
+  dense_feature_dim: 13
+  fc_sizes: [400, 400, 400]
+
+mode: [ps_cpu_dataset_async,local_infer]
+runner:
+- name: ps_cpu_dataset_async
+  class: cluster_train
+  epochs: 3
+  device: cpu
+  fleet_mode: ps
+  distribute_strategy: async
+  terminal_class_path: "./benchmark_process.py"
+  runner_result_dump_path: "ctr_training_metric"
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "ctr_model" # save checkpoint path
+  print_interval: 10
+  phases: [dataset_train]
+
+- name: ps_cpu_dataset_sync
+  class: cluster_train
+  epochs: 10
+  device: cpu
+  fleet_mode: ps
+  distribute_strategy: sync
+  terminal_class_path: "./benchmark_process.py"
+  runner_result_dump_path: "ctr_training_metric"
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "ctr_model" # save checkpoint path
+  print_interval: 1000
+  phases: [dataset_train]
+
+- name: ps_cpu_dataloader_async
+  class: cluster_train
+  epochs: 10
+  device: cpu
+  fleet_mode: ps
+  distribute_strategy: async
+  terminal_class_path: "./benchmark_process.py"
+  runner_result_dump_path: "ctr_training_metric"
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "ctr_model" # save checkpoint path
+  print_interval: 1000
+  phases: [dataloader_train]
+
+- name: ps_cpu_dataloader_sync
+  class: cluster_train
+  epochs: 10
+  device: cpu
+  fleet_mode: ps
+  distribute_strategy: sync
+  terminal_class_path: "./benchmark_process.py"
+  runner_result_dump_path: "ctr_training_metric"
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_checkpoint_path: "ctr_model" # save checkpoint path
+  print_interval: 1000
+  phases: [dataloader_train]
+
+- name: local_infer
+  class: infer
+  device: cpu
+  runner_class_path: "./benchmark_process.py"
+  terminal_class_path: "./benchmark_process.py"
+  runner_result_dump_path: "ctr_infer_metric"
+  init_model_path: "ctr_model"
+  phases: [dataloader_infer]
+
+phase:
+- name: dataset_train
+  model: "{workspace}/benchmark_model.py" 
+  dataset_name: dataset
+  thread_num: 16
+
+- name: dataloader_train
+  model: "{workspace}/benchmark_model.py" 
+  dataset_name: dataloader
+  thread_num: 16
+
+- name: dataloader_infer
+  model: "{workspace}/benchmark_model.py" 
+  dataset_name: dataloader_infer 
+  thread_num: 1
+
+dataset:
+- name: dataloader
+  batch_size: 1000
+  type: DataLoader 
+  data_converter: "{workspace}/benchmark_reader.py"
+  data_path: "{workspace}/train_data"
+- name: dataset
+  batch_size: 1000
+  type: QueueDataset 
+  data_converter: "{workspace}/benchmark_reader.py"
+  data_path: "{workspace}/train_data"
+- name: dataloader_infer
+  batch_size: 1000
+  type: DataLoader
+  data_converter: "{workspace}/benchmark_reader.py"
+  data_path: "{workspace}/test_data"
