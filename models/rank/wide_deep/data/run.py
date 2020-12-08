@@ -15,6 +15,7 @@
 import os
 import glob
 import platform
+
 os.system("sh create_data.sh")
 
 os.mkdir("slot_train_data")

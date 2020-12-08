@@ -3,6 +3,7 @@ import sys
 import random
 import json
 from py27hash.hash import hash27
+
 user_fea = ["userid", "gender", "age", "occupation"]
 movie_fea = ["movieid", "title", "genres"]
 rating_fea = ["userid", "movieid", "rating", "time"]
