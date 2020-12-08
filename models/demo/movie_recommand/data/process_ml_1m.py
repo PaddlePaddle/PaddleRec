@@ -1,9 +1,9 @@
 #coding=utf8
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import random
 import json
+from py27hash.hash import hash27
+
 user_fea = ["userid", "gender", "age", "occupation"]
 movie_fea = ["movieid", "title", "genres"]
 rating_fea = ["userid", "movieid", "rating", "time"]
@@ -18,20 +18,20 @@ def process(path):
     user_dict = parse_data(data_path + "/users.dat", user_fea)
     movie_dict = parse_movie_data(data_path + "/movies.dat", movie_fea)
 
-    for line in open(path):
+    for line in open(path, encoding='ISO-8859-1'):
         line = line.strip()
         arr = line.split("::")
         userid = arr[0]
         movieid = arr[1]
         out_str = "time:%s\t%s\t%s\tlabel:%s" % (arr[3], user_dict[userid],
                                                  movie_dict[movieid], arr[2])
-        log_id = hash(out_str) % 1000000000
-        print "%s\t%s" % (log_id, out_str)
+        log_id = hash27(out_str) % 1000000000
+        print("%s\t%s" % (log_id, out_str))
 
 
 def parse_data(file_name, feas):
     dict = {}
-    for line in open(file_name):
+    for line in open(file_name, encoding='ISO-8859-1'):
         line = line.strip()
         arr = line.split("::")
         out_str = ""
@@ -44,7 +44,7 @@ def parse_data(file_name, feas):
 
 def parse_movie_data(file_name, feas):
     dict = {}
-    for line in open(file_name):
+    for line in open(file_name, encoding='ISO-8859-1'):
         line = line.strip()
         arr = line.split("::")
         title_str = ""
@@ -68,9 +68,9 @@ def to_hash(in_str):
     feas = in_str.split(":")[0]
     arr = in_str.split(":")[1]
     out_str = "%s:%s" % (feas, (arr + arr[::-1] + arr[::-2] + arr[::-3]))
-    hash_id = hash(out_str) % dict_size
+    hash_id = hash27(out_str) % dict_size
     if hash_id in hash_dict and hash_dict[hash_id] != out_str:
-        print(hash_id, out_str, hash(out_str))
+        print(hash_id, out_str, hash27(out_str))
         print("conflict")
         exit(-1)
 
@@ -91,12 +91,12 @@ def to_hash_list(in_str):
 
 def get_hash(path):
     #0-34831 1-time:974673057 2-userid:2021 3-gender:M 4-age:25 5-occupation:0 6-movieid:1345  7-title:Carrie (1976)  8-genres:Horror  9-label:2
-    for line in open(path):
+    for line in open(path, encoding='ISO-8859-1'):
         arr = line.strip().split("\t")
         out_str = "logid:%s %s %s %s %s %s %s %s %s %s" % \
                  (arr[0], arr[1], to_hash(arr[2]), to_hash(arr[3]), to_hash(arr[4]), to_hash(arr[5]), \
                  to_hash(arr[6]), to_hash_list(arr[7]), to_hash_list(arr[8]), arr[9])
-        print out_str
+        print(out_str)
 
 
 def generate_online_user():
@@ -116,7 +116,7 @@ def generate_online_data(path):
     user_dict = parse_data(data_path + "/users.dat", user_fea)
     movie_dict = parse_movie_data(data_path + "/movies.dat", movie_fea)
 
-    for line in open(path):
+    for line in open(path, encoding='ISO-8859-1'):
         line = line.strip()
         arr = line.split("::")
         userid = arr[0]
@@ -124,7 +124,7 @@ def generate_online_data(path):
         label = arr[2]
         out_str = "time:%s\t%s\t%s\tlabel:%s" % ("1", user_dict[userid],
                                                  movie_dict[movieid], label)
-        log_id = hash(out_str) % 1000000000
+        log_id = hash27(out_str) % 1000000000
         res = "%s\t%s" % (log_id, out_str)
         arr = res.strip().split("\t")
         out_str = "logid:%s %s %s %s %s %s %s %s %s %s" % \
