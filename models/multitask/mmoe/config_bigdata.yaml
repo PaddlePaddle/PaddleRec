@@ -68,7 +68,7 @@ runner:
   phases: [train]
 - name: infer_runner
   class: infer
-  init_model_path: "increment/99"
+  init_model_path: "increment_mmoe/99"
   device: gpu
   selected_gpus: "0"
   phases: [infer]
