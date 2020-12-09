@@ -120,9 +120,15 @@ def main(args):
         auc_metric_income = paddle.metric.Auc("ROC")
         epoch_begin = time.time()
         interval_begin = time.time()
+        train_reader_cost = 0.0
+        train_run_cost = 0.0
+        total_samples = 0
+        reader_start = time.time()
 
         for batch_id, batch in enumerate(train_dataloader()):
+            train_reader_cost += time.time() - reader_start
             optimizer.clear_grad()
+            train_start = time.time()
             batch_size = len(batch[0])
 
             input_data, label_income, label_marital = create_feeds(
@@ -134,6 +140,8 @@ def main(args):
 
             loss.backward()
             optimizer.step()
+            train_run_cost += time.time() - train_start
+            total_samples += batch_size
             # for auc
             auc_metric_income.update(
                 preds=pred_income.numpy(), labels=label_income.numpy())
@@ -142,12 +150,18 @@ def main(args):
 
             if batch_id % print_interval == 1:
                 logger.info(
-                    "epoch: {}, batch_id: {}, auc_income: {:.6f}, auc_marital: {:.6f}, speed: {:.2f} ins/s".
+                    "epoch: {}, batch_id: {}, auc_income: {:.6f}, auc_marital: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(epoch_id, batch_id,
                            auc_metric_income.accumulate(),
-                           auc_metric_marital.accumulate(), print_interval *
-                           batch_size / (time.time() - interval_begin)))
-                interval_begin = time.time()
+                           auc_metric_marital.accumulate(), train_reader_cost /
+                           print_interval, (train_reader_cost + train_run_cost
+                                            ) / print_interval, total_samples /
+                           print_interval, total_samples / (train_reader_cost +
+                                                            train_run_cost)))
+                train_reader_cost = 0.0
+                train_run_cost = 0.0
+                total_samples = 0
+            reader_start = time.time()
 
         logger.info(
             "epoch: {} done, auc_income: {:.6f}, auc_marital: {:.6f}, : epoch time{:.2f} s".
