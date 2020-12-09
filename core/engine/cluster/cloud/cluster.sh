@@ -31,17 +31,17 @@
 function _before_submit() {
   echo "before_submit"
   
-  if [ ${DISTRIBUTE_MODE} == "PS_CPU_MPI" ]; then
+  if [[ ${DISTRIBUTE_MODE} == "PS_CPU_MPI" ]]; then
     _gen_cpu_before_hook
     _gen_mpi_config
     _gen_mpi_job
     _gen_end_hook
-  elif [ ${DISTRIBUTE_MODE} == "COLLECTIVE_GPU_K8S" ]; then
+  elif [[ ${DISTRIBUTE_MODE} == "COLLECTIVE_GPU_K8S" ]]; then
     _gen_gpu_before_hook
     _gen_k8s_config
     _gen_k8s_gpu_job
     _gen_end_hook
-  elif [ ${DISTRIBUTE_MODE} == "PS_CPU_K8S" ]; then
+  elif [[ ${DISTRIBUTE_MODE} == "PS_CPU_K8S" ]]; then
     _gen_cpu_before_hook
     _gen_k8s_config
     _gen_k8s_cpu_job
@@ -89,7 +89,7 @@ function _gen_k8s_config() {
 }
 
 function _gen_cpu_before_hook() {
-  if [ ${BEFORE_HOOK_FILE} == "" ]; then
+  if [[ ${BEFORE_HOOK_FILE} == "" ]]; then
     echo "gen cpu before_hook.sh"
     sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
       ${abs_dir}/cloud/before_hook_cpu.sh.template >${PWD}/before_hook.sh
@@ -97,7 +97,7 @@ function _gen_cpu_before_hook() {
 }
 
 function _gen_gpu_before_hook() {
-  if [ ${BEFORE_HOOK_FILE} == "" ]; then
+  if [[ ${BEFORE_HOOK_FILE} == "" ]]; then
     echo "gen gpu before_hook.sh"
     sed -e "s#<$ PADDLEPADDLE_VERSION $>#$PADDLE_VERSION#g" \
       ${abs_dir}/cloud/before_hook_gpu.sh.template >${PWD}/before_hook.sh
@@ -106,7 +106,7 @@ function _gen_gpu_before_hook() {
 
 function _gen_end_hook() {
   echo "gen end_hook.sh"
-  if [ ${END_HOOK_FILE} == "" ]; then
+  if [[ ${END_HOOK_FILE} == "" ]]; then
     cp ${abs_dir}/cloud/end_hook.sh.template ${PWD}/end_hook.sh
   else
     cp ${END_HOOK_FILE} ${PWD}/end_hook.sh
@@ -186,11 +186,11 @@ function package_hook() {
   mkdir ${job_file_path}
   cp $FILES ${job_file_path}/
 
-  if [ ${BEFORE_HOOK_FILE} != "" ]; then
+  if [[ ${BEFORE_HOOK_FILE} != "" ]]; then
     cp ${BEFORE_HOOK_FILE} ${job_file_path}/before_hook.sh
   fi
 
-  if [ ${END_HOOK_FILE} != "" ]; then
+  if [[ ${END_HOOK_FILE} != "" ]]; then
     cp ${END_HOOK_FILE} ${job_file_path}/end_hook.sh
   fi
 
