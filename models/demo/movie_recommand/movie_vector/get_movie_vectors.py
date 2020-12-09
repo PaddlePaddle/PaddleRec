@@ -88,5 +88,5 @@ for line in lines:
         dic[key] = np.array(dic[key]).astype(np.int64).reshape(len(dic[key]),1)
 
     fetch_map = ctr_client.predict(feed=dic, fetch=["save_infer_model/scale_0.tmp_0"], batch=True)
-    ff.write("{}\n".format(str(fetch_map["save_infer_model/scale_0.tmp_0"].tolist()[0])))
+    ff.write("{}:{}\n".format(movie_id, str(fetch_map["save_infer_model/scale_0.tmp_0"].tolist()[0])))
 ff.close()

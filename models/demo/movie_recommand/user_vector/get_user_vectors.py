@@ -95,7 +95,7 @@ for line in lines:
         dic["userid"].append(hash2(item_info.user_id))
         dic["gender"].append(hash2(item_info.gender))
         dic["age"].append(hash2(item_info.age))
-        dic["occupation"].append(item_info.occupation)
+        dic["occupation"].append(hash2(item_info.job))
         lod.append(i+1)
 
     dic["userid.lod"] = lod

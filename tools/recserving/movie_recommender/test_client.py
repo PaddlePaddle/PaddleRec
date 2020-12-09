@@ -82,11 +82,10 @@ if __name__ == "__main__":
         nid_list = nid_list_str.strip().split(",")
         print(get_cm(nid_list))
     if sys.argv[1] == "recall":
+        uid = sys.argv[2]
+        user_info = get_ums(uid).user_info
         request = recall_pb2.RecallRequest()
-        request.user_info.user_id="1"
-        request.user_info.age=3
-        request.user_info.job="1"
-        request.user_info.gender="M"
+        request.user_info.CopyFrom(user_info)
         print(get_recall(request))
     if sys.argv[1] == "rank":
         request = rank_pb2.RankRequest()
