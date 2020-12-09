@@ -1,0 +1,35 @@
+feed_var {
+  name: "userid"
+  alias_name: "userid"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+feed_var {
+  name: "gender"
+  alias_name: "gender"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+feed_var {
+  name: "age"
+  alias_name: "age"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+feed_var {
+  name: "occupation"
+  alias_name: "occupation"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+fetch_var {
+  name: "save_infer_model/scale_0.tmp_3"
+  alias_name: "save_infer_model/scale_0.tmp_3"
+  is_lod_tensor: false
+  fetch_type: 1
+  shape: 32
+}

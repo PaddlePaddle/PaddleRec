@@ -45,7 +45,8 @@ runner:
   save_checkpoint_path: "increment_recall" # save checkpoint path
   save_inference_feed_varnames: ["movieid", "title", "genres"]
   save_inference_fetch_varnames: ["fc_7.tmp_2"]
-  save_inference_path: "movie_vector_model"  
+  save_inference_path: "movie_vector_model"
+
   epochs: 10
   device: cpu
 

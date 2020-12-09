@@ -1,0 +1,28 @@
+feed_var {
+  name: "movieid"
+  alias_name: "movieid"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+feed_var {
+  name: "title"
+  alias_name: "title"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+feed_var {
+  name: "genres"
+  alias_name: "genres"
+  is_lod_tensor: true
+  feed_type: 0
+  shape: -1
+}
+fetch_var {
+  name: "save_infer_model/scale_0.tmp_0"
+  alias_name: "save_infer_model/scale_0.tmp_0"
+  is_lod_tensor: false
+  fetch_type: 1
+  shape: 32
+}
