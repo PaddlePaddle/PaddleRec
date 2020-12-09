@@ -73,8 +73,11 @@ class Model(ModelBase):
         concated_mov = fluid.layers.concat(mov_sparse_embed_seq, axis=1)
 
         usr_combined_features = fc(concated_user)
+        print(usr_combined_features)
+        #fluid.layers.Print(usr_combined_features)
         mov_combined_features = fc(concated_mov)
-
+        print(mov_combined_features)
+        #fluid.layers.Print(mov_combined_features)
         sim = fluid.layers.cos_sim(
             X=usr_combined_features, Y=mov_combined_features)
         predict = fluid.layers.scale(sim, scale=5)
