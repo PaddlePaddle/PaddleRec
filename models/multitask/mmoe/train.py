@@ -88,7 +88,7 @@ def create_data_loader(dataset, mode, place, config):
 def main(args):
     paddle.seed(12345)
     config = load_yaml(args.config_yaml)
-    use_gpu = config.get("use_gpu", True)
+    use_gpu = config.get("dygraph.use_gpu", True)
     train_data_dir = config.get("dygraph.train_data_dir", None)
     epochs = config.get("dygraph.epochs", None)
     feature_size = config.get('hyper_parameters.feature_size', None)
