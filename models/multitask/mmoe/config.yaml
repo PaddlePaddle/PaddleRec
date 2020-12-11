@@ -20,6 +20,7 @@ dygraph:
   batch_size: 5 
   epochs: 10
   print_interval: 2 
+  #model_init_path: "output_model/0" # init model
   model_save_path: "output_model"
   test_data_dir: "data/train"
   infer_load_path: "output_model"
