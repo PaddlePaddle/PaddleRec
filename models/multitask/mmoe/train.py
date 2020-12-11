@@ -95,6 +95,13 @@ def main(args):
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
 
+    print("***********************************")
+    logger.info(
+        "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, train_data_dir, epochs, print_interval,
+               model_save_path))
+    print("***********************************")
+
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     mmoe_model = create_model(config)
