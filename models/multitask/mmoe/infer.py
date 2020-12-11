@@ -72,7 +72,7 @@ def create_data_loader(dataset, mode, place, config):
 def main(args):
     paddle.seed(12345)
     config = load_yaml(args.config_yaml)
-    use_gpu = config.get("use_gpu", True)
+    use_gpu = config.get("dygraph.use_gpu", True)
     test_data_dir = config.get("dygraph.test_data_dir", None)
     feature_size = config.get('hyper_parameters.feature_size', None)
     print_interval = config.get("dygraph.print_interval", None)
@@ -81,6 +81,13 @@ def main(args):
     end_epoch = config.get("dygraph.infer_end_epoch", 10)
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
+
+    print("***********************************")
+    logger.info(
+        "use_gpu: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, test_data_dir, start_epoch, end_epoch, print_interval,
+               model_load_path))
+    print("***********************************")
 
     mmoe_model = create_model(config)
     file_list = [
