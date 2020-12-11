@@ -19,7 +19,7 @@ import mmoe_net as net
 import time
 import logging
 
-from utils import load_yaml, get_abs_model, save_model
+from utils import load_yaml, get_abs_model, save_model, load_model
 from census_reader_dygraph import CensusDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
@@ -105,6 +105,9 @@ def main(args):
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     mmoe_model = create_model(config)
+    model_init_path = config.get("dygraph.model_init_path", None)
+    if model_init_path is not None:
+        load_model(model_init_path, mmoe_model)
 
     # to do : add optimizer function
     optimizer = paddle.optimizer.Adam(parameters=mmoe_model.parameters())
