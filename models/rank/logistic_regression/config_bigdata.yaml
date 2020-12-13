@@ -32,14 +32,14 @@ dygraph:
 dataset:
   - name: train_sample
     type: DataLoader
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
+    batch_size: 1024
+    data_path: "{workspace}/data/slot_train_data"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
   - name: infer_sample
     type: DataLoader
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
+    batch_size: 1024
+    data_path: "{workspace}/data/slot_test_data"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
 
