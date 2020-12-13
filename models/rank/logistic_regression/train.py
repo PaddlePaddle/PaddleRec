@@ -68,12 +68,10 @@ def create_model(config):
     return LR
 
 
-def create_data_loader(dataset, mode, place, config):
+def create_data_loader(dataset, place, config):
     batch_size = config.get('dygraph.batch_size', None)
-    is_train = mode == 'train'
-    batch_sampler = DistributedBatchSampler(
-        dataset, batch_size=batch_size, shuffle=is_train)
-    loader = DataLoader(dataset, batch_sampler=batch_sampler, places=place)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
 
 
@@ -110,8 +108,7 @@ def main(args):
     ]
     print("read data")
     dataset = CriteoLRDataset(file_list)
-    train_dataloader = create_data_loader(
-        dataset, mode='test', place=place, config=config)
+    train_dataloader = create_data_loader(dataset, place=place, config=config)
 
     last_epoch_id = config.get("last_epoch", -1)
 
