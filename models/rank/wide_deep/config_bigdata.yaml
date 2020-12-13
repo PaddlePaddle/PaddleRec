@@ -17,17 +17,17 @@ debug: false
 workspace: "models/rank/wide_deep"
 
 dygraph:
-  train_data_dir: "data/sample_data/train"
+  train_data_dir: "data/slot_train_data"
   use_gpu: True
-  batch_size: 5
-  epochs: 3
-  print_interval: 20
+  batch_size: 40
+  epochs: 80
+  print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model"
+  model_save_path: "output_model_all"
+  test_data_dir: "data/slot_test_data"
+  infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 3
+  infer_end_epoch: 80
 
 # list of dataset
 
@@ -35,13 +35,13 @@ dygraph:
 dataset:
   - name: sample_1
     type: DataLoader # or QueueDataset
-    batch_size: 5
+    batch_size: 40
     data_path: "{workspace}/data/sample_data/train"
     sparse_slots: "label"
     dense_slots: "wide_input:8 deep_input:58"
   - name: infer_sample
     type: DataLoader # or QueueDataset
-    batch_size: 5
+    batch_size: 40
     data_path: "{workspace}/data/sample_data/train"
     sparse_slots: "label"
     dense_slots: "wide_input:8 deep_input:58"
@@ -64,7 +64,7 @@ mode: [train_runner , infer_runner]
 runner:
   - name: train_runner
     class: train
-    epochs: 1
+    epochs: 80
     device: cpu
     init_model_path: ""
     save_checkpoint_interval: 1
