@@ -61,12 +61,10 @@ def create_model(config):
     return wide_deep_model
 
 
-def create_data_loader(dataset, mode, place, config):
+def create_data_loader(dataset, place, config):
     batch_size = config.get('dygraph.batch_size', None)
-    is_train = mode == 'train'
-    batch_sampler = DistributedBatchSampler(
-        dataset, batch_size=batch_size, shuffle=is_train)
-    loader = DataLoader(dataset, batch_sampler=batch_sampler, places=place)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
 
 
@@ -98,8 +96,7 @@ def main(args):
     ]
     print("read data")
     dataset = WideDeepDataset(file_list)
-    test_dataloader = create_data_loader(
-        dataset, mode='test', place=place, config=config)
+    test_dataloader = create_data_loader(dataset, place=place, config=config)
 
     auc_metric = paddle.metric.Auc("ROC")
     acc_metric = paddle.metric.Accuracy()

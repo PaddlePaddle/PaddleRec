@@ -52,8 +52,6 @@ class Model(ModelBase):
             paddle.clip(
                 prediction, min=-15.0, max=15.0), name="prediction")
 
-        print(pred)
-        num_seqs = paddle.fluid.layers.create_tensor(dtype='int64')
         acc = paddle.metric.accuracy(
             input=pred, label=paddle.cast(
                 x=label, dtype='int64'))
