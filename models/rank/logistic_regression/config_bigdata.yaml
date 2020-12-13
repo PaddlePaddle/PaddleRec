@@ -27,7 +27,7 @@ dygraph:
   test_data_dir: "data/slot_test_data"
   infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 10
+  infer_end_epoch: 2
 
 dataset:
   - name: train_sample
