@@ -15,14 +15,14 @@
 from __future__ import print_function
 import numpy as np
 
-from paddle.io import Dataset
+from paddle.io import IterableDataset
 
 
-class WideDeepDataset(Dataset):
+class WideDeepDataset(IterableDataset):
     def __init__(self, file_list):
         super(WideDeepDataset, self).__init__()
+        self.file_list = file_list
         self.init()
-        self.read_data(file_list)
 
     def init(self):
         from operator import mul
@@ -38,10 +38,10 @@ class WideDeepDataset(Dataset):
             self.visit[self.slots[i]] = False
         self.padding = padding
 
-    def read_data(self, file_list):
+    def __iter__(self):
         full_lines = []
         self.data = []
-        for file in file_list:
+        for file in self.file_list:
             with open(file, "r") as rf:
                 for l in rf:
                     line = l.strip().split(" ")
@@ -77,10 +77,4 @@ class WideDeepDataset(Dataset):
                     output_list.append(np.array(output[-2][1]))
                     output_list.append(np.array(output[-1][1]))
                     # list
-                    self.data.append(output_list)
-
-    def __getitem__(self, index):
-        return self.data[index]
-
-    def __len__(self):
-        return len(self.data)
+                    yield output_list
