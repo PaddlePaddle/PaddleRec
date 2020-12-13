@@ -42,9 +42,14 @@ class CriteoLRDataset(Dataset):
         full_lines = []
         self.data = []
         for file in file_list:
+            num_row = 0
             with open(file, "r") as rf:
                 for l in rf:
                     line = l.strip().split(" ")
+                    num_row += 1
+                    if num_row % 10000 == 1:
+                        print("read line:", num_row)
+
                     output = [(i, []) for i in self.slots]
                     for i in line:
                         slot_feasign = i.split(":")
