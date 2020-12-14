@@ -15,12 +15,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import lr_net as net
+import word2vec_net as net
 import time
 import logging
 
-from utils import load_yaml, get_abs_model, save_model, load_model
-from criteo_lr_reader_dygraph import CriteoLRDataset
+from utils_dygraph import load_yaml, get_abs_model, save_model, load_model
+from word2vec_reader_dygraph import Word2VecDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -37,35 +37,49 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, num_field):
-    label = paddle.to_tensor(batch[0].numpy().astype('int32').reshape(-1, 1))
-    feat_idx = paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1,
-                                                                         1))
-    raw_feat_value = paddle.to_tensor(batch[2].numpy().astype('float32')
-                                      .reshape(-1, 1))
-    feat_value = paddle.reshape(raw_feat_value,
-                                [-1, num_field])  # None * num_field * 1
-    return label, feat_idx, feat_value
+def create_feeds(batch, neg_num):
+    input_word = paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1,
+                                                                           1))
+    true_word = paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1,
+                                                                          1))
+    neg_word = paddle.to_tensor(batch[2].numpy().astype('int64').reshape(
+        -1, neg_num))
+    return input_word, true_word, neg_word
 
 
-def create_loss(predict, label):
-    cost = paddle.nn.functional.log_loss(
-        input=predict, label=paddle.cast(label, "float32"))
-    avg_cost = paddle.sum(x=cost)
+def create_loss(true_logits, neg_logits, neg_num):
+    label_ones = paddle.full(
+        shape=[paddle.shape(true_logits)[0], 1], fill_value=1.0)
+    label_zeros = paddle.full(
+        shape=[paddle.shape(true_logits)[0], neg_num], fill_value=0.0)
+
+    true_logits = paddle.nn.functional.sigmoid(true_logits)
+    true_xent = paddle.nn.functional.binary_cross_entropy(true_logits,
+                                                          label_ones)
+    neg_logits = paddle.nn.functional.sigmoid(neg_logits)
+    neg_xent = paddle.nn.functional.binary_cross_entropy(neg_logits,
+                                                         label_zeros)
+    cost = paddle.add(true_xent, neg_xent)
+    avg_cost = paddle.mean(x=cost)
 
     return avg_cost
 
 
 def create_model(config):
-    init_value = 0.1
     sparse_feature_number = config.get(
-        'hyper_parameters.sparse_feature_number', None)
-    reg = config.get('hyper_parameters.reg', None)
-    num_field = config.get('hyper_parameters.num_field', None)
+        "hyper_parameters.sparse_feature_number")
+    sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
+    neg_num = config.get("hyper_parameters.neg_num")
 
-    LR = net.LRLayer(sparse_feature_number, init_value, reg, num_field)
+    word2vec_model = net.Word2VecLayer(
+        sparse_feature_number,
+        sparse_feature_dim,
+        neg_num,
+        emb_name="emb",
+        emb_w_name="emb_w",
+        emb_b_name="emb_b")
 
-    return LR
+    return word2vec_model
 
 
 def create_data_loader(dataset, place, config):
@@ -84,7 +98,7 @@ def main(args):
     feature_size = config.get('hyper_parameters.feature_size', None)
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
-    num_field = config.get('hyper_parameters.num_field', None)
+    neg_num = config.get("hyper_parameters.neg_num")
 
     print("***********************************")
     logger.info(
@@ -95,27 +109,27 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    lr_model = create_model(config)
+    word2vec_model = create_model(config)
+
     model_init_path = config.get("dygraph.model_init_path", None)
     if model_init_path is not None:
-        load_model(model_init_path, lr_model)
+        load_model(model_init_path, word2vec_model)
 
     # to do : add optimizer function
-    optimizer = paddle.optimizer.Adam(parameters=lr_model.parameters())
+    optimizer = paddle.optimizer.Adam(parameters=word2vec_model.parameters())
 
     file_list = [
         os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
     ]
     print("read data")
-    dataset = CriteoLRDataset(file_list)
+    dataset = Word2VecDataset(file_list, config)
     train_dataloader = create_data_loader(dataset, place=place, config=config)
 
     last_epoch_id = config.get("last_epoch", -1)
 
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
-        lr_model.train()
-        auc_metric = paddle.metric.Auc("ROC")
+        word2vec_model.train()
         epoch_begin = time.time()
         interval_begin = time.time()
         train_reader_cost = 0.0
@@ -129,40 +143,38 @@ def main(args):
             train_start = time.time()
             batch_size = len(batch[0])
 
-            label, feat_idx, feat_value = create_feeds(batch, num_field)
+            input_word, true_word, neg_word = create_feeds(batch, neg_num)
 
-            pred = lr_model(feat_idx, feat_value)
-            loss = create_loss(pred, label)
+            true_logits, neg_logits = word2vec_model.forward(
+                [input_word, true_word, neg_word])
+            loss = create_loss(true_logits, neg_logits, neg_num)
 
             loss.backward()
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
-            # for auc
-            predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
-            label_int = paddle.cast(label, 'int64')
-            auc_metric.update(
-                preds=predict_2d.numpy(), labels=label_int.numpy())
-
             if batch_id % print_interval == 1:
                 logger.info(
-                    "epoch: {}, batch_id: {}, auc: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    "epoch: {}, batch_id: {}, loss: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(epoch_id, batch_id,
-                           auc_metric.accumulate(), train_reader_cost /
-                           print_interval, (train_reader_cost + train_run_cost
-                                            ) / print_interval, total_samples /
-                           print_interval, total_samples / (train_reader_cost +
-                                                            train_run_cost)))
+                           loss.numpy()[0], train_reader_cost / print_interval,
+                           (train_reader_cost + train_run_cost
+                            ) / print_interval, total_samples / print_interval,
+                           total_samples / (train_reader_cost + train_run_cost
+                                            )))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0
             reader_start = time.time()
 
-        logger.info("epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
-            epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
+        logger.info(
+            "epoch: {} done, loss: {:.6f}, : epoch time{:.2f} s".format(
+                epoch_id, loss.numpy()[0], time.time() - epoch_begin))
 
-        save_model(
-            lr_model, optimizer, model_save_path, epoch_id, prefix='rec')
+        for prefix, layer in word2vec_model.named_sublayers():
+            if prefix == 'embedding':
+                save_model(
+                    layer, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':

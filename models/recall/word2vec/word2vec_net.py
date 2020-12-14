@@ -60,7 +60,8 @@ class Word2VecLayer(nn.Layer):
         true_emb_b = paddle.squeeze(x=true_emb_b, axis=[1])
 
         neg_emb_w = self.embedding_w(inputs[2])
-        neg_emb_b = self.embedding_w(inputs[2])
+        neg_emb_b = self.embedding_b(inputs[2])
+
         neg_emb_b_vec = paddle.reshape(neg_emb_b, shape=[-1, self.neg_num])
 
         true_logits = paddle.add(x=paddle.sum(x=paddle.multiply(

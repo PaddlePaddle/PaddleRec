@@ -91,7 +91,9 @@ def get_all_inters_from_yaml(file, filters):
     return ret
 
 
-def load_yaml(yaml_file):
-    running_config = get_all_inters_from_yaml(
-        yaml_file, ["workspace", "dygraph", "hyper_parameters"])
+def load_yaml(yaml_file, other_part=None):
+    part_list = ["workspace", "dygraph", "hyper_parameters"]
+    if other_part:
+        part_list += other_part
+    running_config = get_all_inters_from_yaml(yaml_file, part_list)
     return running_config

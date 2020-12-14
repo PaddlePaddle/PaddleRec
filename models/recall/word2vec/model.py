@@ -83,29 +83,16 @@ class Model(ModelBase):
         label_zeros = paddle.full(
             shape=[paddle.shape(true_logits)[0], self.neg_num], fill_value=0.0)
 
-        true_xent = paddle.fluid.layers.sigmoid_cross_entropy_with_logits(
-            true_logits, label_ones)
-        neg_xent = paddle.fluid.layers.sigmoid_cross_entropy_with_logits(
-            neg_logits, label_zeros)
-        cost = paddle.add(x=paddle.sum(x=true_xent, axis=1),
-                          y=paddle.sum(x=neg_xent, axis=1))
+        true_logits = paddle.nn.functional.sigmoid(true_logits)
+        true_xent = paddle.nn.functional.binary_cross_entropy(true_logits,
+                                                              label_ones)
+        neg_logits = paddle.nn.functional.sigmoid(neg_logits)
+        neg_xent = paddle.nn.functional.binary_cross_entropy(neg_logits,
+                                                             label_zeros)
+        cost = paddle.add(true_xent, neg_xent)
         avg_cost = paddle.mean(x=cost)
 
         self._cost = avg_cost
-        #global_right_cnt = paddle.fluid.layers.create_global_var(
-        #    name="global_right_cnt",
-        #    persistable=True,
-        #    dtype='float32',
-        #    shape=[1],
-        #    value=0)
-        #global_total_cnt = paddle.fluid.layers.create_global_var(
-        #    name="global_total_cnt",
-        #    persistable=True,
-        #    dtype='float32',
-        #    shape=[1],
-        #    value=0)
-        #global_right_cnt.stop_gradient = True
-        #global_total_cnt.stop_gradient = True
         self._metrics["LOSS"] = avg_cost
 
     def optimizer(self):
