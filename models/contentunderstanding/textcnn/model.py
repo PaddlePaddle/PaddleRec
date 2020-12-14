@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+import paddle
+from textcnn_net import TextCNNLayer
 
 
 class Model(ModelBase):
@@ -29,16 +30,21 @@ class Model(ModelBase):
             "hyper_parameters.cnn_filter_size2")
         self.cnn_filter_size3 = envs.get_global_env(
             "hyper_parameters.cnn_filter_size3")
+        self.filter_sizes = [
+            self.cnn_filter_size1, self.cnn_filter_size2, self.cnn_filter_size3
+        ]
         self.emb_dim = envs.get_global_env("hyper_parameters.emb_dim")
         self.hid_dim = envs.get_global_env("hyper_parameters.hid_dim")
         self.class_dim = envs.get_global_env("hyper_parameters.class_dim")
         self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse")
 
     def input_data(self, is_infer=False, **kwargs):
-        data = fluid.data(
+        data = paddle.static.data(
             name="input", shape=[None, self.max_len], dtype='int64')
-        seq_len = fluid.data(name="seq_len", shape=[None], dtype='int64')
-        label = fluid.data(name="label", shape=[None, 1], dtype='int64')
+        seq_len = paddle.static.data(
+            name="seq_len", shape=[None], dtype='int64')
+        label = paddle.static.data(
+            name="label", shape=[None, 1], dtype='int64')
         return [data, seq_len, label]
 
     def net(self, input, is_infer=False):
@@ -47,45 +53,21 @@ class Model(ModelBase):
         seq_len = input[1]
         label = input[2]
 
-        # embedding layer
-        emb = fluid.embedding(
-            input=data,
-            size=[self.dict_dim, self.emb_dim],
-            is_sparse=self.is_sparse)
-        emb = fluid.layers.sequence_unpad(emb, length=seq_len)
-        # convolution layer
-        conv1 = fluid.nets.sequence_conv_pool(
-            input=emb,
-            num_filters=self.cnn_dim,
-            filter_size=self.cnn_filter_size1,
-            act="tanh",
-            pool_type="max")
+        textcnn_model = TextCNNLayer(
+            self.dict_dim,
+            self.emb_dim,
+            self.class_dim,
+            cnn_dim=self.cnn_dim,
+            filter_sizes=self.filter_sizes,
+            hidden_size=self.hid_dim)
 
-        conv2 = fluid.nets.sequence_conv_pool(
-            input=emb,
-            num_filters=self.cnn_dim,
-            filter_size=self.cnn_filter_size2,
-            act="tanh",
-            pool_type="max")
-
-        conv3 = fluid.nets.sequence_conv_pool(
-            input=emb,
-            num_filters=self.cnn_dim,
-            filter_size=self.cnn_filter_size3,
-            act="tanh",
-            pool_type="max")
-
-        convs_out = fluid.layers.concat(input=[conv1, conv2, conv3], axis=1)
-
-        # full connect layer
-        fc_1 = fluid.layers.fc(input=convs_out, size=self.hid_dim, act="tanh")
+        pred = textcnn_model.forward(data)
         # softmax layer
-        prediction = fluid.layers.fc(input=[fc_1],
-                                     size=self.class_dim,
-                                     act="softmax")
-        cost = fluid.layers.cross_entropy(input=prediction, label=label)
-        avg_cost = fluid.layers.mean(x=cost)
-        acc = fluid.layers.accuracy(input=prediction, label=label)
+        prediction = paddle.nn.functional.softmax(pred)
+
+        cost = paddle.nn.functional.cross_entropy(input=pred, label=label)
+        avg_cost = paddle.mean(x=cost)
+        acc = paddle.metric.accuracy(input=prediction, label=label)
 
         self._cost = avg_cost
         if is_infer:

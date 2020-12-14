@@ -16,6 +16,21 @@
 debug: false
 workspace: "models/rank/wide_deep"
 
+dygraph:
+  train_data_dir: "data/sample_data/train"
+  use_gpu: True
+  batch_size: 5
+  epochs: 3
+  print_interval: 20
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model"
+  test_data_dir: "data/sample_data/train"
+  infer_load_path: "output_model"
+  infer_start_epoch: -1
+  infer_end_epoch: 3
+
+# list of dataset
+
 
 dataset:
   - name: sample_1
@@ -35,9 +50,12 @@ hyper_parameters:
     optimizer:
         class: adam
         learning_rate: 0.001
-    hidden1_units: 75
-    hidden2_units: 50
-    hidden3_units: 25
+    hidden1_units: 32
+    hidden2_units: 16
+    hidden3_units: 8
+    wide_input_dim: 8
+    deep_input_dim: 58
+
 
 
 mode: [train_runner , infer_runner]
