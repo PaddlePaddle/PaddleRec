@@ -28,11 +28,23 @@ pip install -U https://paddle-serving.bj.bcebos.com/whl/paddle_serving_server-0.
 https://github.com/PaddlePaddle/Serving/blob/develop/doc/LATEST_PACKAGES.md
 ```
 
-2. redis服务启动
+2. redis/milvus服务启动
 
 ```
 wget http://download.redis.io/releases/redis-stable.tar.gz --no-check-certificate
 tar -xf redis-stable.tar.gz && cd redis-stable/src && make && ./redis-server &
+```
+目前milvus需要用docker远端启动，在宿主机上启动
+
+```
+sudo docker run -d --name milvus_cpu_0.11.0 \
+-p 19530:19530 \
+-p 19121:19121 \
+-v /home/$USER/milvus/db:/var/lib/milvus/db \
+-v /home/$USER/milvus/conf:/var/lib/milvus/conf \
+-v /home/$USER/milvus/logs:/var/lib/milvus/logs \
+-v /home/$USER/milvus/wal:/var/lib/milvus/wal \
+milvusdb/milvus:0.11.0-cpu-d101620-4c44c0
 ```
 
 3. 运行相关命令
@@ -54,3 +66,28 @@ python test_client.py cm 5 # 查询movie-id 为1的电影信息
 python test_client.py recall 5 # demo召回服务预测，user id=5
 python test_client.py rank # demo排序服务预测，由于rank服务参数较多，如需定制可参考代码
 ```
+
+### 附录
+获得Rank模型和Recall模型
+在`models/demo/movie_recommand`下分别执行
+```
+python3 -m paddlerec.run -m recall/user.yaml
+python3 -m paddlerec.run -m recall/movie.yaml
+```
+训练好的user/movie模型首先需要参照[Paddle保存的预测模型转为Paddle Serving格式可部署的模型](https://github.com/PaddlePaddle/Serving/blob/develop/doc/INFERENCE_TO_SERVING_CN.md)
+
+接下来运行
+```
+python3 get_movie_vectors.py 
+```
+获得movie端embedding配送文件，该文件用于milvus建库。
+
+user端的模型，直接用于`recall.py`的用户向量预测。
+
+对于rank模型，在`models/demo/movie_recommand`下执行
+```
+python3 -m paddlerec.run -m rank/config.yaml
+```
+可以得到排序模型。转换成Serving格式可部署模型后，可以用于`rank.py`的排序模型。
+
+

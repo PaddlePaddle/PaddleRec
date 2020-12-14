@@ -74,7 +74,6 @@ class Model(ModelBase):
 
         usr_combined_features = fc(concated_user)
         mov_combined_features = fc(concated_mov)
-
         sim = fluid.layers.cos_sim(
             X=usr_combined_features, Y=mov_combined_features)
         predict = fluid.layers.scale(sim, scale=5)

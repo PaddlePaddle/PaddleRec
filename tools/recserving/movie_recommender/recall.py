@@ -23,10 +23,40 @@ from proto import recall_pb2
 from proto import recall_pb2_grpc 
 from proto import user_info_pb2 as user_info_pb2
 import redis
+from milvus import Milvus, DataType
+from paddle_serving_app.local_predict import LocalPredictor
+import numpy as np
+
+def hash2(a):
+    return hash(a) % 60000000
 
 class RecallServerServicer(object):
     def __init__(self):
-        self.redis_cli = redis.StrictRedis(host="127.0.0.1", port="6379")
+        self.uv_client = LocalPredictor()
+        self.uv_client.load_model_config("user_vector_model/serving_server_dir") 
+        milvus_host = '172.17.0.1'
+        milvus_port = '19530'
+        self.milvus_client = Milvus(milvus_host, milvus_port)
+        self.collection_name = 'demo_films'
+
+    def get_user_vector(self, user_info):
+        dic = {"userid": [], "gender": [], "age": [], "occupation": []}
+        lod = [0]
+        dic["userid"].append(hash2(user_info.user_id))
+        dic["gender"].append(hash2(user_info.gender))
+        dic["age"].append(hash2(user_info.age))
+        dic["occupation"].append(hash2(user_info.job))
+        lod.append(1)
+
+        dic["userid.lod"] = lod
+        dic["gender.lod"] = lod
+        dic["age.lod"] = lod
+        dic["occupation.lod"] = lod
+        for key in dic:
+            dic[key] = np.array(dic[key]).astype(np.int64).reshape(len(dic[key]),1)
+
+        fetch_map = self.uv_client.predict(feed=dic, fetch=["save_infer_model/scale_0.tmp_0"], batch=True)
+        return fetch_map["save_infer_model/scale_0.tmp_0"].tolist()[0]
 
     def recall(self, request, context):
         '''
@@ -51,20 +81,32 @@ class RecallServerServicer(object):
     }
         '''
         recall_res = recall_pb2.RecallResponse()
-        user_id = request.user_info.user_id;
-        redis_res = self.redis_cli.lrange("{}##recall".format(user_id),0,200)
-        if redis_res is None:
-            recall_res.error.code = 500
-            recall_res.error.text = "Recall server get user_info from redis fail. ({})".format(str(request))
-            return recall_res
-            #raise ValueError("UM server get user_info from redis fail. ({})".format(str(request)))
+        user_vector = self.get_user_vector(request.user_info)
+
+        query_hybrid = {
+             "bool": {
+               "must": [
+                    {
+                       "vector": {
+                          "embedding": {"topk": 100, "query": [user_vector], "metric_type": "L2"}
+                        }
+                    }
+                ]
+              }
+        }
+
+        results = self.milvus_client.search(self.collection_name, query_hybrid, fields=["embedding"])
+        for entities in results:
+            if len(entities) == 0:
+                recall_res.error.code = 500
+                recall_res.error.text = "Recall server get milvus fail. ({})".format(str(request))
+                return recall_res
+            for topk_film in entities:
+                current_entity = topk_film.entity
+                score_pair = recall_res.score_pairs.add()
+                score_pair.nid = str(topk_film.id)
+                score_pair.score = float(topk_film.distance)
         recall_res.error.code = 200
-        ## FIX HERE
-        for item in redis_res:
-            item_id, score = item.split("#")[0], item.split("#")[1]
-            score_pair = recall_res.score_pairs.add()
-            score_pair.nid = item_id
-            score_pair.score = float(score)
         return recall_res
 
 class RecallServer(object):
