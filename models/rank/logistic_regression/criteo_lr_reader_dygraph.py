@@ -15,14 +15,14 @@
 from __future__ import print_function
 import numpy as np
 
-from paddle.io import Dataset
+from paddle.io import IterableDataset
 
 
-class CriteoLRDataset(Dataset):
+class CriteoLRDataset(IterableDataset):
     def __init__(self, file_list):
         super(CriteoLRDataset, self).__init__()
+        self.file_list = file_list
         self.init()
-        self.read_data(file_list)
 
     def init(self):
         from operator import mul
@@ -38,13 +38,15 @@ class CriteoLRDataset(Dataset):
             self.visit[self.slots[i]] = False
         self.padding = padding
 
-    def read_data(self, file_list):
+    #def read_data(self, file_list):
+    def __iter__(self):
         full_lines = []
         self.data = []
-        for file in file_list:
+        for file in self.file_list:
             with open(file, "r") as rf:
                 for l in rf:
                     line = l.strip().split(" ")
+
                     output = [(i, []) for i in self.slots]
                     for i in line:
                         slot_feasign = i.split(":")
@@ -70,13 +72,9 @@ class CriteoLRDataset(Dataset):
                         else:
                             self.visit[slot] = False
                     # label, feat_idx, feat_value
-                    self.data.append([
-                        np.array(output[0][1]), np.array(output[1][1]),
-                        np.array(output[2][1])
-                    ])
-
-    def __getitem__(self, index):
-        return self.data[index]
-
-    def __len__(self):
-        return len(self.data)
+                    yield np.array(output[0][1]), np.array(output[1][
+                        1]), np.array(output[2][1])
+                    #self.data.append([
+                    #    np.array(output[0][1]), np.array(output[1][1]),
+                    #    np.array(output[2][1])
+                    #])
