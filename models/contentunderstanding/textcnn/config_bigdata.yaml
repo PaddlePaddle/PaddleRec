@@ -15,26 +15,26 @@
 workspace: "models/contentunderstanding/textcnn"
 
 dygraph:
-  train_data_dir: "data/train"
+  train_data_dir: "data/senta_data/train"
   use_gpu: True
-  batch_size: 5
-  epochs: 3
-  print_interval: 2
+  batch_size: 128
+  epochs: 16
+  print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/test"
-  infer_load_path: "output_model"
+  model_save_path: "output_model_all"
+  test_data_dir: "data/senta_data/test"
+  infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 3
+  infer_end_epoch: 16
 
 dataset:
 - name: data1
-  batch_size: 5
+  batch_size: 128
   type: DataLoader
   data_path: "{workspace}/data/train"
   data_converter: "{workspace}/reader.py"
 - name: dataset_infer
-  batch_size: 2
+  batch_size: 256
   type: DataLoader
   data_path: "{workspace}/data/test"
   data_converter: "{workspace}/reader.py"
