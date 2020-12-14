@@ -39,15 +39,6 @@ def get_ums(uid):
     return response
 
 def get_recall(request):
-    """
-    message UserInfo {
-        string user_id = 1;
-        string gender = 2;
-        uint32 age = 3;
-        string job = 4;
-        string zipcode = 5;
-    }
-    """
     channel = grpc.insecure_channel('127.0.0.1:8950')
     stub = recall_pb2_grpc.RecallServiceStub(channel)
     response = stub.recall(request)
