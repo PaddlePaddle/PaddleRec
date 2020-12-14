@@ -39,7 +39,15 @@ def get_ums(uid):
     return response
 
 def get_recall(request):
-
+    """
+    message UserInfo {
+        string user_id = 1;
+        string gender = 2;
+        uint32 age = 3;
+        string job = 4;
+        string zipcode = 5;
+    }
+    """
     channel = grpc.insecure_channel('127.0.0.1:8950')
     stub = recall_pb2_grpc.RecallServiceStub(channel)
     response = stub.recall(request)
@@ -70,9 +78,15 @@ def get_as(request):
 
 if __name__ == "__main__":
     if sys.argv[1] == 'as':
-        uid = sys.argv[2]
         req = as_pb2.ASRequest()
-        req.user_id = uid
+        if len(sys.argv) == 3:
+            uid = sys.argv[2]
+            req.user_id = uid
+        else:
+            gender = sys.argv[2]
+            age = int(sys.argv[3])
+            job = sys.argv[4]
+            req.user_id, req.gender, req.age, req.job = 0, gender, age, job 
         print(get_as(req))
     if sys.argv[1] == 'um':
         uid = sys.argv[2]
