@@ -15,12 +15,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import mmoe_net as net
+import textcnn_net as net
 import time
 import logging
 
 from utils import load_yaml, get_abs_model, save_model, load_model
-from census_reader_dygraph import CensusDataset
+from reader_dygraph import TextCNNDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -37,51 +37,49 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, feature_size):
-    input_data = paddle.to_tensor(batch[0].numpy().astype('float32').reshape(
-        -1, feature_size))
-    label_income = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
-        -1, 1))
-    label_marital = paddle.to_tensor(batch[2].numpy().astype('float32')
-                                     .reshape(-1, 1))
-    return input_data, label_income, label_marital
+def create_feeds(batch):
+    input_data = paddle.to_tensor(batch[0].numpy().astype('int64').reshape(
+        -1, 100))
+    label = paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1, 1))
+
+    return input_data, label
 
 
-def create_loss(pred_income, pred_marital, label_income, label_marital):
-    pred_income_1d = paddle.slice(pred_income, axes=[1], starts=[1], ends=[2])
-    pred_marital_1d = paddle.slice(
-        pred_marital, axes=[1], starts=[1], ends=[2])
-    cost_income = paddle.nn.functional.log_loss(
-        input=pred_income_1d, label=label_income)
-    cost_marital = paddle.nn.functional.log_loss(
-        input=pred_marital_1d, label=label_marital)
+def create_loss(pred, label):
+    cost = paddle.nn.functional.cross_entropy(input=pred, label=label)
+    avg_cost = paddle.mean(x=cost)
 
-    avg_cost_income = paddle.mean(x=cost_income)
-    avg_cost_marital = paddle.mean(x=cost_marital)
-
-    cost = avg_cost_income + avg_cost_marital
-    return cost
+    return avg_cost
 
 
 def create_model(config):
-    feature_size = config.get('hyper_parameters.feature_size', None)
-    expert_num = config.get('hyper_parameters.expert_num', None)
-    expert_size = config.get('hyper_parameters.expert_size', None)
-    tower_size = config.get('hyper_parameters.tower_size', None)
-    gate_num = config.get('hyper_parameters.gate_num', None)
+    dict_dim = config.get("hyper_parameters.dict_dim")
+    max_len = config.get("hyper_parameters.max_len")
+    cnn_dim = config.get("hyper_parameters.cnn_dim")
+    cnn_filter_size1 = config.get("hyper_parameters.cnn_filter_size1")
+    cnn_filter_size2 = config.get("hyper_parameters.cnn_filter_size2")
+    cnn_filter_size3 = config.get("hyper_parameters.cnn_filter_size3")
+    filter_sizes = [cnn_filter_size1, cnn_filter_size2, cnn_filter_size3]
+    emb_dim = config.get("hyper_parameters.emb_dim")
+    hid_dim = config.get("hyper_parameters.hid_dim")
+    class_dim = config.get("hyper_parameters.class_dim")
+    is_sparse = config.get("hyper_parameters.is_sparse")
 
-    MMoE = net.MMoELayer(feature_size, expert_num, expert_size, tower_size,
-                         gate_num)
+    textcnn_model = net.TextCNNLayer(
+        dict_dim,
+        emb_dim,
+        class_dim,
+        cnn_dim=cnn_dim,
+        filter_sizes=filter_sizes,
+        hidden_size=hid_dim)
 
-    return MMoE
+    return textcnn_model
 
 
-def create_data_loader(dataset, mode, place, config):
+def create_data_loader(dataset, place, config):
     batch_size = config.get('dygraph.batch_size', None)
-    is_train = mode == 'train'
-    batch_sampler = DistributedBatchSampler(
-        dataset, batch_size=batch_size, shuffle=is_train)
-    loader = DataLoader(dataset, batch_sampler=batch_sampler, places=place)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
 
 
@@ -94,6 +92,7 @@ def main(args):
     feature_size = config.get('hyper_parameters.feature_size', None)
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
+    num_field = config.get('hyper_parameters.num_field', None)
 
     print("***********************************")
     logger.info(
@@ -104,30 +103,27 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    mmoe_model = create_model(config)
+    textcnn_model = create_model(config)
     model_init_path = config.get("dygraph.model_init_path", None)
     if model_init_path is not None:
-        load_model(model_init_path, mmoe_model)
+        load_model(model_init_path, textcnn_model)
 
     # to do : add optimizer function
-    optimizer = paddle.optimizer.Adam(parameters=mmoe_model.parameters())
+    optimizer = paddle.optimizer.Adam(parameters=textcnn_model.parameters())
 
-    # to do init model
     file_list = [
         os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
     ]
     print("read data")
-    dataset = CensusDataset(file_list)
-    train_dataloader = create_data_loader(
-        dataset, mode='test', place=place, config=config)
+    dataset = TextCNNDataset(file_list)
+    train_dataloader = create_data_loader(dataset, place=place, config=config)
 
     last_epoch_id = config.get("last_epoch", -1)
 
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
-        mmoe_model.train()
-        auc_metric_marital = paddle.metric.Auc("ROC")
-        auc_metric_income = paddle.metric.Auc("ROC")
+        textcnn_model.train()
+        acc_metric = paddle.metric.Accuracy()
         epoch_begin = time.time()
         interval_begin = time.time()
         train_reader_cost = 0.0
@@ -141,29 +137,25 @@ def main(args):
             train_start = time.time()
             batch_size = len(batch[0])
 
-            input_data, label_income, label_marital = create_feeds(
-                batch, feature_size)
+            input_data, label = create_feeds(batch)
 
-            pred_income, pred_marital = mmoe_model(input_data)
-            loss = create_loss(pred_income, pred_marital, label_income,
-                               label_marital)
+            pred = textcnn_model.forward(input_data)
+            loss = create_loss(pred, label)
 
             loss.backward()
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
-            # for auc
-            auc_metric_income.update(
-                preds=pred_income.numpy(), labels=label_income.numpy())
-            auc_metric_marital.update(
-                preds=pred_marital.numpy(), labels=label_marital.numpy())
+            # for acc
+            prediction = paddle.nn.functional.softmax(pred)
+            correct = acc_metric.compute(prediction, label)
+            acc_metric.update(correct)
 
             if batch_id % print_interval == 1:
                 logger.info(
-                    "epoch: {}, batch_id: {}, auc_income: {:.6f}, auc_marital: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    "epoch: {}, batch_id: {}, acc: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(epoch_id, batch_id,
-                           auc_metric_income.accumulate(),
-                           auc_metric_marital.accumulate(), train_reader_cost /
+                           acc_metric.accumulate(), train_reader_cost /
                            print_interval, (train_reader_cost + train_run_cost
                                             ) / print_interval, total_samples /
                            print_interval, total_samples / (train_reader_cost +
@@ -173,14 +165,11 @@ def main(args):
                 total_samples = 0
             reader_start = time.time()
 
-        logger.info(
-            "epoch: {} done, auc_income: {:.6f}, auc_marital: {:.6f}, : epoch time{:.2f} s".
-            format(epoch_id,
-                   auc_metric_income.accumulate(),
-                   auc_metric_marital.accumulate(), time.time() - epoch_begin))
+        logger.info("epoch: {} done, acc: {:.6f}, : epoch time{:.2f} s".format(
+            epoch_id, acc_metric.accumulate(), time.time() - epoch_begin))
 
         save_model(
-            mmoe_model, optimizer, model_save_path, epoch_id, prefix='rec')
+            textcnn_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':

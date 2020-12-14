@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import math
-
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+
+from lr_net import LRLayer
 
 
 class Model(ModelBase):
@@ -42,43 +43,25 @@ class Model(ModelBase):
         self.label = self._sparse_data_var[0]
 
         feat_idx = raw_feat_idx
-        feat_value = fluid.layers.reshape(
+        feat_value = paddle.reshape(
             raw_feat_value, [-1, self.num_field])  # None * num_field * 1
 
-        first_weights_re = fluid.embedding(
-            input=feat_idx,
-            is_sparse=True,
-            is_distributed=is_distributed,
-            dtype='float32',
-            size=[self.sparse_feature_number + 1, 1],
-            padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_),
-                regularizer=fluid.regularizer.L1DecayRegularizer(self.reg)))
-        first_weights = fluid.layers.reshape(
-            first_weights_re,
-            shape=[-1, self.num_field])  # None * num_field * 1
-        y_first_order = fluid.layers.reduce_sum(
-            first_weights * feat_value, 1, keep_dim=True)
+        LR_model = LRLayer(self.sparse_feature_number, init_value_, self.reg,
+                           self.num_field)
 
-        b_linear = fluid.layers.create_parameter(
-            shape=[1],
-            dtype='float32',
-            default_initializer=fluid.initializer.ConstantInitializer(value=0))
+        self.predict = LR_model(feat_idx, feat_value)
 
-        self.predict = fluid.layers.sigmoid(y_first_order + b_linear)
-        cost = fluid.layers.log_loss(
-            input=self.predict, label=fluid.layers.cast(self.label, "float32"))
-        avg_cost = fluid.layers.reduce_sum(cost)
+        cost = paddle.nn.functional.log_loss(
+            input=self.predict, label=paddle.cast(self.label, "float32"))
+        avg_cost = paddle.sum(x=cost)
 
         self._cost = avg_cost
 
-        predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
-        label_int = fluid.layers.cast(self.label, 'int64')
-        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                     label=label_int,
-                                                     slide_steps=0)
+        predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
+        label_int = paddle.cast(self.label, 'int64')
+        auc_var, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                            label=label_int,
+                                                            slide_steps=0)
         self._metrics["AUC"] = auc_var
         self._metrics["BATCH_AUC"] = batch_auc_var
         if is_infer:

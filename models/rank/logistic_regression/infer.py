@@ -15,12 +15,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import mmoe_net as net
+import lr_net as net
 import time
 import logging
 
 from utils import load_yaml, get_abs_model, save_model, load_model
-from census_reader_dygraph import CensusDataset
+from criteo_lr_reader_dygraph import CriteoLRDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -37,27 +37,27 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, feature_size):
-    input_data = paddle.to_tensor(batch[0].numpy().astype('float32').reshape(
-        -1, feature_size))
-    label_income = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
-        -1, 1))
-    label_marital = paddle.to_tensor(batch[2].numpy().astype('float32')
-                                     .reshape(-1, 1))
-    return input_data, label_income, label_marital
+def create_feeds(batch, num_field):
+    label = paddle.to_tensor(batch[0].numpy().astype('int32').reshape(-1, 1))
+    feat_idx = paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1,
+                                                                         1))
+    raw_feat_value = paddle.to_tensor(batch[2].numpy().astype('float32')
+                                      .reshape(-1, 1))
+    feat_value = paddle.reshape(raw_feat_value,
+                                [-1, num_field])  # None * num_field * 1
+    return label, feat_idx, feat_value
 
 
 def create_model(config):
-    feature_size = config.get('hyper_parameters.feature_size', None)
-    expert_num = config.get('hyper_parameters.expert_num', None)
-    expert_size = config.get('hyper_parameters.expert_size', None)
-    tower_size = config.get('hyper_parameters.tower_size', None)
-    gate_num = config.get('hyper_parameters.gate_num', None)
+    init_value = 0.1
+    sparse_feature_number = config.get(
+        'hyper_parameters.sparse_feature_number', None)
+    reg = config.get('hyper_parameters.reg', None)
+    num_field = config.get('hyper_parameters.num_field', None)
 
-    MMoE = net.MMoELayer(feature_size, expert_num, expert_size, tower_size,
-                         gate_num)
+    LR = net.LRLayer(sparse_feature_number, init_value, reg, num_field)
 
-    return MMoE
+    return LR
 
 
 def create_data_loader(dataset, mode, place, config):
@@ -79,6 +79,7 @@ def main(args):
     model_load_path = config.get("dygraph.infer_load_path", "model_output")
     start_epoch = config.get("dygraph.infer_start_epoch", -1)
     end_epoch = config.get("dygraph.infer_end_epoch", 10)
+    num_field = config.get('hyper_parameters.num_field', None)
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
@@ -89,17 +90,16 @@ def main(args):
                model_load_path))
     print("***********************************")
 
-    mmoe_model = create_model(config)
+    lr_model = create_model(config)
     file_list = [
         os.path.join(test_data_dir, x) for x in os.listdir(test_data_dir)
     ]
     print("read data")
-    dataset = CensusDataset(file_list)
+    dataset = CriteoLRDataset(file_list)
     test_dataloader = create_data_loader(
         dataset, mode='test', place=place, config=config)
 
-    auc_metric_marital = paddle.metric.Auc("ROC")
-    auc_metric_income = paddle.metric.Auc("ROC")
+    auc_metric = paddle.metric.Auc("ROC")
     epoch_begin = time.time()
     interval_begin = time.time()
 
@@ -107,35 +107,31 @@ def main(args):
 
         logger.info("load model epoch {}".format(epoch_id))
         model_path = os.path.join(model_load_path, str(epoch_id))
-        load_model(model_path, mmoe_model)
+        load_model(model_path, lr_model)
         for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
-            input_data, label_income, label_marital = create_feeds(
-                batch, feature_size)
+            label, feat_idx, feat_value = create_feeds(batch, num_field)
 
-            pred_income, pred_marital = mmoe_model(input_data)
+            pred = lr_model(feat_idx, feat_value)
 
             # for auc
-            auc_metric_income.update(
-                preds=pred_income.numpy(), labels=label_income.numpy())
-            auc_metric_marital.update(
-                preds=pred_marital.numpy(), labels=label_marital.numpy())
+            predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+            label_int = paddle.cast(label, 'int64')
+            auc_metric.update(
+                preds=predict_2d.numpy(), labels=label_int.numpy())
 
             if batch_id % print_interval == 1:
                 logger.info(
-                    "infer epoch: {}, batch_id: {}, auc_income: {:.6f}, auc_marital: {:.6f}, speed: {:.2f} ins/s".
+                    "infer epoch: {}, batch_id: {}, auc: {:.6f}, speed: {:.2f} ins/s".
                     format(epoch_id, batch_id,
-                           auc_metric_income.accumulate(),
-                           auc_metric_marital.accumulate(), print_interval *
-                           batch_size / (time.time() - interval_begin)))
+                           auc_metric.accumulate(), print_interval * batch_size
+                           / (time.time() - interval_begin)))
                 interval_begin = time.time()
 
         logger.info(
-            "infer epoch: {} done, auc_income: {:.6f}, auc_marital: {:.6f}, : epoch time{:.2f} s".
-            format(epoch_id,
-                   auc_metric_income.accumulate(),
-                   auc_metric_marital.accumulate(), time.time() - epoch_begin))
+            "infer epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
+                epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
 
 if __name__ == '__main__':
