@@ -31,12 +31,12 @@ dataset:
 - name: data1
   batch_size: 128
   type: DataLoader
-  data_path: "{workspace}/data/train"
+  data_path: "{workspace}/data/senta_data/train"
   data_converter: "{workspace}/reader.py"
 - name: dataset_infer
   batch_size: 256
   type: DataLoader
-  data_path: "{workspace}/data/test"
+  data_path: "{workspace}/data/senta_data/test"
   data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
