@@ -248,4 +248,14 @@ python infer.py --test_dir ./data/all_test --dict_path ./data/all_dict/word_id_d
 结论：使用cpu训练5轮，自定义预测准确率为0.540，每轮训练时间7小时左右。
 ## 进阶使用
 
+### 动态图
+```
+# 进入模型目录
+cd models/recall/word2vec 
+# 训练
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 预测
+python -u infer.py -m config.yaml 
+```
+
 ## FAQ
