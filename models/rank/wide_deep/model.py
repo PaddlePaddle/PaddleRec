@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import math
-
-import paddle.fluid as fluid
+import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+from wide_deep_net import WideDeepLayer
 
 
 class Model(ModelBase):
@@ -26,85 +26,37 @@ class Model(ModelBase):
 
     def _init_hyper_parameters(self):
         self.hidden1_units = envs.get_global_env(
-            "hyper_parameters.hidden1_units", 75)
+            "hyper_parameters.hidden1_units")
         self.hidden2_units = envs.get_global_env(
-            "hyper_parameters.hidden2_units", 50)
+            "hyper_parameters.hidden2_units")
         self.hidden3_units = envs.get_global_env(
-            "hyper_parameters.hidden3_units", 25)
-
-    def wide_part(self, data):
-        out = fluid.layers.fc(
-            input=data,
-            size=1,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=1.0 / math.sqrt(data.shape[1])),
-                regularizer=fluid.regularizer.L2DecayRegularizer(
-                    regularization_coeff=1e-4)),
-            act=None,
-            name='wide')
-        return out
-
-    def fc(self, data, hidden_units, active, tag):
-        output = fluid.layers.fc(
-            input=data,
-            size=hidden_units,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=1.0 / math.sqrt(data.shape[1]))),
-            act=active,
-            name=tag)
-
-        return output
-
-    def deep_part(self, data, hidden1_units, hidden2_units, hidden3_units):
-        l1 = self.fc(data, hidden1_units, 'relu', 'l1')
-        l2 = self.fc(l1, hidden2_units, 'relu', 'l2')
-        l3 = self.fc(l2, hidden3_units, 'relu', 'l3')
-
-        return l3
+            "hyper_parameters.hidden3_units")
+        self.wide_input_dim = envs.get_global_env(
+            "hyper_parameters.wide_input_dim")
+        self.deep_input_dim = envs.get_global_env(
+            "hyper_parameters.deep_input_dim")
+        self.layer_sizes = [
+            self.hidden1_units, self.hidden2_units, self.hidden3_units
+        ]
 
     def net(self, inputs, is_infer=False):
         wide_input = self._dense_data_var[0]
         deep_input = self._dense_data_var[1]
         label = self._sparse_data_var[0]
 
-        wide_output = self.wide_part(wide_input)
-        deep_output = self.deep_part(deep_input, self.hidden1_units,
-                                     self.hidden2_units, self.hidden3_units)
+        wide_deep_model = WideDeepLayer(self.wide_input_dim,
+                                        self.deep_input_dim, self.layer_sizes)
+        prediction = wide_deep_model.forward(wide_input, deep_input)
 
-        wide_model = fluid.layers.fc(
-            input=wide_output,
-            size=1,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=1.0)),
-            act=None,
-            name='w_wide')
+        pred = paddle.nn.functional.sigmoid(
+            paddle.clip(
+                prediction, min=-15.0, max=15.0), name="prediction")
 
-        deep_model = fluid.layers.fc(
-            input=deep_output,
-            size=1,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=1.0)),
-            act=None,
-            name='w_deep')
-
-        prediction = fluid.layers.elementwise_add(wide_model, deep_model)
-        pred = fluid.layers.sigmoid(
-            fluid.layers.clip(
-                prediction, min=-15.0, max=15.0),
-            name="prediction")
-
-        num_seqs = fluid.layers.create_tensor(dtype='int64')
-        acc = fluid.layers.accuracy(
-            input=pred,
-            label=fluid.layers.cast(
-                x=label, dtype='int64'),
-            total=num_seqs)
-        auc_var, batch_auc, auc_states = fluid.layers.auc(
-            input=pred, label=fluid.layers.cast(
+        acc = paddle.metric.accuracy(
+            input=pred, label=paddle.cast(
+                x=label, dtype='int64'))
+        auc_var, batch_auc, auc_states = paddle.fluid.layers.auc(
+            input=pred, label=paddle.cast(
                 x=label, dtype='int64'))
 
         self._metrics["AUC"] = auc_var
@@ -114,8 +66,8 @@ class Model(ModelBase):
             self._infer_results["AUC"] = auc_var
             self._infer_results["ACC"] = acc
 
-        cost = fluid.layers.sigmoid_cross_entropy_with_logits(
-            x=prediction, label=fluid.layers.cast(
-                label, dtype='float32'))
-        avg_cost = fluid.layers.mean(cost)
+        cost = paddle.nn.functional.log_loss(
+            input=prediction, label=paddle.cast(
+                label, dtype="float32"))
+        avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost

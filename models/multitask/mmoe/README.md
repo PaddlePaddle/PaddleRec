@@ -104,10 +104,9 @@ CPU环境
 
 数据下载，我们提供了在百度云上预处理好的数据，可以直接训练
 
+
 ```
-wget https://paddlerec.bj.bcebos.com/mmoe/train_data.csv
-wget https://paddlerec.bj.bcebos.com/mmoe/test_data.csv
-wget https://paddlerec.bj.bcebos.com/mmoe/config_all.yaml
+cd data && sh run.sh
 ```
 
 用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=32 gpu配置等，可参考config_all.yaml
@@ -124,9 +123,9 @@ python -m paddlerec.run -m /home/your/dir/config_all.yaml #调试模式 直接�
 # 进入模型目录
 cd models/multi_task/mmoe 
 # 训练
-python -u train.py -m config.yaml 
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 预测
-python -u infer.py -m config.yaml
+python -u infer.py -m config.yaml 
 ```
 
 

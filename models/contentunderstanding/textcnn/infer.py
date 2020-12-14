@@ -15,12 +15,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import mmoe_net as net
+import textcnn_net as net
 import time
 import logging
 
 from utils import load_yaml, get_abs_model, save_model, load_model
-from census_reader_dygraph import CensusDataset
+from reader_dygraph import TextCNNDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -37,35 +37,42 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, feature_size):
-    input_data = paddle.to_tensor(batch[0].numpy().astype('float32').reshape(
-        -1, feature_size))
-    label_income = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
-        -1, 1))
-    label_marital = paddle.to_tensor(batch[2].numpy().astype('float32')
-                                     .reshape(-1, 1))
-    return input_data, label_income, label_marital
+def create_feeds(batch):
+    input_data = paddle.to_tensor(batch[0].numpy().astype('int64').reshape(
+        -1, 100))
+    label = paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1, 1))
+
+    return input_data, label
 
 
 def create_model(config):
-    feature_size = config.get('hyper_parameters.feature_size', None)
-    expert_num = config.get('hyper_parameters.expert_num', None)
-    expert_size = config.get('hyper_parameters.expert_size', None)
-    tower_size = config.get('hyper_parameters.tower_size', None)
-    gate_num = config.get('hyper_parameters.gate_num', None)
+    dict_dim = config.get("hyper_parameters.dict_dim")
+    max_len = config.get("hyper_parameters.max_len")
+    cnn_dim = config.get("hyper_parameters.cnn_dim")
+    cnn_filter_size1 = config.get("hyper_parameters.cnn_filter_size1")
+    cnn_filter_size2 = config.get("hyper_parameters.cnn_filter_size2")
+    cnn_filter_size3 = config.get("hyper_parameters.cnn_filter_size3")
+    filter_sizes = [cnn_filter_size1, cnn_filter_size2, cnn_filter_size3]
+    emb_dim = config.get("hyper_parameters.emb_dim")
+    hid_dim = config.get("hyper_parameters.hid_dim")
+    class_dim = config.get("hyper_parameters.class_dim")
+    is_sparse = config.get("hyper_parameters.is_sparse")
 
-    MMoE = net.MMoELayer(feature_size, expert_num, expert_size, tower_size,
-                         gate_num)
+    textcnn_model = net.TextCNNLayer(
+        dict_dim,
+        emb_dim,
+        class_dim,
+        cnn_dim=cnn_dim,
+        filter_sizes=filter_sizes,
+        hidden_size=hid_dim)
 
-    return MMoE
+    return textcnn_model
 
 
-def create_data_loader(dataset, mode, place, config):
+def create_data_loader(dataset, place, config):
     batch_size = config.get('dygraph.batch_size', None)
-    is_train = mode == 'train'
-    batch_sampler = DistributedBatchSampler(
-        dataset, batch_size=batch_size, shuffle=is_train)
-    loader = DataLoader(dataset, batch_sampler=batch_sampler, places=place)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
 
 
@@ -89,17 +96,15 @@ def main(args):
                model_load_path))
     print("***********************************")
 
-    mmoe_model = create_model(config)
+    textcnn_model = create_model(config)
     file_list = [
         os.path.join(test_data_dir, x) for x in os.listdir(test_data_dir)
     ]
     print("read data")
-    dataset = CensusDataset(file_list)
-    test_dataloader = create_data_loader(
-        dataset, mode='test', place=place, config=config)
+    dataset = TextCNNDataset(file_list)
+    test_dataloader = create_data_loader(dataset, place=place, config=config)
 
-    auc_metric_marital = paddle.metric.Auc("ROC")
-    auc_metric_income = paddle.metric.Auc("ROC")
+    acc_metric = paddle.metric.Accuracy()
     epoch_begin = time.time()
     interval_begin = time.time()
 
@@ -107,35 +112,30 @@ def main(args):
 
         logger.info("load model epoch {}".format(epoch_id))
         model_path = os.path.join(model_load_path, str(epoch_id))
-        load_model(model_path, mmoe_model)
+        load_model(model_path, textcnn_model)
         for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
-            input_data, label_income, label_marital = create_feeds(
-                batch, feature_size)
+            input_data, label = create_feeds(batch)
 
-            pred_income, pred_marital = mmoe_model(input_data)
+            pred = textcnn_model.forward(input_data)
 
-            # for auc
-            auc_metric_income.update(
-                preds=pred_income.numpy(), labels=label_income.numpy())
-            auc_metric_marital.update(
-                preds=pred_marital.numpy(), labels=label_marital.numpy())
+            # for acc
+            prediction = paddle.nn.functional.softmax(pred)
+            correct = acc_metric.compute(prediction, label)
+            acc_metric.update(correct)
 
             if batch_id % print_interval == 1:
                 logger.info(
-                    "infer epoch: {}, batch_id: {}, auc_income: {:.6f}, auc_marital: {:.6f}, speed: {:.2f} ins/s".
+                    "infer epoch: {}, batch_id: {}, acc: {:.6f}, speed: {:.2f} ins/s".
                     format(epoch_id, batch_id,
-                           auc_metric_income.accumulate(),
-                           auc_metric_marital.accumulate(), print_interval *
-                           batch_size / (time.time() - interval_begin)))
+                           acc_metric.accumulate(), print_interval * batch_size
+                           / (time.time() - interval_begin)))
                 interval_begin = time.time()
 
         logger.info(
-            "infer epoch: {} done, auc_income: {:.6f}, auc_marital: {:.6f}, : epoch time{:.2f} s".
-            format(epoch_id,
-                   auc_metric_income.accumulate(),
-                   auc_metric_marital.accumulate(), time.time() - epoch_begin))
+            "infer epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
+                epoch_id, acc_metric.accumulate(), time.time() - epoch_begin))
 
 
 if __name__ == '__main__':

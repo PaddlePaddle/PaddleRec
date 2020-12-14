@@ -15,12 +15,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import mmoe_net as net
+import lr_net as net
 import time
 import logging
 
 from utils import load_yaml, get_abs_model, save_model, load_model
-from census_reader_dygraph import CensusDataset
+from criteo_lr_reader_dygraph import CriteoLRDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -37,43 +37,35 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, feature_size):
-    input_data = paddle.to_tensor(batch[0].numpy().astype('float32').reshape(
-        -1, feature_size))
-    label_income = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
-        -1, 1))
-    label_marital = paddle.to_tensor(batch[2].numpy().astype('float32')
-                                     .reshape(-1, 1))
-    return input_data, label_income, label_marital
+def create_feeds(batch, num_field):
+    label = paddle.to_tensor(batch[0].numpy().astype('int32').reshape(-1, 1))
+    feat_idx = paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1,
+                                                                         1))
+    raw_feat_value = paddle.to_tensor(batch[2].numpy().astype('float32')
+                                      .reshape(-1, 1))
+    feat_value = paddle.reshape(raw_feat_value,
+                                [-1, num_field])  # None * num_field * 1
+    return label, feat_idx, feat_value
 
 
-def create_loss(pred_income, pred_marital, label_income, label_marital):
-    pred_income_1d = paddle.slice(pred_income, axes=[1], starts=[1], ends=[2])
-    pred_marital_1d = paddle.slice(
-        pred_marital, axes=[1], starts=[1], ends=[2])
-    cost_income = paddle.nn.functional.log_loss(
-        input=pred_income_1d, label=label_income)
-    cost_marital = paddle.nn.functional.log_loss(
-        input=pred_marital_1d, label=label_marital)
+def create_loss(predict, label):
+    cost = paddle.nn.functional.log_loss(
+        input=predict, label=paddle.cast(label, "float32"))
+    avg_cost = paddle.sum(x=cost)
 
-    avg_cost_income = paddle.mean(x=cost_income)
-    avg_cost_marital = paddle.mean(x=cost_marital)
-
-    cost = avg_cost_income + avg_cost_marital
-    return cost
+    return avg_cost
 
 
 def create_model(config):
-    feature_size = config.get('hyper_parameters.feature_size', None)
-    expert_num = config.get('hyper_parameters.expert_num', None)
-    expert_size = config.get('hyper_parameters.expert_size', None)
-    tower_size = config.get('hyper_parameters.tower_size', None)
-    gate_num = config.get('hyper_parameters.gate_num', None)
+    init_value = 0.1
+    sparse_feature_number = config.get(
+        'hyper_parameters.sparse_feature_number', None)
+    reg = config.get('hyper_parameters.reg', None)
+    num_field = config.get('hyper_parameters.num_field', None)
 
-    MMoE = net.MMoELayer(feature_size, expert_num, expert_size, tower_size,
-                         gate_num)
+    LR = net.LRLayer(sparse_feature_number, init_value, reg, num_field)
 
-    return MMoE
+    return LR
 
 
 def create_data_loader(dataset, mode, place, config):
@@ -94,6 +86,7 @@ def main(args):
     feature_size = config.get('hyper_parameters.feature_size', None)
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
+    num_field = config.get('hyper_parameters.num_field', None)
 
     print("***********************************")
     logger.info(
@@ -104,20 +97,19 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    mmoe_model = create_model(config)
+    lr_model = create_model(config)
     model_init_path = config.get("dygraph.model_init_path", None)
     if model_init_path is not None:
-        load_model(model_init_path, mmoe_model)
+        load_model(model_init_path, lr_model)
 
     # to do : add optimizer function
-    optimizer = paddle.optimizer.Adam(parameters=mmoe_model.parameters())
+    optimizer = paddle.optimizer.Adam(parameters=lr_model.parameters())
 
-    # to do init model
     file_list = [
         os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
     ]
     print("read data")
-    dataset = CensusDataset(file_list)
+    dataset = CriteoLRDataset(file_list)
     train_dataloader = create_data_loader(
         dataset, mode='test', place=place, config=config)
 
@@ -125,9 +117,8 @@ def main(args):
 
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
-        mmoe_model.train()
-        auc_metric_marital = paddle.metric.Auc("ROC")
-        auc_metric_income = paddle.metric.Auc("ROC")
+        lr_model.train()
+        auc_metric = paddle.metric.Auc("ROC")
         epoch_begin = time.time()
         interval_begin = time.time()
         train_reader_cost = 0.0
@@ -141,29 +132,26 @@ def main(args):
             train_start = time.time()
             batch_size = len(batch[0])
 
-            input_data, label_income, label_marital = create_feeds(
-                batch, feature_size)
+            label, feat_idx, feat_value = create_feeds(batch, num_field)
 
-            pred_income, pred_marital = mmoe_model(input_data)
-            loss = create_loss(pred_income, pred_marital, label_income,
-                               label_marital)
+            pred = lr_model(feat_idx, feat_value)
+            loss = create_loss(pred, label)
 
             loss.backward()
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
             # for auc
-            auc_metric_income.update(
-                preds=pred_income.numpy(), labels=label_income.numpy())
-            auc_metric_marital.update(
-                preds=pred_marital.numpy(), labels=label_marital.numpy())
+            predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+            label_int = paddle.cast(label, 'int64')
+            auc_metric.update(
+                preds=predict_2d.numpy(), labels=label_int.numpy())
 
             if batch_id % print_interval == 1:
                 logger.info(
-                    "epoch: {}, batch_id: {}, auc_income: {:.6f}, auc_marital: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    "epoch: {}, batch_id: {}, auc: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(epoch_id, batch_id,
-                           auc_metric_income.accumulate(),
-                           auc_metric_marital.accumulate(), train_reader_cost /
+                           auc_metric.accumulate(), train_reader_cost /
                            print_interval, (train_reader_cost + train_run_cost
                                             ) / print_interval, total_samples /
                            print_interval, total_samples / (train_reader_cost +
@@ -173,14 +161,11 @@ def main(args):
                 total_samples = 0
             reader_start = time.time()
 
-        logger.info(
-            "epoch: {} done, auc_income: {:.6f}, auc_marital: {:.6f}, : epoch time{:.2f} s".
-            format(epoch_id,
-                   auc_metric_income.accumulate(),
-                   auc_metric_marital.accumulate(), time.time() - epoch_begin))
+        logger.info("epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
+            epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
         save_model(
-            mmoe_model, optimizer, model_save_path, epoch_id, prefix='rec')
+            lr_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':
