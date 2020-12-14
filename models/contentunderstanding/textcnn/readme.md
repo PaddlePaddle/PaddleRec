@@ -126,5 +126,15 @@ batch: 2, acc: [0.91796875], loss: [0.22827303]
 batch: 3, acc: [0.90234375], loss: [0.27907994]
 ```
 ## 进阶使用
+
+### 动态图
+```
+# 进入模型目录
+cd models/contentunderstanding/textcnn
+# 训练
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 预测
+python -u infer.py -m config.yaml 
+```
   
 ## FAQ
