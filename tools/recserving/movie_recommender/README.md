@@ -28,11 +28,23 @@ pip install -U https://paddle-serving.bj.bcebos.com/whl/paddle_serving_server-0.
 https://github.com/PaddlePaddle/Serving/blob/develop/doc/LATEST_PACKAGES.md
 ```
 
-2. redis服务启动
+2. redis/milvus服务启动
 
 ```
 wget http://download.redis.io/releases/redis-stable.tar.gz --no-check-certificate
 tar -xf redis-stable.tar.gz && cd redis-stable/src && make && ./redis-server &
+```
+目前milvus需要用docker远端启动，在宿主机上启动
+
+```
+sudo docker run -d --name milvus_cpu_0.11.0 \
+-p 19530:19530 \
+-p 19121:19121 \
+-v /home/$USER/milvus/db:/var/lib/milvus/db \
+-v /home/$USER/milvus/conf:/var/lib/milvus/conf \
+-v /home/$USER/milvus/logs:/var/lib/milvus/logs \
+-v /home/$USER/milvus/wal:/var/lib/milvus/wal \
+milvusdb/milvus:0.11.0-cpu-d101620-4c44c0
 ```
 
 3. 运行相关命令
