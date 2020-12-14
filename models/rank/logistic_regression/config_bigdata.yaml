@@ -27,19 +27,19 @@ dygraph:
   test_data_dir: "data/slot_test_data"
   infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 10
+  infer_end_epoch: 2
 
 dataset:
   - name: train_sample
     type: DataLoader
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
+    batch_size: 1024
+    data_path: "{workspace}/data/slot_train_data"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
   - name: infer_sample
     type: DataLoader
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
+    batch_size: 1024
+    data_path: "{workspace}/data/slot_test_data"
     sparse_slots: "label feat_idx"
     dense_slots: "feat_value:39"
 
@@ -59,7 +59,7 @@ mode: [train_runner,infer_runner]
 runner:
   - name: train_runner
     class: train
-    epochs: 10
+    epochs: 2
     device: cpu
     init_model_path: ""
     save_checkpoint_interval: 1
