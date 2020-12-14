@@ -43,9 +43,6 @@ runner:
   class: train
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "increment_recall" # save checkpoint path
-  save_inference_feed_varnames: ["movieid", "title", "genres"]
-  save_inference_fetch_varnames: ["fc_7.tmp_2"]
-  save_inference_path: "movie_vector_model"  
   epochs: 10
   device: cpu
 
@@ -54,4 +51,4 @@ phase:
 - name: phase1
   model: "{workspace}/recall/model.py" # user-defined model
   dataset_name: dataset_train # select dataset by name
-  thread_num: 1
+  thread_num: 4
