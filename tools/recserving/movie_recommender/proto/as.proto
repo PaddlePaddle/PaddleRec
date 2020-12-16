@@ -8,6 +8,7 @@ option cc_generic_services = false;
 message ASRequest{
   string log_id = 1;
   string user_id = 2;
+  user_info.UserInfo user_info = 3;
 }
 
 message ASResponse {
