@@ -32,6 +32,7 @@
 - [运行环境](#运行环境)
 - [快速开始](#快速开始)
 - [效果复现](#效果复现)
+- [动态图](#动态图)
 - [进阶使用](#进阶使用)
 - [FAQ](#FAQ)
 
@@ -181,6 +182,17 @@ equal_num:77
 正序率: 0.733774670544
 pos_num: 11860 , neg_num: 4303
 ```
+## 动态图
+
+```
+# 进入模型目录
+cd models/match/dssm 
+# 训练
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 预测
+python -u infer.py -m config.yaml 
+```
+
 
 ## 进阶使用
   
