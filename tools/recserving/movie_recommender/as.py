@@ -71,8 +71,8 @@ class ASServerServicer(object):
         message ASRequest{
           string log_id = 1;
           string user_id = 2;
+          user_info.UserInfo user_info = 3;
         }
-
         message ASResponse {
             message Error {
                 uint32 code = 1;
@@ -87,11 +87,13 @@ class ASServerServicer(object):
             string genre = 3;
         }
         '''
-        
-        user_id = request.user_id
-        um_res = get_ums(user_id)
         recall_req = recall_pb2.RecallRequest()
-        recall_req.user_info.CopyFrom(um_res.user_info)
+        if request.user_id != "-1": 
+            user_id = request.user_id
+            um_res = get_ums(user_id)
+            recall_req.user_info.CopyFrom(um_res.user_info)
+        else:
+            recall_req.user_info.CopyFrom(request.user_info)
         recall_res = get_recall(recall_req)
         nid_list = [x.nid for x in recall_res.score_pairs]
         cm_res = get_cm(nid_list) 
