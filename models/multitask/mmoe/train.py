@@ -15,9 +15,10 @@
 import paddle
 import os
 import paddle.nn as nn
-import dssm_net as net
+import mmoe_net as net
 import time
 import logging
+
 from utils import load_yaml, get_abs_model, save_model, load_model
 from census_reader_dygraph import CensusDataset
 from paddle.io import DistributedBatchSampler, DataLoader
@@ -63,15 +64,16 @@ def create_loss(pred_income, pred_marital, label_income, label_marital):
 
 
 def create_model(config):
-    trigram_d = config.get('hyper_parameters.trigram_d', None)
-    neg_num = config.get('hyper_parameters.neg_num', None)
-    slice_end = config.get('hyper_parameters.slice_end', None)
-    fc_sizes = config.get('hyper_parameters.fc_sizes', None)
-    fc_acts = config.get('hyper_parameters.fc_acts', None)
+    feature_size = config.get('hyper_parameters.feature_size', None)
+    expert_num = config.get('hyper_parameters.expert_num', None)
+    expert_size = config.get('hyper_parameters.expert_size', None)
+    tower_size = config.get('hyper_parameters.tower_size', None)
+    gate_num = config.get('hyper_parameters.gate_num', None)
 
-    DSSM = net.DSSMLayer(trigram_d, neg_num, slice_end, fc_sizes, fc_acts)
+    MMoE = net.MMoELayer(feature_size, expert_num, expert_size, tower_size,
+                         gate_num)
 
-    return DSSM
+    return MMoE
 
 
 def create_data_loader(dataset, mode, place, config):
@@ -86,9 +88,10 @@ def create_data_loader(dataset, mode, place, config):
 def main(args):
     paddle.seed(12345)
     config = load_yaml(args.config_yaml)
-    use_gpu = config.get("dygraph.use_gpu", False)
+    use_gpu = config.get("dygraph.use_gpu", True)
     train_data_dir = config.get("dygraph.train_data_dir", None)
     epochs = config.get("dygraph.epochs", None)
+    feature_size = config.get('hyper_parameters.feature_size', None)
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
 
@@ -101,13 +104,13 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    dssm_model = create_model(config)
+    mmoe_model = create_model(config)
     model_init_path = config.get("dygraph.model_init_path", None)
     if model_init_path is not None:
-        load_model(model_init_path, dssm_model)
+        load_model(model_init_path, mmoe_model)
 
     # to do : add optimizer function
-    optimizer = paddle.optimizer.Adam(parameters=dssm_model.parameters())
+    optimizer = paddle.optimizer.Adam(parameters=mmoe_model.parameters())
 
     # to do init model
     file_list = [
