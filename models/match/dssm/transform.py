@@ -33,7 +33,7 @@ f.close()
 label = []
 filename = './data/label.txt'
 f = open(filename, "r")
-f.readline()
+#f.readline()
 num = 0
 for line in f.readlines():
     num = num + 1
@@ -54,7 +54,7 @@ for line in open(filename):
 
 filename = './data/big_test/test.txt'
 f = open(filename, "r")
-f.readline()
+#f.readline()
 query = []
 for line in f.readlines():
     line = line.strip().split("\t")
@@ -63,6 +63,7 @@ f.close()
 
 filename = 'pair.txt'
 f = open(filename, "w")
+print(len(query), len(sim), len(label))
 for i in range(len(sim)):
     f.write(str(query[i]) + "\t" + str(sim[i]) + "\t" + str(label[i]) + "\n")
 f.close()
