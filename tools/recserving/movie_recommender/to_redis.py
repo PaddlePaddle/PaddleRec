@@ -56,7 +56,7 @@ def process_user(lines, redis_cli):
         redis_cli.set("{}##user_info".format(user_id), json.dumps(user_info))
 
 if __name__ == "__main__":
-    r = redis.StrictRedis(host="172.17.0.1", port="6389") 
+    r = redis.StrictRedis(host="127.0.0.1", port="6379") 
     with codecs.open("users.dat", "r",encoding='utf-8',errors='ignore') as f:
         lines = f.readlines()
         process_user(lines, r)
