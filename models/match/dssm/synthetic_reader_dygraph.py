@@ -28,19 +28,21 @@ class SyntheticDataset(IterableDataset):
         for file in self.file_list:
             with open(file, "r") as rf:
                 for line in rf:
+                    output_list = []
                     features = line.rstrip('\n').split('\t')
                     query = [
                         float(feature) for feature in features[0].split(',')
                     ]
+                    output_list.append(np.array(query))
                     pos_doc = [
                         float(feature) for feature in features[1].split(',')
                     ]
-                    neg_docs = []
+                    output_list.append(np.array(pos_doc))
+
                     for i in range(len(features) - 2):
-                        neg_docs.append(
+                        output_list.append(
                             np.array([
                                 float(feature)
                                 for feature in features[i + 2].split(',')
                             ]))
-                    yield np.array(query), np.array(pos_doc), np.array(
-                        neg_docs)
+                    yield output_list
