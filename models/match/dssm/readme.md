@@ -184,6 +184,7 @@ pos_num: 11860 , neg_num: 4303
 ```
 ## 动态图
 
+在动态图中，训练和预测分离开，您需要在cofig.yaml以及config_bigdata.yaml中的dygraph部分配置动态图中需要的参数。  
 ```
 # 进入模型目录
 cd models/match/dssm 
@@ -192,8 +193,12 @@ python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml
 # 预测
 python -u infer.py -m config.yaml 
 ```
-
-
+如需使用动态图进行效果复现，可以按以下步骤进行：
+1. 在全量数据中执行训练时，需要将batch_size设置为128。  
+2. 在全连数据中执行预测时，需要将batch_size设置为1，同时将print_interval设置为1.  
+3. 将一键运行脚本run.sh的第一个命令：
+“python -m paddlerec.run -m ./config_bigdata.yaml &> result.txt” 改为 “python -u infer.py -m config_bigdata.yaml &>result.txt”  
+4. 执行sh run.sh
 ## 进阶使用
   
 ## FAQ

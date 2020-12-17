@@ -41,12 +41,12 @@ class DSSMLayer(nn.Layer):
                     initializer=paddle.nn.initializer.XavierNormal(
                         fan_in=self.hidden_layers[i],
                         fan_out=self.hidden_layers[i + 1])))
-            if self.hidden_acts[i] == "tanh":
-                act = paddle.nn.Tanh()
-                self.add_sublayer('act_%d' % i, act)
-            self.add_sublayer('linear_%d' % i, linear)
+            self.add_sublayer('query_linear_%d' % i, linear)
             self._query_layers.append(linear)
-            self._query_layers.append(act)
+            if self.hidden_acts[i] == "relu":
+                act = paddle.nn.ReLU()
+                self.add_sublayer('query_act_%d' % i, act)
+                self._query_layers.append(act)
 
         self._pos_layers = []
         for i in range(len(self.hidden_layers) - 1):
@@ -61,12 +61,12 @@ class DSSMLayer(nn.Layer):
                     initializer=paddle.nn.initializer.XavierNormal(
                         fan_in=self.hidden_layers[i],
                         fan_out=self.hidden_layers[i + 1])))
-            if self.hidden_acts[i] == "tanh":
-                act = paddle.nn.Tanh()
-                self.add_sublayer('act_%d' % i, act)
-            self.add_sublayer('linear_%d' % i, linear)
+            self.add_sublayer('pos_linear_%d' % i, linear)
             self._pos_layers.append(linear)
-            self._pos_layers.append(act)
+            if self.hidden_acts[i] == "relu":
+                act = paddle.nn.ReLU()
+                self.add_sublayer('pos_act_%d' % i, act)
+                self._pos_layers.append(act)
 
         self._neg_layers = []
         for i in range(len(self.hidden_layers) - 1):
@@ -81,24 +81,24 @@ class DSSMLayer(nn.Layer):
                     initializer=paddle.nn.initializer.XavierNormal(
                         fan_in=self.hidden_layers[i],
                         fan_out=self.hidden_layers[i + 1])))
-            if self.hidden_acts[i] == "tanh":
-                act = paddle.nn.Tanh()
-                self.add_sublayer('act_%d' % i, act)
-            self.add_sublayer('linear_%d' % i, linear)
+            self.add_sublayer('neg_linear_%d' % i, linear)
             self._neg_layers.append(linear)
-            self._neg_layers.append(act)
+            if self.hidden_acts[i] == "relu":
+                act = paddle.nn.ReLU()
+                self.add_sublayer('neg_act_%d' % i, act)
+                self._neg_layers.append(act)
 
     def forward(self, input_data, is_infer):
         query_fc = input_data[0]
         for n_layer in self._query_layers:
             query_fc = n_layer(query_fc)
+
         doc_pos_fc = input_data[1]
         for n_layer in self._pos_layers:
             doc_pos_fc = n_layer(doc_pos_fc)
+
         R_Q_D_p = F.cosine_similarity(
-            query_fc, doc_pos_fc, axis=1).reshape([-1, 1])
-        # print(R_Q_D_p)
-        # fluid.layers.Print(R_Q_D_p)
+            query_fc, doc_pos_fc, axis=1, eps=0).reshape([-1, 1])
 
         if is_infer:
             return R_Q_D_p, paddle.ones(shape=[self.slice_end, 1])
@@ -108,14 +108,10 @@ class DSSMLayer(nn.Layer):
             doc_neg_fc_i = input_data[i + 2]
             for n_layer in self._neg_layers:
                 doc_neg_fc_i = n_layer(doc_neg_fc_i)
-            R_Q_D_n = F.cosine_similarity(query_fc, doc_neg_fc_i).reshape(
-                [-1, 1])
+            R_Q_D_n = F.cosine_similarity(
+                query_fc, doc_neg_fc_i, axis=1, eps=0).reshape([-1, 1])
             R_Q_D_ns.append(R_Q_D_n)
-        # print(R_Q_D_n)
-        # fluid.layers.Print(R_Q_D_n)
         concat_Rs = paddle.concat(x=[R_Q_D_p] + R_Q_D_ns, axis=1)
-        # print(concat_Rs)
-        # fluid.layers.Print(concat_Rs)
         prob = F.softmax(concat_Rs, axis=1)
         hit_prob = paddle.slice(
             prob, axes=[0, 1], starts=[0, 0], ends=[self.slice_end, -1])

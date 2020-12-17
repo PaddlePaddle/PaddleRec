@@ -16,28 +16,28 @@
 workspace: "models/match/dssm"
 
 dygraph:
-  train_data_dir: "data/train" 
+  train_data_dir: "data/big_train" 
   use_gpu: False 
-  batch_size: 8
+  batch_size: 128
   epochs: 1
   print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "increment"
-  test_data_dir: "data/test"
-  infer_load_path: "increment"
+  model_save_path: "big_increment"
+  test_data_dir: "data/big_test"
+  infer_load_path: "big_increment"
   infer_start_epoch: -1
   infer_end_epoch: 1
 
 dataset:
 - name: dataset_train
-  batch_size: 8
+  batch_size: 128
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train" 
+  data_path: "{workspace}/data/big_train" 
   data_converter: "{workspace}/synthetic_reader.py"
 - name: dataset_infer
   batch_size: 1
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/test"
+  data_path: "{workspace}/data/big_test"
   data_converter: "{workspace}/synthetic_evaluate_reader.py"
 
 hyper_parameters:
@@ -45,11 +45,12 @@ hyper_parameters:
     class: adam
     learning_rate: 0.001
     strategy: sync
-  trigram_d: 2900
+  trigram_d: 5913
   neg_num: 1
-  slice_end: 8
+  slice_end: 128
   fc_sizes: [300, 300, 128]
-  fc_acts: ['tanh', 'tanh', 'tanh']
+  fc_acts: ['relu', 'relu', 'relu']
+
 
 mode: [train_runner,infer_runner]
 # config of each runner.
@@ -63,7 +64,7 @@ runner:
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
   save_inference_interval: 1 # save inference
-  save_checkpoint_path: "increment" # save checkpoint path
+  save_checkpoint_path: "big_increment" # save checkpoint path
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
@@ -74,8 +75,8 @@ runner:
   class: infer
   # device to run training or infer
   device: cpu
-  print_interval: 10
-  init_model_path: "increment/0" # load model path
+  print_interval: 1
+  init_model_path: "big_increment/0" # load model path
   phases: phase2
 
 # runner will run all the phase in each epoch

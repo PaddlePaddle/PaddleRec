@@ -41,12 +41,11 @@ def create_feeds(batch, trigram_d):
         -1, trigram_d))
     doc_pos = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
         -1, trigram_d))
-    doc_negs = [
-        paddle.reshape(i, [-1, trigram_d]).astype('float32')
-        for i in batch[2].split(
-            num_or_sections=batch[2].shape[1], axis=1)
-    ]
-
+    doc_negs = []
+    for ele in batch[2:]:
+        doc_negs.append(
+            paddle.to_tensor(ele.numpy().astype('float32').reshape(-1,
+                                                                   trigram_d)))
     return query, doc_pos, doc_negs
 
 
@@ -83,6 +82,7 @@ def main(args):
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
     trigram_d = config.get('hyper_parameters.trigram_d', None)
+    batch_size = config.get('dygraph.batch_size', None)
 
     print("***********************************")
     logger.info(
@@ -128,7 +128,7 @@ def main(args):
             train_reader_cost += time.time() - reader_start
             optimizer.clear_grad()
             train_start = time.time()
-            batch_size = len(batch[0])
+            batch_size = batch_size
 
             query, doc_pos, doc_negs = create_feeds(batch, trigram_d)
 
