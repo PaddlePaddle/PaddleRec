@@ -76,3 +76,32 @@ class Word2VecLayer(nn.Layer):
         neg_logits = paddle.add(x=neg_matmul_re, y=neg_emb_b_vec)
 
         return true_logits, neg_logits
+
+
+class Word2VecInferLayer(nn.Layer):
+    def __init__(self, sparse_feature_number, emb_dim, emb_name):
+        super(Word2VecInferLayer, self).__init__()
+        self.sparse_feature_number = sparse_feature_number
+        self.emb_dim = emb_dim
+        self.emb_name = emb_name
+
+        init_width = 0.5 / self.emb_dim
+        self.embedding = paddle.nn.Embedding(
+            self.sparse_feature_number,
+            self.emb_dim,
+            weight_attr=paddle.ParamAttr(
+                name=self.emb_name,
+                initializer=paddle.nn.initializer.Uniform(-init_width,
+                                                          init_width)))
+
+    def forward(self, analogy_a, analogy_b, analogy_c, true_word, all_label):
+        emb_a = self.embedding(analogy_a)
+        emb_b = self.embedding(analogy_b)
+        emb_c = self.embedding(analogy_c)
+        emb_all_label = self.embedding(all_label)
+
+        target = emb_b - emb_a + emb_c
+        emb_all_label_l2 = F.normalize(emb_all_label, axis=1)
+        dist = paddle.matmul(x=target, y=emb_all_label_l2, transpose_y=True)
+        values, pred_idx = paddle.topk(x=dist, k=4)
+        return values, pred_idx

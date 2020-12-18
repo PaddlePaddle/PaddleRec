@@ -15,6 +15,7 @@
 from __future__ import print_function
 import numpy as np
 import io
+import six
 
 from paddle.io import IterableDataset
 
@@ -22,14 +23,13 @@ from paddle.io import IterableDataset
 class NumpyRandomInt(object):
     def __init__(self, a, b, buf_size=1000):
         self.idx = 0
-        self.buffer = np.random.random_integers(a, b, buf_size)
+        self.buffer = np.random.randint(a, b, buf_size)
         self.a = a
         self.b = b
 
     def __call__(self):
         if self.idx == len(self.buffer):
-            self.buffer = np.random.random_integers(self.a, self.b,
-                                                    len(self.buffer))
+            self.buffer = np.random.randint(self.a, self.b, len(self.buffer))
             self.idx = 0
 
         result = self.buffer[self.idx]
@@ -104,3 +104,81 @@ class Word2VecDataset(IterableDataset):
                             output.append(
                                 np.array([int(str(i)) for i in neg_array]))
                             yield output
+
+
+class Word2VecInferDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(Word2VecInferDataset, self).__init__()
+        self.file_list = file_list
+        self.config = config
+        self.init()
+
+    def init(self):
+        dict_path = self.config.get("dygraph.word_id_dict_path")
+        self.word_to_id = dict()
+        self.id_to_word = dict()
+        with io.open(dict_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                self.word_to_id[line.split(' ')[0]] = int(line.split(' ')[1])
+                self.id_to_word[int(line.split(' ')[1])] = line.split(' ')[0]
+        self.dict_size = len(self.word_to_id)
+
+    def native_to_unicode(self, s):
+        if self._is_unicode(s):
+            return s
+        try:
+            return self._to_unicode(s)
+        except UnicodeDecodeError:
+            res = self._to_unicode(s, ignore_errors=True)
+            return res
+
+    def _is_unicode(self, s):
+        if six.PY2:
+            if isinstance(s, unicode):
+                return True
+        else:
+            if isinstance(s, str):
+                return True
+        return False
+
+    def _to_unicode(self, s, ignore_errors=False):
+        if self._is_unicode(s):
+            return s
+        error_mode = "ignore" if ignore_errors else "strict"
+        return s.decode("utf-8", errors=error_mode)
+
+    def strip_lines(self, line, vocab):
+        return self._replace_oov(vocab, self.native_to_unicode(line))
+
+    def _replace_oov(self, original_vocab, line):
+        """Replace out-of-vocab words with "<UNK>".
+      This maintains compatibility with published results.
+      Args:
+        original_vocab: a set of strings (The standard vocabulary for the dataset)
+        line: a unicode string - a space-delimited sequence of words.
+      Returns:
+        a unicode string - a space-delimited sequence of words.
+      """
+        return u" ".join([
+            word if word in original_vocab else u"<UNK>"
+            for word in line.split()
+        ])
+
+    def __iter__(self):
+        full_lines = []
+        for file in self.file_list:
+            with open(file, "r") as rf:
+                for line in rf:
+                    if ':' in line:
+                        return
+                    features = self.strip_lines(line.lower(), self.word_to_id)
+                    features = features.split()
+                    output_list = []
+                    for i in range(4):
+                        output_list.append(
+                            np.array([self.word_to_id[features[i]]]))
+                    inputs_words = [
+                        self.word_to_id[features[i]] for i in range(3)
+                    ]
+                    output_list.append(np.array(inputs_words))
+                    yield output_list
