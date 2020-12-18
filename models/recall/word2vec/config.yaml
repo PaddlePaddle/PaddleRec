@@ -21,12 +21,13 @@ dygraph:
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model"
-  test_data_dir: "data/train"
+  test_data_dir: "data/test"
   infer_load_path: "output_model"
   infer_start_epoch: -1
   infer_end_epoch: 2
   # dataset
   word_count_dict_path: "data/dict/word_count_dict.txt"
+  word_id_dict_path: "data/dict/word_id_dict.txt"
 
 # list of dataset
 dataset:
