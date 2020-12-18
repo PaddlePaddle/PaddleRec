@@ -49,7 +49,7 @@ hyper_parameters:
   neg_num: 1
   slice_end: 8
   fc_sizes: [300, 300, 128]
-  fc_acts: ['tanh', 'tanh', 'tanh']
+  fc_acts: ['relu', 'relu', 'relu']
 
 mode: [train_runner,infer_runner]
 # config of each runner.
