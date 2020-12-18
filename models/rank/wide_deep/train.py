@@ -26,6 +26,7 @@
 # limitations under the License.
 
 import paddle
+import paddle.nn.functional as F
 import os
 import paddle.nn as nn
 import wide_deep_net as net
@@ -61,8 +62,9 @@ def create_feeds(batch, wide_input_dim, deep_input_dim):
 
 
 def create_loss(prediction, label):
+    pred = F.sigmoid(prediction)
     cost = paddle.nn.functional.log_loss(
-        input=prediction, label=paddle.cast(
+        input=pred, label=paddle.cast(
             label, dtype="float32"))
     avg_cost = paddle.mean(x=cost)
     return avg_cost

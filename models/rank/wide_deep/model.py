@@ -14,6 +14,7 @@
 
 import math
 import paddle
+import paddle.nn.functional as F
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
@@ -48,9 +49,7 @@ class Model(ModelBase):
                                         self.deep_input_dim, self.layer_sizes)
         prediction = wide_deep_model.forward(wide_input, deep_input)
 
-        pred = paddle.nn.functional.sigmoid(
-            paddle.clip(
-                prediction, min=-15.0, max=15.0), name="prediction")
+        pred = F.sigmoid(prediction)
 
         acc = paddle.metric.accuracy(
             input=pred, label=paddle.cast(
@@ -67,7 +66,7 @@ class Model(ModelBase):
             self._infer_results["ACC"] = acc
 
         cost = paddle.nn.functional.log_loss(
-            input=prediction, label=paddle.cast(
+            input=pred, label=paddle.cast(
                 label, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
