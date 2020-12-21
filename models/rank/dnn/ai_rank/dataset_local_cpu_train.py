@@ -28,7 +28,15 @@ logger = logging.getLogger(__name__)
 
 
 class Instance(InstanceBase):
-    "Ai-Rank train.py for dataset-local-cpu mode"
+    """
+    Ai-Rank train.py for dataset-local-cpu mode.
+    We add the file to let you understand the training process of the model more intuitively 
+    and change the hyper parameters more conveniently
+
+    Using method:
+    1. change config.yaml, mode: [single_cpu_train] -> mode: [ai_rank_single_cpu]
+    2. run cmd: python -m paddlerec.run -m config.yaml
+    """
 
     def __init__(self, context):
         self.model = None
@@ -41,6 +49,7 @@ class Instance(InstanceBase):
         self.get_reader(context)
         self.run_startup(context)
         self.run_main(context)
+        # Tell PaddleRec framework only run instance pass
         context['is_exit'] = True
 
     def network(self, context):
@@ -51,8 +60,8 @@ class Instance(InstanceBase):
         context["model"][self.model_dict["name"]] = {}
         model_path = envs.os_path_adapter(
             envs.workspace_adapter(self.model_dict["model"]))
-        self.model = envs.lazy_instance_by_fliename(
-            model_path, "Model")(context["env"])
+        self.model = envs.lazy_instance_by_fliename(model_path,
+                                                    "Model")(context["env"])
 
         # 2. Set model input variable
         self.model._data_var = self.model.input_data(
