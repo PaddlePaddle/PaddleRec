@@ -31,6 +31,7 @@ class DNNLayer(nn.Layer):
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
+            sparse=True,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.Uniform()))
