@@ -131,11 +131,26 @@ runner:
   save_inference_fetch_varnames: [] # fetch vars of save inference
   print_interval: 1
   phases: [phase1]
+
+- name: ai_rank_single_cpu
+  class: train
+  # num of epochs
+  epochs: 4
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  print_interval: 10
+  phases: [phase1]
+  instance_class_path: "{workspace}/ai_rank/dataset_local_cpu_train.py"
+  
+
+
 # runner will run all the phase in each epoch
 phase:
 - name: phase1
   model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataloader_train # select dataset by name
+  dataset_name: dataset_train # select dataset by name
   thread_num: 1
 
 - name: phase2
