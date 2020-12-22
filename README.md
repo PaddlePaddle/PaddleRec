@@ -113,7 +113,7 @@
 
 ```bash
 cd models/rank/dnn
-python -u trainer.py -m config.yaml 
+python -u train.py -m config.yaml 
 ```
 
 
