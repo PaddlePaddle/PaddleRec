@@ -63,7 +63,8 @@ hyper_parameters:
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
   distributed_embedding: 0
-
+  use_embedding_gate: True
+  use_hidden_gate: True
 
 # select runner by name
 mode: [single_cpu_train, single_cpu_infer]

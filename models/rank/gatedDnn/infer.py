@@ -15,7 +15,7 @@
 import paddle
 import os
 import paddle.nn as nn
-import dnn_net as net
+import gated_dnn_net as net
 import time
 import logging
 

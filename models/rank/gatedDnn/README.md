@@ -4,15 +4,13 @@
 `CTR(Click Through Rate)`，即点击率，是“推荐系统/计算广告”等领域的重要指标，对其进行预估是商品推送/广告投放等决策的基础。简单来说，CTR预估对每次广告的点击情况做出预测，预测用户是点击还是不点击。CTR预估模型综合考虑各种因素、特征，在大量历史数据上训练，最终对商业决策提供帮助。本模型实现了下述论文中提出的DNN模型：
 
 ```text
-@inproceedings{guo2017deepfm,
-  title={DeepFM: A Factorization-Machine based Neural Network for CTR Prediction},
+@inproceedings{
+  title={GateNet: Gating-Enhanced Deep Network for Click-Through Rate Prediction},
   author={Huifeng Guo, Ruiming Tang, Yunming Ye, Zhenguo Li and Xiuqiang He},
-  booktitle={the Twenty-Sixth International Joint Conference on Artificial Intelligence (IJCAI)},
-  pages={1725--1731},
-  year={2017}
+  year={2020}
 }
 ```
-
+其中的embedding_gate实现采用了论文中默认的private field和vec-wise model.
 #
 ## 数据准备
 ### 数据来源
@@ -187,52 +185,11 @@ CTR-DNN模型的组网比较直观，本质是一个二分类任务，代码参�
 #### Embedding层
 首先介绍Embedding层的搭建方式：`Embedding`层的输入是`sparse_input`，由超参的`sparse_feature_number`和`sparse_feature_dimshape`定义。需要特别解释的是`is_sparse`参数，当我们指定`is_sprase=True`后，计算图会将该参数视为稀疏参数，反向更新以及分布式通信时，都以稀疏的方式进行，会极大的提升运行效率，同时保证效果一致。
 
-各个稀疏的输入通过Embedding层后，将其合并起来，置于一个list内，以方便进行concat的操作。
-
-```python
-def embedding_layer(input):
-    if self.distributed_embedding:
-        emb = fluid.contrib.layers.sparse_embedding(
-            input=input,
-            size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name="SparseFeatFactors",
-                initializer=fluid.initializer.Uniform()))
-    else:
-        emb = fluid.layers.embedding(
-            input=input,
-            is_sparse=True,
-            is_distributed=self.is_distributed,
-            size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name="SparseFeatFactors",
-                initializer=fluid.initializer.Uniform()))
-    emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
-    return emb_sum
-
-sparse_embed_seq = list(map(embedding_layer, self.sparse_inputs)) # [C1~C26]
-```
+各个稀疏的输入通过Embedding层后，分别产生一个对应的embedding向量，若设置超参数use_embedding_gate=True， 则对应的embedding向量将通过一个embedding gate产生一个新embedding向量。所有embedding向量会被合并起来，置于一个list内，以方便进行concat的操作。
 
 #### FC层
-将离散数据通过embedding查表得到的值，与连续数据的输入进行`concat`操作，合为一个整体输入，作为全链接层的原始输入。我们共设计了4层FC，每层FC的输出维度由超参`fc_sizes`指定，每层FC都后接一个`relu`激活函数，每层FC的初始化方式为符合正态分布的随机初始化，标准差与上一层的输出维度的平方根成反比。
-```python
-concated = fluid.layers.concat(
-    sparse_embed_seq + [self.dense_input], axis=1)
+将离散数据通过embedding查表得到的值，与连续数据的输入进行`concat`操作，合为一个整体输入，作为全链接层的原始输入。我们共设计了4层FC，每层FC的输出维度由超参`fc_sizes`指定，每层FC都后接一个`relu`激活函数，若设置超参数use_hidden_gate=True，则通过激活函数后的向量会继续通过一层hidden_gate产生一个新向量。每层FC的初始化方式为符合正态分布的随机初始化，标准差与上一层的输出维度的平方根成反比。
 
-fcs = [concated]
-hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
-
-for size in hidden_layers:
-    output = fluid.layers.fc(
-        input=fcs[-1],
-        size=size,
-        act='relu',
-        param_attr=fluid.ParamAttr(
-            initializer=fluid.initializer.Normal(
-                scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
-    fcs.append(output)
-
-```
 #### Loss及Auc计算
 - 预测的结果通过一个输出shape为2的FC层给出，该FC层的激活函数是softmax，会给出每条样本分属于正负样本的概率。
 - 每条样本的损失由交叉熵给出，交叉熵的输入维度为[batch_size,2]，数据类型为float，label的输入维度为[batch_size,1]，数据类型为int。
@@ -265,7 +222,7 @@ avg_cost = fluid.layers.reduce_mean(cost)
 | :------| :------ | :------| :------ | :------| :------ | 
 | dnn | 0.7748 | 512 | 1 | 4 | 约2小时 |
 
-1. 确认您当前所在目录为PaddleRec/models/rank/dnn  
+1. 确认您当前所在目录为PaddleRec/models/rank/gatedDnn  
 2. 在data目录下运行数据一键处理脚本，处理时间较长，请耐心等待。命令如下：  
 ``` 
 cd data
@@ -435,13 +392,13 @@ PaddleRec Finish
     ```    
 4. 准备好数据后， 即可按照标准的训练流程进行流式训练了
     ```shell
-    python -m paddlerec.run -m models/rank/dnn/config.yaml
+    python -m paddlerec.run -m models/rank/gatedDnn/config.yaml
     ```
 ### 动态图
 
 ```
 # 进入模型目录
-cd models/rank/dnn 
+cd models/rank/gatedDnn 
 # 训练
 python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 预测
