@@ -133,7 +133,6 @@ def main(args):
             query, doc_pos, doc_negs = create_feeds(batch, trigram_d)
 
             inputs = [query, doc_pos] + doc_negs
-
             R_Q_D_p, hit_prob = dssm_model(inputs, False)
             loss = create_loss(hit_prob)
 
