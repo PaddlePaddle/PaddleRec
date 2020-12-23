@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/contentunderstanding/textcnn"
+#workspace: "models/contentunderstanding/textcnn"
+# for dygraph
+
+workspace: ./
 
 dygraph:
   train_data_dir: "data/senta_data/train"
@@ -41,7 +44,7 @@ dataset:
 
 hyper_parameters:
   optimizer:
-    class: Adagrad
+    class: Adam
     learning_rate: 0.001
   is_sparse: False
   dict_dim: 33257
@@ -60,7 +63,7 @@ runner:
 - name: train_runner
   class: train
   epochs: 16
-  device: cpu
+  device: gpu
   save_checkpoint_interval: 1
   save_inference_interval: 1
   save_checkpoint_path: "increment"
@@ -75,7 +78,7 @@ runner:
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/14" # load model path
+  init_model_path: "increment/15" # load model path
   phases: phase_infer
 
   
