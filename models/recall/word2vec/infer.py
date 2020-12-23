@@ -18,9 +18,10 @@ import time
 import math
 import numpy as np
 import six
-import paddle.fluid as fluid
 import paddle
 import utils
+
+paddle.enable_static()
 if six.PY2:
     reload(sys)
     sys.setdefaultencoding('utf-8')
@@ -54,41 +55,47 @@ def parse_args():
 
 
 def infer_network(vocab_size, emb_size):
-    analogy_a = fluid.data(name="analogy_a", shape=[None], dtype='int64')
-    analogy_b = fluid.data(name="analogy_b", shape=[None], dtype='int64')
-    analogy_c = fluid.data(name="analogy_c", shape=[None], dtype='int64')
-    all_label = fluid.data(name="all_label", shape=[vocab_size], dtype='int64')
-    emb_all_label = fluid.embedding(
+    analogy_a = paddle.static.data(
+        name="analogy_a", shape=[None], dtype='int64')
+    analogy_b = paddle.static.data(
+        name="analogy_b", shape=[None], dtype='int64')
+    analogy_c = paddle.static.data(
+        name="analogy_c", shape=[None], dtype='int64')
+    all_label = paddle.static.data(
+        name="all_label", shape=[vocab_size], dtype='int64')
+    emb_all_label = paddle.static.nn.embedding(
         input=all_label, size=[vocab_size, emb_size], param_attr="emb")
 
-    emb_a = fluid.embedding(
+    emb_a = paddle.static.nn.embedding(
         input=analogy_a, size=[vocab_size, emb_size], param_attr="emb")
-    emb_b = fluid.embedding(
+    emb_b = paddle.static.nn.embedding(
         input=analogy_b, size=[vocab_size, emb_size], param_attr="emb")
-    emb_c = fluid.embedding(
+    emb_c = paddle.static.nn.embedding(
         input=analogy_c, size=[vocab_size, emb_size], param_attr="emb")
-    target = fluid.layers.elementwise_add(
-        fluid.layers.elementwise_sub(emb_b, emb_a), emb_c)
-    emb_all_label_l2 = fluid.layers.l2_normalize(x=emb_all_label, axis=1)
-    dist = fluid.layers.matmul(x=target, y=emb_all_label_l2, transpose_y=True)
-    values, pred_idx = fluid.layers.topk(input=dist, k=4)
+    target = paddle.add(x=paddle.fluid.layers.nn.elementwise_sub(emb_b, emb_a),
+                        y=emb_c)
+    emb_all_label_l2 = paddle.fluid.layers.l2_normalize(
+        x=emb_all_label, axis=1)
+    dist = paddle.fluid.layers.matmul(
+        x=target, y=emb_all_label_l2, transpose_y=True)
+    values, pred_idx = paddle.topk(x=dist, k=4)
     return values, pred_idx
 
 
 def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     """ inference function """
-    place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
-    exe = fluid.Executor(place)
+    place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
+    exe = paddle.static.Executor(place)
     emb_size = args.emb_size
     batch_size = args.batch_size
-    with fluid.scope_guard(fluid.Scope()):
-        main_program = fluid.Program()
-        with fluid.program_guard(main_program):
+    with paddle.static.scope_guard(paddle.fluid.Scope()):
+        main_program = paddle.static.Program()
+        with paddle.static.program_guard(main_program):
             values, pred = infer_network(vocab_size, emb_size)
             for epoch in range(start_index, last_index + 1):
                 copy_program = main_program.clone()
                 model_path = model_dir + "/" + str(epoch)
-                fluid.io.load_persistables(
+                paddle.fluid.io.load_persistables(
                     exe, model_path, main_program=copy_program)
                 accum_num = 0
                 accum_num_sum = 0.0
