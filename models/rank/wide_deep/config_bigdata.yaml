@@ -16,6 +16,9 @@
 debug: false
 workspace: "models/rank/wide_deep"
 
+# dygraph workspace
+#workspace: "./"
+
 dygraph:
   train_data_dir: "data/slot_train_data"
   use_gpu: True
@@ -36,13 +39,13 @@ dataset:
   - name: sample_1
     type: DataLoader # or QueueDataset
     batch_size: 40
-    data_path: "{workspace}/data/sample_data/train"
+    data_path: "{workspace}/data/slot_train_data"
     sparse_slots: "label"
     dense_slots: "wide_input:8 deep_input:58"
   - name: infer_sample
     type: DataLoader # or QueueDataset
     batch_size: 40
-    data_path: "{workspace}/data/sample_data/train"
+    data_path: "{workspace}/data/slot_test_data"
     sparse_slots: "label"
     dense_slots: "wide_input:8 deep_input:58"
 
@@ -71,6 +74,7 @@ runner:
     save_inference_interval: 1
     save_checkpoint_path: "increment"
     save_inference_path: "inference"
+    print_interval: 100
     phases: phase1
   - name: infer_runner
     class: infer
