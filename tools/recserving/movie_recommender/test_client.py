@@ -34,7 +34,7 @@ def get_ums(uid):
     channel = grpc.insecure_channel('127.0.0.1:8910')
     stub = um_pb2_grpc.UMServiceStub(channel)
     request = um_pb2.UserModelRequest()
-    request.user_id = unicode(uid)
+    request.user_id = str(uid)
     response = stub.um_call(request)
     return response
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             gender = sys.argv[2]
             age = int(sys.argv[3])
             job = sys.argv[4]
-            req.user_id, req.gender, req.age, req.job = 0, gender, age, job 
+            req.user_info.user_id, req.user_info.gender, req.user_info.age, req.user_info.job = "0", gender, age, job 
         print(get_as(req))
     if sys.argv[1] == 'um':
         uid = sys.argv[2]
