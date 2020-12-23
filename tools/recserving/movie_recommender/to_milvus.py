@@ -19,7 +19,7 @@ from pprint import pprint
 
 from milvus import Milvus, DataType
 
-_HOST = '172.17.0.1'
+_HOST = '127.0.0.1'
 _PORT = '19530'
 client = Milvus(_HOST, _PORT)
 

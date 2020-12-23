@@ -1,9 +1,9 @@
 // as.proto
 syntax = "proto3";
 import "item_info.proto";
+import "user_info.proto";
 package as;
 option cc_generic_services = false;
-
 
 message ASRequest{
   string log_id = 1;
