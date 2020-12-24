@@ -40,11 +40,17 @@ class DNNLayer(nn.Layer):
                 initializer=paddle.nn.initializer.Uniform()))
 
         sizes = [sparse_feature_dim * num_field + dense_feature_dim
-                 ] + self.layer_sizes + [2]
+                 ] + self.layer_sizes
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
         self._mlp_layers = []
         self._hidden_gate_layers = []
-        for i in range(len(layer_sizes) + 1):
+        self.last_layer = paddle.nn.Linear(
+                in_features=sizes[len(self.layer_sizes)],
+                out_features=1,
+                weight_attr=paddle.ParamAttr(
+                    initializer=paddle.nn.initializer.Normal(
+                        std=1.0 / math.sqrt(sizes[len(self.layer_sizes)]))))
+        for i in range(len(layer_sizes)):
             linear = paddle.nn.Linear(
                 in_features=sizes[i],
                 out_features=sizes[i + 1],
@@ -53,10 +59,9 @@ class DNNLayer(nn.Layer):
                         std=1.0 / math.sqrt(sizes[i]))))
             self.add_sublayer('linear_%d' % i, linear)
             self._mlp_layers.append(linear)
-            if acts[i] == 'relu':
-                act = paddle.nn.ReLU()
-                self.add_sublayer('act_%d' % i, act)
-                self._mlp_layers.append(act)
+            act = paddle.nn.ReLU()
+            self.add_sublayer('act_%d' % i, act)
+            self._mlp_layers.append(act)
             if self.use_hidden_gate:
                 hidden_linear = paddle.nn.Linear(
                     in_features=sizes[i + 1],
@@ -66,6 +71,8 @@ class DNNLayer(nn.Layer):
                             std=1.0 / math.sqrt(sizes[i + 1]))))
                 self.add_sublayer('hidden_linear_%d' % i, hidden_linear)
                 self._hidden_gate_layers.append(hidden_linear)
+            self.add_sublayer("last_layer",self.last_layer)
+
 
     def forward(self, sparse_inputs, dense_inputs):
 
@@ -97,5 +104,6 @@ class DNNLayer(nn.Layer):
             if self.use_hidden_gate and i % 2 == 1 and i // 2 < len(self._hidden_gate_layers):
                 x_dnn = fluid.layers.tanh(self._hidden_gate_layers[i // 2](y_dnn))
                 y_dnn = fluid.layers.elementwise_mul(y_dnn, x_dnn)
-
+        y_dnn = self.last_layer(y_dnn)
+        y_dnn = fluid.layers.sigmoid(y_dnn)
         return y_dnn
