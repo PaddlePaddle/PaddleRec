@@ -17,8 +17,8 @@ workspace: "models/rank/dnn"
 
 dygraph:
   train_data_dir: "data/sample_data/train"
-  use_gpu: True
-  batch_size: 2
+  use_gpu: False
+  batch_size: 6
   epochs: 3
   print_interval: 2
   #model_init_path: "output_model/0" # init model
