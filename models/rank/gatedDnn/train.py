@@ -119,7 +119,6 @@ def main(args):
     if model_init_path is not None:
         load_model(model_init_path, dnn_model)
 
-    # to do : add optimizer function
     optimizer = paddle.optimizer.Adam(parameters=dnn_model.parameters())
 
     file_list = [
@@ -184,6 +183,13 @@ def main(args):
         logger.info("epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
             epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
+        print("embedding")
+        for i in range(len(dnn_model.embedding_gate_weight)):
+            print(dnn_model.embedding_gate_weight[i])
+        print("last_layer_bias")
+        print(dnn_model.last_layer.bias)
+        print("last_layer_weight")
+        print(dnn_model.last_layer.weight)
         save_model(
             dnn_model, optimizer, model_save_path, epoch_id, prefix='rec')
 

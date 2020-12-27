@@ -31,7 +31,9 @@ class DNNLayer(nn.Layer):
         self.use_embedding_gate = use_embedding_gate
         self.use_hidden_gate = use_hidden_gate
         if self.use_embedding_gate:
-            self.embedding_gate_weight = [fluid.layers.create_parameter(shape=[1], dtype="float32", name='embedding_gate weight %d' % i) for i in range(num_field)]
+            self.embedding_gate_weight = [fluid.layers.create_parameter(shape=[1], dtype="float32", name='embedding_gate_weight_%d' % i) for i in range(num_field)]
+            for i in range(num_field):
+                self.add_parameter('embedding_gate_weight_%d' % i, self.embedding_gate_weight[i])
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
@@ -79,11 +81,11 @@ class DNNLayer(nn.Layer):
         sparse_embs = []
 
         if self.use_embedding_gate:
-            for s_input, gate_vec in zip(sparse_inputs, self.embedding_gate_weight):
-                emb = self.embedding(s_input)
+            for i in range(len(self.embedding_gate_weight)):
+                emb = self.embedding(sparse_inputs[i])
                 emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
                 # emb shape [batchSize, sparse_feature_dim]
-                gate = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(emb, gate_vec), dim=-1)
+                gate = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(emb, self.embedding_gate_weight[i]), dim=-1)
                 # gate shape [batchSize]
                 activate_gate = fluid.layers.sigmoid(gate)
                 # activate_gate [batchSize]
