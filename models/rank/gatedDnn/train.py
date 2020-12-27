@@ -28,7 +28,7 @@
 import paddle
 import os
 import paddle.nn as nn
-import dnn_net as net
+import gated_dnn_net as net
 import time
 import logging
 
@@ -78,10 +78,12 @@ def create_model(config):
     sparse_fea_num = config.get('hyper_parameters.sparse_fea_num')
     dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
     sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
+    use_embedding_gate = config.get('hyper_parameters.use_embedding_gate')
+    use_hidden_gate = config.get('hyper_parameters.use_hidden_gate')
 
     dnn_model = net.DNNLayer(sparse_feature_number, sparse_feature_dim,
                              dense_feature_dim, sparse_input_slot - 1,
-                             fc_sizes)
+                             fc_sizes, use_embedding_gate, use_hidden_gate)
 
     return dnn_model
 
@@ -149,15 +151,20 @@ def main(args):
             label, sparse_tensor, dense_tensor = create_feeds(batch,
                                                               dense_input_dim)
 
-            raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
-            loss = create_loss(raw_pred_2d, label)
+            # raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
+            # loss = create_loss(raw_pred_2d, label)
 
+            raw_pred = dnn_model(sparse_tensor, dense_tensor)
+            loss = paddle.nn.functional.log_loss(
+            input=raw_pred, label=paddle.cast(label, "float32"))
+            loss = paddle.mean(loss)
             loss.backward()
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
             # for auc
-            predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
+            #predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
+            predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
             auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
 
             if batch_id % print_interval == 1:
