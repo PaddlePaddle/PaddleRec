@@ -61,9 +61,10 @@ class Model(ModelBase):
                              self.sparse_feature_dim, self.dense_input_dim,
                              sparse_number, self.fc_sizes, self.use_embedding_gate, self.use_hidden_gate)
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+        raw_pred = dnn_model(self.sparse_inputs, self.dense_input)
 
-        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
+        predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
+        #predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 
         self.predict = predict_2d
 
@@ -78,10 +79,14 @@ class Model(ModelBase):
 
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
-        cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict_2d, label=self.label_input)
-        avg_cost = paddle.mean(x=cost)
-        self._cost = avg_cost
+
+        loss = paddle.nn.functional.log_loss(
+            input=raw_pred, label=paddle.cast(self.label_input, "float32"))
+        loss = paddle.mean(x=loss)
+        # cost = paddle.nn.functional.cross_entropy(
+        #     input=raw_predict_2d, label=self.label_input)
+        # avg_cost = paddle.mean(x=cost)
+        self._cost = loss
 
     def optimizer(self):
         optimizer = paddle.optimizer.Adam(
