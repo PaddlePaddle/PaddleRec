@@ -13,11 +13,11 @@
 # limitations under the License.
 
 # workspace
-workspace: "models/rank/dnn"
+workspace: "models/rank/gatedDnn"
 
 dygraph:
   train_data_dir: "data/slot_train_data_full"
-  use_gpu: False
+  use_gpu: True
   batch_size: 512
   epochs: 4
   print_interval: 100
@@ -54,14 +54,14 @@ hyper_parameters:
   # optimizer config
   optimizer:
     class: Adam
-    learning_rate: 0.0001
+    learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
   sparse_inputs_slots: 27
   sparse_feature_number: 1000001
   sparse_feature_dim: 9
   dense_input_dim: 13
-  fc_sizes: [512, 64, 32]
+  fc_sizes: [512, 256, 256]
   distributed_embedding: 0
   use_embedding_gate: True
   use_hidden_gate: True
