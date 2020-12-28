@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 
 import math
 import paddle
-import paddle.nn.functional as F
 
 from paddlerec.core.metrics import AUC
 from paddlerec.core.utils import envs
@@ -27,45 +26,63 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.hidden1_units = envs.get_global_env(
-            "hyper_parameters.hidden1_units")
-        self.hidden2_units = envs.get_global_env(
-            "hyper_parameters.hidden2_units")
-        self.hidden3_units = envs.get_global_env(
-            "hyper_parameters.hidden3_units")
-        self.wide_input_dim = envs.get_global_env(
-            "hyper_parameters.wide_input_dim")
-        self.deep_input_dim = envs.get_global_env(
-            "hyper_parameters.deep_input_dim")
-        self.layer_sizes = [
-            self.hidden1_units, self.hidden2_units, self.hidden3_units
-        ]
+        self.is_distributed = False
+        self.distributed_embedding = False
 
-    def net(self, inputs, is_infer=False):
-        wide_input = self._dense_data_var[0]
-        deep_input = self._dense_data_var[1]
-        label = self._sparse_data_var[0]
+        if envs.get_fleet_mode().upper() == "PSLIB":
+            self.is_distributed = True
 
-        wide_deep_model = WideDeepLayer(self.wide_input_dim,
-                                        self.deep_input_dim, self.layer_sizes)
-        prediction = wide_deep_model.forward(wide_input, deep_input)
+        if envs.get_global_env("hyper_parameters.distributed_embedding",
+                               0) == 1:
+            self.distributed_embedding = True
 
-        pred = F.sigmoid(prediction)
+        self.sparse_feature_number = envs.get_global_env(
+            "hyper_parameters.sparse_feature_number")
+        self.sparse_feature_dim = envs.get_global_env(
+            "hyper_parameters.sparse_feature_dim")
+        self.sparse_inputs_slot = envs.get_global_env(
+            "hyper_parameters.sparse_inputs_slots")
+        self.dense_input_dim = envs.get_global_env(
+            "hyper_parameters.dense_input_dim")
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.optimizer.learning_rate")
+        self.fc_sizes = envs.get_global_env("hyper_parameters.fc_sizes")
 
-        acc = paddle.metric.accuracy(
-            input=pred, label=paddle.cast(
-                x=label, dtype='int64'))
+    def net(self, input, is_infer=False):
+        self.sparse_inputs = self._sparse_data_var[1:]
+        self.dense_input = self._dense_data_var[0]
+        self.label_input = self._sparse_data_var[0]
+        sparse_number = self.sparse_inputs_slot - 1
+        assert sparse_number == len(self.sparse_inputs)
+
+        wide_deep_model = WideDeepLayer(
+            self.sparse_feature_number, self.sparse_feature_dim,
+            self.dense_input_dim, sparse_number, self.fc_sizes)
+
+        pred = wide_deep_model(self.sparse_inputs, self.dense_input)
+
+        #pred = F.sigmoid(prediction)
+
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
-        auc = AUC(input=predict_2d, label=paddle.cast(x=label, dtype='int64'))
 
-        self._metrics["AUC"] = auc
-        self._metrics["ACC"] = acc
+        auc = AUC(input=predict_2d,
+                  label=paddle.cast(
+                      x=self.label_input, dtype='int64'))
+
         if is_infer:
             self._infer_results["AUC"] = auc
-            self._infer_results["ACC"] = acc
+            return
 
         cost = paddle.nn.functional.log_loss(
             input=pred, label=paddle.cast(
-                label, dtype="float32"))
+                self.label_input, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
+
+    def optimizer(self):
+        optimizer = paddle.optimizer.Adam(
+            learning_rate=self.learning_rate, lazy_mode=True)
+        return optimizer
+
+    def infer_net(self):
+        pass

@@ -131,9 +131,9 @@ PaddleRec Finish
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：  
 
-| 模型 | auc | acc | batch_size | thread_num| epoch_num| Time of each epoch |
-| :------| :------ | :------ | :------| :------ | :------| :------ | 
-| wide_deep | 0.8987 | 0.775 | 40 | 1 | 80 | 约10s |
+| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
+| :------| :------ | :------| :------ | :------| :------ | 
+| wide_deep | 0.78+ | 512 | 1 | 5 | 2h+ |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/wide_deep
 2. 在data目录下运行数据一键处理脚本，命令如下：  
@@ -142,17 +142,15 @@ cd data
 sh run.sh
 cd ..
 ```
-3. 退回deepfm目录中，打开文件config.yaml,更改其中的参数  
+3. 退回wide_deep目录中，打开文件config.yaml,更改其中的参数  
 将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
-将train_sample中的batch_size从5改为40  
-将train_sample中的data_path改为{workspace}/data/slot_train_data  
-将infer_sample中的batch_size从5改为40  
-将infer_sample中的data_path改为{workspace}/data/slot_test_data  
-将train_runner中的epochs改为80
-将infer_runner中的init_model_path改为increment/79
+将dataloader_train中的batch_size从2改为512  
+将dataloader_train中的data_path改为{workspace}/data/slot_train_data_full  
+将dataset_infer中的batch_size从2改为512  
+将dataset_infer中的data_path改为{workspace}/data/slot_test_data_full  
 4. 运行命令，模型会进行80个epoch的训练，然后预测最后一个epoch，并获得相应auc和acc指标  
 ```
-python -m paddlerec.run -m ./config.yaml
+python -m paddlerec.run -m ./config_bigdata.yaml
 ```
 5. 经过全量数据训练后，执行预测的结果示例如下：
 ```

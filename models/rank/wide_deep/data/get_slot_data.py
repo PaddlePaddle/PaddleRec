@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#   Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,51 +11,61 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 import paddle.fluid.incubate.data_generator as dg
 
+cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+cont_max_ = [20, 600, 100, 50, 64000, 500, 100, 50, 500, 10, 10, 10, 50]
+cont_diff_ = [20, 603, 100, 50, 64000, 500, 100, 50, 500, 10, 10, 10, 50]
+hash_dim_ = 1000001
+continuous_range_ = range(1, 14)
+categorical_range_ = range(14, 40)
 
-class Reader(dg.MultiSlotDataGenerator):
-    def __init__(self, config):
-        dg.MultiSlotDataGenerator.__init__(self)
 
-    def init(self):
-        pass
-
-    def _process_line(self, line):
-        line = line.strip().split(',')
-        features = list(map(int, map(float, line)))
-        wide_feat = features[0:8]
-        deep_feat = features[8:58 + 8]
-        label = features[-1]
-        return wide_feat, deep_feat, [label]
+class CriteoDataset(dg.MultiSlotDataGenerator):
+    """
+    DacDataset: inheritance MultiSlotDataGeneratior, Implement data reading
+    Help document: http://wiki.baidu.com/pages/viewpage.action?pageId=728820675
+    """
 
     def generate_sample(self, line):
         """
         Read the data line by line and process it as a dictionary
         """
 
-        def data_iter():
-            wide_feat, deep_deat, label = self._process_line(line)
-
-            s = ""
-            for i in [('wide_input', wide_feat), ('deep_input', deep_deat),
-                      ('label', label)]:
-                k = i[0]
-                v = i[1]
-                for j in v:
-                    s += " " + k + ":" + str(j)
-            print(s.strip())
+        def reader():
+            """
+            This function needs to be implemented by the user, based on data format
+            """
+            features = line.rstrip('\n').split('\t')
+            dense_feature = []
+            sparse_feature = []
+            for idx in continuous_range_:
+                if features[idx] == "":
+                    dense_feature.append(0.0)
+                else:
+                    dense_feature.append(
+                        (float(features[idx]) - cont_min_[idx - 1]) /
+                        cont_diff_[idx - 1])
+            for idx in categorical_range_:
+                sparse_feature.append(
+                    [hash(str(idx) + features[idx]) % hash_dim_])
+            label = [int(features[0])]
+            process_line = dense_feature, sparse_feature, label
+            feature_name = ["dense_feature"]
+            for idx in categorical_range_:
+                feature_name.append("C" + str(idx - 13))
+            feature_name.append("label")
+            s = "click:" + str(label[0])
+            for i in dense_feature:
+                s += " dense_feature:" + str(i)
+            for i in range(1, 1 + len(categorical_range_)):
+                s += " " + str(i) + ":" + str(sparse_feature[i - 1][0])
+            print(s.strip())  # add print for data preprocessing
             yield None
 
-        return data_iter
+        return reader
 
 
-reader = Reader("../config.yaml")
-reader.init()
-reader.run_from_stdin()
+d = CriteoDataset()
+d.run_from_stdin()
