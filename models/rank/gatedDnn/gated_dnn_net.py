@@ -31,26 +31,17 @@ class DNNLayer(nn.Layer):
         self.use_embedding_gate = use_embedding_gate
         self.use_hidden_gate = use_hidden_gate
         if self.use_embedding_gate:
-            # self.embedding_gate_weight = [paddle.create_parameter(shape=[1], dtype="float32", name='embedding_gate_weight_%d' % i, default_initializer=paddle.nn.initializer.Normal(
-            #                  std=1.0)) for i in range(num_field)]
-            self.embedding_gate_weight = [paddle.create_parameter(shape=[1], dtype="float32", name='embedding_gate_weight_%d' % i, default_initializer=fluid.initializer.ConstantInitializer(0.4)
-                                                                  ) for i in range(num_field)]
+            self.embedding_gate_weight = [paddle.create_parameter(shape=[1], dtype="float32", name='embedding_gate_weight_%d' % i, default_initializer=paddle.nn.initializer.Normal(
+                             std=1.0)) for i in range(num_field)]
             for i in range(num_field):
                 self.add_parameter('embedding_gate_weight_%d' % i, self.embedding_gate_weight[i])
-        # self.embedding = paddle.nn.Embedding(
-        #     self.sparse_feature_number,
-        #     self.sparse_feature_dim,
-        #     sparse=True,
-        #     weight_attr=paddle.ParamAttr(
-        #         name="SparseFeatFactors",
-        #         initializer=paddle.nn.initializer.Uniform()))
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
             sparse=True,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
-                initializer=fluid.initializer.ConstantInitializer(0.2)))
+                initializer=paddle.nn.initializer.Uniform()))
         sizes = [sparse_feature_dim * num_field + dense_feature_dim
                  ] + self.layer_sizes
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
@@ -60,27 +51,25 @@ class DNNLayer(nn.Layer):
                 in_features=sizes[len(self.layer_sizes)],
                 out_features=1,
                 weight_attr=paddle.ParamAttr(
-                    # initializer=paddle.nn.initializer.Normal(
-                    #     std=1.0 / math.sqrt(sizes[len(self.layer_sizes)]))))
-                    initializer=fluid.initializer.ConstantInitializer(-0.2)))
+                    initializer=paddle.nn.initializer.Normal(
+                        std=1.0 / math.sqrt(sizes[len(self.layer_sizes)]))))
         self.add_sublayer("last_layer", self.last_layer)
         for i in range(len(layer_sizes)):
             linear = paddle.nn.Linear(
                 in_features=sizes[i],
                 out_features=sizes[i + 1],
                 weight_attr=paddle.ParamAttr(
-                    # initializer=paddle.nn.initializer.Normal(
-                    #     std=1.0 / math.sqrt(sizes[i]))))
-                    initializer=fluid.initializer.ConstantInitializer(-0.2)))
+                    initializer=paddle.nn.initializer.Normal(
+                        std=1.0 / math.sqrt(sizes[i]))))
             self.add_sublayer('linear_%d' % i, linear)
             self._mlp_layers.append(linear)
             act = paddle.nn.ReLU()
             self.add_sublayer('act_%d' % i, act)
             self._mlp_layers.append(act)
             if self.use_hidden_gate:
-                # self._hidden_gate_weight.append(paddle.create_parameter(shape=(sizes[i+1], sizes[i+1]), dtype="float32", name="hidden_gate_weight_%d" % i, default_initializer=paddle.nn.initializer.Normal(
-                #              std=1.0 / math.sqrt(sizes[i + 1]))))
-                self._hidden_gate_weight.append(paddle.create_parameter(shape=(sizes[i+1], sizes[i+1]), dtype="float32", name="hidden_gate_weight_%d" % i, default_initializer=fluid.initializer.ConstantInitializer(0.1)))
+                self._hidden_gate_weight.append(paddle.create_parameter(shape=(sizes[i+1], sizes[i+1]), dtype="float32", name="hidden_gate_weight_%d" % i, default_initializer=paddle.nn.initializer.Normal(
+                             std=1.0 / math.sqrt(sizes[i + 1]))))
+                #self._hidden_gate_weight.append(paddle.create_parameter(shape=(sizes[i+1], sizes[i+1]), dtype="float32", name="hidden_gate_weight_%d" % i, default_initializer=fluid.initializer.ConstantInitializer(0.1)))
                 self.add_parameter("hidden_gate_weight_%d" % i, self._hidden_gate_weight[i])
             # if self.use_hidden_gate:
             #     hidden_linear = paddle.nn.Linear(
@@ -97,7 +86,7 @@ class DNNLayer(nn.Layer):
     def forward(self, sparse_inputs, dense_inputs):
 
         sparse_embs = []
-
+        print(sparse_inputs, dense_inputs)
         if self.use_embedding_gate:
             for i in range(len(self.embedding_gate_weight)):
                 emb = self.embedding(sparse_inputs[i])
