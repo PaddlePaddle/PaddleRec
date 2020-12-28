@@ -86,7 +86,6 @@ class DNNLayer(nn.Layer):
     def forward(self, sparse_inputs, dense_inputs):
 
         sparse_embs = []
-        print(sparse_inputs, dense_inputs)
         if self.use_embedding_gate:
             for i in range(len(self.embedding_gate_weight)):
                 emb = self.embedding(sparse_inputs[i])
