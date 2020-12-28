@@ -103,11 +103,11 @@ class DNNLayer(nn.Layer):
                 emb = self.embedding(sparse_inputs[i])
                 emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
                 # emb shape [batchSize, sparse_feature_dim]
-                gate = paddle.reduce_sum(paddle.elementwise_mul(emb, self.embedding_gate_weight[i]), dim=-1)
+                gate = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(emb, self.embedding_gate_weight[i]), dim=-1)
                 # gate shape [batchSize]
-                activate_gate = paddle.sigmoid(gate)
+                activate_gate = fluid.layers.sigmoid(gate)
                 # activate_gate [batchSize]
-                emb = paddle.elementwise_mul(emb, activate_gate, axis=0)
+                emb = fluid.layers.elementwise_mul(emb, activate_gate, axis=0)
                 # emb shape [batchSize, sparse_feature_dim]
                 sparse_embs.append(emb)
         else:
@@ -124,7 +124,7 @@ class DNNLayer(nn.Layer):
             if self.use_hidden_gate and i % 2 == 1 and i // 2 < len(self._hidden_gate_weight):
                 #x_dnn = fluid.layers.tanh(self._hidden_gate_layers[i // 2](y_dnn))
                 x_dnn = paddle.tanh(paddle.matmul(y_dnn, self._hidden_gate_weight[i // 2]))
-                y_dnn = paddle.elementwise_mul(y_dnn, x_dnn)
+                y_dnn = fluid.layers.elementwise_mul(y_dnn, x_dnn)
         y_dnn = self.last_layer(y_dnn)
         y_dnn = fluid.layers.sigmoid(y_dnn)
         return y_dnn
