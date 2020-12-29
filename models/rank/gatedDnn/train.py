@@ -152,7 +152,7 @@ def main(args):
 
             raw_pred = dnn_model(sparse_tensor, dense_tensor)
             loss = paddle.nn.functional.log_loss(
-            input=raw_pred, label=paddle.cast(label, "float32"))
+                input=raw_pred, label=paddle.cast(label, "float32"))
             loss = paddle.mean(loss)
             loss.backward()
             optimizer.step()

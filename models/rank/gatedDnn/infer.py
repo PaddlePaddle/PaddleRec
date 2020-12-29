@@ -113,7 +113,8 @@ def main(args):
     for batch_id, batch in enumerate(test_dataloader()):
         batch_size = len(batch[0])
 
-        label, sparse_tensor, dense_tensor = create_feeds(batch, dense_input_dim)
+        label, sparse_tensor, dense_tensor = create_feeds(batch,
+                                                          dense_input_dim)
 
         raw_pred = dnn_model(sparse_tensor, dense_tensor)
         predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
@@ -123,8 +124,8 @@ def main(args):
             logger.info(
                 "infer epoch: {}, batch_id: {}, auc: {:.6f}, speed: {:.2f} ins/s".
                 format(epoch_id, batch_id,
-                        auc_metric.accumulate(), print_interval * batch_size
-                        / (time.time() - interval_begin)))
+                       auc_metric.accumulate(), print_interval * batch_size / (
+                           time.time() - interval_begin)))
             interval_begin = time.time()
 
     logger.info(

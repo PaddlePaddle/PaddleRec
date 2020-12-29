@@ -46,9 +46,10 @@ class Model(ModelBase):
         self.learning_rate = envs.get_global_env(
             "hyper_parameters.optimizer.learning_rate")
         self.fc_sizes = envs.get_global_env("hyper_parameters.fc_sizes")
-        self.use_embedding_gate = envs.get_global_env('hyper_parameters.use_embedding_gate')
-        self.use_hidden_gate = envs.get_global_env('hyper_parameters.use_hidden_gate')
-
+        self.use_embedding_gate = envs.get_global_env(
+            'hyper_parameters.use_embedding_gate')
+        self.use_hidden_gate = envs.get_global_env(
+            'hyper_parameters.use_hidden_gate')
 
     def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]
@@ -59,7 +60,8 @@ class Model(ModelBase):
 
         dnn_model = DNNLayer(self.sparse_feature_number,
                              self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes, self.use_embedding_gate, self.use_hidden_gate)
+                             sparse_number, self.fc_sizes,
+                             self.use_embedding_gate, self.use_hidden_gate)
 
         raw_pred = dnn_model(self.sparse_inputs, self.dense_input)
 
