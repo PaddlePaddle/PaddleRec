@@ -16,36 +16,36 @@
 workspace: "models/rank/dnn"
 
 dygraph:
-  train_data_dir: "data/sample_data/train"
+  train_data_dir: "data/slot_train_data_full"
   use_gpu: True
-  batch_size: 2
-  epochs: 3
-  print_interval: 2
+  batch_size: 512
+  epochs: 4
+  print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model"
+  model_save_path: "output_model_all"
+  test_data_dir: "data/slot_test_data_full"
+  infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 3
+  infer_end_epoch: 4
 
 # list of dataset
 dataset:
 - name: dataloader_train # name of dataset to distinguish different datasets
-  batch_size: 2
+  batch_size: 512
   type: DataLoader # or QueueDataset 
-  data_path: "{workspace}/data/sample_data/train"
+  data_path: "{workspace}/data/slot_train_data_full"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_feature:13"
 - name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 2
+  batch_size: 512
   type: QueueDataset # or DataLoader 
-  data_path: "{workspace}/data/sample_data/train"
+  data_path: "{workspace}/data/slot_train_data_full"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_feature:13"
 - name: dataset_infer # name
-  batch_size: 2
+  batch_size: 512
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/sample_data/train"
+  data_path: "{workspace}/data/slot_test_data_full"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_feature:13"
 

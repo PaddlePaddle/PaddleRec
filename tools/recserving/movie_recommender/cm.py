@@ -38,7 +38,7 @@ class CMServerServicer(object):
             if redis_res is None:
                 cm_res.error.code = 500
                 cm_res.error.text = "CM server get item_info from redis fail. ({})".format(str(request))
-                return um_res
+                return cm_res
                 #raise ValueError("CM server get user_info from redis fail. ({})".format(str(request)))
             cm_info = json.loads(redis_res)
             item_info = cm_res.item_infos.add()

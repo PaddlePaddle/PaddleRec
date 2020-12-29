@@ -34,7 +34,7 @@ class RecallServerServicer(object):
     def __init__(self):
         self.uv_client = LocalPredictor()
         self.uv_client.load_model_config("user_vector_model/serving_server_dir") 
-        milvus_host = '172.17.0.1'
+        milvus_host = '127.0.0.1'
         milvus_port = '19530'
         self.milvus_client = Milvus(milvus_host, milvus_port)
         self.collection_name = 'demo_films'

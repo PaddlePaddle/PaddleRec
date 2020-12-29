@@ -26,15 +26,14 @@
 # limitations under the License.
 
 import paddle
-import paddle.nn.functional as F
 import os
 import paddle.nn as nn
-import wide_deep_net as net
+import dnn_net as net
 import time
 import logging
 
 from utils import load_yaml, get_abs_model, save_model, load_model
-from reader_dygraph import WideDeepDataset
+from criteo_reader_dygraph import CriteoDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -51,37 +50,40 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, wide_input_dim, deep_input_dim):
+def create_feeds(batch, dense_feature_dim):
     sparse_tensor = []
-    label = paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1, 1))
-    wide_tensor = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
-        -1, wide_input_dim))
-    deep_tensor = paddle.to_tensor(batch[2].numpy().astype('float32').reshape(
-        -1, deep_input_dim))
-    return label, wide_tensor, deep_tensor
+    for b in batch[:-1]:
+        sparse_tensor.append(
+            paddle.to_tensor(b.numpy().astype('int64').reshape(-1, 1)))
+    dense_tensor = paddle.to_tensor(batch[-1].numpy().astype('float32')
+                                    .reshape(-1, dense_feature_dim))
+
+    label = sparse_tensor[0]
+    return label, sparse_tensor[1:], dense_tensor
 
 
-def create_loss(prediction, label):
-    pred = F.sigmoid(prediction)
-    cost = paddle.nn.functional.log_loss(
-        input=pred, label=paddle.cast(
-            label, dtype="float32"))
+def create_loss(raw_predict_2d, label):
+    cost = paddle.nn.functional.cross_entropy(
+        input=raw_predict_2d, label=label)
     avg_cost = paddle.mean(x=cost)
+
     return avg_cost
 
 
 def create_model(config):
-    wide_input_dim = config.get('hyper_parameters.wide_input_dim')
-    deep_input_dim = config.get('hyper_parameters.deep_input_dim')
-    hidden1_units = config.get("hyper_parameters.hidden1_units")
-    hidden2_units = config.get("hyper_parameters.hidden2_units")
-    hidden3_units = config.get("hyper_parameters.hidden3_units")
+    sparse_feature_number = config.get(
+        "hyper_parameters.sparse_feature_number")
+    sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
+    fc_sizes = config.get("hyper_parameters.fc_sizes")
+    sparse_fea_num = config.get('hyper_parameters.sparse_fea_num')
+    dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
+    sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
 
-    layer_sizes = [hidden1_units, hidden2_units, hidden3_units]
-    wide_deep_model = net.WideDeepLayer(wide_input_dim, deep_input_dim,
-                                        layer_sizes)
+    dnn_model = net.DNNLayer(sparse_feature_number, sparse_feature_dim,
+                             dense_feature_dim, sparse_input_slot - 1,
+                             fc_sizes)
 
-    return wide_deep_model
+    return dnn_model
 
 
 def create_data_loader(dataset, place, config):
@@ -99,8 +101,7 @@ def main(args):
     epochs = config.get("dygraph.epochs", None)
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
-    wide_input_dim = config.get('hyper_parameters.wide_input_dim', None)
-    deep_input_dim = config.get('hyper_parameters.deep_input_dim', None)
+    dense_input_dim = config.get('hyper_parameters.dense_input_dim', None)
 
     print("***********************************")
     logger.info(
@@ -111,28 +112,27 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    wide_deep_model = create_model(config)
+    dnn_model = create_model(config)
     model_init_path = config.get("dygraph.model_init_path", None)
     if model_init_path is not None:
-        load_model(model_init_path, wide_deep_model)
+        load_model(model_init_path, dnn_model)
 
     # to do : add optimizer function
-    optimizer = paddle.optimizer.Adam(parameters=wide_deep_model.parameters())
+    optimizer = paddle.optimizer.Adam(parameters=dnn_model.parameters())
 
     file_list = [
         os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
     ]
     print("read data")
-    dataset = WideDeepDataset(file_list)
+    dataset = CriteoDataset(file_list)
     train_dataloader = create_data_loader(dataset, place=place, config=config)
 
     last_epoch_id = config.get("last_epoch", -1)
 
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
-        wide_deep_model.train()
+        dnn_model.train()
         auc_metric = paddle.metric.Auc("ROC")
-        acc_metric = paddle.metric.Accuracy()
         epoch_begin = time.time()
         interval_begin = time.time()
         train_reader_cost = 0.0
@@ -146,36 +146,25 @@ def main(args):
             train_start = time.time()
             batch_size = len(batch[0])
 
-            label, wide_tensor, deep_tensor = create_feeds(
-                batch, wide_input_dim, deep_input_dim)
+            label, sparse_tensor, dense_tensor = create_feeds(batch,
+                                                              dense_input_dim)
 
-            prediction = wide_deep_model.forward(wide_tensor, deep_tensor)
-            loss = create_loss(prediction, label)
+            raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
+            loss = create_loss(raw_pred_2d, label)
 
             loss.backward()
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
-            pred = paddle.nn.functional.sigmoid(
-                paddle.clip(
-                    prediction, min=-15.0, max=15.0),
-                name="prediction")
-            label_int = paddle.cast(label, 'int64')
-
-            # for acc
-            correct = acc_metric.compute(pred, label_int)
-            acc_metric.update(correct)
             # for auc
-            predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
-            auc_metric.update(
-                preds=predict_2d.numpy(), labels=label_int.numpy())
+            predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
+            auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
 
             if batch_id % print_interval == 1:
                 logger.info(
-                    "epoch: {}, batch_id: {}, auc: {:.6f}, acc: {:.5f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    "epoch: {}, batch_id: {}, auc: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(epoch_id, batch_id,
-                           auc_metric.accumulate(),
-                           acc_metric.accumulate(), train_reader_cost /
+                           auc_metric.accumulate(), train_reader_cost /
                            print_interval, (train_reader_cost + train_run_cost
                                             ) / print_interval, total_samples /
                            print_interval, total_samples / (train_reader_cost +
@@ -185,18 +174,11 @@ def main(args):
                 total_samples = 0
             reader_start = time.time()
 
-        logger.info(
-            "epoch: {} done, auc: {:.6f}, acc: {:.6f}, : epoch time{:.2f} s".
-            format(epoch_id,
-                   auc_metric.accumulate(),
-                   acc_metric.accumulate(), time.time() - epoch_begin))
+        logger.info("epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
+            epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
         save_model(
-            wide_deep_model,
-            optimizer,
-            model_save_path,
-            epoch_id,
-            prefix='rec')
+            dnn_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':
