@@ -14,34 +14,34 @@
 workspace: "models/recall/word2vec"
 
 dygraph:
-  train_data_dir: "data/train"
+  train_data_dir: "data/all_train"
   use_gpu: True
   batch_size: 100
-  epochs: 2
-  print_interval: 10
+  epochs: 5
+  print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/test"
-  infer_load_path: "output_model"
+  model_save_path: "output_all_model"
+  test_data_dir: "data/all_test"
+  infer_load_path: "output_all_model"
   infer_start_epoch: -1
-  infer_end_epoch: 2
+  infer_end_epoch: 5
   # dataset
-  word_count_dict_path: "data/dict/word_count_dict.txt"
-  word_id_dict_path: "data/dict/word_id_dict.txt"
+  word_count_dict_path: "data/all_dict/word_count_dict.txt"
+  word_id_dict_path: "data/all_dict/word_id_dict.txt"
 
 # list of dataset
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 100
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
+  data_path: "{workspace}/data/all_train"
+  word_count_dict_path: "{workspace}/data/all_dict/word_count_dict.txt"
   data_converter: "{workspace}/w2v_reader.py"
 - name: dataset_infer # name
-  batch_size: 10 # 2000
+  batch_size: 2000 # 2000
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/test"
-  word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
+  data_path: "{workspace}/data/all_test"
+  word_id_dict_path: "{workspace}/data/all_dict/word_id_dict.txt"
   data_converter: "{workspace}/w2v_evaluate_reader.py"
 
 hyper_parameters:

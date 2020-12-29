@@ -14,7 +14,9 @@
 
 import math
 import paddle
+import paddle.nn.functional as F
 
+from paddlerec.core.metrics import AUC
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 from wide_deep_net import WideDeepLayer
@@ -48,26 +50,22 @@ class Model(ModelBase):
                                         self.deep_input_dim, self.layer_sizes)
         prediction = wide_deep_model.forward(wide_input, deep_input)
 
-        pred = paddle.nn.functional.sigmoid(
-            paddle.clip(
-                prediction, min=-15.0, max=15.0), name="prediction")
+        pred = F.sigmoid(prediction)
 
         acc = paddle.metric.accuracy(
             input=pred, label=paddle.cast(
                 x=label, dtype='int64'))
-        auc_var, batch_auc, auc_states = paddle.fluid.layers.auc(
-            input=pred, label=paddle.cast(
-                x=label, dtype='int64'))
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+        auc = AUC(input=predict_2d, label=paddle.cast(x=label, dtype='int64'))
 
-        self._metrics["AUC"] = auc_var
-        self._metrics["BATCH_AUC"] = batch_auc
+        self._metrics["AUC"] = auc
         self._metrics["ACC"] = acc
         if is_infer:
-            self._infer_results["AUC"] = auc_var
+            self._infer_results["AUC"] = auc
             self._infer_results["ACC"] = acc
 
         cost = paddle.nn.functional.log_loss(
-            input=prediction, label=paddle.cast(
+            input=pred, label=paddle.cast(
                 label, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
