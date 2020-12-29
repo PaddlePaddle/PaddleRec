@@ -11,6 +11,8 @@
 }
 ```
 其中的embedding_gate实现采用了论文中默认的private field和vec-wise model.
+embedding_gate和hidden_gate的开关分别对应yaml配置文件内（如config.yaml)hyper_parameters下的use_embedding_gate和use_hidden_gate变量，
+默认情况下2个开关均处于打开状态，若需要关闭某个开关，只需要把它的值设置成False并保存配置文件即可。当2个开关都关闭，运行的算法即为标准的dnn。
 #
 ## 数据准备
 ### 数据来源
@@ -180,7 +182,7 @@ click:0 dense_feature:0.05 dense_feature:0.00663349917081 dense_feature:0.05 den
 
 ### CTR-DNN模型组网
 
-CTR-DNN模型的组网比较直观，本质是一个二分类任务，代码参考`model.py`。模型主要组成是一个`Embedding`层，四个`FC`层，以及相应的分类任务的loss计算和auc计算。
+CTR-DNN模型的组网比较直观，本质是一个二分类任务，代码参考`model.py`。模型主要组成是一个`Embedding`层,三个`FC`层，以及相应的分类任务的loss计算和auc计算。
 
 #### Embedding层
 首先介绍Embedding层的搭建方式：`Embedding`层的输入是`sparse_input`，由超参的`sparse_feature_number`和`sparse_feature_dimshape`定义。需要特别解释的是`is_sparse`参数，当我们指定`is_sprase=True`后，计算图会将该参数视为稀疏参数，反向更新以及分布式通信时，都以稀疏的方式进行，会极大的提升运行效率，同时保证效果一致。
@@ -188,39 +190,21 @@ CTR-DNN模型的组网比较直观，本质是一个二分类任务，代码参�
 各个稀疏的输入通过Embedding层后，分别产生一个对应的embedding向量，若设置超参数use_embedding_gate=True， 则对应的embedding向量将通过一个embedding gate产生一个新embedding向量。所有embedding向量会被合并起来，置于一个list内，以方便进行concat的操作。
 
 #### FC层
-将离散数据通过embedding查表得到的值，与连续数据的输入进行`concat`操作，合为一个整体输入，作为全链接层的原始输入。我们共设计了4层FC，每层FC的输出维度由超参`fc_sizes`指定，每层FC都后接一个`relu`激活函数，若设置超参数use_hidden_gate=True，则通过激活函数后的向量会继续通过一层hidden_gate产生一个新向量。每层FC的初始化方式为符合正态分布的随机初始化，标准差与上一层的输出维度的平方根成反比。
+将离散数据通过embedding查表得到的值，与连续数据的输入进行`concat`操作，合为一个整体输入，作为全链接层的原始输入。我们共设计了3层FC，每层FC的输出维度由超参`fc_sizes`指定，每层FC都后接一个`relu`激活函数，若设置超参数use_hidden_gate=True，则通过激活函数后的向量会继续通过一层hidden_gate产生一个新向量。每层FC的初始化方式为符合正态分布的随机初始化，标准差与上一层的输出维度的平方根成反比。
 
 #### Loss及Auc计算
-- 预测的结果通过一个输出shape为2的FC层给出，该FC层的激活函数是softmax，会给出每条样本分属于正负样本的概率。
-- 每条样本的损失由交叉熵给出，交叉熵的输入维度为[batch_size,2]，数据类型为float，label的输入维度为[batch_size,1]，数据类型为int。
-- 该batch的损失`avg_cost`是各条样本的损失之和
+- 预测的结果通过一个输出shape为1的FC层给出，该FC层的激活函数是sigmoid，表示每条样本分属于正样本的概率。
+- 每条样本的损失由交叉熵给出
 - 我们同时还会计算预测的auc，auc的结果由`fluid.layers.auc()`给出，该层的返回值有三个，分别是从第一个batch累计到当前batch的全局auc: `auc`，最近几个batch的auc: `batch_auc`，以及auc_states: `_`，auc_states包含了`batch_stat_pos, batch_stat_neg, stat_pos, stat_neg`信息。`batch_auc`我们取近20个batch的平均，由参数`slide_steps=20`指定，roc曲线的离散化的临界数值设置为4096，由`num_thresholds=2**12`指定。
-```
-predict = fluid.layers.fc(
-    input=fcs[-1],
-    size=2,
-    act="softmax",
-    param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-        scale=1 / math.sqrt(fcs[-1].shape[1]))))
-
-self.predict = predict
-
-auc, batch_auc, _ = fluid.layers.auc(input=self.predict,label=self.label_input,
-                                     num_thresholds=2**12,
-                                     slide_steps=20)
-
-cost = fluid.layers.cross_entropy(
-            input=self.predict, label=self.label_input)
-avg_cost = fluid.layers.reduce_mean(cost)
-```
 
 完成上述组网后，我们最终可以通过训练拿到`BATCH_AUC`与`auc`两个重要指标。
 
 ### 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。 在全量数据下模型的指标如下：
-| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
-| :------| :------ | :------| :------ | :------| :------ | 
-| dnn | 0.7748 | 512 | 1 | 4 | 约2小时 |
+| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch| GateType|
+
+| gateDdnn | 0.7974 | 512 | 1 | 4 | 约5小时 | embeddingGate + hiddenGate |
+| dnn      | 0.7959 | 512 | 1 | 4 | 约5小时 | None                       |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/gatedDnn  
 2. 在data目录下运行数据一键处理脚本，处理时间较长，请耐心等待。命令如下：  
@@ -229,41 +213,26 @@ cd data
 sh run.sh
 cd ..
 ```
-3. 退回dnn目录中，打开文件config.yaml,更改其中的参数  
-将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
-将dataloader_train中的batch_size从2改为512  
-将dataloader_train中的data_path改为{workspace}/data/slot_train_data_full  
-将dataset_infer中的batch_size从2改为512  
-将dataset_infer中的data_path改为{workspace}/data/slot_test_data_full  
-根据自己的需求调整phase中的线程数  
+3. 修改config_bigdata.yaml文件，决定是否使用embedding-gate和hidden-gate。若不能使用GPU运行，需要把dygraph里use_gpu变量改成False
 4. 运行命令，模型会进行四个epoch的训练，然后预测第四个epoch，并获得相应auc指标  
 ```
-python -m paddlerec.run -m ./config.yaml
+python -u train.py -m config_bigdata.yaml
 ```
-5. 经过全量数据训练后，执行预测的结果示例如下：
-
+5. 经过全量数据训练后，执行预测
 ```
-PaddleRec: Runner single_cpu_infer Begin
-Executor Mode: infer
-processor_register begin
-Running SingleInstance.
-Running SingleNetwork.
-Running SingleInferStartup.
-Running SingleInferRunner.
-load persistables from increment_dnn/3
-batch: 20, BATCH_AUC: [0.75670043], AUC: [0.77490453]
-batch: 40, BATCH_AUC: [0.77020144], AUC: [0.77490437]
-batch: 60, BATCH_AUC: [0.77464683], AUC: [0.77490435]
-batch: 80, BATCH_AUC: [0.76858989], AUC: [0.77490416]
-batch: 100, BATCH_AUC: [0.75728286], AUC: [0.77490362]
-batch: 120, BATCH_AUC: [0.75007016], AUC: [0.77490286]
+python -u infer.py -m config_bigdata.yaml
+```
+结果示例如下：
+```
+2020-12-29 08:37:44,799 - INFO - load model epoch 3
+2020-12-29 08:37:44,799 - INFO - start load model from output_model_all/3
+2020-12-29 08:37:46,474 - INFO - infer epoch: 3, batch_id: 1, auc: 0.758863, speed: 30552.84 ins/s
+2020-12-29 08:37:59,935 - INFO - infer epoch: 3, batch_id: 101, auc: 0.795907, speed: 3803.88 ins/s
+2020-12-29 08:38:13,412 - INFO - infer epoch: 3, batch_id: 201, auc: 0.797260, speed: 3799.29 ins/s
 ...
-batch: 720, BATCH_AUC: [0.76840144], AUC: [0.77489881]
-batch: 740, BATCH_AUC: [0.76659033], AUC: [0.77489854]
-batch: 760, BATCH_AUC: [0.77332639], AUC: [0.77489849]
-batch: 780, BATCH_AUC: [0.78361653], AUC: [0.77489874]
-Infer phase2 of epoch increment_dnn/3 done, use time: 52.7707588673, global metrics: BATCH_AUC=[0.78361653], AUC=[0.77489874]
-PaddleRec Finish
+2020-12-29 08:45:18,845 - INFO - infer epoch: 3, batch_id: 3401, auc: 0.797487, speed: 3828.59 ins/s
+2020-12-29 08:45:32,193 - INFO - infer epoch: 3, batch_id: 3501, auc: 0.797460, speed: 3835.83 ins/s
+2020-12-29 08:45:44,081 - INFO - infer epoch: 3 done, auc: 0.797427, : epoch time479.28 s
 ```
 
 ## 流式训练（OnlineLearning）任务启动及配置流程
@@ -394,13 +363,3 @@ PaddleRec Finish
     ```shell
     python -m paddlerec.run -m models/rank/gatedDnn/config.yaml
     ```
-### 动态图
-
-```
-# 进入模型目录
-cd models/rank/gatedDnn 
-# 训练
-python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 预测
-python -u infer.py -m config.yaml 
-```
