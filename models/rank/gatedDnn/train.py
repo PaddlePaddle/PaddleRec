@@ -124,7 +124,7 @@ def main(args):
     file_list = [
         os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
     ]
-    print("read data")
+
     dataset = CriteoDataset(file_list)
     train_dataloader = create_data_loader(dataset, place=place, config=config)
 
@@ -150,9 +150,6 @@ def main(args):
             label, sparse_tensor, dense_tensor = create_feeds(batch,
                                                               dense_input_dim)
 
-            # raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
-            # loss = create_loss(raw_pred_2d, label)
-
             raw_pred = dnn_model(sparse_tensor, dense_tensor)
             loss = paddle.nn.functional.log_loss(
             input=raw_pred, label=paddle.cast(label, "float32"))
@@ -161,8 +158,6 @@ def main(args):
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
-            # for auc
-            #predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
             predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
             auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
 

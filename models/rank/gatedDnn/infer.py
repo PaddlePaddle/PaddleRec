@@ -99,7 +99,6 @@ def main(args):
     file_list = [
         os.path.join(test_data_dir, x) for x in os.listdir(test_data_dir)
     ]
-    print("read data")
     dataset = CriteoDataset(file_list)
     test_dataloader = create_data_loader(dataset, place=place, config=config)
 
@@ -107,34 +106,30 @@ def main(args):
     epoch_begin = time.time()
     interval_begin = time.time()
 
-    for epoch_id in range(start_epoch + 1, end_epoch):
+    epoch_id = end_epoch - 1
+    logger.info("load model epoch {}".format(epoch_id))
+    model_path = os.path.join(model_load_path, str(epoch_id))
+    load_model(model_path, dnn_model)
+    for batch_id, batch in enumerate(test_dataloader()):
+        batch_size = len(batch[0])
 
-        logger.info("load model epoch {}".format(epoch_id))
-        model_path = os.path.join(model_load_path, str(epoch_id))
-        load_model(model_path, dnn_model)
-        for batch_id, batch in enumerate(test_dataloader()):
-            batch_size = len(batch[0])
+        label, sparse_tensor, dense_tensor = create_feeds(batch, dense_input_dim)
 
-            label, sparse_tensor, dense_tensor = create_feeds(batch,
-                                                              dense_input_dim)
+        raw_pred = dnn_model(sparse_tensor, dense_tensor)
+        predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
+        auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
 
-            raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
+        if batch_id % print_interval == 1:
+            logger.info(
+                "infer epoch: {}, batch_id: {}, auc: {:.6f}, speed: {:.2f} ins/s".
+                format(epoch_id, batch_id,
+                        auc_metric.accumulate(), print_interval * batch_size
+                        / (time.time() - interval_begin)))
+            interval_begin = time.time()
 
-            # for auc
-            predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
-            auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
-
-            if batch_id % print_interval == 1:
-                logger.info(
-                    "infer epoch: {}, batch_id: {}, auc: {:.6f}, speed: {:.2f} ins/s".
-                    format(epoch_id, batch_id,
-                           auc_metric.accumulate(), print_interval * batch_size
-                           / (time.time() - interval_begin)))
-                interval_begin = time.time()
-
-        logger.info(
-            "infer epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
-                epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
+    logger.info(
+        "infer epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
+            epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
 
 if __name__ == '__main__':
