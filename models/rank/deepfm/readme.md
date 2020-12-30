@@ -188,5 +188,13 @@ PaddleRec Finish
 ```
 
 ## 进阶使用
+
+```
+# 进入模型目录
+cd models/rank/deepfm 
+# 训练
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 预测
+python -u infer.py -m config.yaml 
   
 ## FAQ
