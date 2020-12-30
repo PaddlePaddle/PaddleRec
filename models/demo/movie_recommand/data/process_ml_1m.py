@@ -2,6 +2,7 @@
 import sys
 import random
 import json
+from py27hash.hash import hash27
 
 user_fea = ["userid", "gender", "age", "occupation"]
 movie_fea = ["movieid", "title", "genres"]
@@ -24,7 +25,7 @@ def process(path):
         movieid = arr[1]
         out_str = "time:%s\t%s\t%s\tlabel:%s" % (arr[3], user_dict[userid],
                                                  movie_dict[movieid], arr[2])
-        log_id = hash(out_str) % 1000000000
+        log_id = hash27(out_str) % 1000000000
         print("%s\t%s" % (log_id, out_str))
 
 
@@ -67,9 +68,9 @@ def to_hash(in_str):
     feas = in_str.split(":")[0]
     arr = in_str.split(":")[1]
     out_str = "%s:%s" % (feas, (arr + arr[::-1] + arr[::-2] + arr[::-3]))
-    hash_id = hash(out_str) % dict_size
+    hash_id = hash27(out_str) % dict_size
     if hash_id in hash_dict and hash_dict[hash_id] != out_str:
-        print(hash_id, out_str, hash(out_str))
+        print(hash_id, out_str, hash27(out_str))
         print("conflict")
         exit(-1)
 
@@ -123,7 +124,7 @@ def generate_online_data(path):
         label = arr[2]
         out_str = "time:%s\t%s\t%s\tlabel:%s" % ("1", user_dict[userid],
                                                  movie_dict[movieid], label)
-        log_id = hash(out_str) % 1000000000
+        log_id = hash27(out_str) % 1000000000
         res = "%s\t%s" % (log_id, out_str)
         arr = res.strip().split("\t")
         out_str = "logid:%s %s %s %s %s %s %s %s %s %s" % \

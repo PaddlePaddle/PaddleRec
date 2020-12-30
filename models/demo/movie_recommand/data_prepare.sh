@@ -1,3 +1,4 @@
+#!/bin/bash
 cd data
 
 echo "---> Download movielens 1M data ..."
