@@ -93,7 +93,7 @@ class GateDNNLayer(nn.Layer):
                                 ])  # emb shape [batchSize, sparse_feature_dim]
                 gate = paddle.sum(paddle.multiply(
                     emb, self.embedding_gate_weight[i]),
-                                  dim=-1)  # gate shape [batchSize]
+                                  axis=-1)  # gate shape [batchSize]
                 activate_gate = paddle.nn.functional.sigmoid(
                     gate)  # activate_gate [batchSize]
                 emb = paddle.multiply(
