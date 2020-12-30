@@ -54,10 +54,15 @@ GATE-DNN模型主要组成是一个`Embedding`层,三个`FC`层，以及相应�
         if self.use_embedding_gate:
             for i in range(len(self.embedding_gate_weight)):
                 emb = self.embedding(sparse_inputs[i])
-                emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])  # emb shape [batchSize, sparse_feature_dim]
-                gate = paddle.sum(paddle.multiply(emb, self.embedding_gate_weight[i]), dim=-1)# gate shape [batchSize]
-                activate_gate = paddle.nn.functional.sigmoid(gate) # activate_gate [batchSize]
-                emb = paddle.multiply(emb, activate_gate, axis=0) # emb shape [batchSize, sparse_feature_dim]
+                emb = paddle.reshape(
+                    emb, shape=[-1, self.sparse_feature_dim
+                                ])  # emb shape [batchSize, sparse_feature_dim]
+                gate = paddle.sum(paddle.multiply(
+                    emb, self.embedding_gate_weight[i]), axis=-1, keepdim=True)  # gate shape [batchSize,1]
+                activate_gate = paddle.nn.functional.sigmoid(
+                    gate)  # activate_gate [batchSize,1]
+                emb = paddle.multiply(
+                    emb, activate_gate)  # emb shape [batchSize, sparse_feature_dim]
                 sparse_embs.append(emb)
 
 ```
