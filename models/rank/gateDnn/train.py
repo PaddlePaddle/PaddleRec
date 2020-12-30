@@ -81,11 +81,11 @@ def create_model(config):
     use_embedding_gate = config.get('hyper_parameters.use_embedding_gate')
     use_hidden_gate = config.get('hyper_parameters.use_hidden_gate')
 
-    dnn_model = net.DNNLayer(sparse_feature_number, sparse_feature_dim,
-                             dense_feature_dim, sparse_input_slot - 1,
-                             fc_sizes, use_embedding_gate, use_hidden_gate)
+    gate_dnn_model = net.GateDNNLayer(
+        sparse_feature_number, sparse_feature_dim, dense_feature_dim,
+        sparse_input_slot - 1, fc_sizes, use_embedding_gate, use_hidden_gate)
 
-    return dnn_model
+    return gate_dnn_model
 
 
 def create_data_loader(dataset, place, config):
