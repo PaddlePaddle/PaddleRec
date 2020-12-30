@@ -14,6 +14,21 @@
 
 #workspace: "paddlerec.models.demo.movie_recommand"
 workspace: "./"
+
+dygraph:
+  train_data_dir: "data/train"
+  use_gpu: False
+  batch_size: 128
+  epochs: 5
+  print_interval: 20
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "increment_recall"
+  test_data_dir: "data/test"
+  infer_load_path: "increment_recall"
+  infer_start_epoch: 3
+  infer_end_epoch: 5
+  runner_result_dump_path: "recall/infer_result"
+
 # list of dataset
 dataset:
 - name: dataset_infer # name
@@ -31,7 +46,7 @@ hyper_parameters:
     learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
-  sparse_feature_number: 60000000
+  sparse_feature_number: 600000
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
@@ -46,7 +61,8 @@ runner:
   class: infer
   print_interval: 100000
   runner_result_dump_path: "{workspace}/recall/infer_result"
-  init_model_path: "increment_recall/9" # load model path
+  init_model_path: "increment_recall/4" # load model path
+  print_interval: 20
 
 
 #offline infer
