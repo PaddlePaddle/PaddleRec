@@ -95,40 +95,6 @@ runner:
   init_model_path: "increment_dnn/3" # load model path
   phases: [phase2]
 
-- name: ps_cluster
-  class: cluster_train
-  epochs: 2
-  device: cpu
-  fleet_mode: ps
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
-  print_interval: 1
-  phases: [phase1]
-
-- name: online_learning_cluster
-  class: cluster_train
-  runner_class_path: "{workspace}/online_learning_runner.py"
-  epochs: 2
-  device: cpu
-  fleet_mode: ps
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
-  print_interval: 1
-  phases: [phase1]
-
-- name: collective_cluster
-  class: cluster_train
-  epochs: 2
-  device: gpu
-  fleet_mode: collective
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
-  print_interval: 1
-  phases: [phase1]
-
 - name: single_multi_gpu_train
   class: train
   # num of epochs
