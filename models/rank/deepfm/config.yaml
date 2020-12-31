@@ -14,7 +14,6 @@
 
 # workspace
 workspace: "models/rank/deepfm"
-workspace: .
 
 dygraph:
   train_data_dir: "data/sample_data/train"
