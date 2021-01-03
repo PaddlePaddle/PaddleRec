@@ -13,40 +13,39 @@
 # limitations under the License.
 
 # workspace
-workspace: "models/rank/fm"
-#workspace: .
+workspace: .
 
 dygraph:
-  train_data_dir: "data/sample_data/train"
+  train_data_dir: "data/slot_train_data_full"
   use_gpu: True
-  batch_size: 2
-  epochs: 3
-  print_interval: 2
+  batch_size: 4096
+  epochs: 10
+  print_interval: 1
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model"
+  model_save_path: "output_model_all"
+  test_data_dir: "data/slot_test_data_full"
+  infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 3
+  infer_end_epoch: 10
 
 # list of dataset
 dataset:
 - name: dataloader_train # name of dataset to distinguish different datasets
-  batch_size: 2
+  batch_size: 512
   type: DataLoader # or QueueDataset 
-  data_path: "{workspace}/data/sample_data/train"
+  data_path: "{workspace}/data/slot_train_data_full"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_feature:13"
 - name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 2
+  batch_size: 512
   type: QueueDataset # or DataLoader 
-  data_path: "{workspace}/data/sample_data/train"
+  data_path: "{workspace}/data/slot_train_data_full"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_feature:13"
 - name: dataset_infer # name
-  batch_size: 2
+  batch_size: 512
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/sample_data/train"
+  data_path: "{workspace}/data/slot_test_data_full"
   sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
   dense_slots: "dense_feature:13"
 
@@ -76,7 +75,7 @@ runner:
   device: cpu
   save_checkpoint_interval: 2 # save model interval of epochs
   save_inference_interval: 4 # save inference
-  save_checkpoint_path: "increment_fm" # save checkpoint path
+  save_checkpoint_path: "increment_wide_deep" # save checkpoint path
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: [] # feed vars of save inference
   save_inference_fetch_varnames: [] # fetch vars of save inference
@@ -89,7 +88,7 @@ runner:
   epochs: 1
   # device to run training or infer
   device: cpu
-  init_model_path: "increment_fm/3" # load model path
+  init_model_path: "increment_wide_deep/3" # load model path
   phases: [phase2]
 
 # runner will run all the phase in each epoch

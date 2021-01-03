@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import math
-from collections import OrderedDict
+import paddle
 
-import paddle.fluid as fluid
-
+from paddlerec.core.metrics import AUC
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+from fm_net import FMLayer
 
 
 class Model(ModelBase):
@@ -26,110 +26,55 @@ class Model(ModelBase):
         ModelBase.__init__(self, config)
 
     def _init_hyper_parameters(self):
-        self.is_distributed = True if envs.get_fleet_mode().upper(
-        ) == "PSLIB" else False
+        self.is_distributed = False
+        self.distributed_embedding = False
+
+        if envs.get_fleet_mode().upper() == "PSLIB":
+            self.is_distributed = True
+
+        if envs.get_global_env("hyper_parameters.distributed_embedding",
+                               0) == 1:
+            self.distributed_embedding = True
+
         self.sparse_feature_number = envs.get_global_env(
-            "hyper_parameters.sparse_feature_number", None)
+            "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = envs.get_global_env(
-            "hyper_parameters.sparse_feature_dim", None)
-        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse",
-                                             False)
-        self.reg = envs.get_global_env("hyper_parameters.reg", 1e-4)
-        self.num_field = envs.get_global_env("hyper_parameters.num_field",
-                                             None)
+            "hyper_parameters.sparse_feature_dim")
+        self.sparse_inputs_slot = envs.get_global_env(
+            "hyper_parameters.sparse_inputs_slots")
+        self.dense_input_dim = envs.get_global_env(
+            "hyper_parameters.dense_input_dim")
+        self.learning_rate = envs.get_global_env(
+            "hyper_parameters.optimizer.learning_rate")
 
-    def net(self, inputs, is_infer=False):
-        raw_feat_idx = self._sparse_data_var[1]  # (batch_size * num_field) * 1
-        raw_feat_value = self._dense_data_var[0]  # batch_size * num_field
-        self.label = self._sparse_data_var[0]  # batch_size * 1
+    def net(self, input, is_infer=False):
+        self.sparse_inputs = self._sparse_data_var[1:]
+        self.dense_input = self._dense_data_var[0]
+        self.label_input = self._sparse_data_var[0]
+        sparse_number = self.sparse_inputs_slot - 1
+        assert sparse_number == len(self.sparse_inputs)
 
-        init_value_ = 0.1
+        fm_model = FMLayer(self.sparse_feature_number, self.sparse_feature_dim,
+                           self.dense_input_dim, sparse_number)
 
-        feat_idx = raw_feat_idx
-        feat_value = fluid.layers.reshape(
-            raw_feat_value,
-            [-1, self.num_field, 1])  # batch_size * num_field * 1
+        pred = fm_model(self.sparse_inputs, self.dense_input)
 
-        # ------------------------- first order term --------------------------
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        first_weights_re = fluid.embedding(
-            input=feat_idx,
-            is_sparse=self.is_sparse,
-            is_distributed=self.is_distributed,
-            dtype='float32',
-            size=[self.sparse_feature_number + 1, 1],
-            padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0, scale=init_value_),
-                regularizer=fluid.regularizer.L1DecayRegularizer(self.reg))
-        )  # (batch_size * num_field) * 1 * 1(embedding_size)
-        first_weights = fluid.layers.reshape(
-            first_weights_re,
-            shape=[-1, self.num_field, 1])  # batch_size * num_field * 1
-        y_first_order = fluid.layers.reduce_sum((first_weights * feat_value),
-                                                1)  # batch_size * 1
-        b_linear = fluid.layers.create_parameter(
-            shape=[1],
-            dtype='float32',
-            default_initializer=fluid.initializer.ConstantInitializer(
-                value=0))  # 1
-        # ------------------------- second order term --------------------------
+        auc = AUC(input=predict_2d,
+                  label=paddle.cast(
+                      x=self.label_input, dtype='int64'))
 
-        feat_embeddings_re = fluid.embedding(
-            input=feat_idx,
-            is_sparse=self.is_sparse,
-            is_distributed=self.is_distributed,
-            dtype='float32',
-            size=[self.sparse_feature_number + 1, self.sparse_feature_dim],
-            padding_idx=0,
-            param_attr=fluid.ParamAttr(
-                initializer=fluid.initializer.TruncatedNormalInitializer(
-                    loc=0.0,
-                    scale=init_value_ /
-                    math.sqrt(float(self.sparse_feature_dim))))
-        )  # (batch_size * num_field) * 1 * embedding_size
-        feat_embeddings = fluid.layers.reshape(
-            feat_embeddings_re,
-            shape=[-1, self.num_field, self.sparse_feature_dim
-                   ])  # batch_size * num_field * embedding_size
-        # batch_size * num_field * embedding_size
-        feat_embeddings = feat_embeddings * feat_value
+        self._metrics["AUC"] = auc
+        if is_infer:
+            self._infer_results["AUC"] = auc
+            return
 
-        # sum_square part
-        summed_features_emb = fluid.layers.reduce_sum(
-            feat_embeddings, 1)  # batch_size * embedding_size
-        summed_features_emb_square = fluid.layers.square(
-            summed_features_emb)  # batch_size * embedding_size
-
-        # square_sum part
-        squared_features_emb = fluid.layers.square(
-            feat_embeddings)  # batch_size * num_field * embedding_size
-        squared_sum_features_emb = fluid.layers.reduce_sum(
-            squared_features_emb, 1)  # batch_size * embedding_size
-
-        y_FM = 0.5 * fluid.layers.reduce_sum(
-            summed_features_emb_square - squared_sum_features_emb,
-            dim=1,
-            keep_dim=True)  # batch_size * 1
-
-        # ------------------------- Predict --------------------------
-
-        self.predict = fluid.layers.sigmoid(b_linear + y_first_order + y_FM)
-
-        cost = fluid.layers.log_loss(
-            input=self.predict, label=fluid.layers.cast(self.label,
-                                                        "float32"))  # log_loss
-        avg_cost = fluid.layers.reduce_sum(cost)
-
+        cost = paddle.nn.functional.log_loss(
+            input=pred, label=paddle.cast(
+                self.label_input, dtype="float32"))
+        avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
 
-        predict_2d = fluid.layers.concat([1 - self.predict, self.predict], 1)
-        label_int = fluid.layers.cast(self.label, 'int64')
-        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
-                                                     label=label_int,
-                                                     slide_steps=0)
-        self._metrics["AUC"] = auc_var
-        self._metrics["BATCH_AUC"] = batch_auc_var
-        if is_infer:
-            self._infer_results["AUC"] = auc_var
+    def infer_net(self):
+        pass
