@@ -45,8 +45,6 @@ class DeepFMLayer(nn.Layer):
         y_dnn = self.dnn(feat_embeddings)
 
         predict = F.sigmoid(y_first_order + y_second_order + y_dnn)
-        #predict = F.sigmoid(y_first_order + y_second_order + self.bias)
-        #predict = F.sigmoid(y_dnn)
 
         return predict
 
@@ -61,7 +59,7 @@ class FM(nn.Layer):
         self.dense_emb_dim = self.sparse_feature_dim
         self.sparse_num_field = sparse_num_field
         self.init_value_ = 0.1
-
+        # sparse coding
         self.embedding_one = paddle.nn.Embedding(
             sparse_feature_number,
             1,
@@ -71,9 +69,6 @@ class FM(nn.Layer):
                     mean=0.0,
                     std=self.init_value_ /
                     math.sqrt(float(self.sparse_feature_dim)))))
-        #weight_attr=paddle.ParamAttr(
-        #    name="SparseOne",
-        #    initializer=paddle.nn.initializer.Uniform()))
 
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
@@ -84,9 +79,6 @@ class FM(nn.Layer):
                     mean=0.0,
                     std=self.init_value_ /
                     math.sqrt(float(self.sparse_feature_dim)))))
-        #weight_attr=paddle.ParamAttr(
-        #    name="SparseFeatFactors",
-        #    initializer=paddle.nn.initializer.Uniform()))
 
         # dense coding
         self.dense_w_one = paddle.create_parameter(
@@ -110,24 +102,12 @@ class FM(nn.Layer):
         y_first_order = paddle.sum(sparse_emb_one, 1) + paddle.sum(
             dense_emb_one, 1)
 
-        #first_weights = paddle.reshape(
-        #    first_weights_re,
-        #    shape=[-1, self.args.num_field, 1])  # None * num_field * 1
-        #y_first_order = paddle.sum(first_weights * feat_value, 1)
-
         # -------------------- second order term  --------------------
         sparse_embeddings = self.embedding(sparse_inputs_concat)
         dense_inputs_re = paddle.unsqueeze(dense_inputs, axis=2)
         dense_embeddings = paddle.multiply(dense_inputs_re, self.dense_w)
         feat_embeddings = paddle.concat([sparse_embeddings, dense_embeddings],
                                         1)
-        #feat_embeddings_re = self.embedding(feat_idx)
-        #feat_embeddings = paddle.reshape(
-        #    feat_embeddings_re,
-        #    shape=[-1, self.args.num_field, self.args.embedding_size
-        #           ])  # None * num_field * embedding_size
-        #feat_embeddings = feat_embeddings * feat_value  # None * num_field * embedding_size
-
         # sum_square part
         summed_features_emb = paddle.sum(feat_embeddings,
                                          1)  # None * embedding_size
@@ -158,7 +138,6 @@ class DNN(paddle.nn.Layer):
         self.num_field = num_field
         self.layer_sizes = layer_sizes
 
-        #sizes = [sparse_feature_dim * num_field + dense_feature_dim
         sizes = [sparse_feature_dim * num_field] + self.layer_sizes + [1]
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
         self._mlp_layers = []
