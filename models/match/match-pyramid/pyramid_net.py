@@ -44,7 +44,7 @@ class MatchPyramidLayer(nn.Layer):
             self.emb = paddle.nn.Embedding(
                 self.vocab_size,
                 self.emb_size,
-                padding_idx=0,
+                padding_idx=193367,
                 weight_attr=paddle.ParamAttr(
                     name="word_embedding",
                     initializer=nn.initializer.Assign(embedding_array)))
@@ -52,7 +52,7 @@ class MatchPyramidLayer(nn.Layer):
             self.emb = paddle.nn.Embedding(
                 self.vocab_size,
                 self.emb_size,
-                padding_idx=0,
+                padding_idx=193367,
                 weight_attr=paddle.ParamAttr(
                     name="word_embedding",
                     initializer=nn.initializer.XavierNormal()))

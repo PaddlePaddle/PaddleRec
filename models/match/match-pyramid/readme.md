@@ -148,7 +148,7 @@ data/embed_wiki-pdc_d50_norm
 在动态图中，训练和预测分离开，您需要在cofig.yaml以及config_bigdata.yaml中的dygraph部分配置动态图中需要的参数。  
 ```
 # 进入模型目录
-cd models/match/dssm 
+cd models/match/match-pyramid
 # 训练
 python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 预测
