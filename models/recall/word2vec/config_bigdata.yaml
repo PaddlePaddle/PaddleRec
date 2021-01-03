@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #workspace: "models/recall/word2vec"
-workspace: ./
+workspace: .
 
 dygraph:
   train_data_dir: "data/all_train"
