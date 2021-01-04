@@ -63,6 +63,7 @@ hyper_parameters:
   pool_stride: [6,50]
   pool_type: "max"
   pool_padding: "VALID"
+  
 
 mode: [train_runner , infer_runner]
 # config of each runner.
