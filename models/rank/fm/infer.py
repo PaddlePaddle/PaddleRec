@@ -15,12 +15,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import deepfm_net as net
+import fm_net as net
 import time
 import logging
 
 from utils import load_yaml, get_abs_model, save_model, load_model
-from reader_dygraph import DeepFMDataset
+from criteo_reader_dygraph import CriteoDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -37,27 +37,30 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, wide_input_dim, deep_input_dim):
+def create_feeds(batch, dense_feature_dim):
     sparse_tensor = []
-    label = paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1, 1))
-    wide_tensor = paddle.to_tensor(batch[1].numpy().astype('float32').reshape(
-        -1, wide_input_dim))
-    deep_tensor = paddle.to_tensor(batch[2].numpy().astype('float32').reshape(
-        -1, deep_input_dim))
-    return label, wide_tensor, deep_tensor
+    for b in batch[:-1]:
+        sparse_tensor.append(
+            paddle.to_tensor(b.numpy().astype('int64').reshape(-1, 1)))
+    dense_tensor = paddle.to_tensor(batch[-1].numpy().astype('float32')
+                                    .reshape(-1, dense_feature_dim))
+
+    label = sparse_tensor[0]
+    return label, sparse_tensor[1:], dense_tensor
 
 
 def create_model(config):
-    wide_input_dim = config.get('hyper_parameters.wide_input_dim')
-    deep_input_dim = config.get('hyper_parameters.deep_input_dim')
-    hidden1_units = config.get("hyper_parameters.hidden1_units")
-    hidden2_units = config.get("hyper_parameters.hidden2_units")
-    hidden3_units = config.get("hyper_parameters.hidden3_units")
+    sparse_feature_number = config.get(
+        "hyper_parameters.sparse_feature_number")
+    sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
+    sparse_fea_num = config.get('hyper_parameters.sparse_fea_num')
+    dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
+    sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
 
-    layer_sizes = [hidden1_units, hidden2_units, hidden3_units]
-    deepfm_model = net.DeepFMLayer(wide_input_dim, deep_input_dim, layer_sizes)
+    fm_model = net.FMLayer(sparse_feature_number, sparse_feature_dim,
+                           dense_feature_dim, sparse_input_slot - 1)
 
-    return deepfm_model
+    return fm_model
 
 
 def create_data_loader(dataset, place, config):
@@ -77,8 +80,7 @@ def main(args):
     model_load_path = config.get("dygraph.infer_load_path", "model_output")
     start_epoch = config.get("dygraph.infer_start_epoch", -1)
     end_epoch = config.get("dygraph.infer_end_epoch", 10)
-    wide_input_dim = config.get('hyper_parameters.wide_input_dim', None)
-    deep_input_dim = config.get('hyper_parameters.deep_input_dim', None)
+    dense_input_dim = config.get('hyper_parameters.dense_input_dim', None)
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
@@ -89,12 +91,12 @@ def main(args):
                model_load_path))
     print("***********************************")
 
-    deepfm_model = create_model(config)
+    fm_model = create_model(config)
     file_list = [
         os.path.join(test_data_dir, x) for x in os.listdir(test_data_dir)
     ]
     print("read data")
-    dataset = DeepFMDataset(file_list)
+    dataset = CriteoDataset(file_list)
     test_dataloader = create_data_loader(dataset, place=place, config=config)
 
     auc_metric = paddle.metric.Auc("ROC")
@@ -106,43 +108,32 @@ def main(args):
 
         logger.info("load model epoch {}".format(epoch_id))
         model_path = os.path.join(model_load_path, str(epoch_id))
-        load_model(model_path, deepfm_model)
+        load_model(model_path, fm_model)
         for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
-            label, wide_tensor, deep_tensor = create_feeds(
-                batch, wide_input_dim, deep_input_dim)
+            label, sparse_tensor, dense_tensor = create_feeds(batch,
+                                                              dense_input_dim)
+            pred = fm_model(sparse_tensor, dense_tensor)
 
-            prediction = deepfm_model.forward(wide_tensor, deep_tensor)
-
-            pred = paddle.nn.functional.sigmoid(
-                paddle.clip(
-                    prediction, min=-15.0, max=15.0),
-                name="prediction")
             label_int = paddle.cast(label, 'int64')
 
-            # for acc
-            correct = acc_metric.compute(pred, label_int)
-            acc_metric.update(correct)
             # for auc
             predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
             auc_metric.update(
                 preds=predict_2d.numpy(), labels=label_int.numpy())
 
-            if batch_id % print_interval == 1:
+            if batch_id % print_interval == 0:
                 logger.info(
-                    "infer epoch: {}, batch_id: {}, auc: {:.6f}, acc: {:.5f}, speed: {:.2f} ins/s".
+                    "infer epoch: {}, batch_id: {}, auc: {:.6f}, speed: {:.2f} ins/s".
                     format(epoch_id, batch_id,
-                           auc_metric.accumulate(),
-                           acc_metric.accumulate(), print_interval * batch_size
+                           auc_metric.accumulate(), print_interval * batch_size
                            / (time.time() - interval_begin)))
                 interval_begin = time.time()
 
         logger.info(
-            "infer epoch: {} done, auc: {:.6f}, acc: {:.5f}, epoch time{:.2f} s".
-            format(epoch_id,
-                   auc_metric.accumulate(),
-                   acc_metric.accumulate(), time.time() - epoch_begin))
+            "infer epoch: {} done, auc: {:.6f}, epoch time{:.2f} s".format(
+                epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
 
 if __name__ == '__main__':
