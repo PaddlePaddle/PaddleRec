@@ -14,6 +14,15 @@
 
 workspace: "./"
 
+dygraph:
+  train_data_dir: "data/train"
+  use_gpu: False
+  batch_size: 128
+  epochs: 5
+  print_interval: 20
+  # model_init_path: "output_model/0" # init model
+  model_save_path: "increment_rank"
+
 # list of dataset
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
@@ -31,7 +40,7 @@ hyper_parameters:
     learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
-  sparse_feature_number: 60000000
+  sparse_feature_number: 600000
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
@@ -44,8 +53,9 @@ runner:
   class: train
   save_checkpoint_interval: 1 # save model interval of epochs
   save_checkpoint_path: "increment_rank" # save checkpoint path
-  epochs: 10
+  epochs: 5
   device: cpu
+  print_interval: 20
 
 #train
 phase:
