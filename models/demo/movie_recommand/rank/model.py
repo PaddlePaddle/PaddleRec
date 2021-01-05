@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import math
-
-import paddle.fluid as fluid
-
+import paddle
+import paddle.nn as nn
+import paddle.nn.functional as F
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+from rank_net import DNNLayer
 
 
 class Model(ModelBase):
@@ -34,54 +35,17 @@ class Model(ModelBase):
         self.learning_rate = envs.get_global_env(
             "hyper_parameters.optimizer.learning_rate")
         self.hidden_layers = envs.get_global_env("hyper_parameters.fc_sizes")
+        self.batch_size = envs.get_global_env("dygraph.batch_size")
 
     def net(self, input, is_infer=False):
         self.user_sparse_inputs = self._sparse_data_var[2:6]
         self.mov_sparse_inputs = self._sparse_data_var[6:9]
-
         self.label_input = self._sparse_data_var[-1]
 
-        def fc(input):
-            fcs = [input]
-            for size in self.hidden_layers:
-                output = fluid.layers.fc(
-                    input=fcs[-1],
-                    size=size,
-                    act='relu',
-                    param_attr=fluid.ParamAttr(
-                        initializer=fluid.initializer.Normal(
-                            scale=1.0 / math.sqrt(fcs[-1].shape[1]))))
-                fcs.append(output)
-            return fcs[-1]
-
-        def embedding_layer(input):
-            emb = fluid.layers.embedding(
-                input=input,
-                is_sparse=True,
-                is_distributed=self.is_distributed,
-                size=[self.sparse_feature_number, self.sparse_feature_dim],
-                param_attr=fluid.ParamAttr(
-                    name="emb", initializer=fluid.initializer.Uniform()), )
-            emb_sum = fluid.layers.sequence_pool(input=emb, pool_type='sum')
-            return emb_sum
-
-        user_sparse_embed_seq = list(
-            map(embedding_layer, self.user_sparse_inputs))
-        mov_sparse_embed_seq = list(
-            map(embedding_layer, self.mov_sparse_inputs))
-        concated = fluid.layers.concat(
-            user_sparse_embed_seq + mov_sparse_embed_seq, axis=1)
-
-        fc_input = fc(concated)
-
-        sim = fluid.layers.fc(
-            input=fc_input,
-            size=1,
-            act='sigmoid',
-            param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
-                scale=1.0 / math.sqrt(fc_input.shape[1]))))
-
-        predict = fluid.layers.scale(sim, scale=5)
+        rank_model = DNNLayer(self.sparse_feature_number,
+                              self.sparse_feature_dim, self.hidden_layers)
+        predict = rank_model(self.batch_size, self.user_sparse_inputs,
+                             self.mov_sparse_inputs, self.label_input)
         self.predict = predict
 
         if is_infer:
@@ -91,17 +55,9 @@ class Model(ModelBase):
             self._infer_results["predict"] = self.predict
             return
 
-        cost = fluid.layers.square_error_cost(
-            self.predict,
-            fluid.layers.cast(
+        cost = F.square_error_cost(
+            self.predict, paddle.cast(
                 x=self.label_input, dtype='float32'))
-        avg_cost = fluid.layers.reduce_mean(cost)
+        avg_cost = paddle.mean(cost)
         self._cost = avg_cost
         self._metrics["LOSS"] = avg_cost
-
-    def optimizer(self):
-        optimizer = fluid.optimizer.Adam(self.learning_rate, lazy_mode=True)
-        return optimizer
-
-    def infer_net(self):
-        pass
