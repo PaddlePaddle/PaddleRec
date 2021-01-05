@@ -4,3 +4,4 @@ output
 paddlerec.egg-info/
 *~
 *.pyc
+*.DS_Store
