@@ -17,17 +17,17 @@ workspace: "models/multitask/esmm"
 workspace: .
 
 dygraph:
-  train_data_dir: "data/train"
-  use_gpu: False
-  batch_size: 2
-  epochs: 3
-  print_interval: 2
+  train_data_dir: "data/train_data"
+  use_gpu: True
+  batch_size: 1024
+  epochs: 10
+  print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/train"
-  infer_load_path: "output_model"
+  model_save_path: "output_model_all"
+  test_data_dir: "data/test_data"
+  infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 3
+  infer_end_epoch: 10
 
 dataset:
   - name: dataset_train

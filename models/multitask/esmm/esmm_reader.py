@@ -17,6 +17,7 @@ from __future__ import print_function
 from collections import defaultdict
 
 from paddlerec.core.reader import ReaderBase
+from paddlerec.core.utils import envs
 
 
 class Reader(ReaderBase):
@@ -27,6 +28,7 @@ class Reader(ReaderBase):
             '216', '508', '509', '702', '853', '301'
         ]
         self.all_field_id_dict = defaultdict(int)
+        self.max_len = envs.get_global_env("hyper_parameters.max_len", 3)
         for i, field_id in enumerate(all_field_id):
             self.all_field_id_dict[field_id] = [False, i]
 
@@ -45,7 +47,7 @@ class Reader(ReaderBase):
 
             padding = 0
             output = [(field_id, []) for field_id in self.all_field_id_dict]
-
+            output_list = []
             for elem in features[4:]:
                 field_id, feat_id = elem.strip().split(':')
                 if field_id not in self.all_field_id_dict:
@@ -56,10 +58,12 @@ class Reader(ReaderBase):
 
             for field_id in self.all_field_id_dict:
                 visited, index = self.all_field_id_dict[field_id]
-                if visited:
-                    self.all_field_id_dict[field_id][0] = False
+                self.all_field_id_dict[field_id][0] = False
+                if len(output[index][1]) > self.max_len:
+                    del output[index][1][self.max_len:]
                 else:
-                    output[index][1].append(padding)
+                    for ii in range(self.max_len - len(output[index][1])):
+                        output[index][1].append(padding)
             output.append(('ctr', [ctr]))
             output.append(('cvr', [cvr]))
             yield output
