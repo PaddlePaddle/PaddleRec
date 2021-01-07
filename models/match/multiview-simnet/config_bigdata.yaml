@@ -16,7 +16,7 @@
 workspace: "/home/workspace/PaddleRec/models/match/multiview-simnet"
 
 dygraph:
-  train_data_dir: "data/train" 
+  train_data_dir: "data/big_train" 
   use_gpu: False 
   batch_size_train: 128
   batch_size_infer: 1
@@ -24,7 +24,7 @@ dygraph:
   print_interval: 1
   #model_init_path: "output_model/0" # init model
   model_save_path: "increment"
-  test_data_dir: "data/test"
+  test_data_dir: "data/big_test"
   infer_load_path: "increment"
   infer_start_epoch: 0
   infer_end_epoch: 2
@@ -34,12 +34,12 @@ dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
   batch_size: 128
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
+  data_path: "{workspace}/data/big_train"
   sparse_slots: "0 1 2"
 - name: dataset_infer # name
   batch_size: 1
   type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/test"
+  data_path: "{workspace}/data/big_test"
   sparse_slots: "0 1"
 
 # hyper parameters of user-defined network
