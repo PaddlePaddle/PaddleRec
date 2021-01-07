@@ -32,7 +32,7 @@ f.close()
 label = []
 filename = './data/label.txt'
 f = open(filename, "r")
-f.readline()
+# f.readline()
 num = 0
 for line in f.readlines():
     num = num + 1
@@ -54,16 +54,25 @@ for line in open(filename):
 
 filename = './data/testquery.txt'
 f = open(filename, "r")
-f.readline()
+# f.readline()
 query = []
 for line in f.readlines():
     line = line.strip()
     query.append(line)
 f.close()
 
+
+def takeFirst(x):
+    return x[0]
+
+
 filename = 'pair.txt'
-f = open(filename, "w")
+line = []
 for i in range(len(sim)):
-    #print(i)
-    f.write(str(query[i]) + "\t" + str(sim[i]) + "\t" + str(label[i]) + "\n")
+    line.append([str(query[i]), str(sim[i]), str(label[i])])
+    # f.write(str(query[i]) + "\t" + str(sim[i]) + "\t" + str(label[i]) + "\n")
+line.sort(key=takeFirst)
+f = open(filename, "w")
+for i in line:
+    f.write(i[0] + "\t" + i[1] + "\t" + i[2] + "\n")
 f.close()
