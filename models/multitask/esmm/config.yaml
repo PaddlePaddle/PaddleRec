@@ -14,7 +14,7 @@
 
 
 workspace: "models/multitask/esmm"
-workspace: .
+#workspace: .
 
 dygraph:
   train_data_dir: "data/train"
