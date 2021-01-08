@@ -15,5 +15,6 @@
 #!/bin/bash
 echo "................run................."
 python -m paddlerec.run -m ./config_bigdata.yaml &>result.txt
+cp result.txt result_beifen.txt
 python transform.py
 python ../../../tools/cal_pos_neg.py pair.txt

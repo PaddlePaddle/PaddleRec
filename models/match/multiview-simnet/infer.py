@@ -47,23 +47,6 @@ def create_feeds(batch):
     return inputs
 
 
-def create_loss(batch_size, margin, cos_pos, cos_neg):
-    loss_part1 = paddle.subtract(
-        paddle.full(
-            shape=[batch_size, 1], fill_value=margin, dtype='float32'),
-        cos_pos)
-
-    loss_part2 = paddle.add(loss_part1, cos_neg)
-
-    loss_part3 = paddle.maximum(
-        paddle.full(
-            shape=[batch_size, 1], fill_value=0.0, dtype='float32'),
-        loss_part2)
-
-    avg_cost = paddle.mean(loss_part3)
-    return avg_cost
-
-
 def create_model(config):
     query_encoder = config.get('hyper_parameters.query_encoder', "gru")
     title_encoder = config.get('hyper_parameters.title_encoder', "gru")
@@ -73,11 +56,13 @@ def create_model(config):
     emb_dim = config.get('hyper_parameters.emb_dim', 128)
     hidden_size = config.get('hyper_parameters.hidden_size', 128)
     margin = config.get('hyper_parameters.margin', 0.1)
-    batch_size = config.get('dygraph.batch_size_infer', None)
+    query_len = config.get('hyper_parameters.query_len', 79)
+    pos_len = config.get('hyper_parameters.pos_len', 99)
+    neg_len = config.get('hyper_parameters.neg_len', 90)
 
     simnet_model = net.MultiviewSimnetLayer(
         query_encoder, title_encoder, query_encode_dim, title_encode_dim,
-        emb_size, emb_dim, hidden_size, margin, batch_size)
+        emb_size, emb_dim, hidden_size, margin, query_len, pos_len, neg_len)
 
     return simnet_model
 

@@ -76,11 +76,13 @@ def create_model(config):
     emb_dim = config.get('hyper_parameters.emb_dim', 128)
     hidden_size = config.get('hyper_parameters.hidden_size', 128)
     margin = config.get('hyper_parameters.margin', 0.1)
-    batch_size = config.get('dygraph.batch_size_train', None)
+    query_len = config.get('hyper_parameters.query_len', 79)
+    pos_len = config.get('hyper_parameters.pos_len', 99)
+    neg_len = config.get('hyper_parameters.neg_len', 90)
 
     simnet_model = net.MultiviewSimnetLayer(
         query_encoder, title_encoder, query_encode_dim, title_encode_dim,
-        emb_size, emb_dim, hidden_size, margin, batch_size)
+        emb_size, emb_dim, hidden_size, margin, query_len, pos_len, neg_len)
 
     return simnet_model
 
