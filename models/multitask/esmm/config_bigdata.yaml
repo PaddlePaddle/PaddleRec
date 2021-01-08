@@ -31,14 +31,14 @@ dygraph:
 
 dataset:
   - name: dataset_train
-    batch_size: 5
+    batch_size: 1024
     type: QueueDataset
-    data_path: "{workspace}/data/train"
+    data_path: "{workspace}/data/train_data"
     data_converter: "{workspace}/esmm_reader.py"
   - name: dataset_infer
-    batch_size: 5
+    batch_size: 1024
     type: QueueDataset
-    data_path: "{workspace}/data/test"
+    data_path: "{workspace}/data/test_data"
     data_converter: "{workspace}/esmm_reader.py"
 
 hyper_parameters:
@@ -59,16 +59,16 @@ runner:
   - name: train_runner
     class: train
     device: cpu
-    epochs: 3
+    epochs: 10
     save_checkpoint_interval: 1
     save_inference_interval: 4
-    save_checkpoint_path: "increment_esmm"
+    save_checkpoint_path: "increment_esmm_all"
     save_inference_path: "inference"
-    print_interval: 2
+    print_interval: 10
     phases: [train]
   - name: infer_runner
     class: infer
-    init_model_path: "increment_esmm/1"
+    init_model_path: "increment_esmm_all/9"
     device: cpu
     print_interval: 1
     phases: [infer]
