@@ -21,14 +21,14 @@ dygraph:
   train_data_dir: "data/senta_data/train"
   use_gpu: True
   batch_size: 128
-  epochs: 16
-  print_interval: 100
+  epochs: 10
+  print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all"
   test_data_dir: "data/senta_data/test"
   infer_load_path: "output_model_all"
   infer_start_epoch: -1
-  infer_end_epoch: 16
+  infer_end_epoch: 10
 
 dataset:
 - name: data1
@@ -62,11 +62,11 @@ mode: [train_runner,infer_runner]
 runner:
 - name: train_runner
   class: train
-  epochs: 16
+  epochs: 10
   device: gpu
   save_checkpoint_interval: 1
   save_inference_interval: 1
-  save_checkpoint_path: "increment"
+  save_checkpoint_path: "increment_textcnn_all"
   save_inference_path: "inference"
   save_inference_feed_varnames: []
   save_inference_fetch_varnames: []
@@ -78,7 +78,7 @@ runner:
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/15" # load model path
+  init_model_path: "increment_textcnn_all" # load model path
   phases: phase_infer
 
   
