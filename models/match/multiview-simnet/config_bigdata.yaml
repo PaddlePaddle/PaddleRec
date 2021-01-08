@@ -13,26 +13,26 @@
 # limitations under the License.
 
 # workspace
-workspace: "/home/workspace/PaddleRec/models/match/multiview-simnet"
+workspace: "models/match/multiview-simnet"
 
 dygraph:
   train_data_dir: "data/big_train" 
   use_gpu: False 
-  batch_size_train: 128
+  batch_size_train: 1280
   batch_size_infer: 1
-  epochs: 2
+  epochs: 1
   print_interval: 1
   #model_init_path: "output_model/0" # init model
   model_save_path: "increment"
   test_data_dir: "data/big_test"
   infer_load_path: "increment"
-  infer_start_epoch: 0
-  infer_end_epoch: 2
+  infer_start_epoch: -1
+  infer_end_epoch: 1
 
 # list of dataset
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 128
+  batch_size: 1280
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/big_train"
   sparse_slots: "0 1 2"
@@ -56,6 +56,9 @@ hyper_parameters:
   embedding_dim: 128
   hidden_size: 128
   margin: 0.1
+  query_len: 79
+  pos_len: 99
+  neg_len: 90
 
 # select runner by name
 mode: [train_runner,infer_runner]
@@ -65,7 +68,7 @@ runner:
 - name: train_runner
   class: train
   # num of epochs
-  epochs: 2
+  epochs: 1
   # device to run training or infer
   device: cpu
   save_checkpoint_interval: 1 # save model interval of epochs
@@ -82,7 +85,7 @@ runner:
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/1" # load model path
+  init_model_path: "increment/0" # load model path
   phases: phase2
 
 # runner will run all the phase in each epoch

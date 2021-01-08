@@ -127,6 +127,22 @@ equal_num: 0
 正序率： 0.931873310694
 13446 983
 ```
+
+## 动态图
+
+```
+# 进入模型目录
+cd models/match/match-pyramid
+# 训练
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 预测
+python -u infer.py -m config.yaml 
+```
+如需使用动态图进行效果复现，可以按以下步骤进行：
+1. 执行 python -u train.py -m config_bigdata.yaml训练
+2. 将一键运行脚本run.sh的第一个命令：
+“python -m paddlerec.run -m ./config_bigdata.yaml &> result.txt” 改为 “python -u infer.py -m config_bigdata.yaml &>result.txt”  
+3. 执行sh run.sh
 ## 进阶使用
   
 ## FAQ

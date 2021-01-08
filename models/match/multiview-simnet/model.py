@@ -43,6 +43,9 @@ class Model(ModelBase):
 
         self.hidden_size = envs.get_global_env("hyper_parameters.hidden_size")
         self.margin = envs.get_global_env("hyper_parameters.margin")
+        self.query_len = envs.get_global_env("hyper_parameters.query_len")
+        self.pos_len = envs.get_global_env("hyper_parameters.pos_len")
+        self.neg_len = envs.get_global_env("hyper_parameters.neg_len")
 
     def net(self, input, is_infer=False):
         self.q_slots = self._sparse_data_var[0:1]
@@ -59,7 +62,8 @@ class Model(ModelBase):
         simnet_model = MultiviewSimnetLayer(
             self.query_encoder, self.title_encoder, self.query_encode_dim,
             self.title_encode_dim, self.emb_size, self.emb_dim,
-            self.hidden_size, self.margin, self.batch_size)
+            self.hidden_size, self.margin, self.query_len, self.pos_len,
+            self.neg_len)
         cos_pos, cos_neg = simnet_model(inputs, is_infer)
 
         if is_infer:
