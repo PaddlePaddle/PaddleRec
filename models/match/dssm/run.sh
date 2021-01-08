@@ -13,8 +13,6 @@
 # limitations under the License.
 #!/bin/bash
 echo "................run................."
-python -m paddlerec.run -m ./config.yaml &> result.txt
+python -m paddlerec.run -m ./config_bigdata.yaml &> result.txt
 python transform.py
-sort -t $'\t' -k1,1 -k 2nr,2 pair.txt >result.txt
-rm -f pair.txt
-python ../../../tools/cal_pos_neg.py result.txt
+python ../../../tools/cal_pos_neg.py pair.txt
