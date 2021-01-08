@@ -15,7 +15,6 @@
 import math
 import paddle
 
-from paddlerec.core.metrics import AUC
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
 from fm_net import FMLayer
@@ -61,9 +60,10 @@ class Model(ModelBase):
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        auc = AUC(input=predict_2d,
-                  label=paddle.cast(
-                      x=self.label_input, dtype='int64'))
+        auc, batch_auc, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                    label=self.label_input,
+                                                    num_thresholds=2**12,
+                                                    slide_steps=20)
 
         self._metrics["AUC"] = auc
         if is_infer:
