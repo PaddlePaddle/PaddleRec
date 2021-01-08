@@ -65,9 +65,9 @@ class Model(ModelBase):
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        auc = AUC(input=predict_2d,
-                  label=paddle.cast(
-                      x=self.label_input, dtype='int64'))
+        auc_var, batch_auc_var, _ = fluid.layers.auc(input=predict_2d,
+                                                     label=label_int,
+                                                     slide_steps=0)
 
         self._metrics["AUC"] = auc
         if is_infer:
