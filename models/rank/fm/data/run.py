@@ -15,10 +15,38 @@
 import os
 import glob
 import platform
-import shutil
 
-os.system("python download_preprocess.py")
-shutil.move("./deepfm%2Ffeat_dict_10.pkl2", "sample_data/feat_dict_10.pkl2")
+os.system("sh download.sh")
+
+os.mkdir("slot_train_data_full")
+file_name = []
+file_name = os.listdir("train_data_full")
+sysstr = platform.system()
+if (sysstr == "Linux"):
+    for i in file_name:
+        os.system(
+            "cat train_data_full/{} | python get_slot_data.py > slot_train_data_full/{}".
+            format(i, i))
+if (sysstr == "Windows"):
+    for i in file_name:
+        os.system(
+            "type train_data_full\{} | python get_slot_data.py > slot_train_data_full\{}".
+            format(i, i))
+
+os.mkdir("slot_test_data_full")
+file_name = []
+file_name = os.listdir("test_data_full")
+sysstr = platform.system()
+if (sysstr == "Linux"):
+    for i in file_name:
+        os.system(
+            "cat test_data_full/{} | python get_slot_data.py > slot_test_data_full/{}".
+            format(i, i))
+if (sysstr == "Windows"):
+    for i in file_name:
+        os.system(
+            "type test_data_full\{} | python get_slot_data.py > slot_test_data_full\{}".
+            format(i, i))
 
 os.mkdir("slot_train_data")
 file_name = []
