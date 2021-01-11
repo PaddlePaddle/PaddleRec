@@ -62,9 +62,13 @@ class MultiviewSimnetLayer(nn.Layer):
         # The bow encoder is only embodied in forward and does not need init
 
         self.q_fc = paddle.nn.Linear(
-            in_features=128, out_features=self.hidden_size, name="q_fc")
+            in_features=self.query_encode_dim,
+            out_features=self.hidden_size,
+            name="q_fc")
         self.t_fc = paddle.nn.Linear(
-            in_features=128, out_features=self.hidden_size, name="t_fc")
+            in_features=self.title_encode_dim,
+            out_features=self.hidden_size,
+            name="t_fc")
 
     def forward(self, inputs, is_infer=False):
         self.q_slots = inputs[0]
