@@ -17,6 +17,7 @@ import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+import paddlerec.core.metrics
 from gate_dnn_net import GateDNNLayer
 
 
@@ -66,21 +67,23 @@ class Model(ModelBase):
         raw_pred = dnn_model(self.sparse_inputs, self.dense_input)
 
         predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
-        #predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 
         self.predict = predict_2d
-
-        auc, batch_auc, _ = paddle.metric.Auc(input=self.predict,
-                                              label=self.label_input,
-                                              num_thresholds=2**12,
-                                              slide_steps=20)
+        auc = paddlerec.core.metrics.AUC(input=self.predict,
+                                         label=self.label_input,
+                                         num_thresholds=2**12,
+                                         slide_steps=20)
+        # auc, batch_auc, _ = paddle.metric.Auc(input=self.predict,
+        #                                             label=self.label_input,
+        #                                             num_thresholds=2**12,
+        #                                             slide_steps=20)
         if is_infer:
             self._infer_results["AUC"] = auc
-            self._infer_results["BATCH_AUC"] = batch_auc
+            #self._infer_results["BATCH_AUC"] = batch_auc
             return
 
         self._metrics["AUC"] = auc
-        self._metrics["BATCH_AUC"] = batch_auc
+        #self._metrics["BATCH_AUC"] = batch_auc
 
         loss = paddle.nn.functional.log_loss(
             input=raw_pred, label=paddle.cast(self.label_input, "float32"))
