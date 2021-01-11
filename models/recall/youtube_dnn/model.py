@@ -15,9 +15,11 @@
 import math
 import numpy as np
 import paddle
+import paddle.nn.functional as F
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+from youtube_dnn_net import YoutubeDNNLayer
 
 
 class Model(ModelBase):
@@ -31,8 +33,10 @@ class Model(ModelBase):
             "hyper_parameters.search_vec_size")
         self.other_feat_size = envs.get_global_env(
             "hyper_parameters.other_feat_size")
+        assert self.watch_vec_size == self.search_vec_size == self.other_feat_size
+        self.vector_dim = self.watch_vec_size
         self.output_size = envs.get_global_env("hyper_parameters.output_size")
-        self.layers = envs.get_global_env("hyper_parameters.layers")
+        self.layer_sizes = envs.get_global_env("hyper_parameters.layer_sizes")
 
     def input_data(self, is_infer=False, **kwargs):
 
@@ -57,41 +61,18 @@ class Model(ModelBase):
     def net(self, inputs, is_infer=False):
         concat_feats = paddle.concat(x=inputs[:-1], axis=-1)
 
-        l1 = self._fc('l1', concat_feats, self.layers[0], 'relu')
-        l2 = self._fc('l2', l1, self.layers[1], 'relu')
-        l3 = self._fc('l3', l2, self.layers[2], 'relu')
-        l4 = self._fc('l4', l3, self.output_size, 'softmax')
+        youtube_dnn_model = YoutubeDNNLayer(self.vector_dim * 3,
+                                            self.layer_sizes, self.output_size)
 
-        num_seqs = paddle.fluid.layers.create_tensor(dtype='int64')
-        acc = paddle.metric.accuracy(
-            input=l4, label=inputs[-1], total=num_seqs)
+        predict, output_layer = youtube_dnn_model(concat_feats)
 
-        cost = paddle.fluid.layers.cross_entropy(input=l4, label=inputs[-1])
+        print(output_layer)
+        pred = F.softmax(predict)
+
+        acc = paddle.metric.accuracy(input=pred, label=inputs[-1])
+
+        cost = F.cross_entropy(input=pred, label=inputs[-1])
         avg_cost = paddle.mean(x=cost)
 
         self._cost = avg_cost
         self._metrics["acc"] = acc
-
-    def _fc(self, tag, data, out_dim, active='relu'):
-        init_stddev = 1.0
-        scales = 1.0 / np.sqrt(data.shape[1])
-
-        if tag == 'l4':
-            p_attr = paddle.ParamAttr(
-                name='%s_weight' % tag,
-                initializer=paddle.fluid.initializer.NormalInitializer(
-                    loc=0.0, scale=init_stddev * scales))
-        else:
-            p_attr = None
-
-        b_attr = paddle.ParamAttr(
-            name='%s_bias' % tag,
-            initializer=paddle.nn.initializer.Constant(value=0.1))
-
-        out = paddle.static.nn.fc(x=data,
-                                  size=out_dim,
-                                  activation=active,
-                                  weight_attr=p_attr,
-                                  bias_attr=b_attr,
-                                  name=tag)
-        return out

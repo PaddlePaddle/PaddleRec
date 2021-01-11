@@ -14,6 +14,7 @@
 
 
 workspace: "models/recall/youtube_dnn"
+#workspace: .
 
 dataset:
 - name: dataset_train
@@ -23,14 +24,16 @@ dataset:
   data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
+  vector_dim: 64
   watch_vec_size: 64
   search_vec_size: 64
   other_feat_size: 64
   output_size: 100
+  layer_sizes: [128, 64, 32]
   layers: [128, 64, 32]
   optimizer: 
-    class: SGD
-    learning_rate: 0.01
+    class: Adam
+    learning_rate: 0.001
 
 mode: [cpu_single_train]
 
@@ -44,7 +47,7 @@ runner:
   save_checkpoint_path: "increment_youtubednn"
   save_inference_path: "inference_youtubednn"
   save_inference_feed_varnames: ["watch_vec", "search_vec", "other_feat"] # feed vars of save inference
-  save_inference_fetch_varnames: ["l3.tmp_2"]
+  save_inference_fetch_varnames: ["relu_2.tmp_0"]
   print_interval: 1
 
 phase:
