@@ -18,7 +18,7 @@ workspace: "models/match/multiview-simnet"
 dygraph:
   train_data_dir: "data/train" 
   use_gpu: False 
-  batch_size_train: 1280
+  batch_size_train: 128
   batch_size_infer: 1
   epochs: 1
   print_interval: 1
@@ -32,7 +32,7 @@ dygraph:
 # list of dataset
 dataset:
 - name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 1280
+  batch_size: 128
   type: DataLoader # or QueueDataset
   data_path: "{workspace}/data/train"
   sparse_slots: "0 1 2"

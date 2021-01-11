@@ -36,12 +36,13 @@ def parse_args():
     return args
 
 
-def create_feeds(batch):
+def create_feeds(batch, query_len, pos_len):
     q_slots = [
-        paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1, 79))
+        paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1,
+                                                                  query_len))
     ]
     pt_slots = [
-        paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1, 99))
+        paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1, pos_len))
     ]
     inputs = [q_slots, pt_slots]
     return inputs
@@ -86,6 +87,9 @@ def main(args):
     end_epoch = config.get("dygraph.infer_end_epoch", 1)
     batch_size = config.get('dygraph.batch_size_infer', None)
     margin = config.get('hyper_parameters.margin', 0.1)
+    query_len = config.get('hyper_parameters.query_len', 79)
+    pos_len = config.get('hyper_parameters.pos_len', 99)
+    neg_len = config.get('hyper_parameters.neg_len', 90)
 
     print("***********************************")
     logger.info(
@@ -116,7 +120,7 @@ def main(args):
 
         for batch_id, batch in enumerate(test_dataloader()):
 
-            inputs = create_feeds(batch)
+            inputs = create_feeds(batch, query_len, pos_len)
 
             cos_pos, cos_neg = simnet_model(inputs, True)
 

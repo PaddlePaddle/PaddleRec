@@ -36,15 +36,16 @@ def parse_args():
     return args
 
 
-def create_feeds(batch):
+def create_feeds(batch, query_len, pos_len, neg_len):
     q_slots = [
-        paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1, 79))
+        paddle.to_tensor(batch[0].numpy().astype('int64').reshape(-1,
+                                                                  query_len))
     ]
     pt_slots = [
-        paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1, 99))
+        paddle.to_tensor(batch[1].numpy().astype('int64').reshape(-1, pos_len))
     ]
     nt_slots = [
-        paddle.to_tensor(batch[2].numpy().astype('int64').reshape(-1, 90))
+        paddle.to_tensor(batch[2].numpy().astype('int64').reshape(-1, neg_len))
     ]
     inputs = [q_slots, pt_slots, nt_slots]
     return inputs
@@ -113,6 +114,9 @@ def main(args):
     model_save_path = config.get("dygraph.model_save_path", "model_output")
     batch_size = config.get('dygraph.batch_size_train', None)
     margin = config.get('hyper_parameters.margin', 0.1)
+    query_len = config.get('hyper_parameters.query_len', 79)
+    pos_len = config.get('hyper_parameters.pos_len', 99)
+    neg_len = config.get('hyper_parameters.neg_len', 90)
 
     print("***********************************")
     logger.info(
@@ -160,7 +164,7 @@ def main(args):
             train_start = time.time()
             batch_size = batch_size
 
-            inputs = create_feeds(batch)
+            inputs = create_feeds(batch, query_len, pos_len, neg_len)
 
             cos_pos, cos_neg = simnet_model(inputs, False)
             loss = create_loss(batch_size, margin, cos_pos, cos_neg)
