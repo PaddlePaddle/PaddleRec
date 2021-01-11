@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "/home/workspace/PaddleRec/models/contentunderstanding/tagspace"
+workspace: "models/contentunderstanding/tagspace"
 
 dygraph:
-  train_data_dir: "data/train_data"
+  train_data_dir: "data/train_big_data"
   use_gpu: False
-  batch_size_train: 10
-  batch_size_infer: 10
+  batch_size_train: 128
+  batch_size_infer: 500
   epochs: 1
   print_interval: 1
   # model_init_path: "output_model/0" # init model
   model_save_path: "increment"
-  test_data_dir: "data/test_data"
+  test_data_dir: "data/test_big_data"
   infer_load_path: "increment"
   infer_start_epoch: -1
   infer_end_epoch: 1
@@ -32,13 +32,13 @@ dygraph:
 dataset:
 - name: sample_1
   type: DataLoader
-  batch_size: 10
-  data_path: "{workspace}/data/train_data"
+  batch_size: 128
+  data_path: "{workspace}/data/train_big_data"
   data_converter: "{workspace}/reader.py"
 - name: inferdata
   type: DataLoader
-  batch_size: 10
-  data_path: "{workspace}/data/test_data"
+  batch_size: 500
+  data_path: "{workspace}/data/test_big_data"
   data_converter: "{workspace}/reader.py" 
 
 hyper_parameters:
@@ -55,7 +55,7 @@ hyper_parameters:
   num_devices: 1
   text_len: 45
 
-mode: [runner1,infer_runner]
+mode: [runner1, infer_runner]
 
 runner:
 - name: runner1

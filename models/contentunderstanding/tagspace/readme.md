@@ -142,6 +142,15 @@ batch: 13, acc: [0.928], loss: [0.01736144]
 batch: 14, acc: [0.93], loss: [0.01911209]
 ```
 
+## 动态图
+```
+# 进入模型目录
+cd models/contentunderstanding/tagspace
+# 训练
+python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 预测
+python -u infer.py -m config.yaml 
+```
 ## 进阶使用
   
 ## FAQ
