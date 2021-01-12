@@ -143,6 +143,7 @@ batch: 14, acc: [0.93], loss: [0.01911209]
 ```
 
 ## 动态图
+
 ```
 # 进入模型目录
 cd models/contentunderstanding/tagspace
