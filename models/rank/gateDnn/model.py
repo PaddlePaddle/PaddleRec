@@ -70,9 +70,9 @@ class Model(ModelBase):
 
         self.predict = predict_2d
         auc, batch_auc, _ = paddle.static.auc(input=self.predict,
-                                         label=self.label_input,
-                                         num_thresholds=2**12,
-                                         slide_steps=20)
+                                              label=self.label_input,
+                                              num_thresholds=2**12,
+                                              slide_steps=20)
         # auc, batch_auc, _ = paddle.metric.Auc(input=self.predict,
         #                                             label=self.label_input,
         #                                             num_thresholds=2**12,
