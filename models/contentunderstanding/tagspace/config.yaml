@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "/home/workspace/PaddleRec/models/contentunderstanding/tagspace"
+workspace: "models/contentunderstanding/tagspace"
 
 dygraph:
   train_data_dir: "data/train_data"
