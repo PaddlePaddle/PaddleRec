@@ -27,7 +27,7 @@ class Reader(ReaderBase):
         tag_size = 4
         neg_size = 3
         text_size = 45
-        _pad_ = 0
+        _pad_ = 75377
         l = l.strip().split(",")
         pos_index = int(l[0])
         pos_tag = []
