@@ -63,60 +63,46 @@ def main(args):
     config["config_abs_dir"] = args.abs_dir
     # tools.vars
     use_gpu = config.get("dygraph.use_gpu", True)
-    train_data_dir = config.get("dygraph.train_data_dir", None)
-    epochs = config.get("dygraph.epochs", None)
+    test_data_dir = config.get("dygraph.test_data_dir", None)
+    feature_size = config.get('hyper_parameters.feature_size', None)
     print_interval = config.get("dygraph.print_interval", None)
-    model_save_path = config.get("dygraph.model_save_path", "model_output")
-    model_init_path = config.get("dygraph.model_init_path", None)
-    #dense_input_dim = config.get('hyper_parameters.dense_input_dim', None)
+    model_load_path = config.get("dygraph.infer_load_path", "model_output")
+    start_epoch = config.get("dygraph.infer_start_epoch", 0)
+    end_epoch = config.get("dygraph.infer_end_epoch", 10)
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, train_data_dir, epochs, print_interval,
-               model_save_path))
+        "use_gpu: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, test_data_dir, start_epoch, end_epoch, print_interval,
+               model_load_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     dy_model = dy_model_class.create_model(config)
 
-    if model_init_path is not None:
-        load_model(model_init_path, dy_model)
-
     # to do : add optimizer function
     optimizer = dy_model_class.create_optimizer(dy_model, config)
 
     logger.info("read data")
-    train_dataloader = create_data_loader(config=config, place=place)
+    test_dataloader = create_data_loader(
+        config=config, place=place, mode="test")
 
-    last_epoch_id = config.get("last_epoch", -1)
+    epoch_begin = time.time()
+    interval_begin = time.time()
 
-    for epoch_id in range(last_epoch_id + 1, epochs):
-        # set train mode
-        dy_model.train()
-        metric_list, metric_list_name = dy_model_class.create_metrics()
-        #auc_metric = paddle.metric.Auc("ROC")
-        epoch_begin = time.time()
-        interval_begin = time.time()
-        train_reader_cost = 0.0
-        train_run_cost = 0.0
-        total_samples = 0
-        reader_start = time.time()
+    metric_list, metric_list_name = dy_model_class.create_metrics()
 
-        for batch_id, batch in enumerate(train_dataloader()):
-            train_reader_cost += time.time() - reader_start
-            optimizer.clear_grad()
-            train_start = time.time()
+    for epoch_id in range(start_epoch, end_epoch):
+        logger.info("load model epoch {}".format(epoch_id))
+        model_path = os.path.join(model_load_path, str(epoch_id))
+        load_model(model_path, dy_model)
+        dy_model.eval()
+        for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
-            loss, metric_list = dy_model_class.train_forward(
-                dy_model, metric_list, batch, config)
-
-            loss.backward()
-            optimizer.step()
-            train_run_cost += time.time() - train_start
-            total_samples += batch_size
+            metric_list = dy_model_class.infer_forward(dy_model, metric_list,
+                                                       batch, config)
 
             if batch_id % print_interval == 0:
                 metric_str = ""
@@ -125,18 +111,11 @@ def main(args):
                         metric_list_name[metric_id] +
                         ": {:.6f},".format(metric_list[metric_id].accumulate())
                     )
-                logger.info(
-                    "epoch: {}, batch_id: {}, ".format(epoch_id,
-                                                       batch_id) + metric_str +
-                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
-                    format(train_reader_cost / print_interval, (
-                        train_reader_cost + train_run_cost) / print_interval,
-                           total_samples / print_interval, total_samples / (
-                               train_reader_cost + train_run_cost)))
-                train_reader_cost = 0.0
-                train_run_cost = 0.0
-                total_samples = 0
-            reader_start = time.time()
+                logger.info("epoch: {}, batch_id: {}, ".format(
+                    epoch_id, batch_id) + metric_str + "speed: {:.2f} ins/s".
+                            format(print_interval * batch_size / (time.time(
+                            ) - interval_begin)))
+                interval_begin = time.time()
 
         metric_str = ""
         for metric_id in range(len(metric_list_name)):
@@ -146,9 +125,7 @@ def main(args):
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     " : epoch time{:.2f} s".format(time.time() - epoch_begin))
-
-        save_model(
-            dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
+        epoch_begin = time.time()
 
 
 if __name__ == '__main__':
