@@ -103,7 +103,7 @@ def main(args):
     # to do : add optimizer function
     optimizer = dy_program_class.create_optimizer(dy_model, config)
 
-    print("read data")
+    logger.info("read data")
     train_dataloader = create_data_loader(config=config, place=place)
 
     last_epoch_id = config.get("last_epoch", -1)
