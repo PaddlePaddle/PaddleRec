@@ -34,10 +34,10 @@ import sys
 import importlib
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(__dir__)
+#sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from tools.utils.utils import load_yaml, save_model, load_dy_program, get_abs_model
+from utils.utils import load_yaml, save_model, load_dy_model, get_abs_model, create_data_loader
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -55,27 +55,11 @@ def parse_args():
     return args
 
 
-def create_data_loader(config, place):
-    train_data_dir = config.get("dygraph.train_data_dir", None)
-    config_abs_dir = config.get("config_abs_dir", None)
-    train_data_dir = os.path.join(config_abs_dir, train_data_dir)
-    file_list = [
-        os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
-    ]
-    datasets_name = config.get('dygraph.dataset')
-    datasets = importlib.import_module(datasets_name)
-    dataset = datasets.DygraphDataset(file_list)
-    batch_size = config.get('dygraph.batch_size', None)
-    loader = DataLoader(
-        dataset, batch_size=batch_size, places=place, drop_last=True)
-    return loader
-
-
 def main(args):
     paddle.seed(12345)
     # load config
     config = load_yaml(args.config_yaml)
-    dy_program_class = load_dy_program(args.abs_dir)
+    dy_model_class = load_dy_model(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
     # tools.vars
     use_gpu = config.get("dygraph.use_gpu", True)
@@ -95,13 +79,13 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    dy_model = dy_program_class.create_model(config)
+    dy_model = dy_model_class.create_model(config)
 
     if model_init_path is not None:
         load_model(model_init_path, dy_model)
 
     # to do : add optimizer function
-    optimizer = dy_program_class.create_optimizer(dy_model, config)
+    optimizer = dy_model_class.create_optimizer(dy_model, config)
 
     logger.info("read data")
     train_dataloader = create_data_loader(config=config, place=place)
@@ -111,7 +95,7 @@ def main(args):
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
         dy_model.train()
-        metric_list, metric_list_name = dy_program_class.create_metrics()
+        metric_list, metric_list_name = dy_model_class.create_metrics()
         #auc_metric = paddle.metric.Auc("ROC")
         epoch_begin = time.time()
         interval_begin = time.time()
@@ -126,7 +110,7 @@ def main(args):
             train_start = time.time()
             batch_size = len(batch[0])
 
-            loss, metric_list = dy_program_class.train_forward(
+            loss, metric_list = dy_model_class.train_forward(
                 dy_model, metric_list, batch, config)
 
             loss.backward()
