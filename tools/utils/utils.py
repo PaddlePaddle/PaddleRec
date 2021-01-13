@@ -100,13 +100,14 @@ def get_all_inters_from_yaml(file, filters):
     return ret
 
 
-def create_data_loader(config, place):
-    train_data_dir = config.get("dygraph.train_data_dir", None)
+def create_data_loader(config, place, mode="train"):
+    if mode == "train":
+        data_dir = config.get("dygraph.train_data_dir", None)
+    else:
+        data_dir = config.get("dygraph.test_data_dir", None)
     config_abs_dir = config.get("config_abs_dir", None)
-    train_data_dir = os.path.join(config_abs_dir, train_data_dir)
-    file_list = [
-        os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
-    ]
+    data_dir = os.path.join(config_abs_dir, data_dir)
+    file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
     reader_dir = config.get('dygraph.reader_dir', ".")
     reader_dir = os.path.join(config_abs_dir, reader_dir)
     sys.path.append(reader_dir)
