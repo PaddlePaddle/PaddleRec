@@ -21,6 +21,7 @@ import argparse
 import warnings
 import logging
 import paddle
+from paddle.io import DistributedBatchSampler, DataLoader
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -99,11 +100,29 @@ def get_all_inters_from_yaml(file, filters):
     return ret
 
 
-def load_dy_program(abs_dir):
+def create_data_loader(config, place):
+    train_data_dir = config.get("dygraph.train_data_dir", None)
+    config_abs_dir = config.get("config_abs_dir", None)
+    train_data_dir = os.path.join(config_abs_dir, train_data_dir)
+    file_list = [
+        os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
+    ]
+    reader_dir = config.get('dygraph.reader_dir', ".")
+    reader_dir = os.path.join(config_abs_dir, reader_dir)
+    sys.path.append(reader_dir)
+    from reader import RecDataset
+    dataset = RecDataset(file_list)
+    batch_size = config.get('dygraph.batch_size', None)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
+    return loader
+
+
+def load_dy_model(abs_dir):
     sys.path.append(abs_dir)
-    from program import DygraphProgram
-    dy_program = DygraphProgram()
-    return dy_program
+    from dygraph_model import DygraphModel
+    dy_model = DygraphModel()
+    return dy_model
 
 
 def load_yaml(yaml_file, other_part=None):

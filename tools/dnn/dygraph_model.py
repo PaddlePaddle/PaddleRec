@@ -17,10 +17,10 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 import math
 
-import dnn_net as net
+import net
 
 
-class DygraphProgram():
+class DygraphModel():
     # define model
     def create_model(self, config):
         sparse_feature_number = config.get(
