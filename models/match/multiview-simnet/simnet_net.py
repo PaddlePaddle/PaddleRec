@@ -43,9 +43,7 @@ class MultiviewSimnetLayer(nn.Layer):
 
         # grnn-encoder
         if self.query_encoder == "gru":
-            self.gru = paddle.nn.GRU(self.emb_dim,
-                                     self.query_encode_dim,
-                                     bias_ih_attr=False)
+            self.gru = paddle.nn.GRU(self.emb_dim, self.query_encode_dim)
         # cnn-encoder
         self.cnn_encoder = []
         if self.query_encoder == "cnn":
