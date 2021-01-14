@@ -109,20 +109,14 @@ def create_data_loader(config, place, mode="train"):
     data_dir = os.path.join(config_abs_dir, data_dir)
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
     user_define_reader = config.get('dygraph.user_define_reader', False)
-    if user_define_reader:
-        if mode == "train":
-            reader_path = config.get('dygraph.train_reader_path')
-        else:
-            reader_path = config.get('dygraph.infer_reader_path')
-        print("user define reader path:", reader_path)
-        from importlib import import_module
-        reader_class = import_module(reader_path)
-        dataset = reader_class.RecDataset(file_list)
+    if mode == "train":
+        reader_path = config.get('dygraph.train_reader_path', 'reader')
     else:
-        print("default reader path:", config_abs_dir, "/reader.py")
-        sys.path.append(reader_dir)
-        from reader import RecDataset
-        dataset = RecDataset(file_list)
+        reader_path = config.get('dygraph.infer_reader_path', 'reader')
+    logger.info("reader path:{}".format(reader_path))
+    from importlib import import_module
+    reader_class = import_module(reader_path)
+    dataset = reader_class.RecDataset(file_list)
     batch_size = config.get('dygraph.batch_size', None)
     loader = DataLoader(
         dataset, batch_size=batch_size, places=place, drop_last=True)
