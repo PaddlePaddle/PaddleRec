@@ -19,14 +19,19 @@
 dygraph:
   train_data_dir: "data/sample_data/train"
   #train_data_dir: "datasets/criteo_dataset/data/sample_data/train"
+  # if user define own reader, set user_define_reader=true and update reader_path
+  # user_define_train_reader: True
+  # train_reader_path: "reader" # importlib format
   use_gpu: True
   batch_size: 2
   epochs: 3
   print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
+  # user_define_infer_reader: True
+  # infer_reader_path: "reader" # importlib format
+  model_save_path: "output_model_dnn"
   test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model"
+  infer_load_path: "output_model_dnn"
   infer_start_epoch: 0
   infer_end_epoch: 3
 
