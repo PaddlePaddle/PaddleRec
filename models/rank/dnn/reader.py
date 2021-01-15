@@ -18,9 +18,9 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class CriteoDataset(IterableDataset):
+class RecDataset(IterableDataset):
     def __init__(self, file_list):
-        super(CriteoDataset, self).__init__()
+        super(RecDataset, self).__init__()
         self.file_list = file_list
         self.init()
 
