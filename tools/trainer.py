@@ -37,7 +37,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils import load_model, load_yaml, save_model, load_dy_model, get_abs_model, create_data_loader
+from utils.utils_single import load_model, load_yaml, save_model, load_dy_model, get_abs_model, create_data_loader
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
