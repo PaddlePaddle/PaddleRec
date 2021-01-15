@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddlerec.core.utils import envs
+from . import envs
 import os
 import copy
 import subprocess
@@ -21,6 +21,7 @@ import argparse
 import warnings
 import logging
 import paddle
+from paddle.io import DistributedBatchSampler, DataLoader
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -30,6 +31,14 @@ logger = logging.getLogger(__name__)
 def _mkdir_if_not_exist(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='paddle-rec run')
+    parser.add_argument("-m", "--config_yaml", type=str)
+    args = parser.parse_args()
+    args.config_yaml = get_abs_model(args.config_yaml)
+    return args
 
 
 def save_model(net, optimizer, model_path, epoch_id, prefix='rec'):
@@ -91,7 +100,39 @@ def get_all_inters_from_yaml(file, filters):
     return ret
 
 
-def load_yaml(yaml_file):
-    running_config = get_all_inters_from_yaml(
-        yaml_file, ["workspace", "dygraph", "hyper_parameters"])
+def create_data_loader(config, place, mode="train"):
+    if mode == "train":
+        data_dir = config.get("dygraph.train_data_dir", None)
+    else:
+        data_dir = config.get("dygraph.test_data_dir", None)
+    config_abs_dir = config.get("config_abs_dir", None)
+    data_dir = os.path.join(config_abs_dir, data_dir)
+    file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
+    user_define_reader = config.get('dygraph.user_define_reader', False)
+    if mode == "train":
+        reader_path = config.get('dygraph.train_reader_path', 'reader')
+    else:
+        reader_path = config.get('dygraph.infer_reader_path', 'reader')
+    logger.info("reader path:{}".format(reader_path))
+    from importlib import import_module
+    reader_class = import_module(reader_path)
+    dataset = reader_class.RecDataset(file_list)
+    batch_size = config.get('dygraph.batch_size', None)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
+    return loader
+
+
+def load_dy_model(abs_dir):
+    sys.path.append(abs_dir)
+    from dygraph_model import DygraphModel
+    dy_model = DygraphModel()
+    return dy_model
+
+
+def load_yaml(yaml_file, other_part=None):
+    part_list = ["workspace", "dygraph", "hyper_parameters"]
+    if other_part:
+        part_list += other_part
+    running_config = get_all_inters_from_yaml(yaml_file, part_list)
     return running_config

@@ -441,9 +441,13 @@ PaddleRec Finish
 
 ```
 # 进入模型目录
-cd models/rank/dnn 
+cd models/rank/dnn # 在任意目录均可运行
 # 训练
-python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 预测
-python -u infer.py -m config.yaml 
+python -u ../../../tools/infer.py -m config.yaml 
+
+# 全量数据下载
+cd tools/dataset/criteo_data/
+sh run.sh
 ```
