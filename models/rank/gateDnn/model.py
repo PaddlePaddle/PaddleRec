@@ -69,21 +69,21 @@ class Model(ModelBase):
         predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
 
         self.predict = predict_2d
-        auc = paddlerec.core.metrics.AUC(input=self.predict,
-                                         label=self.label_input,
-                                         num_thresholds=2**12,
-                                         slide_steps=20)
+        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
+                                              label=self.label_input,
+                                              num_thresholds=2**12,
+                                              slide_steps=20)
         # auc, batch_auc, _ = paddle.metric.Auc(input=self.predict,
         #                                             label=self.label_input,
         #                                             num_thresholds=2**12,
         #                                             slide_steps=20)
         if is_infer:
             self._infer_results["AUC"] = auc
-            #self._infer_results["BATCH_AUC"] = batch_auc
+            self._infer_results["BATCH_AUC"] = batch_auc
             return
 
         self._metrics["AUC"] = auc
-        #self._metrics["BATCH_AUC"] = batch_auc
+        self._metrics["BATCH_AUC"] = batch_auc
 
         loss = paddle.nn.functional.log_loss(
             input=raw_pred, label=paddle.cast(self.label_input, "float32"))
