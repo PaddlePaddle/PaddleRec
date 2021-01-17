@@ -75,6 +75,7 @@ class RecDataset(IterableDataset):
                     for key, value in output[:-1]:
                         output_list.append(np.array(value))
                     # dense
-                    output_list.append(np.array(output[-1][1]))
+                    output_list.append(
+                        np.array(output[-1][1]).astype("float32"))
                     # list
                     yield output_list
