@@ -62,7 +62,6 @@ class DNNLayer(nn.Layer):
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
             sparse_embs.append(emb)
 
-        print(dense_inputs)
         y_dnn = paddle.concat(x=sparse_embs + [dense_inputs], axis=1)
 
         for n_layer in self._mlp_layers:

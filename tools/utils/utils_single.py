@@ -102,22 +102,21 @@ def get_all_inters_from_yaml(file, filters):
 
 def create_data_loader(config, place, mode="train"):
     if mode == "train":
-        data_dir = config.get("dygraph.train_data_dir", None)
+        data_dir = config.get("runner.train_data_dir", None)
+        batch_size = config.get('runner.train_batch_size', None)
+        reader_path = config.get('runner.train_reader_path', 'reader')
     else:
-        data_dir = config.get("dygraph.test_data_dir", None)
+        data_dir = config.get("runner.test_data_dir", None)
+        batch_size = config.get('runner.infer_batch_size', None)
+        reader_path = config.get('runner.infer_reader_path', 'reader')
     config_abs_dir = config.get("config_abs_dir", None)
     data_dir = os.path.join(config_abs_dir, data_dir)
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
-    user_define_reader = config.get('dygraph.user_define_reader', False)
-    if mode == "train":
-        reader_path = config.get('dygraph.train_reader_path', 'reader')
-    else:
-        reader_path = config.get('dygraph.infer_reader_path', 'reader')
+    user_define_reader = config.get('runner.user_define_reader', False)
     logger.info("reader path:{}".format(reader_path))
     from importlib import import_module
     reader_class = import_module(reader_path)
     dataset = reader_class.RecDataset(file_list)
-    batch_size = config.get('dygraph.batch_size', None)
     loader = DataLoader(
         dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
@@ -131,7 +130,7 @@ def load_dy_model(abs_dir):
 
 
 def load_static_model(config):
-    abs_dir = config['abs_dir']
+    abs_dir = config['config_abs_dir']
     sys.path.append(abs_dir)
     from static_model import StaticModel
     static_model = StaticModel(config)
@@ -139,7 +138,7 @@ def load_static_model(config):
 
 
 def load_yaml(yaml_file, other_part=None):
-    part_list = ["workspace", "dygraph", "hyper_parameters"]
+    part_list = ["workspace", "runner", "hyper_parameters"]
     if other_part:
         part_list += other_part
     running_config = get_all_inters_from_yaml(yaml_file, part_list)
