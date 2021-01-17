@@ -130,6 +130,14 @@ def load_dy_model(abs_dir):
     return dy_model
 
 
+def load_static_model(config):
+    abs_dir = config['abs_dir']
+    sys.path.append(abs_dir)
+    from static_model import StaticModel
+    static_model = StaticModel(config)
+    return static_model
+
+
 def load_yaml(yaml_file, other_part=None):
     part_list = ["workspace", "dygraph", "hyper_parameters"]
     if other_part:
