@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
-
+import math
+import paddle
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
+from dssm_net import DSSMLayer
 
 
 class Model(ModelBase):
@@ -32,12 +33,12 @@ class Model(ModelBase):
         self.slice_end = envs.get_global_env("hyper_parameters.slice_end")
 
     def input_data(self, is_infer=False, **kwargs):
-        query = fluid.data(
+        query = paddle.static.data(
             name="query",
             shape=[-1, self.trigram_d],
             dtype='float32',
             lod_level=0)
-        doc_pos = fluid.data(
+        doc_pos = paddle.static.data(
             name="doc_pos",
             shape=[-1, self.trigram_d],
             dtype='float32',
@@ -47,7 +48,7 @@ class Model(ModelBase):
             return [query, doc_pos]
 
         doc_negs = [
-            fluid.data(
+            paddle.static.data(
                 name="doc_neg_" + str(i),
                 shape=[-1, self.trigram_d],
                 dtype="float32",
@@ -56,47 +57,15 @@ class Model(ModelBase):
         return [query, doc_pos] + doc_negs
 
     def net(self, inputs, is_infer=False):
-        def fc(data, hidden_layers, hidden_acts, names):
-            fc_inputs = [data]
-            for i in range(len(hidden_layers)):
-                xavier = fluid.initializer.Xavier(
-                    uniform=True,
-                    fan_in=fc_inputs[-1].shape[1],
-                    fan_out=hidden_layers[i])
-                out = fluid.layers.fc(input=fc_inputs[-1],
-                                      size=hidden_layers[i],
-                                      act=hidden_acts[i],
-                                      param_attr=xavier,
-                                      bias_attr=xavier,
-                                      name=names[i])
-                fc_inputs.append(out)
-            return fc_inputs[-1]
-
-        query_fc = fc(inputs[0], self.hidden_layers, self.hidden_acts,
-                      ['query_l1', 'query_l2', 'query_l3'])
-
-        doc_pos_fc = fc(inputs[1], self.hidden_layers, self.hidden_acts,
-                        ['doc_pos_l1', 'doc_pos_l2', 'doc_pos_l3'])
-        R_Q_D_p = fluid.layers.cos_sim(query_fc, doc_pos_fc)
+        dssm_model = DSSMLayer(self.trigram_d, self.neg_num, self.slice_end,
+                               self.hidden_layers, self.hidden_acts)
+        R_Q_D_p, hit_prob = dssm_model(inputs, is_infer)
 
         if is_infer:
             self._infer_results["query_doc_sim"] = R_Q_D_p
             return
 
-        R_Q_D_ns = []
-        for i in range(len(inputs) - 2):
-            doc_neg_fc_i = fc(
-                inputs[i + 2], self.hidden_layers, self.hidden_acts, [
-                    'doc_neg_l1_' + str(i), 'doc_neg_l2_' + str(i),
-                    'doc_neg_l3_' + str(i)
-                ])
-            R_Q_D_ns.append(fluid.layers.cos_sim(query_fc, doc_neg_fc_i))
-        concat_Rs = fluid.layers.concat(input=[R_Q_D_p] + R_Q_D_ns, axis=-1)
-        prob = fluid.layers.softmax(concat_Rs, axis=1)
-
-        hit_prob = fluid.layers.slice(
-            prob, axes=[0, 1], starts=[0, 0], ends=[self.slice_end, 1])
-        loss = -fluid.layers.reduce_sum(fluid.layers.log(hit_prob))
-        avg_cost = fluid.layers.mean(x=loss)
+        loss = -paddle.sum(paddle.log(hit_prob))
+        avg_cost = paddle.mean(x=loss)
         self._cost = avg_cost
         self._metrics["LOSS"] = avg_cost

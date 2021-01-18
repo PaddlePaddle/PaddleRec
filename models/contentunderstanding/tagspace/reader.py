@@ -26,12 +26,19 @@ class Reader(ReaderBase):
     def _process_line(self, l):
         tag_size = 4
         neg_size = 3
+        text_size = 45
+        _pad_ = 75377
         l = l.strip().split(",")
         pos_index = int(l[0])
         pos_tag = []
         pos_tag.append(pos_index)
         text_raw = l[1].split()
         text = [int(w) for w in text_raw]
+        if len(text) < text_size:
+            for i in range(text_size - len(text)):
+                text.append(_pad_)
+        else:
+            text = text[:text_size]
         neg_tag = []
         max_iter = 100
         now_iter = 0

@@ -257,5 +257,4 @@ python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml
 # 预测
 python -u infer_dygraph.py -m config.yaml 
 ```
-
 ## FAQ

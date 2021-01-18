@@ -7,7 +7,7 @@ from py27hash.hash import hash27
 user_fea = ["userid", "gender", "age", "occupation"]
 movie_fea = ["movieid", "title", "genres"]
 rating_fea = ["userid", "movieid", "rating", "time"]
-dict_size = 60000000
+dict_size = 600000
 hash_dict = dict()
 
 data_path = "ml-1m"

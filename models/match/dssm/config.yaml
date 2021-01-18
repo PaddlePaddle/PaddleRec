@@ -15,6 +15,19 @@
 
 workspace: "models/match/dssm"
 
+dygraph:
+  train_data_dir: "data/train" 
+  use_gpu: False 
+  batch_size: 8
+  epochs: 1
+  print_interval: 10
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "increment"
+  test_data_dir: "data/test"
+  infer_load_path: "increment"
+  infer_start_epoch: -1
+  infer_end_epoch: 1
+
 dataset:
 - name: dataset_train
   batch_size: 8
@@ -36,7 +49,7 @@ hyper_parameters:
   neg_num: 1
   slice_end: 8
   fc_sizes: [300, 300, 128]
-  fc_acts: ['tanh', 'tanh', 'tanh']
+  fc_acts: ['relu', 'relu', 'relu']
 
 mode: [train_runner,infer_runner]
 # config of each runner.
@@ -53,7 +66,7 @@ runner:
   save_checkpoint_path: "increment" # save checkpoint path
   save_inference_path: "inference" # save inference path
   save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
-  save_inference_fetch_varnames: ["cos_sim_0.tmp_0"] # fetch vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
   init_model_path: "" # load model path
   print_interval: 10
   phases: phase1
@@ -61,7 +74,7 @@ runner:
   class: infer
   # device to run training or infer
   device: cpu
-  print_interval: 1
+  print_interval: 10
   init_model_path: "increment/0" # load model path
   phases: phase2
 

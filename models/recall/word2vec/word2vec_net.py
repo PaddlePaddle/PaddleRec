@@ -32,6 +32,7 @@ class Word2VecLayer(nn.Layer):
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.emb_dim,
+            sparse=True,
             weight_attr=paddle.ParamAttr(
                 name=self.emb_name,
                 initializer=paddle.nn.initializer.Uniform(-init_width,
@@ -40,6 +41,7 @@ class Word2VecLayer(nn.Layer):
         self.embedding_w = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.emb_dim,
+            sparse=True,
             weight_attr=paddle.ParamAttr(
                 name=self.emb_w_name,
                 initializer=paddle.nn.initializer.Constant(value=0.0)))
@@ -47,6 +49,7 @@ class Word2VecLayer(nn.Layer):
         self.embedding_b = paddle.nn.Embedding(
             self.sparse_feature_number,
             1,
+            sparse=True,
             weight_attr=paddle.ParamAttr(
                 name=self.emb_b_name,
                 initializer=paddle.nn.initializer.Constant(value=0.0)))

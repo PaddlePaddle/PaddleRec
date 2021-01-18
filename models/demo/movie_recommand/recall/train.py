@@ -28,12 +28,12 @@
 import paddle
 import os
 import paddle.nn as nn
-import dnn_net as net
+import recall_net as net
 import time
 import logging
-
+import paddle.nn.functional as F
 from utils import load_yaml, get_abs_model, save_model, load_model
-from criteo_reader_dygraph import CriteoDataset
+from movie_reader_dygraph import MovieDataset
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -50,22 +50,29 @@ def parse_args():
     return args
 
 
-def create_feeds(batch, dense_feature_dim):
-    sparse_tensor = []
-    for b in batch[:-1]:
-        sparse_tensor.append(
-            paddle.to_tensor(b.numpy().astype('int64').reshape(-1, 1)))
-    dense_tensor = paddle.to_tensor(batch[-1].numpy().astype('float32')
-                                    .reshape(-1, dense_feature_dim))
+def create_feeds(batch):
+    user_sparse_inputs = [
+        paddle.to_tensor(batch[i].numpy().astype('int64').reshape(-1, 1))
+        for i in range(4)
+    ]
 
-    label = sparse_tensor[0]
-    return label, sparse_tensor[1:], dense_tensor
+    mov_sparse_inputs = [
+        paddle.to_tensor(batch[4].numpy().astype('int64').reshape(-1, 1)),
+        paddle.to_tensor(batch[5].numpy().astype('int64').reshape(-1, 4)),
+        paddle.to_tensor(batch[6].numpy().astype('int64').reshape(-1, 3))
+    ]
+
+    label_input = paddle.to_tensor(batch[7].numpy().astype('int64').reshape(-1,
+                                                                            1))
+
+    return user_sparse_inputs, mov_sparse_inputs, label_input
 
 
-def create_loss(raw_predict_2d, label):
-    cost = paddle.nn.functional.cross_entropy(
-        input=raw_predict_2d, label=label)
-    avg_cost = paddle.mean(x=cost)
+def create_loss(predict, label_input):
+    cost = F.square_error_cost(
+        predict, paddle.cast(
+            x=label_input, dtype='float32'))
+    avg_cost = paddle.mean(cost)
 
     return avg_cost
 
@@ -75,33 +82,27 @@ def create_model(config):
         "hyper_parameters.sparse_feature_number")
     sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
     fc_sizes = config.get("hyper_parameters.fc_sizes")
-    sparse_fea_num = config.get('hyper_parameters.sparse_fea_num')
-    dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
-    sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
 
-    dnn_model = net.DNNLayer(sparse_feature_number, sparse_feature_dim,
-                             dense_feature_dim, sparse_input_slot - 1,
-                             fc_sizes)
+    Recall = net.DNNLayer(sparse_feature_number, sparse_feature_dim, fc_sizes)
 
-    return dnn_model
+    return Recall
 
 
 def create_data_loader(dataset, place, config):
     batch_size = config.get('dygraph.batch_size', None)
-    loader = DataLoader(
-        dataset, batch_size=batch_size, places=place, drop_last=True)
+    loader = DataLoader(dataset, batch_size=batch_size, places=place)
     return loader
 
 
 def main(args):
     paddle.seed(12345)
     config = load_yaml(args.config_yaml)
-    use_gpu = config.get("dygraph.use_gpu", True)
+    use_gpu = config.get("dygraph.use_gpu", False)
     train_data_dir = config.get("dygraph.train_data_dir", None)
     epochs = config.get("dygraph.epochs", None)
     print_interval = config.get("dygraph.print_interval", None)
     model_save_path = config.get("dygraph.model_save_path", "model_output")
-    dense_input_dim = config.get('hyper_parameters.dense_input_dim', None)
+    batch_size = config.get("dygraph.batch_size", 128)
 
     print("***********************************")
     logger.info(
@@ -112,27 +113,25 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
-    dnn_model = create_model(config)
+    recall_model = create_model(config)
     model_init_path = config.get("dygraph.model_init_path", None)
     if model_init_path is not None:
-        load_model(model_init_path, dnn_model)
+        load_model(model_init_path, recall_model)
 
     # to do : add optimizer function
-    optimizer = paddle.optimizer.Adam(parameters=dnn_model.parameters())
-
-    file_list = [
-        os.path.join(train_data_dir, x) for x in os.listdir(train_data_dir)
-    ]
+    optimizer = paddle.optimizer.Adam(parameters=recall_model.parameters())
+    filelist = os.listdir(train_data_dir)
+    filelist.sort()
+    file_list = [os.path.join(train_data_dir, x) for x in filelist]
     print("read data")
-    dataset = CriteoDataset(file_list)
+    dataset = MovieDataset(file_list)
     train_dataloader = create_data_loader(dataset, place=place, config=config)
 
     last_epoch_id = config.get("last_epoch", -1)
 
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
-        dnn_model.train()
-        auc_metric = paddle.metric.Auc("ROC")
+        recall_model.train()
         epoch_begin = time.time()
         interval_begin = time.time()
         train_reader_cost = 0.0
@@ -144,41 +143,41 @@ def main(args):
             train_reader_cost += time.time() - reader_start
             optimizer.clear_grad()
             train_start = time.time()
-            batch_size = len(batch[0])
+            # batch_size = len(batch[0])
+            batch_size = config.get("dygraph.batch_size", 128)
 
-            label, sparse_tensor, dense_tensor = create_feeds(batch,
-                                                              dense_input_dim)
+            user_sparse_inputs, mov_sparse_inputs, label_input = create_feeds(
+                batch)
 
-            raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
-            loss = create_loss(raw_pred_2d, label)
+            predict = recall_model(batch_size, user_sparse_inputs,
+                                   mov_sparse_inputs, label_input)
+
+            loss = create_loss(predict, label_input)
 
             loss.backward()
             optimizer.step()
             train_run_cost += time.time() - train_start
             total_samples += batch_size
-            # for auc
-            predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
-            auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
 
-            if batch_id % print_interval == 1:
+            if batch_id % print_interval == 0:
                 logger.info(
-                    "epoch: {}, batch_id: {}, auc: {:.6f}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    "epoch: {}, batch_id: {}, LOSS: {}, avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(epoch_id, batch_id,
-                           auc_metric.accumulate(), train_reader_cost /
-                           print_interval, (train_reader_cost + train_run_cost
-                                            ) / print_interval, total_samples /
-                           print_interval, total_samples / (train_reader_cost +
-                                                            train_run_cost)))
+                           loss.numpy(), train_reader_cost / print_interval, (
+                               train_reader_cost + train_run_cost) /
+                           print_interval, total_samples / print_interval,
+                           total_samples / (train_reader_cost + train_run_cost
+                                            )))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0
             reader_start = time.time()
 
-        logger.info("epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
-            epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
+        logger.info("epoch: {} done, epoch time: {:.2f} s".format(
+            epoch_id, time.time() - epoch_begin))
 
         save_model(
-            dnn_model, optimizer, model_save_path, epoch_id, prefix='rec')
+            recall_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':

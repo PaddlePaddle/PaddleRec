@@ -14,6 +14,21 @@
 
 workspace: "models/contentunderstanding/tagspace"
 
+dygraph:
+  train_data_dir: "data/train_data"
+  use_gpu: False
+  batch_size_train: 10
+  batch_size_infer: 10
+  epochs: 1
+  print_interval: 1
+  # model_init_path: "output_model/0" # init model
+  model_save_path: "increment"
+  test_data_dir: "data/test_data"
+  infer_load_path: "increment"
+  infer_start_epoch: -1
+  infer_end_epoch: 1
+
+
 dataset:
 - name: sample_1
   type: DataLoader
@@ -38,13 +53,14 @@ hyper_parameters:
   margin: 0.1
   neg_size: 3
   num_devices: 1
+  text_len: 45
 
 mode: [runner1,infer_runner]
 
 runner:
 - name: runner1
   class: train
-  epochs: 10
+  epochs: 1
   device: cpu
   save_checkpoint_interval: 1
   save_inference_interval: 1
@@ -52,13 +68,14 @@ runner:
   save_inference_path: "inference"
   save_inference_feed_varnames: []
   save_inference_fetch_varnames: []
+  print_interval: 1
   phases: phase1
 - name: infer_runner
   class: infer
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/9" # load model path
+  init_model_path: "increment/0" # load model path
   phases: phase_infer
 
 phase:

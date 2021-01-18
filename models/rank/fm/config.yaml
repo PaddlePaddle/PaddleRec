@@ -12,65 +12,94 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# global settings 
-debug: false
+# workspace
 workspace: "models/rank/fm"
+#workspace: .
 
+dygraph:
+  train_data_dir: "data/sample_data/train"
+  use_gpu: True
+  batch_size: 2
+  epochs: 3
+  print_interval: 2
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model"
+  test_data_dir: "data/sample_data/train"
+  infer_load_path: "output_model"
+  infer_start_epoch: -1
+  infer_end_epoch: 3
+
+# list of dataset
 dataset:
-  - name: train_sample
-    type: DataLoader
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
-    sparse_slots: "label feat_idx"
-    dense_slots: "feat_value:39"
-  - name: infer_sample
-    type: DataLoader
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
-    sparse_slots: "label feat_idx"
-    dense_slots: "feat_value:39"
+- name: dataloader_train # name of dataset to distinguish different datasets
+  batch_size: 2
+  type: DataLoader # or QueueDataset 
+  data_path: "{workspace}/data/sample_data/train"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_feature:13"
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 2
+  type: QueueDataset # or DataLoader 
+  data_path: "{workspace}/data/sample_data/train"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_feature:13"
+- name: dataset_infer # name
+  batch_size: 2
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/sample_data/train"
+  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+  dense_slots: "dense_feature:13"
 
+# hyper parameters of user-defined network
 hyper_parameters:
-    # 用户自定义配置
-    optimizer:
-        class: Adam
-        learning_rate: 0.001
-    sparse_feature_number: 1086460
-    sparse_feature_dim: 9
-    is_sparse: False
-    reg: 0.001
-    num_field: 39
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: async
+  # user-defined <key, value> pairs
+  sparse_inputs_slots: 27
+  sparse_feature_number: 1000001
+  sparse_feature_dim: 9
+  dense_input_dim: 13
 
-mode: [train_runner,infer_runner]
-# if infer, change mode to "infer_runner" and change phase to "infer_phase"
-
+# select runner by name
+mode: [single_cpu_train, single_cpu_infer]
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
 runner:
-  - name: train_runner
-    class: train
-    epochs: 2
-    device: cpu
-    init_model_path: ""
-    save_checkpoint_interval: 1
-    save_inference_interval: 1
-    save_checkpoint_path: "increment"
-    save_inference_path: "inference"
-    print_interval: 1
-    phases: phase1
+- name: single_cpu_train
+  class: train
+  # num of epochs
+  epochs: 4
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 2 # save model interval of epochs
+  save_inference_interval: 4 # save inference
+  save_checkpoint_path: "increment_fm" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  print_interval: 10
+  phases: [phase1]
 
-  - name: infer_runner
-    class: infer
-    device: cpu
-    init_model_path: "increment/0"
-    print_interval: 1
-    phases: infer_phase
+- name: single_cpu_infer
+  class: infer
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  init_model_path: "increment_fm/3" # load model path
+  phases: [phase2]
 
+# runner will run all the phase in each epoch
 phase:
 - name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: train_sample
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataloader_train # select dataset by name
   thread_num: 1
-- name: infer_phase
-  model: "{workspace}/model.py"
-  dataset_name: infer_sample
+
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
   thread_num: 1
