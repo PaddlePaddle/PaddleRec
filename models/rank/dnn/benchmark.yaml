@@ -1,0 +1,44 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+workspace: "./"
+
+hyper_parameters:
+  optimizer:
+    learning_rate: 0.0001
+    adam_lazy_mode: True
+  dense_feature_dim: 13
+  sparse_feature_dim: 1000001
+  embedding_size: 10
+  fc_sizes: [400, 400, 400]
+
+static_benchmark:
+  epochs: 15
+  print_period: 100
+  batch_size: 1000
+
+  geo_step: 400
+  sync_mode: "async"  # sync / async /geo / heter
+  thread_num: 16
+  use_cuda: 0
+  
+  reader_type: "QueueDataset"  # DataLoader / QueueDataset
+  dataset_debug: False
+  split_file_list: False
+  train_data_path: "{workspace}/train_data"
+  test_data_path: "{workspace}/test_data"
+  save_model_path: "{workspace}/model"
+  pipe_command: "python {workspace}/static_reader.py"
+
+  model_path: "{workspace}/static_model.py"
+  reader_path: "{workspace}/static_reader.py"
