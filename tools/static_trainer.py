@@ -22,7 +22,8 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils_single import load_model, load_yaml, save_model, load_dy_model, load_static_model, get_abs_model, create_data_loader
+from utils.utils_single import load_yaml, load_dy_model, load_static_model, get_abs_model, create_data_loader
+from utils.save_load import save_static_model
 
 import time
 import argparse
@@ -116,6 +117,12 @@ def main(args):
                 train_run_cost = 0.0
                 total_samples = 0
             reader_start = time.time()
+
+        save_static_model(
+            paddle.static.default_main_program(),
+            model_save_path,
+            epoch_id,
+            prefix='rec_static')
 
 
 if __name__ == "__main__":

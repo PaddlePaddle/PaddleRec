@@ -16,14 +16,15 @@
 #workspace: "models/rank/dnn"
 
 
-dygraph:
-  train_data_dir: "../../../tools/datasets/criteo_dataset/slot_train_data_full" # tools/datasets
-  use_gpu: True
-  batch_size: 512
+runner:
+  train_data_dir: "data/slot_train_data_full" # tools/datasets
+  use_gpu: False
+  train_batch_size: 512
   epochs: 4
-  print_interval: 100
+  print_interval: 10
   model_save_path: "output_model_dnn_all"
   test_data_dir: "data/slot_test_data_full"
+  infer_batch_size: 512
   infer_load_path: "output_model_dnn_all"
   infer_start_epoch: 0
   infer_end_epoch: 4

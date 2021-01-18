@@ -41,22 +41,6 @@ def parse_args():
     return args
 
 
-def save_model(net, optimizer, model_path, epoch_id, prefix='rec'):
-    model_path = os.path.join(model_path, str(epoch_id))
-    _mkdir_if_not_exist(model_path)
-    model_prefix = os.path.join(model_path, prefix)
-    paddle.save(net.state_dict(), model_prefix + ".pdparams")
-    paddle.save(optimizer.state_dict(), model_prefix + ".pdopt")
-    logger.info("Already save model in {}".format(model_path))
-
-
-def load_model(model_path, net, prefix='rec'):
-    logger.info("start load model from {}".format(model_path))
-    model_prefix = os.path.join(model_path, prefix)
-    param_state_dict = paddle.load(model_prefix + ".pdparams")
-    net.set_dict(param_state_dict)
-
-
 def get_abs_model(model):
     if model.startswith("paddlerec."):
         dir = envs.paddlerec_adapter(model)
