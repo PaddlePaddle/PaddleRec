@@ -15,7 +15,7 @@
 import paddle
 import os
 import paddle.nn as nn
-import dnn_net as net
+import fm_net as net
 import time
 import logging
 
@@ -53,16 +53,14 @@ def create_model(config):
     sparse_feature_number = config.get(
         "hyper_parameters.sparse_feature_number")
     sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
-    fc_sizes = config.get("hyper_parameters.fc_sizes")
     sparse_fea_num = config.get('hyper_parameters.sparse_fea_num')
     dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
     sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
 
-    dnn_model = net.DNNLayer(sparse_feature_number, sparse_feature_dim,
-                             dense_feature_dim, sparse_input_slot - 1,
-                             fc_sizes)
+    fm_model = net.FMLayer(sparse_feature_number, sparse_feature_dim,
+                           dense_feature_dim, sparse_input_slot - 1)
 
-    return dnn_model
+    return fm_model
 
 
 def create_data_loader(dataset, place, config):
@@ -93,7 +91,7 @@ def main(args):
                model_load_path))
     print("***********************************")
 
-    dnn_model = create_model(config)
+    fm_model = create_model(config)
     file_list = [
         os.path.join(test_data_dir, x) for x in os.listdir(test_data_dir)
     ]
@@ -102,6 +100,7 @@ def main(args):
     test_dataloader = create_data_loader(dataset, place=place, config=config)
 
     auc_metric = paddle.metric.Auc("ROC")
+    acc_metric = paddle.metric.Accuracy()
     epoch_begin = time.time()
     interval_begin = time.time()
 
@@ -109,20 +108,22 @@ def main(args):
 
         logger.info("load model epoch {}".format(epoch_id))
         model_path = os.path.join(model_load_path, str(epoch_id))
-        load_model(model_path, dnn_model)
+        load_model(model_path, fm_model)
         for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
             label, sparse_tensor, dense_tensor = create_feeds(batch,
                                                               dense_input_dim)
+            pred = fm_model(sparse_tensor, dense_tensor)
 
-            raw_pred_2d = dnn_model(sparse_tensor, dense_tensor)
+            label_int = paddle.cast(label, 'int64')
 
             # for auc
-            predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
-            auc_metric.update(preds=predict_2d.numpy(), labels=label.numpy())
+            predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+            auc_metric.update(
+                preds=predict_2d.numpy(), labels=label_int.numpy())
 
-            if batch_id % print_interval == 1:
+            if batch_id % print_interval == 0:
                 logger.info(
                     "infer epoch: {}, batch_id: {}, auc: {:.6f}, speed: {:.2f} ins/s".
                     format(epoch_id, batch_id,
@@ -131,7 +132,7 @@ def main(args):
                 interval_begin = time.time()
 
         logger.info(
-            "infer epoch: {} done, auc: {:.6f}, : epoch time{:.2f} s".format(
+            "infer epoch: {} done, auc: {:.6f}, epoch time{:.2f} s".format(
                 epoch_id, auc_metric.accumulate(), time.time() - epoch_begin))
 
 

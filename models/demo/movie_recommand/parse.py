@@ -148,7 +148,7 @@ def parse_infer(mode, path, user_dict, movie_dict):
     feas = {
         "userid": "userid",
         "movieid": "movieid",
-        "ratings": "scale_0.tmp_0",
+        "ratings": "predict",
         "label": "label"
     }
 

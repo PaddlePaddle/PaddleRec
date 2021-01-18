@@ -17,7 +17,8 @@ import paddle
 
 from paddlerec.core.utils import envs
 from paddlerec.core.model import ModelBase
-from dnn_net import DNNLayer
+import paddlerec.core.metrics
+from gate_dnn_net import GateDNNLayer
 
 
 class Model(ModelBase):
@@ -46,6 +47,10 @@ class Model(ModelBase):
         self.learning_rate = envs.get_global_env(
             "hyper_parameters.optimizer.learning_rate")
         self.fc_sizes = envs.get_global_env("hyper_parameters.fc_sizes")
+        self.use_embedding_gate = envs.get_global_env(
+            'hyper_parameters.use_embedding_gate')
+        self.use_hidden_gate = envs.get_global_env(
+            'hyper_parameters.use_hidden_gate')
 
     def net(self, input, is_infer=False):
         self.sparse_inputs = self._sparse_data_var[1:]
@@ -54,20 +59,24 @@ class Model(ModelBase):
         sparse_number = self.sparse_inputs_slot - 1
         assert sparse_number == len(self.sparse_inputs)
 
-        dnn_model = DNNLayer(self.sparse_feature_number,
-                             self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes)
+        dnn_model = GateDNNLayer(self.sparse_feature_number,
+                                 self.sparse_feature_dim, self.dense_input_dim,
+                                 sparse_number, self.fc_sizes,
+                                 self.use_embedding_gate, self.use_hidden_gate)
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+        raw_pred = dnn_model(self.sparse_inputs, self.dense_input)
 
-        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
+        predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
 
         self.predict = predict_2d
-
-        auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
-                                                    label=self.label_input,
-                                                    num_thresholds=2**12,
-                                                    slide_steps=20)
+        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
+                                              label=self.label_input,
+                                              num_thresholds=2**12,
+                                              slide_steps=20)
+        # auc, batch_auc, _ = paddle.metric.Auc(input=self.predict,
+        #                                             label=self.label_input,
+        #                                             num_thresholds=2**12,
+        #                                             slide_steps=20)
         if is_infer:
             self._infer_results["AUC"] = auc
             self._infer_results["BATCH_AUC"] = batch_auc
@@ -75,10 +84,14 @@ class Model(ModelBase):
 
         self._metrics["AUC"] = auc
         self._metrics["BATCH_AUC"] = batch_auc
-        cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict_2d, label=self.label_input)
-        avg_cost = paddle.mean(x=cost)
-        self._cost = avg_cost
+
+        loss = paddle.nn.functional.log_loss(
+            input=raw_pred, label=paddle.cast(self.label_input, "float32"))
+        loss = paddle.mean(x=loss)
+        # cost = paddle.nn.functional.cross_entropy(
+        #     input=raw_predict_2d, label=self.label_input)
+        # avg_cost = paddle.mean(x=cost)
+        self._cost = loss
 
     def optimizer(self):
         optimizer = paddle.optimizer.Adam(

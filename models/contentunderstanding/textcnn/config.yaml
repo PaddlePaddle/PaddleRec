@@ -59,11 +59,11 @@ mode: [train_runner,infer_runner]
 runner:
 - name: train_runner
   class: train
-  epochs: 16
+  epochs: 10
   device: cpu
   save_checkpoint_interval: 1
   save_inference_interval: 1
-  save_checkpoint_path: "increment"
+  save_checkpoint_path: "increment_textcnn"
   save_inference_path: "inference"
   save_inference_feed_varnames: []
   save_inference_fetch_varnames: []
@@ -75,7 +75,7 @@ runner:
   # device to run training or infer
   device: cpu
   print_interval: 1
-  init_model_path: "increment/14" # load model path
+  init_model_path: "increment_textcnn" # load model path
   phases: phase_infer
 
   

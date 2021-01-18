@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-workspace: "models/recall/word2vec"
+#workspace: "models/recall/word2vec"
+workspace: .
 
 dygraph:
   train_data_dir: "data/all_train"
-  use_gpu: True
+  use_gpu: False
   batch_size: 100
   epochs: 5
-  print_interval: 100
+  print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_all_model"
   test_data_dir: "data/all_test"
