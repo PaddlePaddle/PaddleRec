@@ -43,7 +43,7 @@ class StaticModel():
             "hyper_parameters.optimizer.learning_rate")
         self.fc_sizes = self.config.get("hyper_parameters.fc_sizes")
 
-    def create_feeds(self):
+    def create_feeds(self, is_infer=False):
         dense_input = paddle.static.data(
             name="dense_input",
             shape=[None, self.dense_input_dim],
@@ -89,22 +89,21 @@ class StaticModel():
                                                     num_thresholds=2**12,
                                                     slide_steps=20)
         if is_infer:
-            self._infer_results["AUC"] = auc
-            self._infer_results["BATCH_AUC"] = batch_auc
-            return
+            fetch_dict = {'auc': auc}
+            return fetch_dict
 
         cost = paddle.nn.functional.cross_entropy(
             input=raw_predict_2d, label=self.label_input)
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
 
-        fetch_list = {'cost': avg_cost, 'auc': auc}
-        return fetch_list
+        fetch_dict = {'cost': avg_cost, 'auc': auc}
+        return fetch_dict
 
     def create_optimizer(self):
         optimizer = paddle.optimizer.Adam(
             learning_rate=self.learning_rate, lazy_mode=True)
         optimizer.minimize(self._cost)
 
-    def infer_net(self):
-        pass
+    def infer_net(self, input):
+        return self.net(input, is_infer=True)

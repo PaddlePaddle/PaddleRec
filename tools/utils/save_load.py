@@ -51,3 +51,9 @@ def save_static_model(program, model_path, epoch_id, prefix='rec_static'):
     model_prefix = os.path.join(model_path, prefix)
     paddle.static.save(program, model_prefix)
     logger.info("Already save model in {}".format(model_path))
+
+
+def load_static_model(program, model_path, prefix='rec_static'):
+    logger.info("start load model from {}".format(model_path))
+    model_prefix = os.path.join(model_path, prefix)
+    param_state_dict = paddle.static.load(program, model_prefix)
