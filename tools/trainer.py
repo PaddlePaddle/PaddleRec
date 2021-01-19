@@ -110,7 +110,7 @@ def main(args):
             train_start = time.time()
             batch_size = len(batch[0])
 
-            loss, metric_list = dy_model_class.train_forward(
+            loss, metric_list, tensor_print_dict = dy_model_class.train_forward(
                 dy_model, metric_list, batch, config)
 
             loss.backward()
@@ -125,9 +125,14 @@ def main(args):
                         metric_list_name[metric_id] +
                         ": {:.6f},".format(metric_list[metric_id].accumulate())
                     )
+                tensor_print_str = ""
+                if tensor_print_dict is not None:
+                    for var_name, var in tensor_print_dict.items():
+                        tensor_print_str += (
+                            " {}:".format(var_name) + str(var.numpy()) + ",")
                 logger.info(
-                    "epoch: {}, batch_id: {}, ".format(epoch_id,
-                                                       batch_id) + metric_str +
+                    "epoch: {}, batch_id: {}, ".format(
+                        epoch_id, batch_id) + metric_str + tensor_print_str +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,

@@ -22,7 +22,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader
+from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
 from utils.save_load import save_static_model
 
 import time
@@ -60,6 +60,7 @@ def main(args):
     static_model_class.create_optimizer()
 
     use_gpu = config.get("runner.use_gpu", True)
+    use_auc = config.get("runner.use_auc", False)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
     print_interval = config.get("runner.print_interval", None)
@@ -90,6 +91,8 @@ def main(args):
         train_run_cost = 0.0
         total_samples = 0
         reader_start = time.time()
+        if use_auc:
+            reset_auc()
         for batch_id, batch_data in enumerate(train_dataloader()):
             train_reader_cost += time.time() - reader_start
             train_start = time.time()
