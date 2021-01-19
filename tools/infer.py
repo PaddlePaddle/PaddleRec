@@ -101,10 +101,15 @@ def main(args):
         for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
-            metric_list = dy_model_class.infer_forward(dy_model, metric_list,
-                                                       batch, config)
+            metric_list, tensor_print_dict = dy_model_class.infer_forward(
+                dy_model, metric_list, batch, config)
 
             if batch_id % print_interval == 0:
+                tensor_print_str = ""
+                if tensor_print_dict is not None:
+                    for var_name, var in tensor_print_dict.items():
+                        tensor_print_str += (
+                            " {}:".format(var_name) + str(var.numpy()) + ",")
                 metric_str = ""
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
@@ -112,9 +117,10 @@ def main(args):
                         ": {:.6f},".format(metric_list[metric_id].accumulate())
                     )
                 logger.info("epoch: {}, batch_id: {}, ".format(
-                    epoch_id, batch_id) + metric_str + "speed: {:.2f} ins/s".
-                            format(print_interval * batch_size / (time.time(
-                            ) - interval_begin)))
+                    epoch_id, batch_id) + metric_str + tensor_print_str +
+                            "speed: {:.2f} ins/s".format(
+                                print_interval * batch_size / (time.time(
+                                ) - interval_begin)))
                 interval_begin = time.time()
 
         metric_str = ""
