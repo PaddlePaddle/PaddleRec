@@ -19,6 +19,7 @@
 runner:
   train_data_dir: "data/slot_train_data_full" # tools/datasets
   use_gpu: False
+  use_auc: True
   train_batch_size: 512
   epochs: 4
   print_interval: 10

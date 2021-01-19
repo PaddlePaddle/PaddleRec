@@ -93,4 +93,4 @@ class DygraphModel():
         # update metrics
         predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
-        return metrics_list
+        return metrics_list, None
