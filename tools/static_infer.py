@@ -115,7 +115,7 @@ def main(args):
             metric_str += "{}: {:.6f}, ".format(var_name,
                                                 fetch_batch_var[var_idx][0])
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
-                    " : epoch time{:.2f} s".format(time.time() - epoch_begin))
+                    "epoch time: {:.2f} s".format(time.time() - epoch_begin))
 
 
 if __name__ == "__main__":

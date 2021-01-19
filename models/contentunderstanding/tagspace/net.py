@@ -75,10 +75,8 @@ class TagspaceLayer(nn.Layer):
         text_hid = self.hid_fc(maxpool)
         cos_pos = F.cosine_similarity(
             pos_tag_emb, text_hid, axis=1).reshape([-1, 1])
-        # fluid.layers.Print(cos_pos)
         neg_tag_emb = paddle.max(neg_tag_emb, axis=1)
         neg_tag_emb = paddle.reshape(neg_tag_emb, shape=[-1, self.emb_dim])
         cos_neg = F.cosine_similarity(
             neg_tag_emb, text_hid, axis=1).reshape([-1, 1])
-        # fluid.layers.Print(cos_neg)
         return cos_pos, cos_neg
