@@ -18,18 +18,19 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class WideDeepDataset(IterableDataset):
+class RecDataset(IterableDataset):
     def __init__(self, file_list):
-        super(WideDeepDataset, self).__init__()
+        super(RecDataset, self).__init__()
         self.file_list = file_list
         self.init()
 
     def init(self):
         from operator import mul
         padding = 0
-        self.sparse_slots = ["label"]
-        self.dense_slots = ["wide_input", "deep_input"]
-        self.dense_slots_shape = [8, 58]
+        sparse_slots = "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
+        self.sparse_slots = sparse_slots.strip().split(" ")
+        self.dense_slots = ["dense_feature"]
+        self.dense_slots_shape = [13]
         self.slots = self.sparse_slots + self.dense_slots
         self.slot2index = {}
         self.visit = {}
@@ -69,12 +70,12 @@ class WideDeepDataset(IterableDataset):
                                     [self.padding])
                         else:
                             self.visit[slot] = False
-                    # sparse :label
+                    # sparse
                     output_list = []
-                    for key, value in output[:-2]:
+                    for key, value in output[:-1]:
                         output_list.append(np.array(value))
                     # dense
-                    output_list.append(np.array(output[-2][1]))
-                    output_list.append(np.array(output[-1][1]))
+                    output_list.append(
+                        np.array(output[-1][1]).astype("float32"))
                     # list
                     yield output_list
