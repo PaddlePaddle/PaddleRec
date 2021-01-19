@@ -71,7 +71,7 @@ def is_number(s):
 
 class YamlHelper(object):
     def load_yaml(self, yaml_file, other_part=None):
-        part_list = ["workspace", "static_benchmark", "hyper_parameters"]
+        part_list = ["workspace", "runner", "hyper_parameters"]
         if other_part:
             part_list += other_part
         running_config = self.get_all_inters_from_yaml(yaml_file, part_list)

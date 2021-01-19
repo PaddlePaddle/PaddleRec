@@ -11,90 +11,103 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import paddle.nn.functional as F
-import paddle.nn as nn
-import paddle
-import paddle.fluid as fluid
-import paddle.distributed.fleet as fleet
+
 import math
+import paddle
+
 from net import DNNLayer
 
 
-class Model(object):
-    """
-    DNN for Click-Through Rate prediction
-    """
-
+class StaticModel():
     def __init__(self, config):
         self.cost = None
-        self.metrics = {}
+        self.infer_target_var = None
         self.config = config
-        self.init_hyper_parameters()
+        self._init_hyper_parameters()
 
-    def init_hyper_parameters(self):
-        self.dense_feature_dim = self.config.get(
-            "hyper_parameters.dense_feature_dim")
+    def _init_hyper_parameters(self):
+        self.is_distributed = False
+        self.distributed_embedding = False
+
+        if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
+            self.distributed_embedding = True
+
+        self.sparse_feature_number = self.config.get(
+            "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
             "hyper_parameters.sparse_feature_dim")
-        self.embedding_size = self.config.get(
-            "hyper_parameters.embedding_size")
-        self.fc_sizes = self.config.get("hyper_parameters.fc_sizes")
-
+        self.sparse_inputs_slot = self.config.get(
+            "hyper_parameters.sparse_inputs_slots")
+        self.dense_input_dim = self.config.get(
+            "hyper_parameters.dense_input_dim")
         self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
-        self.adam_lazy_mode = self.config.get(
-            "hyper_parameters.optimizer.adam_lazy_mode")
+        self.fc_sizes = self.config.get("hyper_parameters.fc_sizes")
 
-    def input_data(self):
-        dense_input = fluid.layers.data(
+    def create_feeds(self, is_infer=False):
+        dense_input = paddle.static.data(
             name="dense_input",
-            shape=[self.dense_feature_dim],
+            shape=[None, self.dense_input_dim],
             dtype="float32")
 
         sparse_input_ids = [
-            fluid.layers.data(
-                name="C" + str(i), shape=[1], lod_level=1, dtype="int64")
-            for i in range(1, 27)
+            paddle.static.data(
+                name="C" + str(i), shape=[None, 1], dtype="int64")
+            for i in range(1, self.sparse_inputs_slot)
         ]
 
-        label = fluid.layers.data(name="label", shape=[1], dtype="int64")
+        label = paddle.static.data(
+            name="label", shape=[None, 1], dtype="int64")
 
-        inputs = [dense_input] + sparse_input_ids + [label]
-        return inputs
+        self._sparse_data_var = [label] + sparse_input_ids
+        self._dense_data_var = [dense_input]
 
-    def net(self, input):
-        "Dynamic network -> Static network"
-        dnn_model = DNNLayer(self.sparse_feature_dim, self.embedding_size,
-                             self.dense_feature_dim,
-                             len(input[1:-1]), self.fc_sizes)
+        feeds_list = [label] + sparse_input_ids + [dense_input]
+        return feeds_list
 
-        raw_predict_2d = dnn_model(input[1:-1], input[0])
+    def net(self, input, is_infer=False):
+        self.sparse_inputs = self._sparse_data_var[1:]
+        self.dense_input = self._dense_data_var[0]
+        self.label_input = self._sparse_data_var[0]
+        sparse_number = self.sparse_inputs_slot - 1
+        assert sparse_number == len(
+            self.sparse_inputs
+        ), "sparse_number is {}, sparse_inputs size is {}".format(
+            sparse_number, len(self.sparse_inputs))
 
-        with fluid.device_guard("gpu"):
-            predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
+        dnn_model = DNNLayer(self.sparse_feature_number,
+                             self.sparse_feature_dim, self.dense_input_dim,
+                             sparse_number, self.fc_sizes)
 
-            self.predict = predict_2d
+        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
 
-            auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
-                                                        label=input[-1],
-                                                        num_thresholds=2**12,
-                                                        slide_steps=20)
+        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 
-            cost = paddle.nn.functional.cross_entropy(
-                input=raw_predict_2d, label=input[-1])
-            avg_cost = paddle.mean(x=cost)
-            self.cost = avg_cost
-            self.infer_target_var = auc
+        self.predict = predict_2d
 
-            sync_mode = self.config.get("static_benchmark.sync_mode")
-            if sync_mode == "heter":
-                fluid.layers.Print(auc, message="AUC")
+        auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
+                                                    label=self.label_input,
+                                                    num_thresholds=2**12,
+                                                    slide_steps=20)
+        self.infer_target_var = auc
+        if is_infer:
+            fetch_dict = {'auc': auc}
+            return fetch_dict
 
-        return {'cost': avg_cost, 'auc': auc}
+        cost = paddle.nn.functional.cross_entropy(
+            input=raw_predict_2d, label=self.label_input)
+        avg_cost = paddle.mean(x=cost)
+        self._cost = avg_cost
 
-    def minimize(self, strategy=None):
-        optimizer = fluid.optimizer.Adam(
-            self.learning_rate, lazy_mode=self.adam_lazy_mode)
+        fetch_dict = {'cost': avg_cost, 'auc': auc}
+        return fetch_dict
+
+    def create_optimizer(self, strategy=None):
+        optimizer = paddle.optimizer.Adam(self.learning_rate, lazy_mode=True)
         if strategy != None:
+            import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
-        optimizer.minimize(self.cost)
+        optimizer.minimize(self._cost)
+
+    def infer_net(self, input):
+        return self.net(input, is_infer=True)

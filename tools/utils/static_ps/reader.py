@@ -17,10 +17,9 @@ import os
 import warnings
 import logging
 import paddle
-import paddle.fluid as fluid
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
-import utils
+import common
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -28,9 +27,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_reader(input_var, config):
-    reader_type = config.get("static_benchmark.reader_type")
-    train_data_path = config.get("static_benchmark.train_data_path")
+    reader_type = config.get("runner.reader_type")
+    train_data_path = config.get("runner.train_data_dir")
     assert train_data_path != ""
+
+    train_data_path = os.path.join(config["config_abs_dir"], train_data_path)
+
     assert reader_type in ["QueueDataset", "DataLoader"]
     file_list = get_file_list(train_data_path, config)
 
@@ -43,8 +45,9 @@ def get_reader(input_var, config):
 
 
 def get_infer_reader(input_var, config):
-    test_data_path = config.get("static_benchmark.test_data_path")
+    test_data_path = config.get("runner.test_data_dir")
     assert test_data_path != ""
+    test_data_path = os.path.join(config["config_abs_dir"], test_data_path)
     file_list = get_file_list(test_data_path, config)
 
     reader_instance = InferDataLoader(input_var, file_list, config)
@@ -52,8 +55,9 @@ def get_infer_reader(input_var, config):
 
 
 def get_file_list(data_path, config):
+    assert os.path.exists(data_path)
     file_list = [data_path + "/%s" % x for x in os.listdir(data_path)]
-    if config.get("static_benchmark.split_file_list"):
+    if config.get("runner.split_file_list"):
         logger.info("Split file list for worker {}".format(fleet.worker_index(
         )))
         file_list = fleet.util.get_file_shard(file_list)
@@ -85,7 +89,7 @@ def get_word_num(file_list):
 
 
 def get_reader_generator(path, reader_name="Reader"):
-    reader_class = utils.lazy_instance_by_fliename(path, reader_name)()
+    reader_class = common.lazy_instance_by_fliename(path, reader_name)()
     return reader_class
 
 
@@ -99,15 +103,15 @@ class DataLoader(object):
 
     def get_reader(self):
         logger.info("Get DataLoader")
-        loader = fluid.io.DataLoader.from_generator(
+        loader = paddle.io.DataLoader.from_generator(
             feed_list=self.input_var,
             capacity=64,
             iterable=False,
             use_double_buffer=False)
-        path = self.config.get("static_benchmark.reader_path")
+        path = self.config.get("runner.reader_path")
         generator = get_reader_generator(path)
         generator.init(self.config)
-        batch_size = int(self.config.get("static_benchmark.batch_size"))
+        batch_size = int(self.config.get("runner.train_batch_size"))
         loader.set_sample_generator(
             generator.dataloader(self.file_list),
             batch_size=batch_size,
@@ -126,15 +130,16 @@ class InferDataLoader(object):
 
     def get_reader(self):
         logger.info("Get DataLoader")
-        loader = fluid.io.DataLoader.from_generator(
+        loader = paddle.io.DataLoader.from_generator(
             feed_list=self.input_var, capacity=64, iterable=True)
-        path = self.config.get("static_benchmark.reader_path")
+        path = self.config.get("runner.infer_reader_path")
+        path = os.path.join(self.config["config_abs_dir"], path)
         generator = get_reader_generator(path)
         generator.init(self.config)
-        places = fluid.CPUPlace()
+        places = paddle.CPUPlace()
         loader.set_sample_generator(
             generator.dataloader(self.file_list),
-            batch_size=int(self.config.get("static_benchmark.batch_size")),
+            batch_size=int(self.config.get("runner.infer_batch_size")),
             drop_last=True,
             places=places)
         return loader
@@ -147,19 +152,26 @@ class QueueDatset(object):
         self.config = config
         self.input_var = input_var
         self.file_list = file_list
-        self.pipe_command = self.config.get("static_benchmark.pipe_command")
+        self.pipe_command = self.config.get("runner.pipe_command")
+        self.train_reader = self.config.get("runner.train_reader_path")
         assert self.pipe_command != None
-        utils_path = utils.get_utils_file_path()
+        utils_path = common.get_utils_file_path()
+        print("utils_path: {}".format(utils_path))
+        abs_train_reader = os.path.join(config["config_abs_dir"],
+                                        self.train_reader)
+        self.pipe_command = self.pipe_command.replace(self.train_reader,
+                                                      abs_train_reader)
         self.pipe_command = "{} {} {}".format(self.pipe_command,
                                               config.get("yaml_path"),
                                               utils_path)
-        self.batch_size = int(self.config.get("static_benchmark.batch_size"))
+        self.batch_size = int(self.config.get("runner.train_batch_size"))
         assert self.batch_size >= 1
-        self.thread_num = int(self.config.get("static_benchmark.thread_num"))
+        self.thread_num = int(self.config.get("runner.thread_num"))
         assert self.thread_num >= 1
 
     def get_reader(self):
         logger.info("Get Dataset")
+        import paddle.fluid as fluid
         dataset = fluid.DatasetFactory().create_dataset()
         dataset.set_use_var(self.input_var)
         dataset.set_pipe_command(self.pipe_command)

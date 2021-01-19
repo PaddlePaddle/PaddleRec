@@ -17,10 +17,10 @@ import os
 import warnings
 import logging
 import paddle
-import paddle.fluid as fluid
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
 import utils
+import sys
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -33,7 +33,7 @@ def get_strategy(config):
             "Not Find Distributed env, Change To local train mode. If you want train with fleet, please use [fleetrun] command."
         )
         return None
-    sync_mode = config.get("static_benchmark.sync_mode")
+    sync_mode = config.get("runner.sync_mode")
     assert sync_mode in ["async", "sync", "geo", "heter"]
     if sync_mode == "sync":
         strategy = paddle.distributed.fleet.DistributedStrategy()
@@ -44,9 +44,7 @@ def get_strategy(config):
     elif sync_mode == "geo":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
-        strategy.a_sync_configs = {
-            "k_steps": config.get("static_benchmark.geo_step")
-        }
+        strategy.a_sync_configs = {"k_steps": config.get("runner.geo_step")}
     elif sync_mode == "heter":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
@@ -55,6 +53,8 @@ def get_strategy(config):
 
 
 def get_model(config):
-    model_path = config.get("static_benchmark.model_path")
-    model_class = utils.lazy_instance_by_fliename(model_path, "Model")(config)
-    return model_class
+    abs_dir = config['config_abs_dir']
+    sys.path.append(abs_dir)
+    from static_model import StaticModel
+    static_model = StaticModel(config)
+    return static_model
