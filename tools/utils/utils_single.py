@@ -21,6 +21,7 @@ import argparse
 import warnings
 import logging
 import paddle
+import numpy as np
 from paddle.io import DistributedBatchSampler, DataLoader
 
 logging.basicConfig(
@@ -106,14 +107,14 @@ def create_data_loader(config, place, mode="train"):
     return loader
 
 
-def load_dy_model(abs_dir):
+def load_dy_model_class(abs_dir):
     sys.path.append(abs_dir)
     from dygraph_model import DygraphModel
     dy_model = DygraphModel()
     return dy_model
 
 
-def load_static_model(config):
+def load_static_model_class(config):
     abs_dir = config['config_abs_dir']
     sys.path.append(abs_dir)
     from static_model import StaticModel
@@ -127,3 +128,19 @@ def load_yaml(yaml_file, other_part=None):
         part_list += other_part
     running_config = get_all_inters_from_yaml(yaml_file, part_list)
     return running_config
+
+
+def reset_auc():
+    auc_var_name = [
+        "_generated_var_0", "_generated_var_1", "_generated_var_2",
+        "_generated_var_3"
+    ]
+    for name in auc_var_name:
+        param = paddle.fluid.global_scope().var(name)
+        if param == None:
+            continue
+        tensor = param.get_tensor()
+        if param:
+            tensor_array = np.zeros(tensor._get_dims()).astype("int64")
+            tensor.set(tensor_array, paddle.CPUPlace())
+            logger.info("AUC Reset To Zero: {}".format(name))

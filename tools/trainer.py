@@ -37,7 +37,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils_single import load_yaml, load_dy_model, get_abs_model, create_data_loader
+from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
 from utils.save_load import load_model, save_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
@@ -60,7 +60,7 @@ def main(args):
     paddle.seed(12345)
     # load config
     config = load_yaml(args.config_yaml)
-    dy_model_class = load_dy_model(args.abs_dir)
+    dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
