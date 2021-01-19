@@ -58,7 +58,7 @@ def main(args):
     logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
 
     use_gpu = config.get("runner.use_gpu", True)
-    use_auc = config.get("runner.use_auc", True)
+    use_auc = config.get("runner.use_auc", False)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
     model_load_path = config.get("runner.infer_load_path", "model_output")
