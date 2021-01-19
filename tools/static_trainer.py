@@ -22,7 +22,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils_single import load_yaml, load_dy_model, load_static_model_class, get_abs_model, create_data_loader
+from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader
 from utils.save_load import save_static_model
 
 import time
@@ -49,7 +49,7 @@ def main(args):
     config = load_yaml(args.config_yaml)
     config["config_abs_dir"] = args.abs_dir
     # load static model class
-    static_model_class = load_static_model(config)
+    static_model_class = load_static_model_class(config)
 
     input_data = static_model_class.create_feeds()
     input_data_names = [data.name for data in input_data]
