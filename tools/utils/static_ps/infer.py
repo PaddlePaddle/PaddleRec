@@ -18,14 +18,17 @@ import numpy as np
 import warnings
 import logging
 import paddle
-import paddle.fluid as fluid
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
-import utils
 import time
-import reader
-import program
 import argparse
+import sys
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+from common import YamlHelper, is_number
+from program import get_model, get_strategy
+from reader import get_reader, get_infer_reader, get_example_num, get_file_list, get_word_num
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -35,15 +38,17 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train script")
     parser.add_argument(
-        '-c',
+        '-m',
         '--config_yaml',
         type=str,
         required=True,
         help='config file path')
     args = parser.parse_args()
-    yaml_helper = utils.YamlHelper()
+    args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
+    yaml_helper = YamlHelper()
     config = yaml_helper.load_yaml(args.config_yaml)
     config["yaml_path"] = args.config_yaml
+    config["config_abs_dir"] = args.abs_dir
     yaml_helper.print_yaml(config)
     return config
 
@@ -61,15 +66,15 @@ class Main(object):
     def run(self):
         self.network()
         self.init_reader()
-        use_cuda = int(config.get("static_benchmark.use_cuda"))
+        use_cuda = int(config.get("runner.use_gpu"))
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
 
-        init_model_path = config.get("static_benchmark.save_model_path")
+        init_model_path = config.get("runner.model_save_path")
         for file in os.listdir(init_model_path):
             file_path = os.path.join(init_model_path, file)
             # hard code for epoch model folder
-            if os.path.isdir(file_path) and utils.is_number(file):
+            if os.path.isdir(file_path) and is_number(file):
                 self.epoch_model_path_list.append(file_path)
                 self.epoch_model_name_list.append(file)
 
@@ -87,13 +92,13 @@ class Main(object):
         logger.info("Run Success, Exit.")
 
     def network(self):
-        model = program.get_model(self.config)
-        self.input_data = model.input_data()
+        model = get_model(self.config)
+        self.input_data = model.create_feeds()
         self.init_reader()
 
     def run_infer(self, model_path, model_name):
         [inference_program, feed_target_names, fetch_targets] = (
-            fluid.io.load_inference_model(
+            paddle.fluid.io.load_inference_model(
                 dirname=model_path, executor=self.exe))
 
         self.reset_auc()
@@ -103,7 +108,7 @@ class Main(object):
                                    feed=data,
                                    fetch_list=fetch_targets)
             batch_id += 1
-            print_step = int(config.get("static_benchmark.print_period"))
+            print_step = int(config.get("runner.print_interval"))
             if batch_id % print_step == 0:
                 metrics_string = ""
                 for var_idx, var_name in enumerate(results):
@@ -113,15 +118,14 @@ class Main(object):
                     model_name, batch_id, metrics_string))
 
     def init_reader(self):
-        self.reader, self.file_list = reader.get_infer_reader(self.input_data,
-                                                              config)
+        self.reader, self.file_list = get_infer_reader(self.input_data, config)
         self.example_nums = 0
-        self.count_method = self.config.get(
-            "static_benchmark.example_count_method", "example")
+        self.count_method = self.config.get("runner.example_count_method",
+                                            "example")
         if self.count_method == "example":
-            self.example_nums = reader.get_example_num(self.file_list)
+            self.example_nums = get_example_num(self.file_list)
         elif self.count_method == "word":
-            self.example_nums = reader.get_word_num(self.file_list)
+            self.example_nums = get_word_num(self.file_list)
         else:
             raise ValueError(
                 "Set static_benchmark.example_count_method for example / word for example count."
@@ -133,7 +137,7 @@ class Main(object):
             "_generated_var_3"
         ]
         for name in auc_var_name:
-            param = fluid.global_scope().var(name)
+            param = paddle.static.global_scope().var(name)
             if param == None:
                 continue
             tensor = param.get_tensor()
@@ -146,7 +150,7 @@ class Main(object):
 if __name__ == "__main__":
     paddle.enable_static()
     config = parse_args()
-    save_model_path = config.get("static_benchmark.save_model_path")
+    save_model_path = config.get("runner.model_save_path")
     if save_model_path and os.path.exists(save_model_path):
         benchmark_main = Main(config)
         benchmark_main.run()

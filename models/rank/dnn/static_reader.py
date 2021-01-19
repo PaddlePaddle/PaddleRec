@@ -49,7 +49,7 @@ class Reader(dg.MultiSlotDataGenerator):
         for idx in categorical_range_:
             sparse_feature.append([hash(str(idx) + features[idx]) % hash_dim_])
         label = [int(features[0])]
-        return [dense_feature] + sparse_feature + [label]
+        return [label] + sparse_feature + [dense_feature]
 
     def generate_sample(self, line):
         "Dataset Generator"
@@ -81,8 +81,8 @@ if __name__ == "__main__":
     yaml_path = sys.argv[1]
     utils_path = sys.argv[2]
     sys.path.append(utils_path)
-    import utils
-    yaml_helper = utils.YamlHelper()
+    import common
+    yaml_helper = common.YamlHelper()
     config = yaml_helper.load_yaml(yaml_path)
 
     r = Reader()
