@@ -20,7 +20,7 @@ import math
 import numpy as np
 
 
-class Model(object):
+class StaticModel(object):
     def __init__(self, config):
         self.cost = None
         self.metrics = {}
@@ -42,7 +42,7 @@ class Model(object):
         self.decay_rate = self.config.get(
             "hyper_parameters.optimizer.decay_rate")
 
-    def input_data(self, is_infer=False, **kwargs):
+    def create_feeds(self, is_infer=False, **kwargs):
         if is_infer:
             analogy_a = paddle.static.data(
                 name="analogy_a", shape=[None], dtype='int64')
@@ -149,13 +149,13 @@ class Model(object):
                 neg_xent, dim=1))
         avg_cost = fluid.layers.reduce_mean(cost)
 
-        self.infer_target_var = avg_cost
+        self.inference_target_var = avg_cost
         self.cost = avg_cost
         self.metrics["LOSS"] = avg_cost
 
         return self.metrics
 
-    def minimize(self, strategy=None):
+    def create_optimizer(self, strategy=None):
         lr = float(self.config.get("hyper_parameters.optimizer.learning_rate"))
         decay_rate = float(
             self.config.get("hyper_parameters.optimizer.decay_rate"))

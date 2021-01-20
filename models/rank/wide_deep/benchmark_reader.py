@@ -16,7 +16,7 @@ import yaml
 import six
 import os
 import copy
-import paddle.fluid.incubate.data_generator as dg
+import paddle.distributed.fleet as fleet
 import logging
 
 cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -31,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Reader(dg.MultiSlotDataGenerator):
+class Reader(fleet.MultiSlotDataGenerator):
     def init(self, config):
         self.config = config
 
@@ -49,7 +49,7 @@ class Reader(dg.MultiSlotDataGenerator):
         for idx in categorical_range_:
             sparse_feature.append([hash(str(idx) + features[idx]) % hash_dim_])
         label = [int(features[0])]
-        return [dense_feature] + sparse_feature + [label]
+        return [label] + sparse_feature + [dense_feature]
 
     def generate_sample(self, line):
         "Dataset Generator"
@@ -65,7 +65,7 @@ class Reader(dg.MultiSlotDataGenerator):
         return reader
 
     def dataloader(self, file_list):
-        "DataLoader Generator"
+        "DataLoader Pyreader Generator"
 
         def reader():
             for file in file_list:
@@ -81,8 +81,8 @@ if __name__ == "__main__":
     yaml_path = sys.argv[1]
     utils_path = sys.argv[2]
     sys.path.append(utils_path)
-    import utils
-    yaml_helper = utils.YamlHelper()
+    import common
+    yaml_helper = common.YamlHelper()
     config = yaml_helper.load_yaml(yaml_path)
 
     r = Reader()
