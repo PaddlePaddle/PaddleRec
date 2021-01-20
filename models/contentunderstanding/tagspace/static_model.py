@@ -78,6 +78,7 @@ class StaticModel():
         correct = paddle.sum(less)
         total = paddle.sum(label_ones)
         acc = paddle.divide(correct, total)
+        self.inference_target_var = acc
 
         if is_infer:
             fetch_dict = {'ACC': acc}
@@ -88,8 +89,11 @@ class StaticModel():
         fetch_dict = {'cost': avg_cost, 'ACC': acc}
         return fetch_dict
 
-    def create_optimizer(self):
+    def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.Adagrad(learning_rate=self.learning_rate)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
 
     def infer_net(self, input):
