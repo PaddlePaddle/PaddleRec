@@ -18,7 +18,7 @@ from paddle.io import IterableDataset
 
 
 class RecDataset(IterableDataset):
-    def __init__(self, file_list):
+    def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
 
