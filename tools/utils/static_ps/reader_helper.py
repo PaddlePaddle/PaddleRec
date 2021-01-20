@@ -33,7 +33,7 @@ def get_reader(input_var, config):
 
     train_data_path = os.path.join(config["config_abs_dir"], train_data_path)
 
-    assert reader_type in ["QueueDataset", "DataLoader"]
+    assert reader_type in ["QueueDataset", "DataLoader", "RecDataset", None]
     file_list = get_file_list(train_data_path, config)
 
     if reader_type == "QueueDataset":
@@ -41,6 +41,9 @@ def get_reader(input_var, config):
         return reader_instance.get_reader(), file_list
     elif reader_type == "DataLoader":
         reader_instance = DataLoader(input_var, file_list, config)
+        return reader_instance.get_reader(), file_list
+    elif reader_type == None or reader_type == "RecDataset":
+        reader_instance = RecDatasetReader(input_var, file_list, config)
         return reader_instance.get_reader(), file_list
 
 
@@ -93,6 +96,37 @@ def get_reader_generator(path, reader_name="Reader"):
     return reader_class
 
 
+class RecDatasetReader(object):
+    def __init__(self, input_var, file_list, config):
+        assert isinstance(input_var, list)
+        assert len(file_list) > 0
+        self.input_var = input_var
+        self.file_list = file_list
+        self.config = config
+
+    def get_reader(self):
+        logger.info("Get DataLoader")
+
+        config_abs_dir = self.config.get("config_abs_dir", None)
+        reader_path = self.config.get('runner.train_reader_path', 'reader')
+        reader_path = os.path.join(config_abs_dir, reader_path)
+        logger.info("Reader Path: {}".format(reader_path))
+
+        from paddle.io import DataLoader
+        dataset = common.lazy_instance_by_fliename(reader_path, "RecDataset")
+        print("dataset: {}".format(dataset))
+
+        use_cuda = int(self.config.get("runner.use_gpu"))
+        batch_size = self.config.get('runner.train_batch_size', None)
+        place = paddle.set_device('gpu' if use_cuda else 'cpu')
+
+        generator = dataset(self.file_list)
+        generator.init()
+        loader = DataLoader(
+            generator, batch_size=batch_size, places=place, drop_last=True)
+        return loader
+
+
 class DataLoader(object):
     def __init__(self, input_var, file_list, config):
         assert isinstance(input_var, list)
@@ -108,7 +142,8 @@ class DataLoader(object):
             capacity=64,
             iterable=False,
             use_double_buffer=False)
-        path = self.config.get("runner.reader_path")
+        path = self.config.get("runner.train_reader_path")
+        path = os.path.join(self.config["config_abs_dir"], path)
         generator = get_reader_generator(path)
         generator.init(self.config)
         batch_size = int(self.config.get("runner.train_batch_size"))

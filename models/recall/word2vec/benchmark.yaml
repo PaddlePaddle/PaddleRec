@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-workspace: "./"
-
 hyper_parameters:
   optimizer:
     learning_rate: 1.0
@@ -24,27 +22,28 @@ hyper_parameters:
   neg_num: 5
   window_size: 5
 
-static_benchmark:
-  epochs: 5
-  batch_size: 100
-  print_period: 1000
+runner:
+  epochs: 20
+  print_interval: 10
 
-  sync_mode: "async"  # sync / async /geo / heter
+  sync_mode: "geo"  # sync / async /geo / heter
   geo_step: 400
   thread_num: 16
-  use_cuda: 0
+  use_gpu: 0
+  
+  model_path: "static_model.py"
+  train_reader_path: "static_reader.py"
   reader_type: "QueueDataset"  # DataLoader / QueueDataset
   dataset_debug: False
-  
-  model_path: "{workspace}/static_model.py"
-  reader_path: "{workspace}/static_reader.py"
-  train_data_path: "{workspace}/train_data"
-  test_data_path: "{workspace}/test_data"
-  save_model_path: "{workspace}/model"
-  split_file_list: False
-  pipe_command: "python {workspace}/static_reader.py"
+  pipe_command: "python static_reader.py"
   example_count_method: "word"
-  
+  dataset_debug: False
+  split_file_list: False
+
+  train_batch_size: 100
+  train_data_dir: "train_data"
+  train_reader_path: "static_ps_reader.py"
+  model_save_path: "model"
+
   word_count_dict_path: "{workspace}/dict/word_count_dict.txt"
   word_id_dict_path: "{workspace}/dict/word_id_dict.txt"
-  

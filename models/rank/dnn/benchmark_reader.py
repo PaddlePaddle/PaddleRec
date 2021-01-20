@@ -16,7 +16,7 @@ import yaml
 import six
 import os
 import copy
-import paddle.fluid.incubate.data_generator as dg
+import paddle.distributed.fleet as fleet
 import logging
 
 cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -31,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Reader(dg.MultiSlotDataGenerator):
+class Reader(fleet.MultiSlotDataGenerator):
     def init(self, config):
         self.config = config
 
@@ -65,7 +65,7 @@ class Reader(dg.MultiSlotDataGenerator):
         return reader
 
     def dataloader(self, file_list):
-        "DataLoader Generator"
+        "DataLoader Pyreader Generator"
 
         def reader():
             for file in file_list:
