@@ -81,17 +81,18 @@ class StaticModel():
 
         self.predict = predict_2d
 
-        auc, batch_auc, _ = paddle.static.layers.auc(input=self.predict,
-                                                     label=self.label_input,
-                                                     num_thresholds=2**12,
-                                                     slide_steps=20)
+        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
+                                              label=self.label_input,
+                                              num_thresholds=2**12,
+                                              slide_steps=20)
         self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}
             return fetch_dict
 
-        cost = paddle.nn.functional.cross_entropy(
-            input=predict_2d, label=self.label_input)
+        cost = paddle.nn.functional.log_loss(
+            input=pred, label=paddle.cast(
+                self.label_input, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
 
