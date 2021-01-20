@@ -15,7 +15,7 @@
 import math
 import paddle
 
-from net import WideDeepLayer
+from net import DeepFMLayer
 
 
 class StaticModel():
@@ -71,20 +71,20 @@ class StaticModel():
         sparse_number = self.sparse_inputs_slot - 1
         assert sparse_number == len(self.sparse_inputs)
 
-        wide_deep_model = WideDeepLayer(
+        deepfm_model = DeepFMLayer(
             self.sparse_feature_number, self.sparse_feature_dim,
             self.dense_input_dim, sparse_number, self.fc_sizes)
 
-        pred = wide_deep_model(self.sparse_inputs, self.dense_input)
+        pred = deepfm_model(self.sparse_inputs, self.dense_input)
+
+        #pred = F.sigmoid(prediction)
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        self.predict = predict_2d
+        auc, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+                                                        label=self.label_input,
+                                                        slide_steps=0)
 
-        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
-                                              label=self.label_input,
-                                              num_thresholds=2**12,
-                                              slide_steps=20)
         self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}
@@ -95,7 +95,6 @@ class StaticModel():
                 self.label_input, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
-
         fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict
 

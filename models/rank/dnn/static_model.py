@@ -21,6 +21,7 @@ from net import DNNLayer
 class StaticModel():
     def __init__(self, config):
         self.cost = None
+        self.infer_target_var = None
         self.config = config
         self._init_hyper_parameters()
 
@@ -88,6 +89,7 @@ class StaticModel():
                                                     label=self.label_input,
                                                     num_thresholds=2**12,
                                                     slide_steps=20)
+        self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}
             return fetch_dict
@@ -100,9 +102,12 @@ class StaticModel():
         fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict
 
-    def create_optimizer(self):
+    def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.Adam(
             learning_rate=self.learning_rate, lazy_mode=True)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
 
     def infer_net(self, input):

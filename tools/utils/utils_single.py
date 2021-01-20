@@ -101,7 +101,7 @@ def create_data_loader(config, place, mode="train"):
     logger.info("reader path:{}".format(reader_path))
     from importlib import import_module
     reader_class = import_module(reader_path)
-    dataset = reader_class.RecDataset(file_list)
+    dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
