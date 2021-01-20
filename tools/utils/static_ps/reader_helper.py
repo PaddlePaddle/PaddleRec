@@ -206,11 +206,11 @@ class QueueDatset(object):
 
     def get_reader(self):
         logger.info("Get Dataset")
-        import paddle.fluid as fluid
-        dataset = fluid.DatasetFactory().create_dataset()
-        dataset.set_use_var(self.input_var)
-        dataset.set_pipe_command(self.pipe_command)
-        dataset.set_batch_size(self.batch_size)
-        dataset.set_thread(self.thread_num)
+        dataset = paddle.distributed.QueueDataset()
+        dataset.init(
+            use_var=self.input_var,
+            pipe_command=self.pipe_command,
+            batch_size=self.batch_size,
+            thread_num=self.thread_num)
         dataset.set_filelist(self.file_list)
         return dataset
