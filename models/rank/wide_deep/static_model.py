@@ -12,23 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle
-import paddle.nn as nn
-import paddle.nn.functional as F
 import math
-import paddle.fluid as fluid
-import paddle.distributed.fleet as fleet
-from wide_deep_net import WideDeepLayer
+import paddle
+
+from net import WideDeepLayer
 
 
-class Model(object):
+class StaticModel():
     def __init__(self, config):
         self.cost = None
-        self.metrics = {}
         self.config = config
-        self.init_hyper_parameters()
+        self._init_hyper_parameters()
 
-    def init_hyper_parameters(self):
+    def _init_hyper_parameters(self):
+        self.is_distributed = False
+        self.distributed_embedding = False
+
+        if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
+            self.distributed_embedding = True
+
         self.sparse_feature_number = self.config.get(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
@@ -40,60 +42,72 @@ class Model(object):
         self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
         self.fc_sizes = self.config.get("hyper_parameters.fc_sizes")
-        self.adam_lazy_mode = self.config.get(
-            "hyper_parameters.optimizer.adam_lazy_mode")
 
-    def input_data(self):
-        dense_input = fluid.layers.data(
-            name="dense_input", shape=[self.dense_input_dim], dtype="float32")
+    def create_feeds(self, is_infer=False):
+        dense_input = paddle.static.data(
+            name="dense_input",
+            shape=[None, self.dense_input_dim],
+            dtype="float32")
 
         sparse_input_ids = [
-            fluid.layers.data(
-                name="C" + str(i), shape=[1], lod_level=1, dtype="int64")
+            paddle.static.data(
+                name="C" + str(i), shape=[None, 1], dtype="int64")
             for i in range(1, self.sparse_inputs_slot)
         ]
 
-        label = fluid.layers.data(name="label", shape=[1], dtype="int64")
+        label = paddle.static.data(
+            name="label", shape=[None, 1], dtype="int64")
 
-        inputs = [dense_input] + sparse_input_ids + [label]
-        return inputs
+        self._sparse_data_var = [label] + sparse_input_ids
+        self._dense_data_var = [dense_input]
 
-    def net(self, inputs, is_infer=False):
-        self.sparse_inputs = inputs[1:-1]
-        self.dense_input = inputs[0]
-        self.label_input = inputs[-1]
+        feeds_list = [label] + sparse_input_ids + [dense_input]
+        return feeds_list
 
-        wide_deep_model = WideDeepLayer(
-            self.sparse_feature_number, self.sparse_feature_dim,
-            self.dense_input_dim, self.sparse_inputs_slot - 1, self.fc_sizes)
+    def net(self, input, is_infer=False):
+        self.sparse_inputs = self._sparse_data_var[1:]
+        self.dense_input = self._dense_data_var[0]
+        self.label_input = self._sparse_data_var[0]
+        sparse_number = self.sparse_inputs_slot - 1
+        assert sparse_number == len(
+            self.sparse_inputs
+        ), "sparse_number is {}, sparse_inputs size is {}".format(
+            sparse_number, len(self.sparse_inputs))
 
-        pred = wide_deep_model(self.sparse_inputs, self.dense_input)
+        dnn_model = DNNLayer(self.sparse_feature_number,
+                             self.sparse_feature_dim, self.dense_input_dim,
+                             sparse_number, self.fc_sizes)
 
-        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
 
-        auc, batch_auc, _ = paddle.fluid.layers.auc(input=predict_2d,
+        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
+
+        self.predict = predict_2d
+
+        auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
                                                     label=self.label_input,
                                                     num_thresholds=2**12,
                                                     slide_steps=20)
-
+        self.inference_target_var = auc
         if is_infer:
-            self._infer_results["AUC"] = auc
-            return
+            fetch_dict = {'auc': auc}
+            return fetch_dict
 
-        cost = paddle.nn.functional.log_loss(
-            input=pred, label=paddle.cast(
-                self.label_input, dtype="float32"))
+        cost = paddle.nn.functional.cross_entropy(
+            input=raw_predict_2d, label=self.label_input)
         avg_cost = paddle.mean(x=cost)
-        self.cost = avg_cost
-        self.infer_target_var = auc
-        return {'cost': avg_cost, 'auc': auc}
+        self._cost = avg_cost
 
-    def minimize(self, strategy=None):
+        fetch_dict = {'cost': avg_cost, 'auc': auc}
+        return fetch_dict
+
+    def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.Adam(
-            self.learning_rate, lazy_mode=self.adam_lazy_mode)
+            learning_rate=self.learning_rate, lazy_mode=True)
         if strategy != None:
+            import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
-        optimizer.minimize(self.cost)
+        optimizer.minimize(self._cost)
 
-    def infer_net(self):
-        pass
+    def infer_net(self, input):
+        return self.net(input, is_infer=True)
