@@ -69,25 +69,22 @@ class StaticModel():
         self.dense_input = self._dense_data_var[0]
         self.label_input = self._sparse_data_var[0]
         sparse_number = self.sparse_inputs_slot - 1
-        assert sparse_number == len(
-            self.sparse_inputs
-        ), "sparse_number is {}, sparse_inputs size is {}".format(
-            sparse_number, len(self.sparse_inputs))
+        assert sparse_number == len(self.sparse_inputs)
 
-        dnn_model = DNNLayer(self.sparse_feature_number,
-                             self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes)
+        wide_deep_model = WideDeepLayer(
+            self.sparse_feature_number, self.sparse_feature_dim,
+            self.dense_input_dim, sparse_number, self.fc_sizes)
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+        pred = wide_deep_model(self.sparse_inputs, self.dense_input)
 
-        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
         self.predict = predict_2d
 
-        auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
-                                                    label=self.label_input,
-                                                    num_thresholds=2**12,
-                                                    slide_steps=20)
+        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
+                                              label=self.label_input,
+                                              num_thresholds=2**12,
+                                              slide_steps=20)
         if is_infer:
             fetch_dict = {'auc': auc}
             return fetch_dict
