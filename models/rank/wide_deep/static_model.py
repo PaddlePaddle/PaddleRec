@@ -88,6 +88,7 @@ class StaticModel():
                                                     label=self.label_input,
                                                     num_thresholds=2**12,
                                                     slide_steps=20)
+        self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}
             return fetch_dict
@@ -100,49 +101,12 @@ class StaticModel():
         fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict
 
-    def create_optimizer(self):
+    def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.Adam(
             learning_rate=self.learning_rate, lazy_mode=True)
-        optimizer.minimize(self._cost)
-
-    def infer_net(self, input):
-        return self.net(input, is_infer=True)
-
-    def net(self, input, is_infer=False):
-        self.sparse_inputs = self._sparse_data_var[1:]
-        self.dense_input = self._dense_data_var[0]
-        self.label_input = self._sparse_data_var[0]
-        sparse_number = self.sparse_inputs_slot - 1
-        assert sparse_number == len(self.sparse_inputs)
-
-        wide_deep_model = WideDeepLayer(
-            self.sparse_feature_number, self.sparse_feature_dim,
-            self.dense_input_dim, sparse_number, self.fc_sizes)
-
-        pred = wide_deep_model(self.sparse_inputs, self.dense_input)
-
-        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
-
-        auc, batch_auc, _ = paddle.fluid.layers.auc(input=predict_2d,
-                                                    label=paddle.cast(
-                                                        x=self.label_input,
-                                                        dtype='int64'))
-
-        if is_infer:
-            fetch_dict = {'auc': auc}
-            return fetch_dict
-
-        cost = paddle.nn.functional.log_loss(
-            input=pred, label=paddle.cast(
-                self.label_input, dtype="float32"))
-        avg_cost = paddle.mean(x=cost)
-        self._cost = avg_cost
-        fetch_dict = {'cost': avg_cost, 'auc': auc}
-        return fetch_dict
-
-    def create_optimizer(self):
-        optimizer = paddle.optimizer.Adam(
-            learning_rate=self.learning_rate, lazy_mode=True)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
 
     def infer_net(self, input):
