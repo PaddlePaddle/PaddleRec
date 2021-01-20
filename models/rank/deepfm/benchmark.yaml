@@ -31,7 +31,7 @@ runner:
   use_gpu: 0
   
   model_path: "static_model.py"
-  reader_type: "DataLoader"  # DataLoader / QueueDataset / RecDataset
+  reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
   pipe_command: "python benchmark_reader.py"
   dataset_debug: False
   split_file_list: False
