@@ -17,9 +17,9 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class LetorDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(LetorDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
 
     def __iter__(self):
