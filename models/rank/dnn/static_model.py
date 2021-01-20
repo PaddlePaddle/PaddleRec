@@ -21,6 +21,7 @@ from net import DNNLayer
 class StaticModel():
     def __init__(self, config):
         self.cost = None
+        self.infer_target_var = None
         self.config = config
         self._init_hyper_parameters()
 
