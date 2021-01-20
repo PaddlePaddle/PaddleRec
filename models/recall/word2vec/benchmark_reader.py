@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import io
+import os
 import sys
 import six
 import numpy as np
-import paddle.fluid.incubate.data_generator as dg
+import paddle.distributed.fleet as fleet
 
 
 class NumpyRandomInt(object):
@@ -35,15 +36,17 @@ class NumpyRandomInt(object):
         return result
 
 
-class Reader(dg.MultiSlotDataGenerator):
+class Reader(fleet.MultiSlotDataGenerator):
     def init(self, config):
         self.window_size = config.get("hyper_parameters.window_size")
         self.neg_num = config.get("hyper_parameters.neg_num")
         self.with_shuffle_batch = config.get(
             "hyper_parameters.with_shuffle_batch")
-        self.batch_size = config.get("static_benchmark.batch_size")
+        self.batch_size = config.get("runner.train_batch_size")
         self.random_generator = NumpyRandomInt(1, self.window_size + 1)
-        dict_path = config.get("static_benchmark.word_count_dict_path")
+        dict_path = config.get("runner.word_count_dict_path")
+        abs_path = config.get("config_abs_dir")
+        dict_path = os.path.join(abs_path, dict_path)
 
         self.cs = None
         if not self.with_shuffle_batch:
@@ -210,9 +213,11 @@ if __name__ == "__main__":
     yaml_path = sys.argv[1]
     utils_path = sys.argv[2]
     sys.path.append(utils_path)
-    import utils
-    yaml_helper = utils.YamlHelper()
+    import common
+    yaml_helper = common.YamlHelper()
     config = yaml_helper.load_yaml(yaml_path)
+    abs_dir = os.path.dirname(os.path.abspath(yaml_path))
+    config["config_abs_dir"] = abs_dir
 
     r = Reader()
     r.init(config)

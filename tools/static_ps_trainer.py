@@ -75,8 +75,7 @@ class Main(object):
         self.input_data = model.create_feeds()
         self.init_reader()
         self.metrics = model.net(self.input_data)
-        self.infer_target_var = model.infer_target_var
-        # assert model.infer_target_var != None
+        self.inference_target_var = model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
         model.create_optimizer(get_strategy(self.config))
 
@@ -133,7 +132,7 @@ class Main(object):
                 fleet.save_inference_model(
                     self.exe, model_dir,
                     [feed.name for feed in self.input_data],
-                    self.infer_target_var)
+                    self.inference_target_var)
 
     def init_reader(self):
         if fleet.is_server():
