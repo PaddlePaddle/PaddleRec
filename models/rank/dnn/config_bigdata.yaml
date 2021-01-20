@@ -18,12 +18,14 @@
 
 runner:
   train_data_dir: "data/slot_train_data_full" # tools/datasets
+  train_reader_path: "criteo_reader" # importlib format
   use_gpu: False
   use_auc: True
   train_batch_size: 512
   epochs: 4
   print_interval: 10
   model_save_path: "output_model_dnn_all"
+  infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "data/slot_test_data_full"
   infer_batch_size: 512
   infer_load_path: "output_model_dnn_all"

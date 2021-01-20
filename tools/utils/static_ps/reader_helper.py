@@ -120,7 +120,7 @@ class RecDatasetReader(object):
         batch_size = self.config.get('runner.train_batch_size', None)
         place = paddle.set_device('gpu' if use_cuda else 'cpu')
 
-        generator = dataset(self.file_list)
+        generator = dataset(self.file_list, self.config)
         generator.init()
         loader = DataLoader(
             generator, batch_size=batch_size, places=place, drop_last=True)
