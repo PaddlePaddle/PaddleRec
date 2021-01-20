@@ -33,14 +33,14 @@ runner:
   use_gpu: 0
   
   model_path: "static_model.py"
-  reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
+  #reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
   pipe_command: "python benchmark_reader.py"
   dataset_debug: False
   split_file_list: False
 
   train_batch_size: 1000
-  train_data_dir: "train_data"
-  train_reader_path: "benchmark_reader"
+  train_data_dir: "data/sample_data/train"
+  train_reader_path: "reader"
   model_save_path: "model"
 
   infer_batch_size: 2
