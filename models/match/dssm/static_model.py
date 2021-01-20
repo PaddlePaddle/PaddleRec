@@ -57,6 +57,7 @@ class StaticModel():
                                self.hidden_layers, self.hidden_acts)
         R_Q_D_p, hit_prob = dssm_model(input, is_infer)
 
+        self.inference_target_var = R_Q_D_p
         if is_infer:
             fetch_dict = {'query_doc_sim': R_Q_D_p}
             return fetch_dict
@@ -67,9 +68,12 @@ class StaticModel():
         fetch_dict = {'Loss': avg_cost}
         return fetch_dict
 
-    def create_optimizer(self):
+    def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.Adam(
             learning_rate=self.learning_rate, lazy_mode=True)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
 
     def infer_net(self, input):
