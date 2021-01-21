@@ -90,8 +90,9 @@ class StaticModel():
             fetch_dict = {'auc': auc}
             return fetch_dict
 
-        cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict_2d, label=self.label_input)
+        cost = paddle.nn.functional.log_loss(
+            input=pred, label=paddle.cast(
+                self.label_input, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
 
