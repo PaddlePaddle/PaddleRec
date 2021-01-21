@@ -13,79 +13,35 @@
 # limitations under the License.
 
 # global settings 
-debug: false
-workspace: "models/rank/wide_deep"
-# dygraph workspace
-#workspace: "./"
 
-dygraph:
+runner:
   train_data_dir: "data/sample_data/train"
+  train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
-  batch_size: 5
+  use_auc: True
+  train_batch_size: 2
   epochs: 3
-  print_interval: 20
+  print_interval: 2
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model"
   test_data_dir: "data/sample_data/train"
+  infer_reader_path: "criteo_reader" # importlib format
+  infer_batch_size: 5
   infer_load_path: "output_model"
-  infer_start_epoch: -1
+  infer_start_epoch: 0
   infer_end_epoch: 3
 
-# list of dataset
-
-
-dataset:
-  - name: sample_1
-    type: DataLoader # or QueueDataset
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
-    sparse_slots: "label"
-    dense_slots: "wide_input:8 deep_input:58"
-  - name: infer_sample
-    type: DataLoader # or QueueDataset
-    batch_size: 5
-    data_path: "{workspace}/data/sample_data/train"
-    sparse_slots: "label"
-    dense_slots: "wide_input:8 deep_input:58"
-
+# hyper parameters of user-defined network
 hyper_parameters:
-    optimizer:
-        class: adam
-        learning_rate: 0.001
-    hidden1_units: 32
-    hidden2_units: 16
-    hidden3_units: 8
-    wide_input_dim: 8
-    deep_input_dim: 58
-
-
-
-mode: [train_runner , infer_runner]
-# if infer, change mode to "infer_runner" and change phase to "infer_phase"
-
-runner:
-  - name: train_runner
-    class: train
-    epochs: 1
-    device: cpu
-    init_model_path: ""
-    save_checkpoint_interval: 1
-    save_inference_interval: 1
-    save_checkpoint_path: "increment"
-    save_inference_path: "inference"
-    phases: phase1
-  - name: infer_runner
-    class: infer
-    device: cpu
-    init_model_path: "increment/0"
-    phases: infer_phase
-
-phase:
-- name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: sample_1
-  thread_num: 1
-- name: infer_phase
-  model: "{workspace}/model.py"
-  dataset_name: infer_sample
-  thread_num: 1
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: async
+  # user-defined <key, value> pairs
+  sparse_inputs_slots: 27
+  sparse_feature_number: 1000001
+  sparse_feature_dim: 9
+  dense_input_dim: 13
+  fc_sizes: [512, 256, 128, 32]
+  distributed_embedding: 0

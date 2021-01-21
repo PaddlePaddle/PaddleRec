@@ -50,7 +50,7 @@ filename = './data/relation.test.fold1.txt'
 gt = []
 qid = []
 f = open(filename, "r")
-f.readline()
+#f.readline()
 num = 0
 for line in f.readlines():
     num = num + 1
