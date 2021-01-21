@@ -11,38 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-workspace: "models/recall/word2vec"
 
-dygraph:
+runner:
   train_data_dir: "data/train"
+  train_reader_path: "word2vec_reader" # importlib format
   use_gpu: True
-  batch_size: 100
+  train_batch_size: 100
   epochs: 2
   print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
+  model_save_path: "output_model_word2vec"
   test_data_dir: "data/test"
-  infer_load_path: "output_model"
-  infer_start_epoch: -1
+  infer_load_path: "output_model_word2vec"
+  infer_start_epoch: 0
   infer_end_epoch: 2
   # dataset
   word_count_dict_path: "data/dict/word_count_dict.txt"
   word_id_dict_path: "data/dict/word_id_dict.txt"
 
-# list of dataset
-dataset:
-- name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 100
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  word_count_dict_path: "{workspace}/data/dict/word_count_dict.txt"
-  data_converter: "{workspace}/w2v_reader.py"
-- name: dataset_infer # name
-  batch_size: 10 # 2000
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/test"
-  word_id_dict_path: "{workspace}/data/dict/word_id_dict.txt"
-  data_converter: "{workspace}/w2v_evaluate_reader.py"
 
 hyper_parameters:
   optimizer:
@@ -51,47 +37,8 @@ hyper_parameters:
     decay_rate: 0.999
     class: sgd
     strategy: async
-  sparse_feature_number: 354051
+  sparse_feature_number: 1000
   sparse_feature_dim: 300
   with_shuffle_batch: False
   neg_num: 5
   window_size: 5
-
-# select runner by name
-mode: [single_cpu_train, single_cpu_infer]
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
-runner:
-- name: single_cpu_train
-  class: train
-  # num of epochs
-  epochs: 5
-  # device to run training or infer
-  device: cpu
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_inference_interval: 1 # save inference
-  save_checkpoint_path: "increment_w2v" # save checkpoint path
-  save_inference_path: "inference_w2v" # save inference path
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
-  init_model_path: "" # load model path
-  print_interval: 10
-  phases: [phase1]
-- name: single_cpu_infer
-  class: infer
-  # device to run training or infer
-  device: cpu
-  init_model_path: "increment_w2v" # load model path
-  print_interval: 1
-  phases: [phase2]
-
-# runner will run all the phase in each epoch
-phase:
-- name: phase1
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
-  thread_num: 5
-- name: phase2
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_infer # select dataset by name
-  thread_num: 1
