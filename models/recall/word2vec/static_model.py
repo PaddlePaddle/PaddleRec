@@ -11,20 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import numpy as np
 import paddle
+import paddle.nn as nn
+import paddle.nn.functional as F
+import paddle.fluid as fluid
+import paddle.distributed.fleet as fleet
+import math
+import numpy as np
 
-from net import Word2VecLayer
 
-
-class StaticModel():
+class StaticModel(object):
     def __init__(self, config):
         self.cost = None
+        self.metrics = {}
         self.config = config
-        self._init_hyper_parameters()
+        self.init_hyper_parameters()
 
-    def _init_hyper_parameters(self):
+    def init_hyper_parameters(self):
         self.sparse_feature_number = self.config.get(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
