@@ -15,21 +15,22 @@
 # global settings 
 
 runner:
-  train_data_dir: "data/sample_data/train"
+    #train_data_dir: "data/slot_train_data_full"
+  train_data_dir: "../../../tools/datasets/criteo/slot_train_data_full"
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
   use_auc: True
-  train_batch_size: 2
-  epochs: 3
-  print_interval: 2
+  train_batch_size: 512
+  epochs: 4
+  print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/sample_data/train"
+  model_save_path: "output_model_all_deepfm"
+  test_data_dir: "../../../tools/datasets/criteo/slot_test_data_full"
   infer_reader_path: "criteo_reader" # importlib format
-  infer_batch_size: 5
-  infer_load_path: "output_model"
+  infer_batch_size: 512
+  infer_load_path: "output_model_all_deepfm"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 4
 
 # hyper parameters of user-defined network
 hyper_parameters:

@@ -37,7 +37,8 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils import load_model, load_yaml, save_model, load_dy_model, get_abs_model, create_data_loader
+from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
+from utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
@@ -59,16 +60,15 @@ def main(args):
     paddle.seed(12345)
     # load config
     config = load_yaml(args.config_yaml)
-    dy_model_class = load_dy_model(args.abs_dir)
+    dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
     # tools.vars
-    use_gpu = config.get("dygraph.use_gpu", True)
-    test_data_dir = config.get("dygraph.test_data_dir", None)
-    feature_size = config.get('hyper_parameters.feature_size', None)
-    print_interval = config.get("dygraph.print_interval", None)
-    model_load_path = config.get("dygraph.infer_load_path", "model_output")
-    start_epoch = config.get("dygraph.infer_start_epoch", 0)
-    end_epoch = config.get("dygraph.infer_end_epoch", 10)
+    use_gpu = config.get("runner.use_gpu", True)
+    test_data_dir = config.get("runner.test_data_dir", None)
+    print_interval = config.get("runner.print_interval", None)
+    model_load_path = config.get("runner.infer_load_path", "model_output")
+    start_epoch = config.get("runner.infer_start_epoch", 0)
+    end_epoch = config.get("runner.infer_end_epoch", 10)
 
     logger.info("**************common.configs**********")
     logger.info(
@@ -82,7 +82,7 @@ def main(args):
     dy_model = dy_model_class.create_model(config)
 
     # to do : add optimizer function
-    optimizer = dy_model_class.create_optimizer(dy_model, config)
+    #optimizer = dy_model_class.create_optimizer(dy_model, config)
 
     logger.info("read data")
     test_dataloader = create_data_loader(
@@ -101,10 +101,15 @@ def main(args):
         for batch_id, batch in enumerate(test_dataloader()):
             batch_size = len(batch[0])
 
-            metric_list = dy_model_class.infer_forward(dy_model, metric_list,
-                                                       batch, config)
+            metric_list, tensor_print_dict = dy_model_class.infer_forward(
+                dy_model, metric_list, batch, config)
 
             if batch_id % print_interval == 0:
+                tensor_print_str = ""
+                if tensor_print_dict is not None:
+                    for var_name, var in tensor_print_dict.items():
+                        tensor_print_str += (
+                            "{}:".format(var_name) + str(var.numpy()) + ",")
                 metric_str = ""
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
@@ -112,9 +117,10 @@ def main(args):
                         ": {:.6f},".format(metric_list[metric_id].accumulate())
                     )
                 logger.info("epoch: {}, batch_id: {}, ".format(
-                    epoch_id, batch_id) + metric_str + "speed: {:.2f} ins/s".
-                            format(print_interval * batch_size / (time.time(
-                            ) - interval_begin)))
+                    epoch_id, batch_id) + metric_str + tensor_print_str +
+                            " speed: {:.2f} ins/s".format(
+                                print_interval * batch_size / (time.time(
+                                ) - interval_begin)))
                 interval_begin = time.time()
 
         metric_str = ""
@@ -123,8 +129,15 @@ def main(args):
                 metric_list_name[metric_id] +
                 ": {:.6f},".format(metric_list[metric_id].accumulate()))
 
+        tensor_print_str = ""
+        if tensor_print_dict is not None:
+            for var_name, var in tensor_print_dict.items():
+                tensor_print_str += (
+                    "{}:".format(var_name) + str(var.numpy()) + ",")
+
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
-                    " : epoch time{:.2f} s".format(time.time() - epoch_begin))
+                    tensor_print_str + " epoch time: {:.2f} s".format(
+                        time.time() - epoch_begin))
         epoch_begin = time.time()
 
 

@@ -21,6 +21,7 @@ import argparse
 import warnings
 import logging
 import paddle
+import numpy as np
 from paddle.io import DistributedBatchSampler, DataLoader
 
 logging.basicConfig(
@@ -39,22 +40,6 @@ def parse_args():
     args = parser.parse_args()
     args.config_yaml = get_abs_model(args.config_yaml)
     return args
-
-
-def save_model(net, optimizer, model_path, epoch_id, prefix='rec'):
-    model_path = os.path.join(model_path, str(epoch_id))
-    _mkdir_if_not_exist(model_path)
-    model_prefix = os.path.join(model_path, prefix)
-    paddle.save(net.state_dict(), model_prefix + ".pdparams")
-    paddle.save(optimizer.state_dict(), model_prefix + ".pdopt")
-    logger.info("Already save model in {}".format(model_path))
-
-
-def load_model(model_path, net, prefix='rec'):
-    logger.info("start load model from {}".format(model_path))
-    model_prefix = os.path.join(model_path, prefix)
-    param_state_dict = paddle.load(model_prefix + ".pdparams")
-    net.set_dict(param_state_dict)
 
 
 def get_abs_model(model):
@@ -102,37 +87,60 @@ def get_all_inters_from_yaml(file, filters):
 
 def create_data_loader(config, place, mode="train"):
     if mode == "train":
-        data_dir = config.get("dygraph.train_data_dir", None)
+        data_dir = config.get("runner.train_data_dir", None)
+        batch_size = config.get('runner.train_batch_size', None)
+        reader_path = config.get('runner.train_reader_path', 'reader')
     else:
-        data_dir = config.get("dygraph.test_data_dir", None)
+        data_dir = config.get("runner.test_data_dir", None)
+        batch_size = config.get('runner.infer_batch_size', None)
+        reader_path = config.get('runner.infer_reader_path', 'reader')
     config_abs_dir = config.get("config_abs_dir", None)
     data_dir = os.path.join(config_abs_dir, data_dir)
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
-    user_define_reader = config.get('dygraph.user_define_reader', False)
-    if mode == "train":
-        reader_path = config.get('dygraph.train_reader_path', 'reader')
-    else:
-        reader_path = config.get('dygraph.infer_reader_path', 'reader')
+    user_define_reader = config.get('runner.user_define_reader', False)
     logger.info("reader path:{}".format(reader_path))
     from importlib import import_module
     reader_class = import_module(reader_path)
-    dataset = reader_class.RecDataset(file_list)
-    batch_size = config.get('dygraph.batch_size', None)
+    dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batch_size, places=place, drop_last=True)
     return loader
 
 
-def load_dy_model(abs_dir):
+def load_dy_model_class(abs_dir):
     sys.path.append(abs_dir)
     from dygraph_model import DygraphModel
     dy_model = DygraphModel()
     return dy_model
 
 
+def load_static_model_class(config):
+    abs_dir = config['config_abs_dir']
+    sys.path.append(abs_dir)
+    from static_model import StaticModel
+    static_model = StaticModel(config)
+    return static_model
+
+
 def load_yaml(yaml_file, other_part=None):
-    part_list = ["workspace", "dygraph", "hyper_parameters"]
+    part_list = ["workspace", "runner", "hyper_parameters"]
     if other_part:
         part_list += other_part
     running_config = get_all_inters_from_yaml(yaml_file, part_list)
     return running_config
+
+
+def reset_auc():
+    auc_var_name = [
+        "_generated_var_0", "_generated_var_1", "_generated_var_2",
+        "_generated_var_3"
+    ]
+    for name in auc_var_name:
+        param = paddle.fluid.global_scope().var(name)
+        if param == None:
+            continue
+        tensor = param.get_tensor()
+        if param:
+            tensor_array = np.zeros(tensor._get_dims()).astype("int64")
+            tensor.set(tensor_array, paddle.CPUPlace())
+            logger.info("AUC Reset To Zero: {}".format(name))
