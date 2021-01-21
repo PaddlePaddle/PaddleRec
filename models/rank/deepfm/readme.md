@@ -1,19 +1,20 @@
 # 基于deepFM模型的点击率预估模型
 
 以下是本例的简要目录结构及说明： 
-
+待修改
 ```
-├── sample_data #样例数据
-    ├── train
-        ├── sample_train.txt #训练数据样例
-    ├── preprocess.py #数据处理程序
-    ├── run.sh #数据一键处理脚本
-    ├── download_preprocess.py #数据下载脚本
-    ├── get_slot_data.py #格式整理程序
+├── data 
+    ├── sample_data #样例数据
+        ├── train
+            ├── sample_train.txt #训练数据样例
 ├── __init__.py
-├── README.md #文档
-├── model.py #模型文件
-├── config.yaml #配置文件
+├── readme.md #文档
+├── net.py # 模型核心组网（动静统一）
+├── static_model.py # 构建静态图
+├── dygraph_model.py # 构建动态图
+├── criteo_reader.py # reader配置
+├── config.py # sample数据配置
+├── config_bigdata.py # 全量数据配置
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -56,55 +57,42 @@
 
 ### 一键下载训练及测试数据
 ```bash
+cd ../../../tools/datasets/criteo # 进入datasets criteo目录
 sh run.sh
 ```
-进入models/rank/deepfm/data目录下，执行该脚本，会从国内源的服务器上下载Criteo数据集，并解压到指定文件夹，然后自动处理数据转化为可直接进行训练的格式。解压后全量训练数据放置于`./train_datal`，全量测试数据放置于`./test_data`，可以直接输入的训练数据放置于`./slot_train_datal`，可直接输入的测试数据放置于`./slot_test_datal`
+进入datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载Criteo数据集，并解压到指定文件夹。
 
 ## 运行环境
-PaddlePaddle>=1.7.2
+PaddlePaddle>=2.0
 
 python 2.7/3.5/3.6/3.7
-
-PaddleRec >=0.1
 
 os : windows/linux/macos
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在paddlerec目录下执行下面的命令即可快速启动训练： 
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在deepfm模型目录的快速执行命令如下： 
 
 ```
-python -m paddlerec.run -m models/rank/deepfm/config.yaml
-```
-使用样例数据快速跑通的结果实例:
-```
-PaddleRec: Runner train_runner Begin
-Executor Mode: train
-processor_register begin
-Running SingleInstance.
-Running SingleNetwork.
-Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:[]
-Running SingleStartup.
-Running SingleRunner.
-2020-09-24 03:45:57,924-INFO:   [Train] batch: 1, time_each_interval: 2.22s, BATCH_AUC: [0.43357143 0.4689441  0.43859649 0.42124542 0.44302615 0.44444444
- 0.48305085 0.47866667 0.48032407 0.45833333], AUC: [0.43357143 0.4562963  0.43859649 0.47866667 0.44302615 0.44444444
- 0.48305085 0.4562963  0.49451754 0.45833333]
-epoch 0 done, use time: 2.38709902763, global metrics: BATCH_AUC=2.2195661068, AUC=[0.43357143 0.4689441  0.43859649 0.42124542 0.44302615 0.44444444
- 0.48305085 0.47866667 0.48032407 0.45833333]
-2020-09-24 03:45:59,023-INFO:   [Train] batch: 1, time_each_interval: 0.07s, BATCH_AUC: [0.4570095  0.45771188 0.45467121 0.47039474 0.46313874 0.45297619
- 0.46199579 0.45470861 0.47237934 0.47326632], AUC: [0.4570095  0.45771188 0.45575717 0.47039474 0.46313874 0.45297619
- 0.46199579 0.45470861 0.47237934 0.47326632]
-epoch 1 done, use time: 0.0733981132507, global metrics: BATCH_AUC=0.0677909851074, AUC=[0.4570095  0.45771188 0.45467121 0.47039474 0.46313874 0.45297619
- 0.46199579 0.45470861 0.47237934 0.47326632]
-PaddleRec Finish
+# 进入模型目录
+cd models/rank/deepfm # 在任意目录均可运行
+# 动态图训练
+python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 动态图预测
+python3 -u ../../../tools/infer.py -m config.yaml 
+
+# 静态图训练
+python3 -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 静态图预测
+python3 -u ../../../tools/static_infer.py -m config.yaml 
 ```
 
 ## 模型组网
 
-deepFM模型的组网本质是一个二分类任务，代码参考`model.py`。模型主要组成是一阶项部分，二阶项部分,dnn部分以及相应的分类任务的loss计算和auc计算。模型的组网可以看做FM部分和dnn部分的结合，其中FM部分主要的工作是通过特征间交叉得到低阶特征，以二阶特征为主。FM的表达式如下，可观察到，只是在线性表达式后面加入了新的交叉项特征及对应的权值。
+deepFM模型的组网本质是一个二分类任务，代码参考`net.py`。模型主要组成是一阶项部分，二阶项部分,dnn部分以及相应的分类任务的loss计算和auc计算。模型的组网可以看做FM部分和dnn部分的结合，其中FM部分主要的工作是通过特征间交叉得到低阶特征，以二阶特征为主。FM的表达式如下，可观察到，只是在线性表达式后面加入了新的交叉项特征及对应的权值。
 
 <img align="center" src="picture/1.jpg">
 
-### 一阶项部分
+### 一阶项部分(待修改)
 一阶项部分类似于我们rank下的logistic_regression模型。主要由embedding层和reduce_sum层组成  
 首先介绍Embedding层的搭建方式：`Embedding`层的输入是`feat_idx`，shape由超参的`sparse_feature_number`定义。需要特别解释的是`is_sparse`参数，当我们指定`is_sprase=True`后，计算图会将该参数视为稀疏参数，反向更新以及分布式通信时，都以稀疏的方式进行，会极大的提升运行效率，同时保证效果一致。  
 各个稀疏的输入通过Embedding层后，进行reshape操作，方便和连续值进行结合。  
@@ -143,68 +131,16 @@ V 的第 i 列便是第 i 维特征的隐向量。特征分量Xi与Xj的交叉�
 | deepFM | 0.8044 | 1024 | 10 | 2 | 约3.5小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/deepfm
-2. 在data目录下运行数据一键处理脚本，命令如下：  
+
 ``` 
-cd data
+cd ../../../tools/datasets/criteo
 sh run.sh
-cd ..
-```
-3. 退回deepfm目录中，打开文件config.yaml,更改其中的参数  
-将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）  
-将train_sample中的batch_size从5改为1024  
-将train_sample中的data_path改为{workspace}/data/slot_train_data  
-将infer_sample中的batch_size从5改为1024  
-将infer_sample中的data_path改为{workspace}/data/slot_test_data  
-4. 运行命令，模型会进行两个epoch的训练，然后预测第二个epoch，并获得相应auc指标  
-```
-python -m paddlerec.run -m ./config.yaml
-```
-5. 经过全量数据训练后，执行预测的结果示例如下：
-```
-PaddleRec: Runner infer_runner Begin
-Executor Mode: infer
-processor_register begin
-Running SingleInstance.
-Running SingleNetwork.
-Warning:please make sure there are no hidden files in the dataset folder and check these hidden files:[]
-Running SingleInferStartup.
-Running SingleInferRunner.
-load persistables from incerement/1
-2020-09-23 11:26:38,879-INFO:   [Infer] batch: 1, time_each_interval: 1.39s, AUC: [0.8044914]
-2020-09-23 11:26:39,468-INFO:   [Infer] batch: 2, time_each_interval: 0.59s, AUC: [0.80449145]
-2020-09-23 11:26:40,021-INFO:   [Infer] batch: 3, time_each_interval: 0.55s, AUC: [0.80449146]
-2020-09-23 11:26:40,557-INFO:   [Infer] batch: 4, time_each_interval: 0.54s, AUC: [0.80449131]
-2020-09-23 11:26:41,148-INFO:   [Infer] batch: 5, time_each_interval: 0.59s, AUC: [0.80449144]
-2020-09-23 11:26:41,659-INFO:   [Infer] batch: 6, time_each_interval: 0.51s, AUC: [0.80449172]
-2020-09-23 11:26:42,182-INFO:   [Infer] batch: 7, time_each_interval: 0.52s, AUC: [0.80449169]
-2020-09-23 11:26:42,691-INFO:   [Infer] batch: 8, time_each_interval: 0.51s, AUC: [0.80449169]
-2020-09-23 11:26:43,190-INFO:   [Infer] batch: 9, time_each_interval: 0.50s, AUC: [0.80449191]
-2020-09-23 11:26:43,671-INFO:   [Infer] batch: 10, time_each_interval: 0.48s, AUC: [0.80449164]
-...
-2020-09-23 12:16:10,279-INFO:   [Infer] batch: 8982, time_each_interval: 0.18s, AUC: [0.8044914]
-2020-09-23 12:16:10,518-INFO:   [Infer] batch: 8983, time_each_interval: 0.24s, AUC: [0.80449133]
-Infer infer_phase of epoch 1 done, use time: 1764.81796193, global metrics: AUC=0.80449133
-PaddleRec Finish
+cd - # 切回模型目录
+# 动态图训练
+python3 -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python3 -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 ```
 
 ## 进阶使用
   
-### 动态图&论文复现
-```
-# 进入模型目录
-cd models/rank/wide_deep # 在任意目录均可运行
-# 动态图训练
-python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 动态图预测
-python -u ../../../tools/infer.py -m config.yaml 
-
-# 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 静态图预测
-python -u ../../../tools/static_infer.py -m config.yaml 
-
-# 全量数据下载
-cd tools/datasets/criteo
-sh run.sh
-```
 ## FAQ
