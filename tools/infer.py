@@ -109,7 +109,7 @@ def main(args):
                 if tensor_print_dict is not None:
                     for var_name, var in tensor_print_dict.items():
                         tensor_print_str += (
-                            " {}:".format(var_name) + str(var.numpy()) + ",")
+                            "{}:".format(var_name) + str(var.numpy()) + ",")
                 metric_str = ""
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
@@ -118,7 +118,7 @@ def main(args):
                     )
                 logger.info("epoch: {}, batch_id: {}, ".format(
                     epoch_id, batch_id) + metric_str + tensor_print_str +
-                            "speed: {:.2f} ins/s".format(
+                            " speed: {:.2f} ins/s".format(
                                 print_interval * batch_size / (time.time(
                                 ) - interval_begin)))
                 interval_begin = time.time()
@@ -129,8 +129,15 @@ def main(args):
                 metric_list_name[metric_id] +
                 ": {:.6f},".format(metric_list[metric_id].accumulate()))
 
+        tensor_print_str = ""
+        if tensor_print_dict is not None:
+            for var_name, var in tensor_print_dict.items():
+                tensor_print_str += (
+                    "{}:".format(var_name) + str(var.numpy()) + ",")
+
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
-                    " : epoch time{:.2f} s".format(time.time() - epoch_begin))
+                    tensor_print_str + " epoch time: {:.2f} s".format(
+                        time.time() - epoch_begin))
         epoch_begin = time.time()
 
 

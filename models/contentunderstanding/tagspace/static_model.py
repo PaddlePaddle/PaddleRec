@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,48 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle.fluid as fluid
-from paddlerec.core.model import ModelBase
-from paddlerec.core.utils import envs
+import math
 import paddle
-import paddle.nn as nn
-import paddle.nn.functional as F
-from tagspace_net import TagspaceLayer
+
+from net import TagspaceLayer
 
 
-class Model(ModelBase):
+class StaticModel():
     def __init__(self, config):
-        ModelBase.__init__(self, config)
         self.cost = None
-        self.metrics = {}
-        self.vocab_text_size = envs.get_global_env(
-            "hyper_parameters.vocab_text_size")
-        self.vocab_tag_size = envs.get_global_env(
-            "hyper_parameters.vocab_tag_size")
-        self.emb_dim = envs.get_global_env("hyper_parameters.emb_dim")
-        self.hid_dim = envs.get_global_env("hyper_parameters.hid_dim")
-        self.win_size = envs.get_global_env("hyper_parameters.win_size")
-        self.margin = envs.get_global_env("hyper_parameters.margin")
-        self.neg_size = envs.get_global_env("hyper_parameters.neg_size")
-        self.text_len = envs.get_global_env("hyper_parameters.text_len")
+        self.config = config
+        self._init_hyper_parameters()
 
-    def input_data(self, is_infer=False, **kwargs):
+    def _init_hyper_parameters(self):
+        self.vocab_text_size = self.config.get(
+            "hyper_parameters.vocab_text_size")
+        self.vocab_tag_size = self.config.get(
+            "hyper_parameters.vocab_tag_size")
+        self.emb_dim = self.config.get("hyper_parameters.emb_dim")
+        self.hid_dim = self.config.get("hyper_parameters.hid_dim")
+        self.win_size = self.config.get("hyper_parameters.win_size")
+        self.margin = self.config.get("hyper_parameters.margin")
+        self.neg_size = self.config.get("hyper_parameters.neg_size")
+        self.text_len = self.config.get("hyper_parameters.text_len")
+        self.learning_rate = self.config.get(
+            "hyper_parameters.optimizer.learning_rate")
+
+    def create_feeds(self, is_infer=False):
         text = paddle.static.data(
-            name="text", shape=[None, 1], lod_level=1, dtype='int64')
+            name="text", shape=[None, self.text_len], dtype='int64')
         pos_tag = paddle.static.data(
-            name="pos_tag", shape=[None, 1], lod_level=1, dtype='int64')
+            name="pos_tag", shape=[None, 1], dtype='int64')
         neg_tag = paddle.static.data(
-            name="neg_tag", shape=[None, 1], lod_level=1, dtype='int64')
-        return [text, pos_tag, neg_tag]
+            name="neg_tag", shape=[None, self.neg_size], dtype='int64')
+        feeds_list = [text, pos_tag, neg_tag]
+        return feeds_list
 
     def net(self, input, is_infer=False):
-        """ network"""
         if is_infer:
-            self.batch_size = envs.get_global_env(
-                "dataset.inferdata.batch_size")
+            self.batch_size = self.config.get("runner.infer_batch_size")
         else:
-            self.batch_size = envs.get_global_env(
-                "dataset.sample_1.batch_size")
+            self.batch_size = self.config.get("runner.train_batch_size")
         tagspace_model = TagspaceLayer(
             self.vocab_text_size, self.vocab_tag_size, self.emb_dim,
             self.hid_dim, self.win_size, self.margin, self.neg_size,
@@ -79,11 +78,23 @@ class Model(ModelBase):
         correct = paddle.sum(less)
         total = paddle.sum(label_ones)
         acc = paddle.divide(correct, total)
-        self._cost = avg_cost
+        self.inference_target_var = acc
 
         if is_infer:
-            self._infer_results["acc"] = acc
-            self._infer_results["loss"] = self._cost
-        else:
-            self._metrics["acc"] = acc
-            self._metrics["loss"] = self._cost
+            fetch_dict = {'ACC': acc}
+            return fetch_dict
+
+        self._cost = avg_cost
+
+        fetch_dict = {'cost': avg_cost, 'ACC': acc}
+        return fetch_dict
+
+    def create_optimizer(self, strategy=None):
+        optimizer = paddle.optimizer.Adagrad(learning_rate=self.learning_rate)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
+        optimizer.minimize(self._cost)
+
+    def infer_net(self, input):
+        return self.net(input, is_infer=True)

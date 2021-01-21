@@ -111,7 +111,7 @@ def main(args):
                 logger.info(
                     "epoch: {}, batch_id: {}, ".format(epoch_id,
                                                        batch_id) + metric_str +
-                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
                     format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,
                            total_samples / print_interval, total_samples / (
@@ -125,7 +125,7 @@ def main(args):
         for var_idx, var_name in enumerate(fetch_vars):
             metric_str += "{}: {}, ".format(var_name, fetch_batch_var[var_idx])
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
-                    " : epoch time{:.2f} s".format(time.time() - epoch_begin))
+                    "epoch time: {:.2f} s".format(time.time() - epoch_begin))
 
         save_static_model(
             paddle.static.default_main_program(),
