@@ -35,7 +35,10 @@ def parse_args():
         default='./data/data_c/1-billion_dict_word_to_id_',
         help="The path of dic")
     parser.add_argument(
-        '--test_dir', type=str, default='test_data', help='test file address')
+        '--test_dir',
+        type=str,
+        default='data/test_data',
+        help='test file address')
     parser.add_argument(
         '--print_step', type=int, default='500000', help='print step')
     parser.add_argument(
@@ -43,7 +46,10 @@ def parse_args():
     parser.add_argument(
         '--last_index', type=int, default='100', help='last index')
     parser.add_argument(
-        '--model_dir', type=str, default='model', help='model dir')
+        '--model_dir',
+        type=str,
+        default='output_model_word2vec',
+        help='model dir')
     parser.add_argument(
         '--use_cuda', type=int, default='0', help='whether use cuda')
     parser.add_argument(
@@ -94,9 +100,10 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
             values, pred = infer_network(vocab_size, emb_size)
             for epoch in range(start_index, last_index + 1):
                 copy_program = main_program.clone()
-                model_path = model_dir + "/" + str(epoch)
-                paddle.fluid.io.load_persistables(
-                    exe, model_path, main_program=copy_program)
+                model_path = os.path.join(model_dir, str(epoch))
+                model_prefix = os.path.join(model_path, prefix)
+                #paddle.fluid.io.load_persistables(
+                paddle.static.load(main_program, model_prefix)
                 accum_num = 0
                 accum_num_sum = 0.0
                 t0 = time.time()
