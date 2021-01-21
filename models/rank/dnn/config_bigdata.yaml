@@ -13,41 +13,25 @@
 # limitations under the License.
 
 # workspace
-workspace: "models/rank/dnn"
+#workspace: "models/rank/dnn"
 
-dygraph:
-  train_data_dir: "data/slot_train_data_full"
-  use_gpu: True
-  batch_size: 512
+
+runner:
+  train_data_dir: "data/slot_train_data_full" # tools/datasets
+  train_reader_path: "criteo_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 512
   epochs: 4
-  print_interval: 100
-  #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_all"
+  print_interval: 10
+  model_save_path: "output_model_dnn_all"
+  infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "data/slot_test_data_full"
-  infer_load_path: "output_model_all"
-  infer_start_epoch: -1
+  infer_batch_size: 512
+  infer_load_path: "output_model_dnn_all"
+  infer_start_epoch: 0
   infer_end_epoch: 4
 
-# list of dataset
-dataset:
-- name: dataloader_train # name of dataset to distinguish different datasets
-  batch_size: 512
-  type: DataLoader # or QueueDataset 
-  data_path: "{workspace}/data/slot_train_data_full"
-  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-  dense_slots: "dense_feature:13"
-- name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 512
-  type: QueueDataset # or DataLoader 
-  data_path: "{workspace}/data/slot_train_data_full"
-  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-  dense_slots: "dense_feature:13"
-- name: dataset_infer # name
-  batch_size: 512
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/slot_test_data_full"
-  sparse_slots: "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-  dense_slots: "dense_feature:13"
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -63,95 +47,3 @@ hyper_parameters:
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
   distributed_embedding: 0
-
-# select runner by name
-mode: [single_cpu_train, single_cpu_infer]
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
-runner:
-- name: single_cpu_train
-  class: train
-  # num of epochs
-  epochs: 4
-  # device to run training or infer
-  device: cpu
-  save_checkpoint_interval: 2 # save model interval of epochs
-  save_inference_interval: 4 # save inference
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
-  print_interval: 10
-  phases: [phase1]
-
-- name: single_cpu_infer
-  class: infer
-  # num of epochs
-  epochs: 1
-  # device to run training or infer
-  device: cpu
-  init_model_path: "increment_dnn/3" # load model path
-  phases: [phase2]
-
-- name: ps_cluster
-  class: cluster_train
-  epochs: 2
-  device: cpu
-  fleet_mode: ps
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
-  print_interval: 1
-  phases: [phase1]
-
-- name: online_learning_cluster
-  class: cluster_train
-  runner_class_path: "{workspace}/online_learning_runner.py"
-  epochs: 2
-  device: cpu
-  fleet_mode: ps
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
-  print_interval: 1
-  phases: [phase1]
-
-- name: collective_cluster
-  class: cluster_train
-  epochs: 2
-  device: gpu
-  fleet_mode: collective
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  init_model_path: "" # load model path
-  print_interval: 1
-  phases: [phase1]
-
-- name: single_multi_gpu_train
-  class: train
-  # num of epochs
-  epochs: 1
-  # device to run training or infer
-  device: gpu
-  selected_gpus: "0,1" # 选择多卡执行训练
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_inference_interval: 4 # save inference
-  save_step_interval: 1
-  save_checkpoint_path: "increment_dnn" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_step_path: "step_save"
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
-  print_interval: 1
-  phases: [phase1]
-# runner will run all the phase in each epoch
-phase:
-- name: phase1
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataloader_train # select dataset by name
-  thread_num: 1
-
-- name: phase2
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_infer # select dataset by name
-  thread_num: 1

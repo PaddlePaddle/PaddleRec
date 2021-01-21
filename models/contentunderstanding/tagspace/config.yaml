@@ -12,24 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/contentunderstanding/tagspace"
+runner:
+  train_data_dir: "data/train_data"
+  train_reader_path: "reader"  # importlib format
+  train_batch_size: 10
+  model_save_path: "output_model_tagspace"
 
-dataset:
-- name: sample_1
-  type: DataLoader
-  batch_size: 10
-  data_path: "{workspace}/data/train_data"
-  data_converter: "{workspace}/reader.py"
-- name: inferdata
-  type: DataLoader
-  batch_size: 10
-  data_path: "{workspace}/data/test_data"
-  data_converter: "{workspace}/reader.py" 
+  use_gpu: False
+  epochs: 1
+  print_interval: 1
+  
+  test_data_dir: "data/test_data"
+  infer_reader_path: "reader"  # importlib format
+  infer_batch_size: 10
+  infer_load_path: "output_model_tagspace"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
 
+# hyper parameters of user-defined network
 hyper_parameters:
+  # optimizer config
   optimizer:
     class: Adagrad
     learning_rate: 0.001
+  # user-defined <key, value> pairs
   vocab_text_size: 75378
   vocab_tag_size: 4
   emb_dim: 10
@@ -38,35 +44,4 @@ hyper_parameters:
   margin: 0.1
   neg_size: 3
   num_devices: 1
-
-mode: [runner1,infer_runner]
-
-runner:
-- name: runner1
-  class: train
-  epochs: 10
-  device: cpu
-  save_checkpoint_interval: 1
-  save_inference_interval: 1
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
-  save_inference_feed_varnames: []
-  save_inference_fetch_varnames: []
-  phases: phase1
-- name: infer_runner
-  class: infer
-  # device to run training or infer
-  device: cpu
-  print_interval: 1
-  init_model_path: "increment/9" # load model path
-  phases: phase_infer
-
-phase:
-- name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: sample_1
-  thread_num: 1
-- name: phase_infer
-  model: "{workspace}/model.py"
-  dataset_name: inferdata
-  thread_num: 1
+  text_len: 45

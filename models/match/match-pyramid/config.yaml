@@ -15,6 +15,20 @@
 
 workspace: "models/match/match-pyramid"
 
+dygraph:
+  train_data_dir: "data/train"
+  use_gpu: False
+  batch_size: 128
+  epochs: 2
+  print_interval: 2
+  # model_init_path: "output_model/0" # init model
+  model_save_path: "inference"
+  test_data_dir: "data/test"
+  infer_load_path: "inference"
+  infer_start_epoch: 0
+  infer_end_epoch: 2
+
+
 dataset:
 - name: dataset_train
   batch_size: 128
@@ -49,6 +63,7 @@ hyper_parameters:
   pool_stride: [6,50]
   pool_type: "max"
   pool_padding: "VALID"
+  
 
 mode: [train_runner , infer_runner]
 # config of each runner.

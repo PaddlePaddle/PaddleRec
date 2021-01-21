@@ -13,81 +13,36 @@
 # limitations under the License.
 
 # global settings 
-debug: false
-workspace: "models/rank/wide_deep"
-
-# dygraph workspace
-#workspace: "./"
-
-dygraph:
-  train_data_dir: "data/slot_train_data"
-  use_gpu: True
-  batch_size: 40
-  epochs: 80
-  print_interval: 100
-  #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_all"
-  test_data_dir: "data/slot_test_data"
-  infer_load_path: "output_model_all"
-  infer_start_epoch: -1
-  infer_end_epoch: 80
-
-# list of dataset
-
-
-dataset:
-  - name: sample_1
-    type: DataLoader # or QueueDataset
-    batch_size: 40
-    data_path: "{workspace}/data/slot_train_data"
-    sparse_slots: "label"
-    dense_slots: "wide_input:8 deep_input:58"
-  - name: infer_sample
-    type: DataLoader # or QueueDataset
-    batch_size: 40
-    data_path: "{workspace}/data/slot_test_data"
-    sparse_slots: "label"
-    dense_slots: "wide_input:8 deep_input:58"
-
-hyper_parameters:
-    optimizer:
-        class: adam
-        learning_rate: 0.001
-    hidden1_units: 32
-    hidden2_units: 16
-    hidden3_units: 8
-    wide_input_dim: 8
-    deep_input_dim: 58
-
-
-
-mode: [train_runner , infer_runner]
-# if infer, change mode to "infer_runner" and change phase to "infer_phase"
 
 runner:
-  - name: train_runner
-    class: train
-    epochs: 80
-    device: cpu
-    init_model_path: ""
-    save_checkpoint_interval: 1
-    save_inference_interval: 1
-    save_checkpoint_path: "increment"
-    save_inference_path: "inference"
-    print_interval: 100
-    phases: phase1
-  - name: infer_runner
-    class: infer
-    device: cpu
-    init_model_path: "increment/0"
-    phases: infer_phase
+    #train_data_dir: "data/slot_train_data_full"
+  train_data_dir: "../../../tools/datasets/criteo/slot_train_data_full"
+  train_reader_path: "criteo_reader" # importlib format
+  use_gpu: True
+  use_auc: True
+  train_batch_size: 512
+  epochs: 4
+  print_interval: 10
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_all_wide_deep"
+  test_data_dir: "../../../tools/datasets/criteo/slot_test_data_full"
+  infer_reader_path: "criteo_reader" # importlib format
+  infer_batch_size: 512
+  infer_load_path: "output_model_all_wide_deep"
+  infer_start_epoch: 0
+  infer_end_epoch: 4
 
-phase:
-- name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: sample_1
-  thread_num: 1
-- name: infer_phase
-  model: "{workspace}/model.py"
-  dataset_name: infer_sample
-  thread_num: 1
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: async
+  # user-defined <key, value> pairs
+  sparse_inputs_slots: 27
+  sparse_feature_number: 1000001
+  sparse_feature_dim: 9
+  dense_input_dim: 13
+  fc_sizes: [512, 256, 128, 32]
+  distributed_embedding: 0
