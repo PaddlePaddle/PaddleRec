@@ -65,9 +65,9 @@ class StaticModel():
         ctr_clk = inputs[-2]
         ctcvr_buy = inputs[-1]
 
-        auc_ctr, batch_auc_ctr, auc_states_ctr = paddle.fluid.layers.auc(
+        auc_ctr, batch_auc_ctr, auc_states_ctr = paddle.static.auc(
             input=ctr_out, label=ctr_clk)
-        auc_ctcvr, batch_auc_ctcvr, auc_states_ctcvr = paddle.fluid.layers.auc(
+        auc_ctcvr, batch_auc_ctcvr, auc_states_ctcvr = paddle.static.auc(
             input=ctcvr_prop, label=ctcvr_buy)
 
         if is_infer:
