@@ -13,19 +13,19 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/train"
+  train_data_dir: "data/big_train"
   train_reader_path: "reader_train"  # importlib format
-  train_batch_size: 128
-  model_save_path: "output_model_simnet"
+  train_batch_size: 1280
+  model_save_path: "output_model_all_simnet"
 
   use_gpu: False
   epochs: 1
   print_interval: 1
   
-  test_data_dir: "data/test"
+  test_data_dir: "data/big_test"
   infer_reader_path: "reader_infer"  # importlib format
   infer_batch_size: 1
-  infer_load_path: "output_model_simnet"
+  infer_load_path: "output_model_all_simnet"
   infer_start_epoch: 0
   infer_end_epoch: 1
 
