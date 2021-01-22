@@ -18,9 +18,9 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class MovieDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(MovieDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
 
     def __iter__(self):
@@ -39,31 +39,31 @@ class MovieDataset(IterableDataset):
                     time = line[1].strip().split(":")[1]
 
                     userid = line[2].strip().split(":")[1]
-                    output_list.append(np.array([float(userid)]))
+                    output_list.append(np.array([int(userid)]))
 
                     gender = line[3].strip().split(":")[1]
-                    output_list.append(np.array([float(gender)]))
+                    output_list.append(np.array([int(gender)]))
 
                     age = line[4].strip().split(":")[1]
-                    output_list.append(np.array([float(age)]))
+                    output_list.append(np.array([int(age)]))
 
                     occupation = line[5].strip().split(":")[1]
-                    output_list.append(np.array([float(occupation)]))
+                    output_list.append(np.array([int(occupation)]))
 
                     movieid = line[6].strip().split(":")[1]
-                    output_list.append(np.array([float(movieid)]))
+                    output_list.append(np.array([int(movieid)]))
 
                     title = []
                     genres = []
                     for i in line:
                         if i.strip().split(":")[0] == "title":
-                            title.append(float(i.strip().split(":")[1]))
+                            title.append(int(i.strip().split(":")[1]))
                         if i.strip().split(":")[0] == "genres":
-                            genres.append(float(i.strip().split(":")[1]))
+                            genres.append(int(i.strip().split(":")[1]))
                     output_list.append(np.array(title))
                     output_list.append(np.array(genres))
 
                     label = line[-1].strip().split(":")[1]
-                    output_list.append(np.array([float(label)]))
+                    output_list.append(np.array([int(label)]))
 
                     yield output_list
