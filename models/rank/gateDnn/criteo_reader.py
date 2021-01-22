@@ -18,9 +18,9 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class CriteoDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(CriteoDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
         self.init()
 
@@ -75,6 +75,7 @@ class CriteoDataset(IterableDataset):
                     for key, value in output[:-1]:
                         output_list.append(np.array(value))
                     # dense
-                    output_list.append(np.array(output[-1][1]))
+                    output_list.append(
+                        np.array(output[-1][1]).astype("float32"))
                     # list
                     yield output_list
