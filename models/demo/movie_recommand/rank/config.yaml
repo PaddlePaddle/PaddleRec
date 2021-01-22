@@ -12,25 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "./"
+runner:
+  train_data_dir: "../data/train"
+  train_reader_path: "reader"  # importlib format
+  train_batch_size: 128
+  model_save_path: "output_model_rank"
 
-dygraph:
-  train_data_dir: "data/train"
   use_gpu: False
-  batch_size: 128
   epochs: 5
   print_interval: 20
-  # model_init_path: "output_model/0" # init model
-  model_save_path: "increment_rank"
+  
+  test_data_dir: "../data/test"
+  infer_reader_path: "reader"  # importlib format
+  infer_batch_size: 128
+  infer_load_path: "output_model_rank"
+  infer_start_epoch: 4
+  infer_end_epoch: 5
 
-# list of dataset
-dataset:
-- name: dataset_train # name of dataset to distinguish different datasets
-  batch_size: 128
-  type: DataLoader 
-  data_path: "{workspace}/data/train"
-  sparse_slots: "logid time userid gender age occupation movieid title genres label"
-  dense_slots: ""
+  runner_result_dump_path: "rank_infer_result"
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -38,28 +37,8 @@ hyper_parameters:
   optimizer:
     class: Adam
     learning_rate: 0.001
-    strategy: async
   # user-defined <key, value> pairs
   sparse_feature_number: 600000
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
-
-# train
-mode: runner_train
-
-runner:
-- name: runner_train
-  class: train
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_checkpoint_path: "increment_rank" # save checkpoint path
-  epochs: 5
-  device: cpu
-  print_interval: 20
-
-#train
-phase:
-- name: phase1
-  model: "{workspace}/rank/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
-  thread_num: 4
