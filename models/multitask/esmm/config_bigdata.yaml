@@ -13,33 +13,23 @@
 # limitations under the License.
 
 
-workspace: "models/multitask/esmm"
-workspace: .
-
-dygraph:
-  train_data_dir: "data/train_data"
+runner:
+  train_data_dir: "../../../tools/datasets/ali-ccp/train_data"
+  train_reader_path: "esmm_reader" # importlib format
   use_gpu: True
-  batch_size: 1024
+  use_auc: True
+  train_batch_size: 1024
   epochs: 10
   print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_all"
-  test_data_dir: "data/test_data"
-  infer_load_path: "output_model_all"
-  infer_start_epoch: -1
+  model_save_path: "output_model_esmm_all"
+  test_data_dir: "../../../tools/datasets/ali-ccp/test_data"
+  infer_batch_size: 1024
+  infer_reader_path: "esmm_reader" # importlib format
+  infer_load_path: "output_model_esmm_all"
+  infer_start_epoch: 0
   infer_end_epoch: 10
 
-dataset:
-  - name: dataset_train
-    batch_size: 1024
-    type: QueueDataset
-    data_path: "{workspace}/data/train_data"
-    data_converter: "{workspace}/esmm_reader.py"
-  - name: dataset_infer
-    batch_size: 1024
-    type: QueueDataset
-    data_path: "{workspace}/data/test_data"
-    data_converter: "{workspace}/esmm_reader.py"
 
 hyper_parameters:
   sparse_feature_number: 737946
@@ -51,34 +41,3 @@ hyper_parameters:
     class: adam
     learning_rate: 0.001
     strategy: async
-
-#use infer_runner mode and modify 'phase' below if infer
-mode: [train_runner, infer_runner]
-
-runner:
-  - name: train_runner
-    class: train
-    device: cpu
-    epochs: 10
-    save_checkpoint_interval: 1
-    save_inference_interval: 4
-    save_checkpoint_path: "increment_esmm_all"
-    save_inference_path: "inference"
-    print_interval: 10
-    phases: [train]
-  - name: infer_runner
-    class: infer
-    init_model_path: "increment_esmm_all/9"
-    device: cpu
-    print_interval: 1
-    phases: [infer]
-
-phase:
-  - name: train
-    model: "{workspace}/model.py"
-    dataset_name: dataset_train
-    thread_num: 1
-  - name: infer
-    model: "{workspace}/model.py"
-    dataset_name: dataset_infer
-    thread_num: 1

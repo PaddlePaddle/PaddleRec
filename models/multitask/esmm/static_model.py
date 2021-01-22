@@ -15,42 +15,38 @@
 import numpy as np
 import paddle
 
-from paddlerec.core.utils import envs
-from paddlerec.core.model import ModelBase
-from esmm_net import ESMMLayer
+from net import ESMMLayer
 
 
-class Model(ModelBase):
+class StaticModel():
     def __init__(self, config):
-        ModelBase.__init__(self, config)
+        self.cost = None
+        self.config = config
+        self._init_hyper_parameters()
 
     def _init_hyper_parameters(self):
-        #self.vocab_size = envs.get_global_env("hyper_parameters.vocab_size")
-        #self.embed_size = envs.get_global_env("hyper_parameters.embed_size")
-        self.max_len = envs.get_global_env("hyper_parameters.max_len", 3)
-        self.sparse_feature_number = envs.get_global_env(
+        self.max_len = self.config.get("hyper_parameters.max_len", 3)
+        self.sparse_feature_number = self.config.get(
             "hyper_parameters.sparse_feature_number")
-        self.sparse_feature_dim = envs.get_global_env(
+        self.sparse_feature_dim = self.config.get(
             "hyper_parameters.sparse_feature_dim")
-        self.num_field = envs.get_global_env("hyper_parameters.num_field")
-        self.learning_rate = envs.get_global_env(
+        self.num_field = self.config.get("hyper_parameters.num_field")
+        self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
-        self.ctr_fc_sizes = envs.get_global_env(
-            "hyper_parameters.ctr_fc_sizes")
-        self.cvr_fc_sizes = envs.get_global_env(
-            "hyper_parameters.cvr_fc_sizes")
+        self.ctr_fc_sizes = self.config.get("hyper_parameters.ctr_fc_sizes")
+        self.cvr_fc_sizes = self.config.get("hyper_parameters.cvr_fc_sizes")
 
-    def input_data(self, is_infer=False, **kwargs):
+    def create_feeds(self, is_infer=False):
         sparse_input_ids = [
             paddle.static.data(
                 name="field_" + str(i),
-                shape=[-1, self.max_len],
+                shape=[None, self.max_len],
                 dtype="int64") for i in range(0, 23)
         ]
         label_ctr = paddle.static.data(
-            name="ctr", shape=[-1, 1], dtype="int64")
+            name="ctr", shape=[None, 1], dtype="int64")
         label_cvr = paddle.static.data(
-            name="cvr", shape=[-1, 1], dtype="int64")
+            name="cvr", shape=[None, 1], dtype="int64")
         inputs = sparse_input_ids + [label_ctr] + [label_cvr]
         if is_infer:
             return inputs
@@ -75,9 +71,8 @@ class Model(ModelBase):
             input=ctcvr_prop, label=ctcvr_buy)
 
         if is_infer:
-            self._infer_results["AUC_ctr"] = auc_ctr
-            self._infer_results["AUC_ctcvr"] = auc_ctcvr
-            return
+            fetch_dict = {'auc_ctr': auc_ctr, 'auc_ctcvr': auc_ctcvr}
+            return fetch_dict
 
         loss_ctr = paddle.nn.functional.log_loss(
             input=ctr_out_one, label=paddle.cast(
@@ -90,7 +85,20 @@ class Model(ModelBase):
         avg_cost = paddle.mean(x=cost)
 
         self._cost = avg_cost
-        self._metrics["AUC_ctr"] = auc_ctr
-        self._metrics["BATCH_AUC_ctr"] = batch_auc_ctr
-        self._metrics["AUC_ctcvr"] = auc_ctcvr
-        self._metrics["BATCH_AUC_ctcvr"] = batch_auc_ctcvr
+        fetch_dict = {
+            'cost': avg_cost,
+            'auc_ctr': auc_ctr,
+            'auc_ctcvr': auc_ctcvr
+        }
+        return fetch_dict
+
+    def create_optimizer(self, strategy=None):
+        optimizer = paddle.optimizer.Adam(
+            learning_rate=self.learning_rate, lazy_mode=True)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
+        optimizer.minimize(self._cost)
+
+    def infer_net(self, input):
+        return self.net(input, is_infer=True)

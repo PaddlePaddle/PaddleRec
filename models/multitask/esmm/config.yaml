@@ -13,33 +13,22 @@
 # limitations under the License.
 
 
-workspace: "models/multitask/esmm"
-#workspace: .
-
-dygraph:
+runner:
   train_data_dir: "data/train"
+  train_reader_path: "esmm_reader" # importlib format
   use_gpu: False
-  batch_size: 2
+  use_auc: True
+  train_batch_size: 2
   epochs: 3
   print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
+  model_save_path: "output_model_esmm"
   test_data_dir: "data/train"
-  infer_load_path: "output_model"
-  infer_start_epoch: -1
+  infer_batch_size: 2
+  infer_reader_path: "esmm_reader" # importlib format
+  infer_load_path: "output_model_esmm"
+  infer_start_epoch: 0
   infer_end_epoch: 3
-
-dataset:
-  - name: dataset_train
-    batch_size: 5
-    type: QueueDataset
-    data_path: "{workspace}/data/train"
-    data_converter: "{workspace}/esmm_reader.py"
-  - name: dataset_infer
-    batch_size: 5
-    type: QueueDataset
-    data_path: "{workspace}/data/test"
-    data_converter: "{workspace}/esmm_reader.py"
 
 hyper_parameters:
   sparse_feature_number: 737946
@@ -51,34 +40,3 @@ hyper_parameters:
     class: adam
     learning_rate: 0.001
     strategy: async
-
-#use infer_runner mode and modify 'phase' below if infer
-mode: [train_runner, infer_runner]
-
-runner:
-  - name: train_runner
-    class: train
-    device: cpu
-    epochs: 3
-    save_checkpoint_interval: 1
-    save_inference_interval: 4
-    save_checkpoint_path: "increment_esmm"
-    save_inference_path: "inference"
-    print_interval: 2
-    phases: [train]
-  - name: infer_runner
-    class: infer
-    init_model_path: "increment_esmm/1"
-    device: cpu
-    print_interval: 1
-    phases: [infer]
-
-phase:
-  - name: train
-    model: "{workspace}/model.py"
-    dataset_name: dataset_train
-    thread_num: 1
-  - name: infer
-    model: "{workspace}/model.py"
-    dataset_name: dataset_infer
-    thread_num: 1
