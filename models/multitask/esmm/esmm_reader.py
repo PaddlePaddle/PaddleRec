@@ -17,7 +17,6 @@ import numpy as np
 
 from collections import defaultdict
 from paddle.io import IterableDataset
-from paddlerec.core.utils import envs
 
 
 class RecDataset(IterableDataset):

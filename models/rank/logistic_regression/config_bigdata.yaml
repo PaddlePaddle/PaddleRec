@@ -13,75 +13,28 @@
 # limitations under the License.
 
 # global settings 
-debug: false
-workspace: "models/rank/logistic_regression"
 
-dygraph:
-  train_data_dir: "data/slot_train_data"
-  use_gpu: True
-  batch_size: 1024
+runner:
+  train_data_dir: "../../../tools/datasets/criteo_lr/slot_train_data"
+  train_reader_path: "criteo_lr_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 1024
   epochs: 2
   print_interval: 100
-  #model_init_path: "output_model_all/0" # init model
-  model_save_path: "output_model_all"
-  test_data_dir: "data/slot_test_data"
-  infer_load_path: "output_model_all"
-  infer_start_epoch: -1
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_lr_all"
+  test_data_dir: "../../../tools/datasets/criteo_lr/slot_test_data"
+  infer_reader_path: "criteo_lr_reader" # importlib format  
+  infer_batch_size: 1024
+  infer_load_path: "output_model_lr_all"
+  infer_start_epoch: 0
   infer_end_epoch: 2
-
-dataset:
-  - name: train_sample
-    type: DataLoader
-    batch_size: 1024
-    data_path: "{workspace}/data/slot_train_data"
-    sparse_slots: "label feat_idx"
-    dense_slots: "feat_value:39"
-  - name: infer_sample
-    type: DataLoader
-    batch_size: 1024
-    data_path: "{workspace}/data/slot_test_data"
-    sparse_slots: "label feat_idx"
-    dense_slots: "feat_value:39"
 
 hyper_parameters:
     optimizer:
         class: Adam
         learning_rate: 0.001
     sparse_feature_number: 1086460
-    sparse_feature_dim: 9
     num_field: 39
     reg: 0.001
-
-
-mode: [train_runner,infer_runner]
-# if infer, change mode to "infer_runner" and change phase to "infer_phase"
-
-runner:
-  - name: train_runner
-    class: train
-    epochs: 2
-    device: cpu
-    init_model_path: ""
-    save_checkpoint_interval: 1
-    save_inference_interval: 1
-    save_checkpoint_path: "increment"
-    save_inference_path: "inference"
-    print_interval: 1
-    phases: phase1
-  - name: infer_runner
-    class: infer
-    device: cpu
-    init_model_path: "increment/1"
-    print_interval: 1
-    phases: infer_phase
-    
-
-phase:
-- name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: train_sample
-  thread_num: 1
-- name: infer_phase
-  model: "{workspace}/model.py"
-  dataset_name: infer_sample
-  thread_num: 1

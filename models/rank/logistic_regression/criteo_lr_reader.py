@@ -18,14 +18,13 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class CriteoLRDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(CriteoLRDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
         self.init()
 
     def init(self):
-        from operator import mul
         padding = 0
         self.sparse_slots = ["label", "feat_idx"]
         self.dense_slots = ["feat_value"]
@@ -38,7 +37,6 @@ class CriteoLRDataset(IterableDataset):
             self.visit[self.slots[i]] = False
         self.padding = padding
 
-    #def read_data(self, file_list):
     def __iter__(self):
         full_lines = []
         self.data = []
@@ -73,8 +71,4 @@ class CriteoLRDataset(IterableDataset):
                             self.visit[slot] = False
                     # label, feat_idx, feat_value
                     yield np.array(output[0][1]), np.array(output[1][
-                        1]), np.array(output[2][1])
-                    #self.data.append([
-                    #    np.array(output[0][1]), np.array(output[1][1]),
-                    #    np.array(output[2][1])
-                    #])
+                        1]), np.array(output[2][1]).astype('float32')
