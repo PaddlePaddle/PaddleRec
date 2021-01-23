@@ -19,7 +19,7 @@ hyper_parameters:
   sparse_inputs_slots: 27
   sparse_feature_number: 1000001
   sparse_feature_dim: 10
-  fc_sizes: [512, 256, 128, 32]
+  fc_sizes: [400, 400, 400]
 
 runner:
   epochs: 15
