@@ -15,7 +15,6 @@
 # global settings 
 
 runner:
-    #train_data_dir: "data/slot_train_data_full"
   train_data_dir: "../../../tools/datasets/criteo/slot_train_data_full"
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
