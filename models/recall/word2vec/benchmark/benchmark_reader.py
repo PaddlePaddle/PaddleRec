@@ -16,6 +16,7 @@ import os
 import sys
 import six
 import numpy as np
+import paddle.fluid as fluid
 import paddle.distributed.fleet as fleet
 
 
@@ -126,22 +127,46 @@ class Reader(fleet.MultiSlotDataGenerator):
             for file in file_list:
                 with open(file, 'r') as f:
                     for line in f:
-                        neg_array = self.cs.searchsorted(
-                            np.random.sample(self.neg_num))
-                        id_ = 0
-                        word_ids = [w for w in line.split()]
+                        word_ids = [int(w) for w in line.split()]
                         for idx, target_id in enumerate(word_ids):
-                            context_word_ids = self.get_context_words(word_ids,
-                                                                      idx)
+                            context_word_ids = self.get_context_words(
+                                word_ids, idx)
                             for context_id in context_word_ids:
-                                neg_id = [int(str(i)) for i in neg_array]
-                                output = [[int(target_id)], [int(context_id)],
-                                          [neg_id]]
-                                yield output
-                                id_ += 1
-                                if id_ % self.batch_size == 0:
-                                    neg_array = self.cs.searchsorted(
-                                        np.random.sample(self.neg_num))
+                                yield [target_id], [context_id]
+
+        def batch_tensor_creator(sample_reader):
+            def __reader__():
+                result = [[], []]
+                for sample in sample_reader():
+                    for i, fea in enumerate(sample):
+                        result[i].append(fea)
+                    if len(result[0]) == self.batch_size:
+                        tensor_result = []
+                        for tensor in result:
+                            t = fluid.Tensor()
+                            dat = np.array(tensor, dtype='int64')
+                            if len(dat.shape) > 2:
+                                dat = dat.reshape((dat.shape[0], dat.shape[2]))
+                            elif len(dat.shape) == 1:
+                                dat = dat.reshape((-1, 1))
+                            t.set(dat, fluid.CPUPlace())
+                            tensor_result.append(t)
+                        if self.with_shuffle_batch:
+                            yield tensor_result
+                        else:
+                            tt = fluid.Tensor()
+                            neg_array = self.cs.searchsorted(
+                                np.random.sample(self.neg_num))
+                            neg_array = np.tile(neg_array, self.batch_size)
+                            tt.set(
+                                neg_array.reshape(
+                                    (self.batch_size, self.neg_num)),
+                                fluid.CPUPlace())
+                            tensor_result.append(tt)
+                            yield tensor_result
+                        result = [[], []]
+
+            return __reader__
 
         def infer_reader():
             for file in file_list:
@@ -156,16 +181,16 @@ class Reader(fleet.MultiSlotDataGenerator):
                             yield [self.word_to_id[line[0]]
                                    ], [self.word_to_id[line[1]]], [
                                        self.word_to_id[line[2]]
-                                   ], [self.word_to_id[line[3]]], [
+                            ], [self.word_to_id[line[3]]], [
                                        self.word_to_id[line[0]],
                                        self.word_to_id[line[1]],
                                        self.word_to_id[line[2]]
-                                   ]
+                            ]
 
         if self.is_infer:
             return infer_reader
         else:
-            return reader
+            return batch_tensor_creator(reader)
 
     def _is_unicode(self, s):
         if six.PY2:
