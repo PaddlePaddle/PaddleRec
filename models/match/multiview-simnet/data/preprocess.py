@@ -89,6 +89,7 @@ for query in test_query:
 random.shuffle(test_set)
 
 #训练集中的query,pos,neg转化格式
+_pad_ = 0
 f = open("train.txt", "w")
 for line in train_set:
     query = jieba.cut(line[0].strip())
@@ -97,18 +98,25 @@ for line in train_set:
     query_list = []
     for word in query:
         query_list.append(word_dict[word])
+    for i in range(79 - len(query_list)):
+        query_list.append(_pad_)
     pos_list = []
     for word in pos:
         pos_list.append(word_dict[word])
+    for i in range(99 - len(pos_list)):
+        pos_list.append(_pad_)
     neg_list = []
     for word in neg:
         neg_list.append(word_dict[word])
+    for i in range(90 - len(neg_list)):
+        neg_list.append(_pad_)
     f.write(' '.join(["0:" + str(x) for x in query_list]) + " " + ' '.join([
         "1:" + str(x) for x in pos_list
     ]) + " " + ' '.join(["2:" + str(x) for x in neg_list]) + "\n")
 f.close()
 
 #测试集中的query和pos转化格式
+_pad_ = 0
 f = open("test.txt", "w")
 fa = open("label.txt", "w")
 fb = open("testquery.txt", "w")
@@ -119,9 +127,13 @@ for line in test_set:
     query_list = []
     for word in query:
         query_list.append(word_dict[word])
+    for i in range(79 - len(query_list)):
+        query_list.append(_pad_)
     pos_list = []
     for word in pos:
         pos_list.append(word_dict[word])
+    for i in range(99 - len(pos_list)):
+        pos_list.append(_pad_)
     f.write(' '.join(["0:" + str(x) for x in query_list]) + " " + ' '.join(
         ["1:" + str(x) for x in pos_list]) + "\n")
     fa.write(str(label) + "\n")
