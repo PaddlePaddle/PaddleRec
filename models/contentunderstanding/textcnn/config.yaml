@@ -12,32 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/contentunderstanding/textcnn"
-
-dygraph:
+runner:
   train_data_dir: "data/train"
-  use_gpu: True
-  batch_size: 5
+  train_reader_path: "senti_clas_reader" # importlib format
+  use_gpu: False
+  use_auc: False
+  train_batch_size: 2
   epochs: 3
   print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/test"
-  infer_load_path: "output_model"
-  infer_start_epoch: -1
+  model_save_path: "output_model_textcnn"
+  test_data_dir: "data/train"
+  infer_reader_path: "senti_clas_reader" # importlib format
+  infer_batch_size: 5
+  infer_load_path: "output_model_textcnn"
+  infer_start_epoch: 0
   infer_end_epoch: 3
-
-dataset:
-- name: data1
-  batch_size: 5
-  type: DataLoader
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/reader.py"
-- name: dataset_infer
-  batch_size: 2
-  type: DataLoader
-  data_path: "{workspace}/data/test"
-  data_converter: "{workspace}/reader.py"
 
 hyper_parameters:
   optimizer:
@@ -53,38 +43,3 @@ hyper_parameters:
   emb_dim: 128
   hid_dim: 96
   class_dim: 2
-
-mode: [train_runner,infer_runner]
-
-runner:
-- name: train_runner
-  class: train
-  epochs: 10
-  device: cpu
-  save_checkpoint_interval: 1
-  save_inference_interval: 1
-  save_checkpoint_path: "increment_textcnn"
-  save_inference_path: "inference"
-  save_inference_feed_varnames: []
-  save_inference_fetch_varnames: []
-  init_model_path: "" 
-  print_interval: 10
-  phases: phase_train
-- name: infer_runner
-  class: infer
-  # device to run training or infer
-  device: cpu
-  print_interval: 1
-  init_model_path: "increment_textcnn" # load model path
-  phases: phase_infer
-
-  
-phase:
-- name: phase_train
-  model: "{workspace}/model.py"
-  dataset_name: data1
-  thread_num: 1
-- name: phase_infer
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_infer # select dataset by name
-  thread_num: 1

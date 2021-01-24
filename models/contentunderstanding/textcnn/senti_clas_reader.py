@@ -18,9 +18,9 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class TextCNNDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(TextCNNDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
 
     def __iter__(self):
