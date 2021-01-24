@@ -12,21 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-import os
-import warnings
-import logging
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle
+import os
+import paddle.nn as nn
+import time
+import logging
 import sys
+import importlib
+
+import net
 import numpy as np
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
-from save_load import save_static_model, load_static_model
-
-import time
+from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
+from utils.save_load import save_model, load_model
+from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
 logging.basicConfig(
@@ -35,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("PaddleRec train static script")
+    parser = argparse.ArgumentParser(description='paddle-rec run')
     parser.add_argument("-m", "--config_yaml", type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
@@ -43,32 +58,42 @@ def parse_args():
     return args
 
 
+def create_feeds(batch_data, vocab_size):
+    all_label = paddle.to_tensor(np.arange(vocab_size).astype('int32'))
+    inputs = [
+        paddle.to_tensor(batch_data[i].numpy().astype('int32'))
+        for i in range(4)
+    ]
+    inputs_word = batch_data[4].numpy()
+    return inputs, all_label, inputs_word
+
+
+def create_model(config):
+    sparse_feature_number = config.get(
+        "hyper_parameters.sparse_feature_number")
+    sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
+
+    word2vec = net.Word2VecInferLayer(sparse_feature_number,
+                                      sparse_feature_dim, "emb")
+
+    return word2vec
+
+
 def main(args):
     paddle.seed(12345)
-
     # load config
     config = load_yaml(args.config_yaml)
+    dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
-    # load static model class
-    static_model_class = load_static_model_class(config)
-
-    input_data = static_model_class.create_feeds(is_infer=True)
-    input_data_names = [data.name for data in input_data]
-
-    fetch_vars = static_model_class.infer_net(input_data)
-    logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-
+    # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
-    use_auc = config.get("runner.use_auc", False)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
     model_load_path = config.get("runner.infer_load_path", "model_output")
     start_epoch = config.get("runner.infer_start_epoch", 0)
     end_epoch = config.get("runner.infer_end_epoch", 10)
-    batch_size = config.get("runner.infer_batch_size", None)
-    sparse_feature_number = config.get(
-        "hyper_parameters.sparse_feature_number")
-    os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
+    vocab_size = config.get("hyper_parameters.sparse_feature_number", 10)
+
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
@@ -77,49 +102,37 @@ def main(args):
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
-    exe = paddle.static.Executor(place)
-    # initialize
-    exe.run(paddle.static.default_startup_program())
 
+    #dy_model = dy_model_class.create_model(config)
+    dy_model = create_model(config)
+
+    # to do : add optimizer function
+    #optimizer = dy_model_class.create_optimizer(dy_model, config)
+
+    logger.info("read data")
     test_dataloader = create_data_loader(
         config=config, place=place, mode="test")
+
+    epoch_begin = time.time()
+    interval_begin = time.time()
+
+    metric_list, metric_list_name = dy_model_class.create_metrics()
 
     for epoch_id in range(start_epoch, end_epoch):
         logger.info("load model epoch {}".format(epoch_id))
         model_path = os.path.join(model_load_path, str(epoch_id))
-        load_static_model(
-            paddle.static.default_main_program(),
-            model_path,
-            prefix='rec_static')
-
+        load_model(model_path, dy_model)
+        dy_model.eval()
         accum_num_sum = 0
         accum_num = 0
-        epoch_begin = time.time()
-        interval_begin = time.time()
-        for batch_id, batch_data in enumerate(test_dataloader()):
-            #print(np.array(batch_data[0]))
-            ##b_size = len([dat[0] for dat in batch_data])
-            #print(b_size)
-            #wa = np.array([dat[0] for dat in batch_data]).astype(
-            #            "int64").reshape(b_size)
-            #wb = np.array([dat[1] for dat in batch_data]).astype(
-            #            "int64").reshape(b_size)
-            #wc = np.array([dat[2] for dat in batch_data]).astype(
-            #            "int64").reshape(b_size)
-            fetch_batch_var = exe.run(
-                program=paddle.static.default_main_program(),
-                feed={
-                    "analogy_a": np.array(batch_data[0]),
-                    "analogy_b": np.array(batch_data[1]),
-                    "analogy_c": np.array(batch_data[2]),
-                    "all_label": np.arange(sparse_feature_number)
-                    .reshape(sparse_feature_number).astype("int64")
-                },
-                fetch_list=[var for _, var in fetch_vars.items()])
-            pre = np.array(fetch_batch_var[0])
-            #pre = pred_idx.numpy()
-            label = np.array(batch_data[3])
-            inputs_word = np.array(batch_data[4])
+        for batch_id, batch in enumerate(test_dataloader()):
+            batch_size = len(batch[0])
+
+            inputs, all_label, inputs_word = create_feeds(batch, vocab_size)
+            label = inputs[3].numpy()
+            val, pred_idx = dy_model.forward(inputs[0], inputs[1], inputs[2],
+                                             inputs[3], all_label)
+            pre = pred_idx.numpy()
 
             for ii in range(len(label)):
                 top4 = pre[ii][0]
@@ -138,6 +151,7 @@ def main(args):
                            print_interval * batch_size / (time.time() -
                                                           interval_begin)))
                 interval_begin = time.time()
+
         logger.info("infer epoch: {} done, acc: {:.6f}, : epoch time{:.2f} s".
                     format(epoch_id, accum_num * 1.0 / accum_num_sum,
                            time.time() - epoch_begin))
@@ -145,7 +159,6 @@ def main(args):
         epoch_begin = time.time()
 
 
-if __name__ == "__main__":
-    paddle.enable_static()
+if __name__ == '__main__':
     args = parse_args()
     main(args)
