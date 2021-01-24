@@ -14,7 +14,7 @@
 
 runner:
   train_data_dir: "data/train_data"
-  train_reader_path: "reader"  # importlib format
+  train_reader_path: "agnews_reader"  # importlib format
   train_batch_size: 10
   model_save_path: "output_model_tagspace"
 
@@ -23,7 +23,7 @@ runner:
   print_interval: 1
   
   test_data_dir: "data/test_data"
-  infer_reader_path: "reader"  # importlib format
+  infer_reader_path: "agnews_reader"  # importlib format
   infer_batch_size: 10
   infer_load_path: "output_model_tagspace"
   infer_start_epoch: 0
