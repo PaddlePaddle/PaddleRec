@@ -12,39 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/contentunderstanding/tagspace"
-
-dygraph:
+runner:
   train_data_dir: "data/train_big_data"
+  train_reader_path: "reader"  # importlib format
+  train_batch_size: 128
+  model_save_path: "output_model_all_tagspace"
+
   use_gpu: False
-  batch_size_train: 128
-  batch_size_infer: 500
   epochs: 1
   print_interval: 1
-  # model_init_path: "output_model/0" # init model
-  model_save_path: "increment"
+
   test_data_dir: "data/test_big_data"
-  infer_load_path: "increment"
-  infer_start_epoch: -1
+  infer_reader_path: "reader"  # importlib format
+  infer_batch_size: 500
+  infer_load_path: "output_model_all_tagspace"
+  infer_start_epoch: 0
   infer_end_epoch: 1
 
-
-dataset:
-- name: sample_1
-  type: DataLoader
-  batch_size: 128
-  data_path: "{workspace}/data/train_big_data"
-  data_converter: "{workspace}/reader.py"
-- name: inferdata
-  type: DataLoader
-  batch_size: 500
-  data_path: "{workspace}/data/test_big_data"
-  data_converter: "{workspace}/reader.py" 
-
+# hyper parameters of user-defined network
 hyper_parameters:
+  # optimizer config
   optimizer:
     class: Adagrad
     learning_rate: 0.001
+  # user-defined <key, value> pairs
   vocab_text_size: 75378
   vocab_tag_size: 4
   emb_dim: 10
@@ -54,36 +45,3 @@ hyper_parameters:
   neg_size: 3
   num_devices: 1
   text_len: 45
-
-mode: [runner1, infer_runner]
-
-runner:
-- name: runner1
-  class: train
-  epochs: 1
-  device: cpu
-  save_checkpoint_interval: 1
-  save_inference_interval: 1
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
-  save_inference_feed_varnames: []
-  save_inference_fetch_varnames: []
-  print_interval: 1
-  phases: phase1
-- name: infer_runner
-  class: infer
-  # device to run training or infer
-  device: cpu
-  print_interval: 1
-  init_model_path: "increment/0" # load model path
-  phases: phase_infer
-
-phase:
-- name: phase1
-  model: "{workspace}/model.py"
-  dataset_name: sample_1
-  thread_num: 1
-- name: phase_infer
-  model: "{workspace}/model.py"
-  dataset_name: inferdata
-  thread_num: 1

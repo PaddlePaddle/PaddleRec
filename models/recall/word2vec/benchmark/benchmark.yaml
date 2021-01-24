@@ -37,6 +37,7 @@ runner:
   dataset_debug: False
   split_file_list: False
   example_count_method: "word"
+  batch_generator: True
 
   train_batch_size: 100
   train_data_dir: "train_data"

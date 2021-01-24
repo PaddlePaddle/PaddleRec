@@ -12,55 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-
+from __future__ import print_function
 import numpy as np
+from paddle.io import IterableDataset
 
-from paddlerec.core.reader import ReaderBase
 
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
+        self.file_list = file_list
 
-class Reader(ReaderBase):
-    def init(self):
-        pass
+    def __iter__(self):
+        full_lines = []
+        self.data = []
+        for file in self.file_list:
+            with open(file, "r") as rf:
+                for l in rf:
+                    output_list = []
+                    tag_size = 4
+                    neg_size = 3
+                    text_size = 45
+                    _pad_ = 75377
+                    line = l.strip().split(",")
+                    pos_index = int(line[0])
+                    pos_tag = []
+                    pos_tag.append(pos_index)
+                    text_raw = line[1].split(" ")
+                    text = [int(w) for w in text_raw]
+                    if len(text) < text_size:
+                        for i in range(text_size - len(text)):
+                            text.append(_pad_)
+                    else:
+                        text = text[:text_size]
 
-    def _process_line(self, l):
-        tag_size = 4
-        neg_size = 3
-        text_size = 45
-        _pad_ = 75377
-        l = l.strip().split(",")
-        pos_index = int(l[0])
-        pos_tag = []
-        pos_tag.append(pos_index)
-        text_raw = l[1].split()
-        text = [int(w) for w in text_raw]
-        if len(text) < text_size:
-            for i in range(text_size - len(text)):
-                text.append(_pad_)
-        else:
-            text = text[:text_size]
-        neg_tag = []
-        max_iter = 100
-        now_iter = 0
-        sum_n = 0
-        while (sum_n < neg_size):
-            now_iter += 1
-            if now_iter > max_iter:
-                print("error : only one class")
-                sys.exit(0)
-            rand_i = np.random.randint(0, tag_size)
-            if rand_i != pos_index:
-                neg_index = rand_i
-                neg_tag.append(neg_index)
-                sum_n += 1
-        return text, pos_tag, neg_tag
+                    neg_tag = []
+                    while (len(neg_tag) < neg_size):
+                        rand_i = np.random.randint(0, tag_size)
+                        if rand_i != pos_index:
+                            neg_index = rand_i
+                            neg_tag.append(neg_index)
 
-    def generate_sample(self, line):
-        def data_iter():
-            text, pos_tag, neg_tag = self._process_line(line)
-            if text is None:
-                yield None
-                return
-            yield [('text', text), ('pos_tag', pos_tag), ('neg_tag', neg_tag)]
+                    output_list.append(np.array(text))
+                    output_list.append(np.array(pos_tag))
+                    output_list.append(np.array(neg_tag))
 
-        return data_iter
+                    yield output_list
