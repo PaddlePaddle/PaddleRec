@@ -90,10 +90,10 @@ class StaticModel():
 
         self.predict = predict_2d
 
-        auc, batch_auc, _ = paddle.fluid.layers.auc(input=self.predict,
-                                                    label=self.label_input,
-                                                    num_thresholds=2**12,
-                                                    slide_steps=20)
+        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
+                                              label=self.label_input,
+                                              num_thresholds=2**12,
+                                              slide_steps=20)
         self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}
