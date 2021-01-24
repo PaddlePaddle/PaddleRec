@@ -13,7 +13,7 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "../../../tools/datasets/census/train_all"
+  train_data_dir: "../../../datasets/census/train_all"
   train_reader_path: "census_reader" # importlib format
   use_gpu: False
   use_auc: True
@@ -22,7 +22,7 @@ runner:
   print_interval: 100
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_mmoe_all"
-  test_data_dir: "../../../tools/datasets/census/test_all"
+  test_data_dir: "../../../datasets/census/test_all"
   infer_batch_size: 32
   infer_reader_path: "census_reader" # importlib format
   infer_load_path: "output_model_mmoe_all"

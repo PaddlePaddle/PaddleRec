@@ -15,7 +15,7 @@
 # global settings 
 
 runner:
-  train_data_dir: "../../../tools/datasets/criteo_lr/slot_train_data"
+  train_data_dir: "../../../datasets/criteo_lr/slot_train_data"
   train_reader_path: "criteo_lr_reader" # importlib format
   use_gpu: False
   use_auc: True
@@ -24,7 +24,7 @@ runner:
   print_interval: 100
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_lr_all"
-  test_data_dir: "../../../tools/datasets/criteo_lr/slot_test_data"
+  test_data_dir: "../../../datasets/criteo_lr/slot_test_data"
   infer_reader_path: "criteo_lr_reader" # importlib format  
   infer_batch_size: 1024
   infer_load_path: "output_model_lr_all"
