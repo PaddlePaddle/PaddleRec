@@ -12,46 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddlerec.core.utils import envs
-from paddlerec.core.model import ModelBase
 import paddle
-from textcnn_net import TextCNNLayer
+from net import TextCNNLayer
 
 
-class Model(ModelBase):
+class StaticModel():
     def __init__(self, config):
-        ModelBase.__init__(self, config)
-        self.dict_dim = envs.get_global_env("hyper_parameters.dict_dim")
-        self.max_len = envs.get_global_env("hyper_parameters.max_len")
-        self.cnn_dim = envs.get_global_env("hyper_parameters.cnn_dim")
-        self.cnn_filter_size1 = envs.get_global_env(
+        self.cost = None
+        self.config = config
+        self._init_hyper_parameters()
+
+    def _init_hyper_parameters(self):
+        self.dict_dim = self.config.get("hyper_parameters.dict_dim")
+        self.max_len = self.config.get("hyper_parameters.max_len")
+        self.cnn_dim = self.config.get("hyper_parameters.cnn_dim")
+        self.cnn_filter_size1 = self.config.get(
             "hyper_parameters.cnn_filter_size1")
-        self.cnn_filter_size2 = envs.get_global_env(
+        self.cnn_filter_size2 = self.config.get(
             "hyper_parameters.cnn_filter_size2")
-        self.cnn_filter_size3 = envs.get_global_env(
+        self.cnn_filter_size3 = self.config.get(
             "hyper_parameters.cnn_filter_size3")
         self.filter_sizes = [
             self.cnn_filter_size1, self.cnn_filter_size2, self.cnn_filter_size3
         ]
-        self.emb_dim = envs.get_global_env("hyper_parameters.emb_dim")
-        self.hid_dim = envs.get_global_env("hyper_parameters.hid_dim")
-        self.class_dim = envs.get_global_env("hyper_parameters.class_dim")
-        self.is_sparse = envs.get_global_env("hyper_parameters.is_sparse")
+        self.emb_dim = self.config.get("hyper_parameters.emb_dim")
+        self.hid_dim = self.config.get("hyper_parameters.hid_dim")
+        self.class_dim = self.config.get("hyper_parameters.class_dim")
+        self.is_sparse = self.config.get("hyper_parameters.is_sparse")
+        self.learning_rate = self.config.get(
+            "hyper_parameters.optimizer.learning_rate")
 
-    def input_data(self, is_infer=False, **kwargs):
+    def create_feeds(self, is_infer=False):
         data = paddle.static.data(
             name="input", shape=[None, self.max_len], dtype='int64')
-        seq_len = paddle.static.data(
-            name="seq_len", shape=[None], dtype='int64')
         label = paddle.static.data(
             name="label", shape=[None, 1], dtype='int64')
-        return [data, seq_len, label]
+        return [data, label]
 
     def net(self, input, is_infer=False):
         """ network definition """
         data = input[0]
-        seq_len = input[1]
-        label = input[2]
+        label = input[1]
 
         textcnn_model = TextCNNLayer(
             self.dict_dim,
@@ -65,14 +66,24 @@ class Model(ModelBase):
         # softmax layer
         prediction = paddle.nn.functional.softmax(pred)
 
+        acc = paddle.metric.accuracy(input=prediction, label=label)
+        if is_infer:
+            fetch_dict = {'acc': acc}
+            return fetch_dict
         cost = paddle.nn.functional.cross_entropy(input=pred, label=label)
         avg_cost = paddle.mean(x=cost)
-        acc = paddle.metric.accuracy(input=prediction, label=label)
 
         self._cost = avg_cost
-        if is_infer:
-            self._infer_results["acc"] = acc
-            self._infer_results["loss"] = avg_cost
-        else:
-            self._metrics["acc"] = acc
-            self._metrics["loss"] = avg_cost
+        fetch_dict = {'cost': avg_cost, 'acc': acc}
+        return fetch_dict
+
+    def create_optimizer(self, strategy=None):
+        optimizer = paddle.optimizer.Adam(
+            learning_rate=self.learning_rate, lazy_mode=True)
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
+            optimizer = fleet.distributed_optimizer(optimizer, strategy)
+        optimizer.minimize(self._cost)
+
+    def infer_net(self, input):
+        return self.net(input, is_infer=True)
