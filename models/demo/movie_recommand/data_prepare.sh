@@ -25,8 +25,6 @@ rm data.txt
 rm log.data.train
 rm log.data.test
 
-
 cd ..
-
 
 echo "---> Finish data process"

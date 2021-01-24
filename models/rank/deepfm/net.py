@@ -63,6 +63,7 @@ class FM(nn.Layer):
         self.embedding_one = paddle.nn.Embedding(
             sparse_feature_number,
             1,
+            padding_idx=0,
             sparse=True,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
@@ -74,6 +75,7 @@ class FM(nn.Layer):
             self.sparse_feature_number,
             self.sparse_feature_dim,
             sparse=True,
+            padding_idx=0,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -84,12 +86,18 @@ class FM(nn.Layer):
         self.dense_w_one = paddle.create_parameter(
             shape=[self.dense_feature_dim],
             dtype='float32',
-            default_initializer=paddle.nn.initializer.Constant(value=1.0))
+            default_initializer=paddle.nn.initializer.TruncatedNormal(
+                mean=0.0,
+                std=self.init_value_ /
+                math.sqrt(float(self.sparse_feature_dim))))
 
         self.dense_w = paddle.create_parameter(
             shape=[1, self.dense_feature_dim, self.dense_emb_dim],
             dtype='float32',
-            default_initializer=paddle.nn.initializer.Constant(value=1.0))
+            default_initializer=paddle.nn.initializer.TruncatedNormal(
+                mean=0.0,
+                std=self.init_value_ /
+                math.sqrt(float(self.sparse_feature_dim))))
 
     def forward(self, sparse_inputs, dense_inputs):
         # -------------------- first order term  --------------------

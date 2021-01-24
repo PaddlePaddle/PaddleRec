@@ -147,11 +147,13 @@ class DataLoader(object):
         generator = get_reader_generator(path)
         generator.init(self.config)
         batch_size = int(self.config.get("runner.train_batch_size"))
-        loader.set_sample_generator(
-            generator.dataloader(self.file_list),
-            batch_size=batch_size,
-            drop_last=True,
-            places=paddle.static.cpu_places())
+        batch_generator = self.config.get(
+            "runner.batch_generator", False)
+        if batch_generator:
+            loader.set_batch_generator(generator.dataloader(self.file_list))
+        else:
+            loader.set_sample_generator(generator.dataloader(
+                self.file_list), batch_size=batch_size, drop_last=True, places=paddle.static.cpu_places())
         return loader
 
 

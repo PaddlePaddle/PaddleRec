@@ -70,6 +70,8 @@ for line in open(filename):
     pred.append(float(line))
 
 result_dict = {}
+print(len(pred))
+print(len(qid))
 for i in range(len(pred)):
     if qid[i] not in result_dict:
         result_dict[qid[i]] = []
