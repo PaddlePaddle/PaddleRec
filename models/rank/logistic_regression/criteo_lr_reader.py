@@ -18,18 +18,17 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class WideDeepDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(WideDeepDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
         self.init()
 
     def init(self):
-        from operator import mul
         padding = 0
-        self.sparse_slots = ["label"]
-        self.dense_slots = ["wide_input", "deep_input"]
-        self.dense_slots_shape = [8, 58]
+        self.sparse_slots = ["label", "feat_idx"]
+        self.dense_slots = ["feat_value"]
+        self.dense_slots_shape = [39]
         self.slots = self.sparse_slots + self.dense_slots
         self.slot2index = {}
         self.visit = {}
@@ -45,6 +44,7 @@ class WideDeepDataset(IterableDataset):
             with open(file, "r") as rf:
                 for l in rf:
                     line = l.strip().split(" ")
+
                     output = [(i, []) for i in self.slots]
                     for i in line:
                         slot_feasign = i.split(":")
@@ -69,12 +69,6 @@ class WideDeepDataset(IterableDataset):
                                     [self.padding])
                         else:
                             self.visit[slot] = False
-                    # sparse :label
-                    output_list = []
-                    for key, value in output[:-2]:
-                        output_list.append(np.array(value))
-                    # dense
-                    output_list.append(np.array(output[-2][1]))
-                    output_list.append(np.array(output[-1][1]))
-                    # list
-                    yield output_list
+                    # label, feat_idx, feat_value
+                    yield np.array(output[0][1]), np.array(output[1][
+                        1]), np.array(output[2][1]).astype('float32')

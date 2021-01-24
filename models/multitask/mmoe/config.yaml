@@ -12,32 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "models/multitask/mmoe"
-
-dygraph:
-  train_data_dir: "data/train" 
-  use_gpu: False 
-  batch_size: 5 
-  epochs: 10
-  print_interval: 2 
+runner:
+  train_data_dir: "data/train"
+  train_reader_path: "census_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 2
+  epochs: 3
+  print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
-  test_data_dir: "data/train"
-  infer_load_path: "output_model"
-  infer_start_epoch: -1
-  infer_end_epoch: 10
-
-dataset:
-- name: dataset_train
-  batch_size: 5
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/census_reader.py"
-- name: dataset_infer
-  batch_size: 5
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/census_reader.py"
+  model_save_path: "output_model_mmoe"
+  test_data_dir: "data/test"
+  infer_batch_size: 2
+  infer_reader_path: "census_reader" # importlib format
+  infer_load_path: "output_model_mmoe"
+  infer_start_epoch: 0
+  infer_end_epoch: 3
 
 hyper_parameters:
   feature_size: 499
@@ -49,32 +39,3 @@ hyper_parameters:
     class: adam
     learning_rate: 0.001
     strategy: async
-
-mode: [train_runner, infer_runner]
-
-runner:
-- name: train_runner
-  class: train
-  device: cpu
-  epochs: 3
-  save_checkpoint_interval: 1
-  save_inference_interval: 4
-  save_checkpoint_path: "increment_mmoe"
-  save_inference_path: "inference"
-  print_interval: 1
-  phases: [train]
-- name: infer_runner
-  class: infer
-  init_model_path: "increment_mmoe/1"
-  device: cpu
-  phases: [infer]
-
-phase:
-- name: train
-  model: "{workspace}/model.py"
-  dataset_name: dataset_train
-  thread_num: 1
-- name: infer
-  model: "{workspace}/model.py"
-  dataset_name: dataset_infer
-  thread_num: 1

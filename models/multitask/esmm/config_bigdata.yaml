@@ -12,34 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 runner:
-  train_data_dir: "data/train"
-  train_reader_path: "senti_clas_reader" # importlib format
-  use_gpu: False
-  use_auc: False
-  train_batch_size: 2
-  epochs: 3
-  print_interval: 2
+  train_data_dir: "../../../tools/datasets/ali-ccp/train_data"
+  train_reader_path: "esmm_reader" # importlib format
+  use_gpu: True
+  use_auc: True
+  train_batch_size: 1024
+  epochs: 10
+  print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_textcnn"
-  test_data_dir: "data/train"
-  infer_reader_path: "senti_clas_reader" # importlib format
-  infer_batch_size: 5
-  infer_load_path: "output_model_textcnn"
+  model_save_path: "output_model_esmm_all"
+  test_data_dir: "../../../tools/datasets/ali-ccp/test_data"
+  infer_batch_size: 1024
+  infer_reader_path: "esmm_reader" # importlib format
+  infer_load_path: "output_model_esmm_all"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 10
+
 
 hyper_parameters:
+  sparse_feature_number: 737946
+  sparse_feature_dim: 12
+  num_field: 23
+  ctr_fc_sizes: [256, 64]
+  cvr_fc_sizes: [256, 64]
   optimizer:
-    class: Adagrad
+    class: adam
     learning_rate: 0.001
-  is_sparse: False
-  dict_dim: 33257
-  max_len: 100
-  cnn_dim: 128
-  cnn_filter_size1: 1
-  cnn_filter_size2: 2
-  cnn_filter_size3: 3
-  emb_dim: 128
-  hid_dim: 96
-  class_dim: 2
+    strategy: async
