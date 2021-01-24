@@ -128,9 +128,22 @@ python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml
 python -u infer.py -m config.yaml 
 ```
 
+### 动态图&论文复现
+```
+# 进入模型目录
+cd models/multitask/mmoe # 在任意目录均可运行
+# 动态图训练
+python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 动态图预测
+python -u ../../../tools/infer.py -m config.yaml 
 
-## 进阶使用
+# 静态图训练
+python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 静态图预测
+python -u ../../../tools/static_infer.py -m config.yaml 
 
-
-
+# 全量数据下载
+cd tools/datasets/census
+sh run.sh
+```
 ## FAQ

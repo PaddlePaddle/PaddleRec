@@ -13,40 +13,38 @@
 # limitations under the License.
 
 from __future__ import print_function
+import numpy as np
 
-from paddlerec.core.reader import ReaderBase
+from paddle.io import IterableDataset
 
 
-class Reader(ReaderBase):
-    def init(self):
-        pass
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
+        self.file_list = file_list
+        self.config = config
 
-    def generate_sample(self, line):
-        """
-        Read the data line by line and process it as a dictionary
-
-        """
-
-        def reader():
-            """
-            This function needs to be implemented by the user, based on data format
-            """
-            l = line.strip().split(',')
-            l = list(map(float, l))
-            label_income = []
-            label_marital = []
-            data = l[2:]
-            if int(l[1]) == 0:
-                label_income = [0]
-            elif int(l[1]) == 1:
-                label_income = [1]
-            if int(l[0]) == 0:
-                label_marital = [0]
-            elif int(l[0]) == 1:
-                label_marital = [1]
-            # label_income = np.array(label_income)
-            # label_marital = np.array(label_marital)
-            feature_name = ["input", "label_income", "label_marital"]
-            yield zip(feature_name, [data] + [label_income] + [label_marital])
-
-        return reader
+    def __iter__(self):
+        full_lines = []
+        self.data = []
+        for file in self.file_list:
+            with open(file, "r") as rf:
+                for l in rf:
+                    l = l.strip().split(',')
+                    l = list(map(float, l))
+                    label_income = []
+                    label_marital = []
+                    data = l[2:]
+                    if int(l[1]) == 0:
+                        label_income = [0]
+                    elif int(l[1]) == 1:
+                        label_income = [1]
+                    if int(l[0]) == 0:
+                        label_marital = [0]
+                    elif int(l[0]) == 1:
+                        label_marital = [1]
+                    output_list = []
+                    output_list.append(np.array(data).astype('float32'))
+                    output_list.append(np.array(label_income))
+                    output_list.append(np.array(label_marital))
+                    yield output_list
