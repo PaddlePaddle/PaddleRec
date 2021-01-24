@@ -13,40 +13,30 @@
 # limitations under the License.
 
 
-workspace: "models/match/match-pyramid"
-
-dygraph:
+runner:
   train_data_dir: "data/train"
+  train_reader_path: "reader"  # importlib format
+  train_batch_size: 128
+  model_save_path: "output_model_pyramid"
+
   use_gpu: False
-  batch_size: 128
   epochs: 2
-  print_interval: 2
-  # model_init_path: "output_model/0" # init model
-  model_save_path: "inference"
+  print_interval: 1
+  
   test_data_dir: "data/test"
-  infer_load_path: "inference"
-  infer_start_epoch: 0
+  infer_reader_path: "reader"  # importlib format
+  infer_batch_size: 1
+  infer_load_path: "output_model_pyramid"
+  infer_start_epoch: 1
   infer_end_epoch: 2
 
-
-dataset:
-- name: dataset_train
-  batch_size: 128
-  type: DataLoader
-  data_path: "{workspace}/data/train" 
-  data_converter: "{workspace}/train_reader.py"
-- name: dataset_infer
-  batch_size: 1
-  type: DataLoader
-  data_path: "{workspace}/data/test"
-  data_converter: "{workspace}/test_reader.py"
-
-
+# hyper parameters of user-defined network
 hyper_parameters:
+  # optimizer config
   optimizer:
     class: adam
     learning_rate: 0.001
-    strategy: async
+  # user-defined <key, value> pairs
   emb_path: "./data/embedding.npy"
   sentence_left_size: 20
   sentence_right_size: 500
@@ -63,42 +53,3 @@ hyper_parameters:
   pool_stride: [6,50]
   pool_type: "max"
   pool_padding: "VALID"
-  
-
-mode: [train_runner , infer_runner]
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
-runner:
-- name: train_runner
-  class: train
-  # num of epochs
-  epochs: 2
-  # device to run training or infer
-  device: cpu
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_inference_interval: 1 # save inference
-  save_checkpoint_path: "inference" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_inference_feed_varnames: [] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
-  init_model_path: "" # load model path
-  print_interval: 2
-  phases: phase_train
-- name: infer_runner
-  class: infer
-  # device to run training or infer
-  device: cpu
-  print_interval: 1
-  init_model_path: "inference/1" # load model path
-  phases: phase_infer
-
-# runner will run all the phase in each epoch
-phase:
-- name: phase_train
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
-  thread_num: 1
-- name: phase_infer
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_infer # select dataset by name
-  thread_num: 1
