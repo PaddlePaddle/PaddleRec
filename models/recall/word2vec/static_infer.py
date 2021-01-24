@@ -24,7 +24,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
-from save_load import save_static_model, load_static_model
+from utils.save_load import save_static_model, load_static_model
 
 import time
 import argparse
