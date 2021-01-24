@@ -13,32 +13,22 @@
 # limitations under the License.
 
 
-workspace: "models/match/dssm"
+runner:
+  train_data_dir: "data/big_train"
+  train_reader_path: "reader_train"  # importlib format
+  train_batch_size: 128
+  model_save_path: "output_model_all_dssm"
 
-dygraph:
-  train_data_dir: "data/big_train" 
-  use_gpu: False 
-  batch_size: 128
+  use_gpu: False
   epochs: 1
-  print_interval: 10
-  #model_init_path: "output_model/0" # init model
-  model_save_path: "big_increment"
+  print_interval: 1
+  
   test_data_dir: "data/big_test"
-  infer_load_path: "big_increment"
-  infer_start_epoch: -1
+  infer_reader_path: "reader_infer"  # importlib format
+  infer_batch_size: 1
+  infer_load_path: "output_model_all_dssm"
+  infer_start_epoch: 0
   infer_end_epoch: 1
-
-dataset:
-- name: dataset_train
-  batch_size: 128
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/big_train" 
-  data_converter: "{workspace}/synthetic_reader.py"
-- name: dataset_infer
-  batch_size: 1
-  type: DataLoader # or QueueDataset
-  data_path: "{workspace}/data/big_test"
-  data_converter: "{workspace}/synthetic_evaluate_reader.py"
 
 hyper_parameters:
   optimizer:
@@ -50,42 +40,3 @@ hyper_parameters:
   slice_end: 128
   fc_sizes: [300, 300, 128]
   fc_acts: ['relu', 'relu', 'relu']
-
-
-mode: [train_runner,infer_runner]
-# config of each runner.
-# runner is a kind of paddle training class, which wraps the train/infer process.
-runner:
-- name: train_runner
-  class: train
-  # num of epochs
-  epochs: 1
-  # device to run training or infer
-  device: cpu
-  save_checkpoint_interval: 1 # save model interval of epochs
-  save_inference_interval: 1 # save inference
-  save_checkpoint_path: "big_increment" # save checkpoint path
-  save_inference_path: "inference" # save inference path
-  save_inference_feed_varnames: ["query", "doc_pos"] # feed vars of save inference
-  save_inference_fetch_varnames: [] # fetch vars of save inference
-  init_model_path: "" # load model path
-  print_interval: 10
-  phases: phase1
-- name: infer_runner
-  class: infer
-  # device to run training or infer
-  device: cpu
-  print_interval: 1
-  init_model_path: "big_increment/0" # load model path
-  phases: phase2
-
-# runner will run all the phase in each epoch
-phase:
-- name: phase1
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_train # select dataset by name
-  thread_num: 1
-- name: phase2
-  model: "{workspace}/model.py" # user-defined model
-  dataset_name: dataset_infer # select dataset by name
-  thread_num: 1
