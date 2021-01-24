@@ -131,7 +131,7 @@ def main(args):
             inputs, all_label, inputs_word = create_feeds(batch, vocab_size)
             label = inputs[3].numpy()
             val, pred_idx = dy_model.forward(inputs[0], inputs[1], inputs[2],
-                                             inputs[3], all_label)
+                                             all_label)
             pre = pred_idx.numpy()
 
             for ii in range(len(label)):

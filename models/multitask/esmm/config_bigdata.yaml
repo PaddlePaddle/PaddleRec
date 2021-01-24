@@ -14,7 +14,7 @@
 
 
 runner:
-  train_data_dir: "../../../tools/datasets/ali-ccp/train_data"
+  train_data_dir: "../../../datasets/ali-ccp/train_data"
   train_reader_path: "esmm_reader" # importlib format
   use_gpu: True
   use_auc: True
@@ -23,7 +23,7 @@ runner:
   print_interval: 100
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_esmm_all"
-  test_data_dir: "../../../tools/datasets/ali-ccp/test_data"
+  test_data_dir: "../../../datasets/ali-ccp/test_data"
   infer_batch_size: 1024
   infer_reader_path: "esmm_reader" # importlib format
   infer_load_path: "output_model_esmm_all"
