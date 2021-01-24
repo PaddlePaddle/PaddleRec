@@ -97,7 +97,7 @@ class Word2VecInferLayer(nn.Layer):
                 initializer=paddle.nn.initializer.Uniform(-init_width,
                                                           init_width)))
 
-    def forward(self, analogy_a, analogy_b, analogy_c, true_word, all_label):
+    def forward(self, analogy_a, analogy_b, analogy_c, all_label):
         emb_a = self.embedding(analogy_a)
         emb_b = self.embedding(analogy_b)
         emb_c = self.embedding(analogy_c)

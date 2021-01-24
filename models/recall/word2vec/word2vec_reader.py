@@ -37,21 +37,21 @@ class NumpyRandomInt(object):
         return result
 
 
-class Word2VecDataset(IterableDataset):
+class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
-        super(Word2VecDataset, self).__init__()
+        super(RecDataset, self).__init__()
         self.file_list = file_list
         self.config = config
         self.init()
 
     def init(self):
-        dict_path = self.config.get("dygraph.word_count_dict_path")
+        dict_path = self.config.get("runner.word_count_dict_path")
         self.window_size = self.config.get("hyper_parameters.window_size")
         self.neg_num = self.config.get("hyper_parameters.neg_num")
         self.with_shuffle_batch = self.config.get(
             "hyper_parameters.with_shuffle_batch")
         self.random_generator = NumpyRandomInt(1, self.window_size + 1)
-        self.batch_size = self.config.get("dygraph.batch_size")
+        self.batch_size = self.config.get("runner.batch_size")
 
         self.cs = None
         if not self.with_shuffle_batch:
@@ -114,7 +114,7 @@ class Word2VecInferDataset(IterableDataset):
         self.init()
 
     def init(self):
-        dict_path = self.config.get("dygraph.word_id_dict_path")
+        dict_path = self.config.get("runner.word_id_dict_path")
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:

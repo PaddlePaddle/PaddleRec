@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+import numpy as np
 import io
-
 import six
 
-from paddlerec.core.reader import ReaderBase
-from paddlerec.core.utils import envs
+from paddle.io import IterableDataset
 
 
-class Reader(ReaderBase):
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
+        self.file_list = file_list
+        self.config = config
+        self.init()
+
     def init(self):
-        dict_path = envs.get_global_env(
-            "dataset.dataset_infer.word_id_dict_path")
+        dict_path = self.config.get("runner.word_id_dict_path")
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:
@@ -73,15 +78,21 @@ class Reader(ReaderBase):
             for word in line.split()
         ])
 
-    def generate_sample(self, line):
-        def reader():
-            if ':' in line:
-                return
-            features = self.strip_lines(line.lower(), self.word_to_id)
-            features = features.split()
-            yield [('analogy_a', [self.word_to_id[features[0]]]),
-                   ('analogy_b', [self.word_to_id[features[1]]]),
-                   ('analogy_c', [self.word_to_id[features[2]]]),
-                   ('analogy_d', [self.word_to_id[features[3]]])]
-
-        return reader
+    def __iter__(self):
+        full_lines = []
+        for file in self.file_list:
+            with open(file, "r") as rf:
+                for line in rf:
+                    if ':' in line:
+                        return
+                    features = self.strip_lines(line.lower(), self.word_to_id)
+                    features = features.split()
+                    output_list = []
+                    for i in range(4):
+                        output_list.append(
+                            np.array([self.word_to_id[features[i]]]))
+                    inputs_words = [
+                        self.word_to_id[features[i]] for i in range(3)
+                    ]
+                    output_list.append(np.array(inputs_words))
+                    yield output_list
