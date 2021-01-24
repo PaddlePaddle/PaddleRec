@@ -14,10 +14,9 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import paddle.fluid as fluid
-import paddle.distributed.fleet as fleet
 import math
-import numpy as np
+
+from net import Word2VecLayer, Word2VecInferLayer
 
 
 class StaticModel(object):
@@ -25,9 +24,9 @@ class StaticModel(object):
         self.cost = None
         self.metrics = {}
         self.config = config
-        self.init_hyper_parameters()
+        self._init_hyper_parameters()
 
-    def init_hyper_parameters(self):
+    def _init_hyper_parameters(self):
         self.sparse_feature_number = self.config.get(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
@@ -45,14 +44,14 @@ class StaticModel(object):
     def create_feeds(self, is_infer=False):
         if is_infer:
             analogy_a = paddle.static.data(
-                name="analogy_a", shape=[None], dtype='int64')
+                name="analogy_a", shape=[None, 1], dtype='int64')
             analogy_b = paddle.static.data(
-                name="analogy_b", shape=[None], dtype='int64')
+                name="analogy_b", shape=[None, 1], dtype='int64')
             analogy_c = paddle.static.data(
-                name="analogy_c", shape=[None], dtype='int64')
-            analogy_d = paddle.static.data(
-                name="analogy_d", shape=[None], dtype='int64')
-            return [analogy_a, analogy_b, analogy_c, analogy_d]
+                name="analogy_c", shape=[None, 1], dtype='int64')
+            #analogy_d = paddle.static.data(
+            #    name="analogy_d", shape=[None], dtype='int64')
+            return [analogy_a, analogy_b, analogy_c]
 
         input_word = paddle.static.data(
             name="input_word", shape=[None, 1], dtype='int64')
@@ -66,9 +65,6 @@ class StaticModel(object):
         return [input_word, true_word, neg_word]
 
     def net(self, inputs, is_infer=False):
-        if is_infer:
-            self.infer_net(inputs)
-            return
 
         word2vec_model = Word2VecLayer(
             self.sparse_feature_number,
@@ -109,14 +105,16 @@ class StaticModel(object):
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
         return optimizer
 
-    def infer_net(self, inputs):
-        [analogy_a, analogy_b, analogy_c] = inputs
-
+    def infer_net(self, input):
+        #[analogy_a, analogy_b, analogy_c] = inputs
         all_label = paddle.static.data(
-            name="all_label", shape=[vocab_size], dtype='int64')
-        word2vec = net.Word2VecInferLayer(self.sparse_feature_number,
-                                          self.sparse_feature_dim, "emb")
-        word2vec.forward(input[0], input[1], input[2], input[3], all_label)
-        val, pred_idx = word2vec.forward(inputs[0], inputs[1], inputs[2],
-                                         inputs[3], all_label)
-        return val, pred_idx
+            name="all_label",
+            shape=[self.sparse_feature_number],
+            dtype='int64')
+
+        word2vec = Word2VecInferLayer(self.sparse_feature_number,
+                                      self.sparse_feature_dim, "emb")
+        val, pred_idx = word2vec.forward(input[0], input[1], input[2],
+                                         all_label)
+        fetch_dict = {'pred_idx': pred_idx}
+        return fetch_dict

@@ -22,6 +22,8 @@ runner:
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_word2vec"
   test_data_dir: "data/test"
+  infer_batch_size: 2
+  infer_reader_path: "word2vec_infer_reader" # importlib format
   infer_load_path: "output_model_word2vec"
   infer_start_epoch: 0
   infer_end_epoch: 2
