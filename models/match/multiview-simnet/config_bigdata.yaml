@@ -1,0 +1,100 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# workspace
+workspace: "models/match/multiview-simnet"
+
+dygraph:
+  train_data_dir: "data/big_train" 
+  use_gpu: False 
+  batch_size_train: 1280
+  batch_size_infer: 1
+  epochs: 1
+  print_interval: 1
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "increment"
+  test_data_dir: "data/big_test"
+  infer_load_path: "increment"
+  infer_start_epoch: -1
+  infer_end_epoch: 1
+
+# list of dataset
+dataset:
+- name: dataset_train # name of dataset to distinguish different datasets
+  batch_size: 1280
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/big_train"
+  sparse_slots: "0 1 2"
+- name: dataset_infer # name
+  batch_size: 1
+  type: DataLoader # or QueueDataset
+  data_path: "{workspace}/data/big_test"
+  sparse_slots: "0 1"
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: sync
+  query_encoder: "gru"
+  title_encoder: "gru"
+  query_encode_dim: 128
+  title_encode_dim: 128
+  sparse_feature_dim: 6327
+  embedding_dim: 128
+  hidden_size: 128
+  margin: 0.1
+  query_len: 79
+  pos_len: 99
+  neg_len: 90
+
+# select runner by name
+mode: [train_runner,infer_runner]
+# config of each runner.
+# runner is a kind of paddle training class, which wraps the train/infer process.
+runner:
+- name: train_runner
+  class: train
+  # num of epochs
+  epochs: 1
+  # device to run training or infer
+  device: cpu
+  save_checkpoint_interval: 1 # save model interval of epochs
+  save_inference_interval: 1 # save inference
+  save_checkpoint_path: "increment" # save checkpoint path
+  save_inference_path: "inference" # save inference path
+  save_inference_feed_varnames: [] # feed vars of save inference
+  save_inference_fetch_varnames: [] # fetch vars of save inference
+  init_model_path: "" # load model path
+  print_interval: 1
+  phases: phase1
+- name: infer_runner
+  class: infer
+  # device to run training or infer
+  device: cpu
+  print_interval: 1
+  init_model_path: "increment/0" # load model path
+  phases: phase2
+
+# runner will run all the phase in each epoch
+phase:
+- name: phase1
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_train # select dataset by name
+  thread_num: 1
+- name: phase2
+  model: "{workspace}/model.py" # user-defined model
+  dataset_name: dataset_infer # select dataset by name
+  thread_num: 1

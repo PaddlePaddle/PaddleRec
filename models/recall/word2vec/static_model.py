@@ -14,10 +14,9 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import paddle.fluid as fluid
-import paddle.distributed.fleet as fleet
 import math
-import numpy as np
+
+from net import Word2VecLayer, Word2VecInferLayer
 
 
 class StaticModel(object):
@@ -25,9 +24,9 @@ class StaticModel(object):
         self.cost = None
         self.metrics = {}
         self.config = config
-        self.init_hyper_parameters()
+        self._init_hyper_parameters()
 
-    def init_hyper_parameters(self):
+    def _init_hyper_parameters(self):
         self.sparse_feature_number = self.config.get(
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
@@ -42,17 +41,17 @@ class StaticModel(object):
         self.decay_rate = self.config.get(
             "hyper_parameters.optimizer.decay_rate")
 
-    def create_feeds(self, is_infer=False, **kwargs):
+    def create_feeds(self, is_infer=False):
         if is_infer:
             analogy_a = paddle.static.data(
-                name="analogy_a", shape=[None], dtype='int64')
+                name="analogy_a", shape=[None, 1], dtype='int64')
             analogy_b = paddle.static.data(
-                name="analogy_b", shape=[None], dtype='int64')
+                name="analogy_b", shape=[None, 1], dtype='int64')
             analogy_c = paddle.static.data(
-                name="analogy_c", shape=[None], dtype='int64')
-            analogy_d = paddle.static.data(
-                name="analogy_d", shape=[None], dtype='int64')
-            return [analogy_a, analogy_b, analogy_c, analogy_d]
+                name="analogy_c", shape=[None, 1], dtype='int64')
+            #analogy_d = paddle.static.data(
+            #    name="analogy_d", shape=[None], dtype='int64')
+            return [analogy_a, analogy_b, analogy_c]
 
         input_word = paddle.static.data(
             name="input_word", shape=[None, 1], dtype='int64')
@@ -66,131 +65,56 @@ class StaticModel(object):
         return [input_word, true_word, neg_word]
 
     def net(self, inputs, is_infer=False):
-        init_width = 0.5 / self.sparse_feature_dim
 
-        input_emb = fluid.layers.embedding(
-            input=inputs[0],
-            is_sparse=True,
-            size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name='emb',
-                initializer=fluid.initializer.Uniform(-init_width,
-                                                      init_width)))
+        word2vec_model = Word2VecLayer(
+            self.sparse_feature_number,
+            self.sparse_feature_dim,
+            self.neg_num,
+            emb_name="emb",
+            emb_w_name="emb_w",
+            emb_b_name="emb_b")
+        true_logits, neg_logits = word2vec_model.forward(inputs)
 
-        true_emb_w = fluid.layers.embedding(
-            input=inputs[1],
-            is_sparse=True,
-            size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name='emb_w',
-                initializer=fluid.initializer.Constant(value=0.0)))
+        label_ones = paddle.full(
+            shape=[paddle.shape(true_logits)[0], 1], fill_value=1.0)
+        label_zeros = paddle.full(
+            shape=[paddle.shape(true_logits)[0], self.neg_num], fill_value=0.0)
 
-        true_emb_b = fluid.layers.embedding(
-            input=inputs[1],
-            is_sparse=True,
-            size=[self.sparse_feature_number, 1],
-            param_attr=fluid.ParamAttr(
-                name='emb_b',
-                initializer=fluid.initializer.Constant(value=0.0)))
+        true_logits = paddle.nn.functional.sigmoid(true_logits)
+        true_xent = paddle.nn.functional.binary_cross_entropy(true_logits,
+                                                              label_ones)
+        neg_logits = paddle.nn.functional.sigmoid(neg_logits)
+        neg_xent = paddle.nn.functional.binary_cross_entropy(neg_logits,
+                                                             label_zeros)
+        cost = paddle.add(true_xent, neg_xent)
+        avg_cost = paddle.mean(x=cost)
 
-        neg_word_reshape = fluid.layers.reshape(inputs[2], shape=[-1, 1])
-        neg_word_reshape.stop_gradient = True
-
-        neg_emb_w = fluid.layers.embedding(
-            input=neg_word_reshape,
-            is_sparse=True,
-            size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name='emb_w', learning_rate=1.0))
-
-        neg_emb_w_re = fluid.layers.reshape(
-            neg_emb_w, shape=[-1, self.neg_num, self.sparse_feature_dim])
-
-        neg_emb_b = fluid.layers.embedding(
-            input=neg_word_reshape,
-            is_sparse=True,
-            size=[self.sparse_feature_number, 1],
-            param_attr=fluid.ParamAttr(
-                name='emb_b', learning_rate=1.0))
-
-        neg_emb_b_vec = fluid.layers.reshape(
-            neg_emb_b, shape=[-1, self.neg_num])
-
-        true_logits = fluid.layers.elementwise_add(
-            fluid.layers.reduce_sum(
-                fluid.layers.elementwise_mul(input_emb, true_emb_w),
-                dim=1,
-                keep_dim=True),
-            true_emb_b)
-
-        input_emb_re = fluid.layers.reshape(
-            input_emb, shape=[-1, 1, self.sparse_feature_dim])
-
-        neg_matmul = fluid.layers.matmul(
-            input_emb_re, neg_emb_w_re, transpose_y=True)
-        neg_matmul_re = fluid.layers.reshape(
-            neg_matmul, shape=[-1, self.neg_num])
-        neg_logits = fluid.layers.elementwise_add(neg_matmul_re, neg_emb_b_vec)
-        # nce loss
-
-        label_ones = fluid.layers.fill_constant_batch_size_like(
-            true_logits, shape=[-1, 1], value=1.0, dtype='float32')
-        label_zeros = fluid.layers.fill_constant_batch_size_like(
-            true_logits, shape=[-1, self.neg_num], value=0.0, dtype='float32')
-
-        true_xent = fluid.layers.sigmoid_cross_entropy_with_logits(true_logits,
-                                                                   label_ones)
-        neg_xent = fluid.layers.sigmoid_cross_entropy_with_logits(neg_logits,
-                                                                  label_zeros)
-        cost = fluid.layers.elementwise_add(
-            fluid.layers.reduce_sum(
-                true_xent, dim=1),
-            fluid.layers.reduce_sum(
-                neg_xent, dim=1))
-        avg_cost = fluid.layers.reduce_mean(cost)
-
-        self.inference_target_var = avg_cost
-        self.cost = avg_cost
-        self.metrics["LOSS"] = avg_cost
-
-        return self.metrics
+        self._cost = avg_cost
+        fetch_dict = {'loss': avg_cost}
+        return fetch_dict
 
     def create_optimizer(self, strategy=None):
-        lr = float(self.config.get("hyper_parameters.optimizer.learning_rate"))
-        decay_rate = float(
-            self.config.get("hyper_parameters.optimizer.decay_rate"))
-        decay_steps = int(
-            self.config.get("hyper_parameters.optimizer.decay_steps"))
-
-        # single
-        if strategy == None:
-            optimizer = fluid.optimizer.SGD(
-                learning_rate=fluid.layers.exponential_decay(
-                    learning_rate=lr,
-                    decay_steps=decay_steps,
-                    decay_rate=decay_rate,
-                    staircase=True))
-        else:
-            sync_mode = self.config.get("static_benchmark.sync_mode")
-            print("sync_mode: {}".format(sync_mode))
-            # geo
-            if sync_mode == "geo":
-                decay_steps = int(decay_steps / fleet.worker_num())
-                optimizer = fluid.optimizer.SGD(
-                    learning_rate=fluid.layers.exponential_decay(
-                        learning_rate=lr,
-                        decay_steps=decay_steps,
-                        decay_rate=decay_rate,
-                        staircase=True))
-
-            # async sync heter
-            if sync_mode in ["async", "sync", "heter"]:
-                print("decay_steps: {}".format(decay_steps))
-                scheduler = paddle.optimizer.lr.ExponentialDecay(
-                    learning_rate=lr, gamma=decay_rate, verbose=True)
-                optimizer = fluid.optimizer.SGD(scheduler)
-                strategy.a_sync_configs = {"lr_decay_steps": decay_steps}
-
+        optimizer = paddle.optimizer.SGD(learning_rate=self.learning_rate)
+        #            learning_rate=paddle.fluid.layers.exponential_decay(
+        #                learning_rate=self.learning_rate,
+        #                decay_steps=self.decay_steps,
+        #                decay_rate=self.decay_rate,
+        #                staircase=True))
+        if strategy != None:
+            import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
+        return optimizer
 
-        optimizer.minimize(self.cost)
+    def infer_net(self, input):
+        #[analogy_a, analogy_b, analogy_c] = inputs
+        all_label = paddle.static.data(
+            name="all_label",
+            shape=[self.sparse_feature_number],
+            dtype='int64')
+
+        word2vec = Word2VecInferLayer(self.sparse_feature_number,
+                                      self.sparse_feature_dim, "emb")
+        val, pred_idx = word2vec.forward(input[0], input[1], input[2],
+                                         all_label)
+        fetch_dict = {'pred_idx': pred_idx}
+        return fetch_dict
