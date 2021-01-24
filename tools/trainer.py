@@ -57,7 +57,7 @@ def parse_args():
 
 
 def main(args):
-    paddle.seed(12321)
+    paddle.seed(12345)
     # load config
     config = load_yaml(args.config_yaml)
     dy_model_class = load_dy_model_class(args.abs_dir)
