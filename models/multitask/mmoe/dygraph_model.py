@@ -103,7 +103,7 @@ class DygraphModel():
         pred_income, pred_marital = dy_model.forward(input_data)
 
         # update metrics
-        ietrics_list[0].update(
+        metrics_list[0].update(
             preds=pred_income.numpy(), labels=label_income.numpy())
         metrics_list[1].update(
             preds=pred_marital.numpy(), labels=label_marital.numpy())
