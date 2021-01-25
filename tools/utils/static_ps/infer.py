@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from __future__ import print_function
+from reader_helper import get_reader, get_infer_reader, get_example_num, get_file_list, get_word_num
+from program_helper import get_model, get_strategy
+from common import YamlHelper, is_number
 import os
 import numpy as np
 import warnings
@@ -26,9 +29,6 @@ import sys
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
-from common import YamlHelper, is_number
-from program_helper import get_model, get_strategy
-from reader_helper import get_reader, get_infer_reader, get_example_num, get_file_list, get_word_num
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -61,7 +61,8 @@ class Main(object):
         self.reader = None
         self.exe = None
         self.epoch_model_path_list = []
-        self.epoch_model_name_list = []
+        self.infer_result_dict = {}
+        self.infer_result_dict["result"] = {}
 
     def run(self):
         self.network()
@@ -76,19 +77,20 @@ class Main(object):
             # hard code for epoch model folder
             if os.path.isdir(file_path) and is_number(file):
                 self.epoch_model_path_list.append(file_path)
-                self.epoch_model_name_list.append(file)
 
         if len(self.epoch_model_path_list) == 0:
             self.epoch_model_path_list.append(init_model_path)
-            self.epoch_model_name_list.append(init_model_path)
 
-        self.epoch_model_path_list.sort()
-        self.epoch_model_name_list.sort()
+        self.epoch_model_path_list = self.epoch_model_path_list.sort()
 
         for idx, model_path in enumerate(self.epoch_model_path_list):
             logger.info("Begin Infer Model {}".format(
-                self.epoch_model_name_list[idx]))
-            self.run_infer(model_path, self.epoch_model_name_list[idx])
+                self.epoch_model_path_list[idx]))
+            model_name = model_path.split("/")[-1]
+            infer_res = self.run_infer(model_path, model_name)
+            self.infer_result_dict["result"][model_name] = infer_res
+
+        self.record_result()
         logger.info("Run Success, Exit.")
 
     def network(self):
@@ -102,7 +104,7 @@ class Main(object):
                 dirname=model_path, executor=self.exe))
 
         self.reset_auc()
-
+        infer_res = []
         for batch_id, data in enumerate(self.reader()):
             results = self.exe.run(inference_program,
                                    feed=data,
@@ -114,8 +116,10 @@ class Main(object):
                 for var_idx, var_name in enumerate(results):
                     metrics_string += "Infer res: {}, ".format(results[
                         var_idx])
+                    infer_res.append(results[var_idx])
                 logger.info("Model: {}, Batch: {}, {}".format(
                     model_name, batch_id, metrics_string))
+        return np.mean(infer_res)
 
     def init_reader(self):
         self.reader, self.file_list = get_infer_reader(self.input_data, config)
@@ -145,6 +149,11 @@ class Main(object):
                 tensor_array = np.zeros(tensor._get_dims()).astype("int64")
                 tensor.set(tensor_array, paddle.CPUPlace())
                 logger.info("AUC Reset To Zero: {}".format(name))
+
+    def record_result(self):
+        logger.info("infer_result_dict: {}".format(self.infer_result_dict))
+        with open("./infer_result_dict.txt", 'w+') as f:
+            f.write(str(self.infer_result_dict))
 
 
 if __name__ == "__main__":

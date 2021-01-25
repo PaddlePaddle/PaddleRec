@@ -86,22 +86,26 @@ def _load_emb(var):
 def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     """ inference function """
     epoch_model_path_list = []
-    epoch_model_name_list = []
+
     for file in os.listdir(model_dir):
         file_path = os.path.join(model_dir, file)
         # hard code for epoch model folder
         if os.path.isdir(file_path) and is_number(file):
             epoch_model_path_list.append(file_path)
-            epoch_model_name_list.append(file)
+
     if len(epoch_model_path_list) == 0:
         return
+    self.epoch_model_path_list = self.epoch_model_path_list.sort()
     print("Save model len {}".format(len(epoch_model_path_list)))
 
     place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
     exe = fluid.Executor(place)
     emb_size = args.emb_size
     batch_size = args.batch_size
-    result_dict = collections.OrderedDict()
+
+    result_dict = {}
+    result_dict["result"] = {}
+
     with fluid.scope_guard(fluid.Scope()):
         main_program = fluid.Program()
         with fluid.program_guard(main_program):
@@ -153,7 +157,12 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
                 print("model: {} \t acc: {} ".format(
                     model_path, 1.0 * accum_num / accum_num_sum))
                 epoch_acc = 1.0 * accum_num / accum_num_sum
-                result_dict[epoch] = epoch_acc
+                epoch_name = model_path.split("/")[-1]
+                result_dict["result"][epoch_name] = epoch_acc
+
+    print("infer_result_dict: {}".format(result_dict))
+    with open("./infer_result_dict.txt", 'w+') as f:
+        f.write(str(result_dict))
 
 
 def BuildWord_IdMap(dict_path):
