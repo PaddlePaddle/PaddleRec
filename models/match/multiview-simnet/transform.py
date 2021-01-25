@@ -30,7 +30,7 @@ for i in range(len(result)):
 f.close()
 
 label = []
-filename = './data/label.txt'
+filename = '../../../datasets/BQ_simnet/label.txt'
 f = open(filename, "r")
 # f.readline()
 num = 0
@@ -52,7 +52,7 @@ for line in open(filename):
     line = line.strip("]")
     sim.append(float(line))
 
-filename = './data/testquery.txt'
+filename = '../../../datasets/BQ_simnet/testquery.txt'
 f = open(filename, "r")
 # f.readline()
 query = []

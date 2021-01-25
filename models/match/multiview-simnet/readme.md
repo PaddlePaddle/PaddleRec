@@ -103,13 +103,13 @@ python3 -u ../../../tools/static_infer.py -m config.yaml
 cd ../../../datasets/BQ_simnet
 sh run.sh
 ```
-3. 切回模型目录,执行命令运行全量数据
+3. 切回模型目录,直接一键运行：bash run.sh 即可得到复现的论文效果.
+执行该脚本后，会开始自动训练并测试模型，将测试的结果保存到result.txt文件，再执行transform.py整理格式，最后通过执行../../../tools/cal_pos_neg.py进行评估得到数据的正序率指标   
 ```bash
 cd - # 切回模型目录
-# 动态图训练
-python3 -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
-python3 -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+bash run.sh #动态图训练并测试，最后得到指标
 ```
+
 ## 进阶使用
   
 ## FAQ
