@@ -12,13 +12,15 @@
     	├── test.txt #测试数据样例
 ├── __init__.py
 ├── README.md #文档
-├── model.py #模型文件
-├── config.yaml #配置文件
+├── config.py # sample数据配置
+├── config_bigdata.py # 全量数据配置
 ├── data_process.sh #数据下载和处理脚本
+├── dygraph_model.py # 构建动态图
 ├── eval.py #计算指标的评估程序
+├── net.py # 模型核心组网（动静统一）
+├── letor_reader.py #数据读取程序
+├── static_model.py # 构建静态图
 ├── run.sh #一键运行程序
-├── test_reader.py #测试集读取程序
-├── train_reader.py #训练集读取程序
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -31,8 +33,8 @@
 - [数据准备](#数据准备)
 - [运行环境](#运行环境)
 - [快速开始](#快速开始)
-- [论文复现](#论文复现)
-- [动态图](#动态图)
+- [模型组网](#模型组网)
+- [效果复现](#效果复现)
 - [进阶使用](#进阶使用)
 - [FAQ](#FAQ)
 
@@ -56,110 +58,58 @@
 3.关系文件：关系文件被用来存储两个句子之间的关系，如query 和document之间的关系。例如：relation.train.fold1.txt, relation.test.fold1.txt  
 4.嵌入层文件：我们将预训练的词向量存储在嵌入文件中。例如：embed_wiki-pdc_d50_norm  
 
-在本例中需要调用jieba库和sklearn库，如环境中没有提前安装，可以使用以下命令安装。  
-```
-pip install sklearn
-pip install jieba
-```
-
 ## 运行环境
-PaddlePaddle>=1.7.2  
-python 2.7/3.5/3.6/3.7  
-PaddleRec >=0.1  
+PaddlePaddle>=2.0
+
+python 2.7/3.5/3.6/3.7
+
 os : windows/linux/macos  
 
 ## 快速开始
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在tagspace模型目录的快速执行命令如下： 
+```bash
+# 进入模型目录
+# cd models/contentunderstanding/tagspace # 在任意目录均可运行
+# 动态图训练
+python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 动态图预测
+python3 -u ../../../tools/infer.py -m config.yaml 
 
-本文提供了样例数据可以供您快速体验，在paddlerec目录下直接执行下面的命令即可启动训练： 
-
-```
-python -m paddlerec.run -m models/match/match-pyramid/config.yaml
-```   
-
-## 论文复现
-1. 确认您当前所在目录为PaddleRec/models/match/match-pyramid
-2. 本文提供了原数据集的下载以及一键生成训练和测试数据的预处理脚本，您可以直接一键运行:bash data_process.sh  
-执行该脚本，会从国内源的服务器上下载Letor07数据集，并将完整的数据集解压到data文件夹。随后运行 process.py 将全量训练数据放置于`./data/big_train`，全量测试数据放置于`./data/big_test`。并生成用于初始化embedding层的embedding.npy文件  
-执行该脚本的理想输出为：  
-```
-bash data_process.sh
-...........load  data...............
---2020-07-13 13:24:50--  https://paddlerec.bj.bcebos.com/match_pyramid/match_pyramid_data.tar.gz
-Resolving paddlerec.bj.bcebos.com... 10.70.0.165
-Connecting to paddlerec.bj.bcebos.com|10.70.0.165|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 214449643 (205M) [application/x-gzip]
-Saving to: “match_pyramid_data.tar.gz”
-
-100%[==========================================================================================================>] 214,449,643  114M/s   in 1.8s
-
-2020-07-13 13:24:52 (114 MB/s) - “match_pyramid_data.tar.gz” saved [214449643/214449643]
-
-data/
-data/relation.test.fold1.txt
-data/relation.test.fold2.txt
-data/relation.test.fold3.txt
-data/relation.test.fold4.txt
-data/relation.test.fold5.txt
-data/relation.train.fold1.txt
-data/relation.train.fold2.txt
-data/relation.train.fold3.txt
-data/relation.train.fold4.txt
-data/relation.train.fold5.txt
-data/relation.txt
-data/docid_doc.txt
-data/qid_query.txt
-data/word_dict.txt
-data/embed_wiki-pdc_d50_norm
-...........data process...............
-[./data/word_dict.txt]
-        Word dict size: 193367
-[./data/qid_query.txt]
-        Data size: 1692
-[./data/docid_doc.txt]
-        Data size: 65323
-[./data/embed_wiki-pdc_d50_norm]
-        Embedding size: 109282
-('Generate numpy embed:', (193368, 50))
-[./data/relation.train.fold1.txt]
-        Instance size: 47828
-('Pair Instance Count:', 325439)
-[./data/relation.test.fold1.txt]
-        Instance size: 13652
-```
-3. 打开文件config.yaml,更改其中的参数  
-
-将workspace改为您当前的绝对路径。（可用pwd命令获取绝对路径）
-将dataset_train下的data_path参数改为{workspace}/data/big_train
-将dataset_infer下的data_path参数改为{workspace}/data/big_test
-
-4. 随后，您直接一键运行：bash run.sh  即可得到复现的论文效果
-执行该脚本后，会执行python -m paddlerec.run -m ./config.yaml 命令开始训练并测试模型，将测试的结果保存到result.txt文件，最后通过执行eval.py进行评估得到数据的map指标  
-执行该脚本的理想输出为：  
-```
-..............test.................
-13651
-336
-('map=', 0.3993127885738651)
+# 静态图训练
+python3 -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 静态图预测
+python3 -u ../../../tools/static_infer.py -m config.yaml 
 ```  
 
-## 动态图
+## 模型组网
+受卷积神经网络在图像识别中的成功启发，神经元可以根据提取的基本视觉模式（例如定向的边角和边角）捕获许多复杂的模式，所以我们尝试将文本匹配建模为图像识别问题。模型的组网结构如下：  
+[match-pyramid](https://arxiv.org/pdf/1602.06359.pdf):
+<p align="center">
+<img align="center" src="../../../doc/imgs/match-pyramid.png">
+<p>
 
-在动态图中，训练和预测分离开，您需要在cofig.yaml以及config_bigdata.yaml中的dygraph部分配置动态图中需要的参数。  
+
+## 效果复现
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
+在全量数据下模型的指标如下：  
+
+| 模型 | map | batch_size | epoch_num| Time of each epoch |
+| :------| :------ | :------ | :------| :------ | 
+| tagspace | 0.39 | 128 | 2 | 约5分钟 |
+
+1. 确认您当前所在目录为PaddleRec/models/match/match-pyramid
+2. 进入paddlerec/datasets/letor07目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Letor07全量数据集，并解压到指定文件夹。
+``` bash
+cd ../../../datasets/letor07
+bash run.sh
 ```
-# 进入模型目录
-cd models/match/match-pyramid
-# 训练
-python -u train.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 预测
-python -u infer.py -m config.yaml 
+3. 切回模型目录,直接一键运行：bash run.sh 即可得到复现的论文效果.
+执行该脚本后，会开始自动训练并测试模型，将测试的结果保存到result.txt文件，最后通过执行eval.py进行评估得到数据的map指标   
+```bash
+cd - # 切回模型目录
+bash run.sh #动态图训练并测试，最后得到指标
 ```
-如需使用动态图进行效果复现，可以按以下步骤进行：
-1. 在全量数据中执行训练时，需要将batch_size设置为128。  
-2. 在全连数据中执行预测时，需要将batch_size设置为1，同时将print_interval设置为1.  
-3. 将一键运行脚本run.sh的第一个命令：
-“python -m paddlerec.run -m ./config_bigdata.yaml &> result.txt” 改为 “python -u infer.py -m config_bigdata.yaml &>result.txt”  
-4. 执行sh run.sh
+
 ## 进阶使用
   
 ## FAQ

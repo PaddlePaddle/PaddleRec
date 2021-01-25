@@ -46,7 +46,7 @@ for i in range(len(result)):
     f.write(str(result[i]))
 f.close()
 
-filename = './data/relation.test.fold1.txt'
+filename = '../../../datasets/letor07/data/relation.test.fold1.txt'
 gt = []
 qid = []
 f = open(filename, "r")
