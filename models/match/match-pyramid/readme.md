@@ -12,8 +12,8 @@
     	├── test.txt #测试数据样例
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── data_process.sh #数据下载和处理脚本
 ├── dygraph_model.py # 构建动态图
 ├── eval.py #计算指标的评估程序

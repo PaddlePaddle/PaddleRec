@@ -12,8 +12,8 @@
     ├── data_process #数据一键处理脚本
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── static_model.py # 构建静态图
 ├── dygraph_model.py # 构建动态图
