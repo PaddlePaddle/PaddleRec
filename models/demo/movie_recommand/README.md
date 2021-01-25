@@ -1,29 +1,51 @@
 # PaddleRec 基于 Movielens 数据集的全流程示例
 
-## 模型的详细教程可以查阅： [十分钟！全流程！从零搭建推荐系统](https://aistudio.baidu.com/aistudio/projectdetail/559336)
+## 模型的详细教程可以查阅： [PaddleRec公开教程V3](https://aistudio.baidu.com/aistudio/projectdetail/1431523)
 
-## 本地运行流程
+## 本地运行环境
 
-在本地需要安装`PaddleRec`及`PaddlePaddle`，推荐在`Linux` + `python2.7` 环境下执行此demo
+PaddlePaddle>=2.0
+
+python 2.7/3.5/3.6/3.7
+
+os : linux 
 
 本地运行流程与AiStudio流程基本一致，细节略有区别
 
-### 离线训练
+## 数据处理
 ```shell
-sh train.sh
+pip install py27hash
+bash data_prepare.sh
 ```
 
-### 离线测试
+### 模型训练
 ```shell
-sh offline_test.sh
+# 动态图训练recall模型
+python3 -u ../../../tools/trainer.py -m recall/config.yaml
+# 静态图训练recall模型
+python3 -u ../../../tools/static_trainer.py -m recall/config.yaml
+# 动态图训练rank模型
+python3 -u ../../../tools/trainer.py -m rank/config.yaml
+# 静态图训练rank模型
+python3 -u ../../../tools/static_trainer.py -m rank/config.yaml
 ```
 
-### 模拟在线召回
+### 模型测试
 ```shell
-sh online_recall.sh
+# 动态图预测recall模型
+python3 -u infer.py -m recall/config.yaml
+# 静态图预测recall模型
+python3 -u static_infer.py -m recall/config.yaml
+# 动态图预测rank模型
+python3 -u infer.py -m rank/config.yaml
+# 静态图预测rank模型
+python3 -u static_infer.py -m rank/config.yaml
 ```
 
-### 模拟在线排序
+### 测试结果解析
 ```shell
-sh online_rank.sh
+# recall模型的测试结果解析
+python3 parse.py recall_offline recall_infer_result
+# rank模型的测试结果解析
+python3 parse.py rank_offline rank_infer_result
 ```
