@@ -1,0 +1,9 @@
+mkdir big_train
+cd big_train
+wget https://paddlerec.bj.bcebos.com/dssm/train.txt
+cd ..
+mkdir big_test
+cd big_test
+wget https://paddlerec.bj.bcebos.com/dssm/test.txt
+cd ..
+wget https://paddlerec.bj.bcebos.com/dssm/label.txt
