@@ -11,8 +11,8 @@
     ├── text2paddle.py #数据处理程序
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── agnews_reader.py #数据读取程序
 ├── static_model.py # 构建静态图
