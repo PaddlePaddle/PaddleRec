@@ -17,9 +17,9 @@ import numpy as np
 from paddle.io import IterableDataset
 
 
-class BQDataset(IterableDataset):
-    def __init__(self, file_list):
-        super(BQDataset, self).__init__()
+class RecDataset(IterableDataset):
+    def __init__(self, file_list, config):
+        super(RecDataset, self).__init__()
         self.file_list = file_list
 
     def __iter__(self):
@@ -35,9 +35,9 @@ class BQDataset(IterableDataset):
                     slot_1 = []
                     for i in line:
                         if i.strip().split(":")[0] == "0":
-                            slot_0.append(float(i.strip().split(":")[1]))
+                            slot_0.append(int(i.strip().split(":")[1]))
                         if i.strip().split(":")[0] == "1":
-                            slot_1.append(float(i.strip().split(":")[1]))
+                            slot_1.append(int(i.strip().split(":")[1]))
                     output_list.append(np.array(slot_0))
                     output_list.append(np.array(slot_1))
 
