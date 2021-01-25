@@ -15,7 +15,7 @@ os : linux
 ## 数据处理
 ```shell
 pip install py27hash
-sh data_prepare.sh
+bash data_prepare.sh
 ```
 
 ### 模型训练

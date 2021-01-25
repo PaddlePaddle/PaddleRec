@@ -56,9 +56,9 @@ os : windows/linux/macos
 
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在tagspace模型目录的快速执行命令如下： 
-```
+```bash
 # 进入模型目录
-cd models/contentunderstanding/tagspace # 在任意目录均可运行
+# cd models/contentunderstanding/tagspace # 在任意目录均可运行
 # 动态图训练
 python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
@@ -87,12 +87,12 @@ python3 -u ../../../tools/static_infer.py -m config.yaml
 
 1. 确认您当前所在目录为PaddleRec/models/contentunderstanding/tagspace  
 2. 进入paddlerec/datasets/ag_news目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的ag_news全量数据集，并解压到指定文件夹。
-``` 
+``` bash
 cd ../../../datasets/ag_news
 sh run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
-```
+```bash
 cd - # 切回模型目录
 # 动态图训练
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
