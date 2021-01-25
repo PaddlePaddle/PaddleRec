@@ -62,7 +62,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在dssm模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/rank/dssm # 在任意目录均可运行
+# cd models/match/dssm # 在任意目录均可运行
 # 动态图训练
 python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
