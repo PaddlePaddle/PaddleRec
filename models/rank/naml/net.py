@@ -1,0 +1,300 @@
+from paddle.nn import Conv1D
+import paddle
+import paddle.nn as nn
+import math
+import paddle.fluid as fluid
+import numpy as np
+
+class NAMLLayer(nn.Layer):
+    def load_word_embedding(self,file = "data/sample_data/embedding.txt"):
+        # word2vec_embedding = []
+        # word_size = 0
+        # with open(file, "r") as rf:
+        #     for l in rf:
+        #         nums = l.split('\t')[-1]
+        #         word2vec_embedding.append([float(x) for x in nums.split(" ")])
+        #         word_size += 1
+        # word2vec_embedding = np.array(word2vec_embedding)
+        # self.word2vec_embedding = paddle.nn.Embedding(
+        #     word_size,
+        #     self.word_dimension,
+        #     weight_attr=paddle.ParamAttr(
+        #         trainable=True,
+        #         initializer=fluid.initializer.NumpyArrayInitializer(word2vec_embedding)))
+        self.word2vec_embedding = paddle.nn.Embedding(
+            self.word_dict_size + 1,
+            self.word_dimension,
+            weight_attr=paddle.ParamAttr(
+                name="word2vec_embedding",
+                initializer=paddle.nn.initializer.Uniform()))
+
+    def news_encode(self, category, sub_category, title, content):
+        #[b,cate_d]
+        cate_emb = self.cate_embedding(category)
+        sub_cate_emb = self.sub_cate_embedding(sub_category)
+        # [b, conv_out]
+        category = paddle.nn.ReLU()(self.category_linear(cate_emb))
+        sub_category = paddle.nn.ReLU()(self.sub_category_linear(sub_cate_emb))
+        # title [batch, title_size]
+        # title_emb [batch,title_size, word_emb_d]
+        title_emb = self.word2vec_embedding(title)
+        # title_emb [batch, word_emb_d, title_size]
+        title_emb = paddle.transpose(title_emb, perm = [0, 2 ,1])
+        # title_emb [batch,conv_out,title_size]
+        title_emb = self.conv_title(title_emb)
+        # content_emb [batch, content_size, word_emb_d]
+        content_emb = self.word2vec_embedding(content)
+        # content_emb [batch, word_emb_d,content_size,]
+        content_emb = paddle.transpose(content_emb, perm = [0, 2 ,1])
+        # [batch,conv_out,content_size]
+        content_emb = self.conv_title(content_emb)
+        # title_emb [batch,title_size,conv_out]
+        # content_emb [batch, content_size, conv_out]
+        title_emb = paddle.transpose(title_emb, perm = [0,2,1])
+        content_emb = paddle.transpose(content_emb, perm = [0, 2, 1])
+        title_emb = paddle.nn.ReLU()(paddle.add(title_emb, self.conv_title_bias))
+        content_emb = paddle.nn.ReLU()(paddle.add(content_emb, self.conv_content_bias))
+        # [b,conv_out]
+        title_emb = self.title_attention(title_emb)
+        content_emb = self.content_attention(content_emb)
+        # # [batch, title_size, project_size]
+        # title_emb_projection = paddle.tanh(self.title_attention_projection(title_emb))
+        # content_emb_projection = paddle.tanh(self.content_attention_projection(content_emb))
+        # #[batch, title_size,1]
+        # # [batch, content_size,1]
+        # title_attention_list = paddle.matmul(title_emb_projection, self.title_attention_mul_vec)
+        # content_attention_list = paddle.matmul(content_emb_projection, self.content_attention_mul_vec)
+        # #[batch, title_size]
+        # # [batch, content_size]
+        # title_attention_list = paddle.squeeze(title_attention_list,[2])
+        # content_attention_list = paddle.squeeze(content_attention_list, [2])
+        # title_attention_list = paddle.nn.functional.softmax(title_attention_list)
+        # content_attention_list = paddle.nn.functional.softmax(content_attention_list)
+        #
+        # #[batch, 1,title_size]
+        # # [batch, 1,content_size]
+        # title_attention_list = paddle.reshape(title_attention_list, [-1, 1,self.article_title_size])
+        # content_attention_list = paddle.reshape(content_attention_list, [-1, 1,self.article_content_size])
+        #
+        # # [batch, 1,conv_out_channel_size]
+        # # [batch, 1,conv_out_channel_size]
+        # title_emb = paddle.matmul(title_attention_list, title_emb)
+        # content_emb = paddle.matmul(content_attention_list, content_emb)
+        #
+        # # [batch, conv_out_channel_size]
+        # title_emb = paddle.reshape(title_emb, [-1, self.conv_out_channel_size])
+        # content_emb = paddle.reshape(content_emb, [-1, self.conv_out_channel_size])
+
+        # [b,conv_out * 4]
+        vec = paddle.concat([title_emb, content_emb, category, sub_category],axis=-1)
+        # [b, 4, conv_out]
+        vec_group = paddle.reshape(vec,[-1, 4, self.conv_out_channel_size])
+        # [b, conv_out]
+        final_vec = self.mix_attention(vec_group)
+        return final_vec
+
+        # # [b, projection] * 4
+        # weight_vec = [paddle.nn.functional.tanh(self.mix_attention_linear(c)) for c in vec]
+        #
+        # #[b ,1] * 4
+        #
+        # weight_vec = [paddle.matmul(c,self.mix_attention_vec) for c in weight_vec]
+        #
+        # #[b,4]
+        # weight_vec = paddle.concat(weight_vec)
+        # weight_vec = paddle.nn.functional.softmax(weight_vec)
+        #
+        # # 4 * [b,1]
+        # split_vec = paddle.split(weight_vec, 4)
+        #
+        # # 4 * [b * p]
+        # final_vec_group = [paddle.multiply(b, a) for a,b in zip(split_vec, vec)]
+        #
+        # final_vec = final_vec_group[0]
+        #
+        # #[b, conv_out_channel_size]
+        # for x in final_vec_group[1:]:
+        #     final_vec = paddle.add(final_vec, x)
+        #
+        # return final_vec
+
+    def __init__(self, config):
+
+        super(NAMLLayer, self).__init__()
+        self.article_content_size = config.get("hyper_parameters.article_content_size")
+        self.article_title_size = config.get("hyper_parameters.article_title_size")
+        self.browse_size = config.get("hyper_parameters.browse_size")
+        self.neg_condidate_sample_size = config.get("hyper_parameters.neg_condidate_sample_size")
+        self.word_dimension = config.get("hyper_parameters.word_dimension")
+        self.category_size = config.get("hyper_parameters.category_size")
+        self.sub_category_size = config.get("hyper_parameters.sub_category_size")
+        self.cate_dimension = config.get("hyper_parameters.category_dimension")
+        self.word_dict_size = config.get("hyper_parameters.word_dict_size")
+        self.conv_out_channel_size = 40
+        self.attention_projection_size = 30
+        self.load_word_embedding()
+        self.attention_vec = []
+        self.attention_layer = []
+        self.cate_embedding = paddle.nn.Embedding(
+            self.category_size + 1,
+            self.cate_dimension,
+            weight_attr=paddle.ParamAttr(
+                name="cate_embedding",
+                initializer=paddle.nn.initializer.Uniform()))
+        self.sub_cate_embedding = paddle.nn.Embedding(
+            self.sub_category_size + 1,
+            self.cate_dimension,
+            weight_attr=paddle.ParamAttr(
+                name="sub_cate_embedding",
+                initializer=paddle.nn.initializer.Uniform()))
+        # title_emb [batch, word_emb_d, title_size]
+        self.conv_title = Conv1D(self.word_dimension, self.conv_out_channel_size, 3, padding = "same")
+        self.conv_content = Conv1D(self.word_dimension,self.conv_out_channel_size, 3, padding = "same")
+        self.conv_title_bias = paddle.create_parameter(
+            shape=[self.conv_out_channel_size],
+            dtype="float32",
+            name="conv_title_bias",
+            default_initializer=paddle.nn.initializer.Normal(
+                std=1.0 / self.conv_out_channel_size))
+        self.add_parameter("conv_title_bias",self.conv_title_bias)
+        self.conv_content_bias = paddle.create_parameter(
+            shape=[self.conv_out_channel_size],
+            dtype="float32",
+            name="conv_content_bias",
+            default_initializer=paddle.nn.initializer.Normal(
+                std=1.0 / self.conv_out_channel_size
+            ))
+        self.add_parameter("conv_content_bias",self.conv_content_bias)
+        # self.title_attention_projection = paddle.nn.Linear(
+        #     in_features=self.title_conv_out_channel_size,
+        #     out_features=self.attention_projection_size,
+        #     weight_attr=paddle.ParamAttr(
+        #         initializer=paddle.nn.initializer.Normal(
+        #             std=1.0 / math.sqrt(self.title_conv_out_channel_size * self.attention_projection_size))))
+        # self.add_sublayer("title_attention_projection", self.title_attention_projection)
+        # self.content_attention_projection = paddle.nn.Linear(
+        #     in_features=self.content_conv_out_channel_size,
+        #     out_features=self.attention_projection_size,
+        #     weight_attr=paddle.ParamAttr(
+        #         initializer=paddle.nn.initializer.Normal(
+        #             std=1.0 / math.sqrt(self.content_conv_out_channel_size * self.attention_projection_size))))
+        # self.add_sublayer("content_attention_projection", self.content_attention_projection)
+        # self.title_attention_mul_vec = paddle.create_parameter(
+        #     shape=(self.attention_projection_size, 1),
+        #     dtype="float32",
+        #     name="title_attention_mul_vec",
+        #     default_initializer=paddle.nn.initializer.Normal(
+        #         std=1.0))
+        # self.add_parameter("title_attention_mul_vec", self.title_attention_mul_vec)
+        # self.content_attention_mul_vec = paddle.create_parameter(
+        #     shape=(self.attention_projection_size, 1),
+        #     dtype="float32",
+        #     name="content_attention_mul_vec",
+        #     default_initializer=paddle.nn.initializer.Normal(
+        #         std=1.0))
+        # self.add_parameter("content_attention_mul_vec", self.content_attention_mul_vec)
+        self.category_linear = paddle.nn.Linear(
+            in_features=self.cate_dimension,
+            out_features=self.conv_out_channel_size,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Normal(
+                    std=0.1)))
+        self.add_sublayer("category_linear", self.category_linear)
+        self.sub_category_linear = paddle.nn.Linear(
+            in_features=self.cate_dimension,
+            out_features=self.conv_out_channel_size,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Normal(
+                    std=0.1)))
+        self.add_sublayer("sub_category_linear", self.sub_category_linear)
+        # self.mix_attention_vec = paddle.create_parameter(
+        #     shape=(self.mix_attention_projection_size, 1),
+        #     dtype="float32",
+        #     name="mix_attention_vec",
+        #     default_initializer=paddle.nn.initializer.Normal(
+        #         std=1.0))
+        # self.add_parameter("mix_attention_vec", self.mix_attention_vec)
+        # self.mix_attention_linear = paddle.nn.Linear(
+        #     in_features=self.conv_out_channel_size,
+        #     out_features=self.mix_attention_projection_size,
+        #     weight_attr=paddle.ParamAttr(
+        #         initializer=paddle.nn.initializer.Normal(
+        #             std=1.0)))
+        # self.add_sublayer("mix_attention_linear", self.mix_attention_linear)
+        self.mix_attention = self.make_attention_layer("mix_attention",[self.conv_out_channel_size, self.attention_projection_size])
+        self.user_attention = self.make_attention_layer("user_attention",[self.conv_out_channel_size, self.attention_projection_size])
+        self.title_attention = self.make_attention_layer("title_attention",[self.conv_out_channel_size, self.attention_projection_size])
+        self.content_attention = self.make_attention_layer("content_attention", [self.conv_out_channel_size, self.attention_projection_size])
+        print(self.word2vec_embedding)
+
+    def make_attention_layer(self, name_base, size):
+        row = size[0]
+        col = size[1]
+        vec = paddle.create_parameter(
+            shape=(col, 1),
+            dtype="float32",
+            name= name_base + "_vec_generated",
+            default_initializer=paddle.nn.initializer.Normal(
+                std=0.1))
+        self.add_parameter(name_base + "_vec_generated", vec)
+        index = len(self.attention_vec)
+        self.attention_vec.append(vec)
+        linear = paddle.nn.Linear(
+            in_features=row,
+            out_features=col,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Normal(
+                    std=0.01)))
+        self.attention_layer.append(linear)
+        self.add_sublayer(name_base + "_linear_generated", linear)
+        def func(input):
+            # input [b,g, row]
+            # [b,g,col]
+            project = self.attention_layer[index](input)
+            # [b,g,1]
+            project = paddle.matmul(project, self.attention_vec[index])
+            #[b,1,g]
+            project = paddle.transpose(project, perm = [0,2,1])
+            weight = paddle.nn.functional.softmax(project)
+            #[b, 1, row]
+            output = paddle.matmul(weight, input)
+            #[b,row]
+            output = paddle.reshape(output,[-1,row])
+            return output
+        return func
+
+    def forward(self,cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit):
+        # cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit = sparse_inputs[:]
+        cate = paddle.concat([cate_sample,cate_visit], axis= -1)
+        sub_cate = paddle.concat([sub_cate_sample, sub_cate_visit], axis=-1)
+        title = paddle.concat([title_sample, title_visit],axis=-2)
+        content = paddle.concat([content_sample, content_visit], axis=-2)
+        #[b * (sample + visit)]
+        cate = paddle.reshape(cate,[-1])
+        # [b * (sample + visit)]
+        sub_cate = paddle.reshape(sub_cate,[-1])
+        # [b * (sample + visit), article_title_size]
+        title = paddle.reshape(title,[-1,self.article_title_size])
+        # [b * (sample + visit), article_content_size]
+        content = paddle.reshape(content,[-1, self.article_content_size])
+
+        #[b, (sample + visit) * conv_out_size]
+        final_vec = self.news_encode(cate, sub_cate, title, content)
+        # [b, (sample + visit) , conv_out_size]
+        final_vec = paddle.reshape(final_vec,[-1,self.neg_condidate_sample_size + 1 + self.browse_size,self.conv_out_channel_size])
+        #[b, sample, conv_out_size] [b,visit, conv_out_size]
+        sample_emb, visit_emb = paddle.split(final_vec,num_or_sections=[self.neg_condidate_sample_size + 1, self.browse_size],axis=1)
+
+        #[b, conv_out_size]
+        visit_compressed_emb = self.user_attention(visit_emb)
+        #[b, conv_out_size,1]
+        visit_compressed_emb = paddle.reshape(visit_compressed_emb, [-1,self.conv_out_channel_size,1])
+
+        #[b,sample,1]
+        predict = paddle.matmul(sample_emb, visit_compressed_emb)
+
+        #[b,sample]
+        predict = paddle.reshape(predict,[-1, self.neg_condidate_sample_size + 1])
+        predict = paddle.nn.functional.softmax(predict)
+        return predict
+
