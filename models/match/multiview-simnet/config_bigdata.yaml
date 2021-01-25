@@ -13,8 +13,8 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/big_train"
-  train_reader_path: "reader_train"  # importlib format
+  train_data_dir: "../../../datasets/BQ_simnet/big_train"
+  train_reader_path: "bq_reader_train"  # importlib format
   train_batch_size: 1280
   model_save_path: "output_model_all_simnet"
 
@@ -22,8 +22,8 @@ runner:
   epochs: 1
   print_interval: 1
   
-  test_data_dir: "data/big_test"
-  infer_reader_path: "reader_infer"  # importlib format
+  test_data_dir: "../../../datasets/BQ_simnet/big_test"
+  infer_reader_path: "bq_reader_infer"  # importlib format
   infer_batch_size: 1
   infer_load_path: "output_model_all_simnet"
   infer_start_epoch: 0

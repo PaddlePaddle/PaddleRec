@@ -13,8 +13,8 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/train_big_data"
-  train_reader_path: "reader"  # importlib format
+  train_data_dir: "../../../datasets/ag_news/"
+  train_reader_path: "agnews_reader"  # importlib format
   train_batch_size: 128
   model_save_path: "output_model_all_tagspace"
 
@@ -22,8 +22,8 @@ runner:
   epochs: 1
   print_interval: 1
 
-  test_data_dir: "data/test_big_data"
-  infer_reader_path: "reader"  # importlib format
+  test_data_dir: "../../../datasets/ag_news/"
+  infer_reader_path: "agnews_reader"  # importlib format
   infer_batch_size: 500
   infer_load_path: "output_model_all_tagspace"
   infer_start_epoch: 0
