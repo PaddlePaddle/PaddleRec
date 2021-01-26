@@ -41,7 +41,7 @@ runner:
   train_reader_path: "benchmark_reader"
   model_save_path: "model"
 
-  infer_batch_size: 2
+  infer_batch_size: 1000
   test_data_dir: "test_data"
   infer_reader_path: "benchmark_reader"
   infer_load_path: "model"
