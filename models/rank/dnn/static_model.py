@@ -15,7 +15,7 @@
 import math
 import paddle
 
-from net import DNNLayer
+from net import DNNLayer, StaticDNNLayer
 
 
 class StaticModel():
@@ -36,7 +36,7 @@ class StaticModel():
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
             "hyper_parameters.sparse_feature_dim")
-        self.sparse_inputs_slot = self.config.get(
+        self.sparse_inputs_slots = self.config.get(
             "hyper_parameters.sparse_inputs_slots")
         self.dense_input_dim = self.config.get(
             "hyper_parameters.dense_input_dim")
@@ -52,34 +52,54 @@ class StaticModel():
 
         sparse_input_ids = [
             paddle.static.data(
-                name="C" + str(i), shape=[None, 1], dtype="int64")
-            for i in range(1, self.sparse_inputs_slot)
+                name="C" + str(i), shape=[None, 1], lod_level=1, dtype="int64")
+            for i in range(1, self.sparse_inputs_slots)
         ]
 
         label = paddle.static.data(
             name="label", shape=[None, 1], dtype="int64")
 
-        self._sparse_data_var = [label] + sparse_input_ids
-        self._dense_data_var = [dense_input]
-
         feeds_list = [label] + sparse_input_ids + [dense_input]
         return feeds_list
 
     def net(self, input, is_infer=False):
-        self.sparse_inputs = self._sparse_data_var[1:]
-        self.dense_input = self._dense_data_var[0]
-        self.label_input = self._sparse_data_var[0]
-        sparse_number = self.sparse_inputs_slot - 1
-        assert sparse_number == len(
-            self.sparse_inputs
-        ), "sparse_number is {}, sparse_inputs size is {}".format(
-            sparse_number, len(self.sparse_inputs))
+        self.label_input = input[0]
+        self.sparse_inputs = input[1:self.sparse_inputs_slots]
+        self.dense_input = input[-1]
+        sparse_number = self.sparse_inputs_slots - 1
 
-        dnn_model = DNNLayer(self.sparse_feature_number,
-                             self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes)
+        def embedding_layer(input):
+            if self.distributed_embedding:
+                emb = fluid.contrib.layers.sparse_embedding(
+                    input=input,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=fluid.ParamAttr(
+                        name="SparseFeatFactors",
+                        initializer=fluid.initializer.Uniform()))
+            else:
+                emb = paddle.fluid.layers.embedding(
+                    input=input,
+                    is_sparse=True,
+                    is_distributed=self.is_distributed,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=paddle.fluid.ParamAttr(
+                        name="SparseFeatFactors",
+                        initializer=paddle.fluid.initializer.Uniform()))
+            emb_sum = paddle.fluid.layers.sequence_pool(
+                input=emb, pool_type='sum')
+            return emb_sum
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+        sparse_embs = list(map(embedding_layer, self.sparse_inputs))
+
+        dnn_model = StaticDNNLayer(
+            self.sparse_feature_number, self.sparse_feature_dim,
+            self.dense_input_dim, sparse_number, self.fc_sizes)
+
+        raw_predict_2d = dnn_model(sparse_embs, self.dense_input)
 
         predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 

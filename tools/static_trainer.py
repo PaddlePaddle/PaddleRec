@@ -22,12 +22,12 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
+from utils.static_ps.reader_helper import get_reader
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
 from utils.save_load import save_static_model
 
 import time
 import argparse
-
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ def main(args):
 
     # load config
     config = load_yaml(args.config_yaml)
+    config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
     # load static model class
     static_model_class = load_static_model_class(config)
@@ -67,6 +68,7 @@ def main(args):
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
     batch_size = config.get("runner.train_batch_size", None)
+    reader_type = config.get("runner.reader_type", "DataLoader")
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
@@ -81,57 +83,97 @@ def main(args):
     exe.run(paddle.static.default_startup_program())
 
     last_epoch_id = config.get("last_epoch", -1)
-    train_dataloader = create_data_loader(config=config, place=place)
+
+    if reader_type == 'QueueDataset':
+        dataset, file_list = get_reader(input_data, config)
+    elif reader_type == 'Dataloader':
+        train_dataloader = create_data_loader(config=config, place=place)
 
     for epoch_id in range(last_epoch_id + 1, epochs):
 
         epoch_begin = time.time()
-        interval_begin = time.time()
-        train_reader_cost = 0.0
-        train_run_cost = 0.0
-        total_samples = 0
-        reader_start = time.time()
         if use_auc:
             reset_auc()
-        for batch_id, batch_data in enumerate(train_dataloader()):
-            train_reader_cost += time.time() - reader_start
-            train_start = time.time()
-
-            fetch_batch_var = exe.run(
-                program=paddle.static.default_main_program(),
-                feed=dict(zip(input_data_names, batch_data)),
-                fetch_list=[var for _, var in fetch_vars.items()])
-            train_run_cost += time.time() - train_start
-            total_samples += batch_size
-            if batch_id % print_interval == 0:
-                metric_str = ""
-                for var_idx, var_name in enumerate(fetch_vars):
-                    metric_str += "{}: {}, ".format(var_name,
-                                                    fetch_batch_var[var_idx])
-                logger.info(
-                    "epoch: {}, batch_id: {}, ".format(epoch_id,
-                                                       batch_id) + metric_str +
-                    "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
-                    format(train_reader_cost / print_interval, (
-                        train_reader_cost + train_run_cost) / print_interval,
-                           total_samples / print_interval, total_samples / (
-                               train_reader_cost + train_run_cost)))
-                train_reader_cost = 0.0
-                train_run_cost = 0.0
-                total_samples = 0
-            reader_start = time.time()
-
-        metric_str = ""
-        for var_idx, var_name in enumerate(fetch_vars):
-            metric_str += "{}: {}, ".format(var_name, fetch_batch_var[var_idx])
-        logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
-                    "epoch time: {:.2f} s".format(time.time() - epoch_begin))
+        if reader_type == 'Dataloader':
+            fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
+                                               input_data_names, fetch_vars,
+                                               exe, config)
+            metric_str = ""
+            for var_idx, var_name in enumerate(fetch_vars):
+                metric_str += "{}: {}, ".format(var_name,
+                                                fetch_batch_var[var_idx])
+            logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
+                        "epoch time: {:.2f} s".format(time.time() -
+                                                      epoch_begin))
+        elif reader_type == 'QueueDataset':
+            fetch_batch_var = dataset_train(epoch_id, dataset, fetch_vars, exe,
+                                            config)
+            logger.info("epoch: {} done, ".format(epoch_id) +
+                        "epoch time: {:.2f} s".format(time.time() -
+                                                      epoch_begin))
+        else:
+            logger.info("reader type wrong")
 
         save_static_model(
             paddle.static.default_main_program(),
             model_save_path,
             epoch_id,
             prefix='rec_static')
+
+
+def dataset_train(epoch_id, dataset, fetch_vars, exe, config):
+    #logger.info("Epoch: {}, Running Dataset Begin.".format(epoch))
+    fetch_info = [
+        "Epoch {} Var {}".format(epoch_id, var_name) for var_name in fetch_vars
+    ]
+    fetch_vars = [var for _, var in fetch_vars.items()]
+    print_interval = config.get("runner.print_interval")
+    exe.train_from_dataset(
+        program=paddle.static.default_main_program(),
+        dataset=dataset,
+        fetch_list=fetch_vars,
+        fetch_info=fetch_info,
+        print_period=print_interval,
+        debug=config.get("runner.dataset_debug"))
+
+
+def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
+                     exe, config):
+    print_interval = config.get("runner.print_interval", None)
+    batch_size = config.get("runner.train_batch_size", None)
+    interval_begin = time.time()
+    train_reader_cost = 0.0
+    train_run_cost = 0.0
+    total_samples = 0
+    reader_start = time.time()
+    for batch_id, batch_data in enumerate(train_dataloader()):
+        train_reader_cost += time.time() - reader_start
+        train_start = time.time()
+
+        fetch_batch_var = exe.run(
+            program=paddle.static.default_main_program(),
+            feed=dict(zip(input_data_names, batch_data)),
+            fetch_list=[var for _, var in fetch_vars.items()])
+        train_run_cost += time.time() - train_start
+        total_samples += batch_size
+        if batch_id % print_interval == 0:
+            metric_str = ""
+            for var_idx, var_name in enumerate(fetch_vars):
+                metric_str += "{}: {}, ".format(var_name,
+                                                fetch_batch_var[var_idx])
+            logger.info(
+                "epoch: {}, batch_id: {}, ".format(epoch_id,
+                                                   batch_id) + metric_str +
+                "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                format(train_reader_cost / print_interval, (
+                    train_reader_cost + train_run_cost) / print_interval,
+                       total_samples / print_interval, total_samples / (
+                           train_reader_cost + train_run_cost)))
+            train_reader_cost = 0.0
+            train_run_cost = 0.0
+            total_samples = 0
+        reader_start = time.time()
+    return fetch_batch_var
 
 
 if __name__ == "__main__":
