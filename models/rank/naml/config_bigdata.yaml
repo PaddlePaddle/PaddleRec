@@ -16,10 +16,10 @@
 workspace: "models/rank/gateDnn"
 
 dygraph:
-  train_data_dir: "data/sample_data/train"
+  train_data_dir: "data/data/train"
   use_gpu: False
-  batch_size: 10
-  epochs: 2000
+  batch_size: 50
+  epochs: 20
   print_interval: 2
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model"
@@ -57,15 +57,15 @@ hyper_parameters:
     learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
-  article_content_size: 30
+  article_content_size: 100
   article_title_size: 10
-  browse_size: 10
+  browse_size: 30
   neg_condidate_sample_size: 4
-  word_dimension: 30
-  category_size: 4
-  sub_category_size: 10
+  word_dimension: 60
+  category_size: 18
+  sub_category_size: 260
   category_dimension: 32
-  word_dict_size: 101
+  word_dict_size: 19200
   fc_sizes: [512, 256, 128, 32]
 
 # select runner by name
