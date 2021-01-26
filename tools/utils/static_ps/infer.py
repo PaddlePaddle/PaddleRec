@@ -80,12 +80,12 @@ class Main(object):
             # hard code for epoch model folder
             if os.path.isdir(file_path) and is_number(file):
                 self.epoch_model_path_list.append(file_path)
-
         if len(self.epoch_model_path_list) == 0:
             self.epoch_model_path_list.append(init_model_path)
 
-        self.epoch_model_path_list = self.epoch_model_path_list.sort()
-
+        self.epoch_model_path_list.sort()
+        logger.info("self.epoch_model_path_list: {}".format(
+            self.epoch_model_path_list))
         for idx, model_path in enumerate(self.epoch_model_path_list):
             logger.info("Begin Infer Model {}".format(
                 self.epoch_model_path_list[idx]))
