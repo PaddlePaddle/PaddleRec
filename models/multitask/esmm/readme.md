@@ -4,15 +4,18 @@
 
 ```
 ├── data # 文档
-	├── train #训练数据
-		├──small.txt
-	├── test  #测试数据
-		├── small.txt
-	├── run.sh
+    ├── train #训练数据
+        ├──small.txt
+    ├── test  #测试数据
+		    ├── small.txt
 ├── __init__.py 
-├── config.yaml #配置文件
-├── esmm_reader.py #数据读取文件
-├── model.py #模型文件
+├── readme.md #文档
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
+├── esmm_reader.py # 数据读取程序
+├── net.py # 模型核心组网（动静统一）
+├── static_model.py # 构建静态图
+├── dygraph_model.py # 构建动态图
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -21,16 +24,16 @@
 
 ## 内容
 
-- [模型简介](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#模型简介)
-- [数据准备](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#数据准备)
-- [运行环境](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#运行环境)
-- [快速开始](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#快速开始)
-- [论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#论文复现)
-- [进阶使用](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#进阶使用)
-- [FAQ](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#FAQ)
+- [模型简介](#模型简介)
+- [数据准备](#数据准备)
+- [运行环境](#运行环境)
+- [快速开始](#快速开始)
+- [模型组网](#模型组网)
+- [效果复现](#效果复现)
+- [进阶使用](#进阶使用)
+- [FAQ](#FAQ)
 
 ## 模型简介
-
 不同于CTR预估问题，CVR预估面临两个关键问题：
 
 1. **Sample Selection Bias (SSB)** 转化是在点击之后才“有可能”发生的动作，传统CVR模型通常以点击数据为训练集，其中点击未转化为负例，点击并转化为正例。但是训练好的模型实际使用时，则是对整个空间的样本进行预估，而非只对点击样本进行预估。即是说，训练数据与实际要预测的数据来自不同分布，这个偏差对模型的泛化能力构成了很大挑战。
@@ -38,112 +41,61 @@
 
 ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate》](  https://arxiv.org/abs/1804.07931  )文章基于 Multi-Task Learning 的思路，提出一种新的CVR预估模型——ESMM，有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题
 
-本项目在paddlepaddle上实现ESMM的网络结构，并在开源数据集[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )上验证模型效果, 本模型配置默认使用demo数据集，若进行精度验证，请参考[论文复现](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/esmm#论文复现)部分。
-
-本项目支持功能
-
-训练：单机CPU、单机单卡GPU、单机多卡GPU、本地模拟参数服务器训练、增量训练，配置请参考 [启动训练](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/train.md)
-
-预测：单机CPU、单机单卡GPU ；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/predict.md)
-
 ## 数据准备
-
-数据地址：[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )
-
+我们在开源数据集[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )上验证模型效果。在模型目录的data目录下为您准备了快速运行的示例数据，若需要使用全量数据可以参考下方[效果复现](#效果复现)部分。
 数据格式参见demo数据：data/train
 
-
 ## 运行环境
-
-PaddlePaddle>=1.7.2
+PaddlePaddle>=2.0
 
 python 2.7/3.5/3.6/3.7
 
-PaddleRec >=0.1
-
-os : windows/linux/macos
+os : windows/linux/macos 
 
 ## 快速开始
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在esmm模型目录的快速执行命令如下： 
+```bash
+# 进入模型目录
+# cd models/multitask/esmm # 在任意目录均可运行
+# 动态图训练
+python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 动态图预测
+python3 -u ../../../tools/infer.py -m config.yaml 
 
-### 单机训练
-
-CPU环境
-
-在config.yaml文件中设置好设备，epochs等。
-
-```
-dataset:
-  - name: dataset_train
-    batch_size: 5
-    type: QueueDataset
-    data_path: "{workspace}/data/train"
-    data_converter: "{workspace}/esmm_reader.py"
-  - name: dataset_infer
-    batch_size: 5
-    type: QueueDataset
-    data_path: "{workspace}/data/test"
-    data_converter: "{workspace}/esmm_reader.py"
+# 静态图训练
+python3 -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 静态图预测
+python3 -u ../../../tools/static_infer.py -m config.yaml 
 ```
 
-### 单机预测
+## 模型组网
+ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate》](  https://arxiv.org/abs/1804.07931  )文章基于 Multi-Task Learning 的思路，提出一种新的CVR预估模型——ESMM，有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题。模型的主要组网结构如下：
+[ESMM](https://arxiv.org/abs/1804.07931):
+<p align="center">
+<img align="center" src="../../doc/imgs/esmm.png">
+<p>
 
-CPU环境
+### 效果复现
+为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。 
+在全量数据下模型的指标如下：
+| 模型 | auc_ctcvr | batch_size | epoch_num | Time of each epoch |
+| :------| :------ | :------ | :------| :------ | 
+| ESMM | 0.82 | 1024 | 10 | 约3分钟 |
 
-在config.yaml文件中设置好epochs、device等参数。
-
-```
- - name: infer_runner
-    class: infer
-    init_model_path: "increment/1"
-    device: cpu
-    print_interval: 1
-    phases: [infer]
-```
-
-
-## 论文复现
-
-由于原论文的数据太大，我们选取了部分数据作为训练和测试数据, 建议使用gpu训练。
-
-我们的测试ctr auc为0.79+，ctcvr auc为0.82+。
-
-```
-wget https://paddlerec.bj.bcebos.com/esmm/traindata_10w.csv  
-wget https://paddlerec.bj.bcebos.com/esmm/testdata_10w.csv 
-mkdir data/train_data data/test_data
-mv traindata_10w.csv data/train_data
-mv testdata_10w.csv data/test_data
-```
-
-用原论文的完整数据复现论文效果需要在config.yaml中修改batch_size=1024, epoch=10, device=gpu, selected_gpus:"0"
-
-具体配置可以下载config_10w.yaml文件
-```
-wget https://paddlerec.bj.bcebos.com/esmm/config_10w.yaml
-```
-修改后运行
-```
-python -m paddlerec.run -m /home/your/dir/config.yaml #调试模式 直接指定本地config的绝对路径
+1. 确认您当前所在目录为PaddleRec/models/multitask/esmm  
+2. 进入paddlerec/datasets/ali-ccp目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的ali-ccp全量数据集，并解压到指定文件夹。
+``` bash
+cd ../../../datasets/ali-ccp
+sh run.sh
+``` 
+3. 切回模型目录,执行命令运行全量数据
+```bash
+cd - # 切回模型目录
+# 动态图训练
+python3 -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python3 -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 ```
 
 ## 进阶使用
-
-### 动态图&论文复现
-```
-# 进入模型目录
-cd models/rank/wide_deep # 在任意目录均可运行
-# 动态图训练
-python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 动态图预测
-python -u ../../../tools/infer.py -m config.yaml 
-
-# 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 静态图预测
-python -u ../../../tools/static_infer.py -m config.yaml 
-
-# 全量数据下载
-cd tools/datasets/ali-ccp
-sh run.sh
-```
+  
 ## FAQ
