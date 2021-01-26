@@ -103,17 +103,3 @@ class RecDataset(IterableDataset):
                     article_list.append(np.array([self.article_map_content[self.convert_unk(i)] for i in line[0]]))
                     #output_list = [article_list,None]
                     yield article_list
-
-# class Config:
-#     def __init__(self,article_window_size, article_title_size, browse_size, neg_condiate_sample_size):
-#         self.article_window_size = article_window_size
-#         self.article_title_size = article_title_size
-#         self.browse_size = browse_size
-#         self.neg_condiate_sample_size = neg_condiate_sample_size
-#
-# s = RecDataset(["./articles.txt","./browse.txt"],Config(300,10,30,5))
-# p = s.__iter__()
-# batch = []
-# for i in range(10):
-#     batch.append(next(p))
-# print(batch)

@@ -7,20 +7,24 @@ import numpy as np
 
 class NAMLLayer(nn.Layer):
     def load_word_embedding(self,file = "data/sample_data/embedding.txt"):
-        # word2vec_embedding = []
-        # word_size = 0
-        # with open(file, "r") as rf:
-        #     for l in rf:
-        #         nums = l.split('\t')[-1]
-        #         word2vec_embedding.append([float(x) for x in nums.split(" ")])
-        #         word_size += 1
-        # word2vec_embedding = np.array(word2vec_embedding)
-        # self.word2vec_embedding = paddle.nn.Embedding(
-        #     word_size,
-        #     self.word_dimension,
-        #     weight_attr=paddle.ParamAttr(
-        #         trainable=True,
-        #         initializer=fluid.initializer.NumpyArrayInitializer(word2vec_embedding)))
+        # if file != None:
+        #     word2vec_embedding = []
+        #     word_size = 0
+        #     with open(file, "r") as rf:
+        #         for l in rf:
+        #             nums = l.split('\t')[-1]
+        #             word2vec_embedding.append([float(x) for x in nums.split(" ")])
+        #             word_size += 1
+        #     print(word_size)
+        #     print(self.word_dict_size)
+        #     word2vec_embedding = np.array(word2vec_embedding)
+        #     self.word2vec_embedding = paddle.nn.Embedding(
+        #         self.word_dict_size + 1,
+        #         self.word_dimension,
+        #         weight_attr=paddle.ParamAttr(
+        #             trainable=True,
+        #             initializer=fluid.initializer.NumpyArrayInitializer(word2vec_embedding)))
+        #     return
         self.word2vec_embedding = paddle.nn.Embedding(
             self.word_dict_size + 1,
             self.word_dimension,
@@ -93,45 +97,20 @@ class NAMLLayer(nn.Layer):
         final_vec = self.mix_attention(vec_group)
         return final_vec
 
-        # # [b, projection] * 4
-        # weight_vec = [paddle.nn.functional.tanh(self.mix_attention_linear(c)) for c in vec]
-        #
-        # #[b ,1] * 4
-        #
-        # weight_vec = [paddle.matmul(c,self.mix_attention_vec) for c in weight_vec]
-        #
-        # #[b,4]
-        # weight_vec = paddle.concat(weight_vec)
-        # weight_vec = paddle.nn.functional.softmax(weight_vec)
-        #
-        # # 4 * [b,1]
-        # split_vec = paddle.split(weight_vec, 4)
-        #
-        # # 4 * [b * p]
-        # final_vec_group = [paddle.multiply(b, a) for a,b in zip(split_vec, vec)]
-        #
-        # final_vec = final_vec_group[0]
-        #
-        # #[b, conv_out_channel_size]
-        # for x in final_vec_group[1:]:
-        #     final_vec = paddle.add(final_vec, x)
-        #
-        # return final_vec
-
-    def __init__(self, config):
-
+    def __init__(self, article_content_size, article_title_size, browse_size, neg_condidate_sample_size, word_dimension, category_size, sub_category_size, cate_dimension, word_dict_size):
+    #def __init__(self, config):
         super(NAMLLayer, self).__init__()
-        self.article_content_size = config.get("hyper_parameters.article_content_size")
-        self.article_title_size = config.get("hyper_parameters.article_title_size")
-        self.browse_size = config.get("hyper_parameters.browse_size")
-        self.neg_condidate_sample_size = config.get("hyper_parameters.neg_condidate_sample_size")
-        self.word_dimension = config.get("hyper_parameters.word_dimension")
-        self.category_size = config.get("hyper_parameters.category_size")
-        self.sub_category_size = config.get("hyper_parameters.sub_category_size")
-        self.cate_dimension = config.get("hyper_parameters.category_dimension")
-        self.word_dict_size = config.get("hyper_parameters.word_dict_size")
-        self.conv_out_channel_size = 40
-        self.attention_projection_size = 30
+        self.article_content_size = article_content_size
+        self.article_title_size = article_title_size
+        self.browse_size = browse_size
+        self.neg_condidate_sample_size = neg_condidate_sample_size
+        self.word_dimension = word_dimension
+        self.category_size = category_size
+        self.sub_category_size = sub_category_size
+        self.cate_dimension = cate_dimension
+        self.word_dict_size = word_dict_size
+        self.conv_out_channel_size = 100
+        self.attention_projection_size = 100
         self.load_word_embedding()
         self.attention_vec = []
         self.attention_layer = []
@@ -140,13 +119,15 @@ class NAMLLayer(nn.Layer):
             self.cate_dimension,
             weight_attr=paddle.ParamAttr(
                 name="cate_embedding",
-                initializer=paddle.nn.initializer.Uniform()))
+                initializer=paddle.nn.initializer.Normal(
+                std=0.1)))
         self.sub_cate_embedding = paddle.nn.Embedding(
             self.sub_category_size + 1,
             self.cate_dimension,
             weight_attr=paddle.ParamAttr(
                 name="sub_cate_embedding",
-                initializer=paddle.nn.initializer.Uniform()))
+                initializer=paddle.nn.initializer.Normal(
+                std=0.1)))
         # title_emb [batch, word_emb_d, title_size]
         self.conv_title = Conv1D(self.word_dimension, self.conv_out_channel_size, 3, padding = "same")
         self.conv_content = Conv1D(self.word_dimension,self.conv_out_channel_size, 3, padding = "same")
@@ -165,34 +146,6 @@ class NAMLLayer(nn.Layer):
                 std=1.0 / self.conv_out_channel_size
             ))
         self.add_parameter("conv_content_bias",self.conv_content_bias)
-        # self.title_attention_projection = paddle.nn.Linear(
-        #     in_features=self.title_conv_out_channel_size,
-        #     out_features=self.attention_projection_size,
-        #     weight_attr=paddle.ParamAttr(
-        #         initializer=paddle.nn.initializer.Normal(
-        #             std=1.0 / math.sqrt(self.title_conv_out_channel_size * self.attention_projection_size))))
-        # self.add_sublayer("title_attention_projection", self.title_attention_projection)
-        # self.content_attention_projection = paddle.nn.Linear(
-        #     in_features=self.content_conv_out_channel_size,
-        #     out_features=self.attention_projection_size,
-        #     weight_attr=paddle.ParamAttr(
-        #         initializer=paddle.nn.initializer.Normal(
-        #             std=1.0 / math.sqrt(self.content_conv_out_channel_size * self.attention_projection_size))))
-        # self.add_sublayer("content_attention_projection", self.content_attention_projection)
-        # self.title_attention_mul_vec = paddle.create_parameter(
-        #     shape=(self.attention_projection_size, 1),
-        #     dtype="float32",
-        #     name="title_attention_mul_vec",
-        #     default_initializer=paddle.nn.initializer.Normal(
-        #         std=1.0))
-        # self.add_parameter("title_attention_mul_vec", self.title_attention_mul_vec)
-        # self.content_attention_mul_vec = paddle.create_parameter(
-        #     shape=(self.attention_projection_size, 1),
-        #     dtype="float32",
-        #     name="content_attention_mul_vec",
-        #     default_initializer=paddle.nn.initializer.Normal(
-        #         std=1.0))
-        # self.add_parameter("content_attention_mul_vec", self.content_attention_mul_vec)
         self.category_linear = paddle.nn.Linear(
             in_features=self.cate_dimension,
             out_features=self.conv_out_channel_size,
@@ -207,20 +160,6 @@ class NAMLLayer(nn.Layer):
                 initializer=paddle.nn.initializer.Normal(
                     std=0.1)))
         self.add_sublayer("sub_category_linear", self.sub_category_linear)
-        # self.mix_attention_vec = paddle.create_parameter(
-        #     shape=(self.mix_attention_projection_size, 1),
-        #     dtype="float32",
-        #     name="mix_attention_vec",
-        #     default_initializer=paddle.nn.initializer.Normal(
-        #         std=1.0))
-        # self.add_parameter("mix_attention_vec", self.mix_attention_vec)
-        # self.mix_attention_linear = paddle.nn.Linear(
-        #     in_features=self.conv_out_channel_size,
-        #     out_features=self.mix_attention_projection_size,
-        #     weight_attr=paddle.ParamAttr(
-        #         initializer=paddle.nn.initializer.Normal(
-        #             std=1.0)))
-        # self.add_sublayer("mix_attention_linear", self.mix_attention_linear)
         self.mix_attention = self.make_attention_layer("mix_attention",[self.conv_out_channel_size, self.attention_projection_size])
         self.user_attention = self.make_attention_layer("user_attention",[self.conv_out_channel_size, self.attention_projection_size])
         self.title_attention = self.make_attention_layer("title_attention",[self.conv_out_channel_size, self.attention_projection_size])
@@ -263,8 +202,8 @@ class NAMLLayer(nn.Layer):
             return output
         return func
 
-    def forward(self,cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit):
-        # cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit = sparse_inputs[:]
+    def forward(self,sparse_inputs, dense_inputs):
+        cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit = sparse_inputs[:]
         cate = paddle.concat([cate_sample,cate_visit], axis= -1)
         sub_cate = paddle.concat([sub_cate_sample, sub_cate_visit], axis=-1)
         title = paddle.concat([title_sample, title_visit],axis=-2)
@@ -294,7 +233,9 @@ class NAMLLayer(nn.Layer):
         predict = paddle.matmul(sample_emb, visit_compressed_emb)
 
         #[b,sample]
+        #print(predict)
         predict = paddle.reshape(predict,[-1, self.neg_condidate_sample_size + 1])
-        predict = paddle.nn.functional.softmax(predict)
+        #predict = paddle.nn.functional.softmax(predict)
+        #predict = paddle.nn.functional.sigmoid(predict)
         return predict
 
