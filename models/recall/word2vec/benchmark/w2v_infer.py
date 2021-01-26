@@ -95,7 +95,7 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
 
     if len(epoch_model_path_list) == 0:
         return
-    self.epoch_model_path_list.sort()
+    epoch_model_path_list.sort()
     print("Save model len {}".format(len(epoch_model_path_list)))
 
     place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
