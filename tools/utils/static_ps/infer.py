@@ -72,6 +72,9 @@ class Main(object):
         self.exe = paddle.static.Executor(place)
 
         init_model_path = config.get("runner.model_save_path")
+        init_model_path = os.path.join(
+            config["config_abs_dir"], init_model_path)
+        logger.info("init_model_path: {}".format(init_model_path))
         for file in os.listdir(init_model_path):
             file_path = os.path.join(init_model_path, file)
             # hard code for epoch model folder
