@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from __future__ import print_function
+from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
+from utils.static_ps.program_helper import get_model, get_strategy
+from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
 import sys
@@ -25,9 +28,6 @@ import logging
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
-from utils.static_ps.common import YamlHelper, is_distributed_env
-from utils.static_ps.program_helper import get_model, get_strategy
-from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -59,6 +59,8 @@ class Main(object):
         self.input_data = None
         self.reader = None
         self.exe = None
+        self.train_result_dict = {}
+        self.train_result_dict["speed"] = []
 
     def run(self):
         fleet.init()
@@ -68,6 +70,7 @@ class Main(object):
         elif fleet.is_worker():
             self.run_worker()
             fleet.stop_worker()
+            self.record_result()
         logger.info("Run Success, Exit.")
 
     def network(self):
@@ -125,6 +128,7 @@ class Main(object):
             logger.info(
                 "Epoch: {}, using time {} second, ips {} {}/sec.".format(
                     epoch, epoch_time, epoch_speed, self.count_method))
+            self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
             if fleet.is_first_worker(
@@ -239,9 +243,9 @@ class Main(object):
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec".
                     format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,
-                           total_samples / print_interval, total_samples / (
-                               train_reader_cost + train_run_cost),
-                           self.count_method))
+                        total_samples / print_interval, total_samples / (
+                        train_reader_cost + train_run_cost),
+                        self.count_method))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0
@@ -288,6 +292,11 @@ class Main(object):
                 except paddle.core.EOFException:
                     self.reader.reset()
                     break
+
+    def record_result(self):
+        logger.info("train_result_dict: {}".format(self.train_result_dict))
+        with open("./train_result_dict.txt", 'w+') as f:
+            f.write(str(self.train_result_dict))
 
 
 if __name__ == "__main__":

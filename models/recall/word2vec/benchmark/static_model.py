@@ -163,15 +163,15 @@ class StaticModel(object):
             self.config.get("hyper_parameters.optimizer.decay_steps"))
 
         # single
-        if strategy == None:
-            optimizer = fluid.optimizer.SGD(
-                learning_rate=fluid.layers.exponential_decay(
-                    learning_rate=lr,
-                    decay_steps=decay_steps,
-                    decay_rate=decay_rate,
-                    staircase=True))
-        else:
-            sync_mode = self.config.get("static_benchmark.sync_mode")
+        optimizer = fluid.optimizer.SGD(
+            learning_rate=fluid.layers.exponential_decay(
+                learning_rate=lr,
+                decay_steps=decay_steps,
+                decay_rate=decay_rate,
+                staircase=True))
+
+        if strategy != None:
+            sync_mode = self.config.get("runner.sync_mode")
             print("sync_mode: {}".format(sync_mode))
             # geo
             if sync_mode == "geo":
