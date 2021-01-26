@@ -63,7 +63,7 @@ os : windows/linux/macos
 
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在gatednn模型目录的快速执行命令如下： 
-```
+```bash
 # 进入模型目录
 cd models/rank/gatednn # 在任意目录均可运行
 # 动态图训练
