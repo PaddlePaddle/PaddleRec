@@ -35,7 +35,7 @@ class StaticModel():
             "hyper_parameters.sparse_feature_number")
         self.sparse_feature_dim = self.config.get(
             "hyper_parameters.sparse_feature_dim")
-        self.sparse_inputs_slot = self.config.get(
+        self.sparse_inputs_slots = self.config.get(
             "hyper_parameters.sparse_inputs_slots")
         self.dense_input_dim = self.config.get(
             "hyper_parameters.dense_input_dim")
@@ -52,7 +52,7 @@ class StaticModel():
         sparse_input_ids = [
             paddle.static.data(
                 name="C" + str(i), shape=[None, 1], dtype="int64")
-            for i in range(1, self.sparse_inputs_slot)
+            for i in range(1, self.sparse_inputs_slots)
         ]
 
         label = paddle.static.data(
@@ -65,11 +65,10 @@ class StaticModel():
         return feeds_list
 
     def net(self, input, is_infer=False):
-        self.sparse_inputs = self._sparse_data_var[1:]
-        self.dense_input = self._dense_data_var[0]
-        self.label_input = self._sparse_data_var[0]
-        sparse_number = self.sparse_inputs_slot - 1
-        assert sparse_number == len(self.sparse_inputs)
+        self.label_input = input[0]
+        self.sparse_inputs = input[1:self.sparse_inputs_slots]
+        self.dense_input = input[-1]
+        sparse_number = self.sparse_inputs_slots - 1
 
         wide_deep_model = WideDeepLayer(
             self.sparse_feature_number, self.sparse_feature_dim,
