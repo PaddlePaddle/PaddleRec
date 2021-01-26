@@ -81,9 +81,9 @@ Yoon Kim在论文[EMNLP 2014][Convolutional neural networks for sentence classic
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
 我们基于开源情感倾向分类数据集ChnSentiCorp进行评测，模型在测试集上的准确率如表所示：  
 
-| 模型 | dev | test | 
-| :------| :------ | :------
-| TextCNN | 90.75% | 91.27% |
+| 模型 | auc | batch_size | epoch_num| Time of each epoch |
+| :------| :------ | :------ | :------| :------ | 
+| textcnn | 0.91 | 128 | 10 | 约40s |
 
 1. 确认您当前所在目录为PaddleRec/models/contentunderstanding/textcnn  
 2. 进入paddlerec/datasets/senti_clas目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的senti_clas全量数据集，并解压到指定文件夹。
