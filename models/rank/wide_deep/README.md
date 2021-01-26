@@ -86,9 +86,9 @@ wide&deep设计了一种融合浅层（wide）模型和深层（deep）模型进
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：  
 
-| 模型 | auc | acc | batch_size | thread_num| epoch_num| Time of each epoch |
-| :------| :------ | :------ | :------| :------ | :------| :------ | 
-| wide_deep | 0.8987 | 0.775 | 512 | 1 | 4 | 约2小时 |
+| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
+| :------| :------ | :------| :------ | :------| :------ | 
+| wide_deep | 0.82 | 512 | 1 | 4 | 约2小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/wide_deep
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。
