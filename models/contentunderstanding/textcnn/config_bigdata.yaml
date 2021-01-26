@@ -23,7 +23,7 @@ runner:
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_textcnn_all"
-  test_data_dir: "../../../datasets/senti_clas/train"
+  test_data_dir: "../../../datasets/senti_clas/test"
   infer_reader_path: "senti_clas_reader" # importlib format
   infer_batch_size: 128
   infer_load_path: "output_model_textcnn_all"
