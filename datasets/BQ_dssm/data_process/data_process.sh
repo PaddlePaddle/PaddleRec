@@ -11,31 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#!/bin/bash
 
-runner:
-  train_data_dir: "data/train"
-  train_reader_path: "bq_reader_train"  # importlib format
-  train_batch_size: 8
-  model_save_path: "output_model_dssm"
-
-  use_gpu: False
-  epochs: 1
-  print_interval: 10
-  
-  test_data_dir: "data/test"
-  infer_reader_path: "bq_reader_infer"  # importlib format
-  infer_batch_size: 1
-  infer_load_path: "output_model_dssm"
-  infer_start_epoch: 0
-  infer_end_epoch: 1
-
-hyper_parameters:
-  optimizer:
-    class: adam
-    learning_rate: 0.001
-    strategy: sync
-  trigram_d: 2900
-  neg_num: 1
-  slice_end: 8
-  fc_sizes: [300, 300, 128]
-  fc_acts: ['relu', 'relu', 'relu']
+wget https://paddlerec.bj.bcebos.com/dssm%2Fbq.tar.gz
+tar xzf dssm%2Fbq.tar.gz
+rm -f dssm%2Fbq.tar.gz
+mv bq/train.txt ./raw_data.txt
+python3 preprocess.py
+mkdir big_train
+mv train.txt ./big_train
+mkdir big_test
+mv test.txt ./big_test

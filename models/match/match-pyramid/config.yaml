@@ -15,7 +15,7 @@
 
 runner:
   train_data_dir: "data/train"
-  train_reader_path: "reader"  # importlib format
+  train_reader_path: "letor_reader"  # importlib format
   train_batch_size: 128
   model_save_path: "output_model_pyramid"
 
@@ -24,7 +24,7 @@ runner:
   print_interval: 1
   
   test_data_dir: "data/test"
-  infer_reader_path: "reader"  # importlib format
+  infer_reader_path: "letor_reader"  # importlib format
   infer_batch_size: 1
   infer_load_path: "output_model_pyramid"
   infer_start_epoch: 1
@@ -37,7 +37,7 @@ hyper_parameters:
     class: adam
     learning_rate: 0.001
   # user-defined <key, value> pairs
-  emb_path: "./data/embedding.npy"
+  emb_path: "../../../datasets/letor07/embedding.npy"
   sentence_left_size: 20
   sentence_right_size: 500
   vocab_size: 193368
