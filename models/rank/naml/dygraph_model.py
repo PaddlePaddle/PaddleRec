@@ -32,7 +32,7 @@ class DygraphModel():
         sub_category_size = config.get("hyper_parameters.sub_category_size")
         cate_dimension = config.get("hyper_parameters.category_dimension")
         word_dict_size = config.get("hyper_parameters.word_dict_size")
-        return net.NAMLLayer(config, article_content_size, article_title_size, browse_size, neg_condidate_sample_size,
+        return net.NAMLLayer(article_content_size, article_title_size, browse_size, neg_condidate_sample_size,
                              word_dimension, category_size, sub_category_size, cate_dimension, word_dict_size)
 
     # define feeds which convert numpy of batch data to paddle.tensor
@@ -78,6 +78,7 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
         raw = dy_model(sparse_tensor, None)
+        raw = paddle.nn.functional.softmax(raw)
         correct = metrics_list[0].compute(raw, label)
         metrics_list[0].update(correct)
         return metrics_list, None
