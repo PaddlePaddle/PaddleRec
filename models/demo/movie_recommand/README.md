@@ -21,31 +21,31 @@ bash data_prepare.sh
 ### 模型训练
 ```shell
 # 动态图训练recall模型
-python3 -u ../../../tools/trainer.py -m recall/config.yaml
+python -u ../../../tools/trainer.py -m recall/config.yaml
 # 静态图训练recall模型
-python3 -u ../../../tools/static_trainer.py -m recall/config.yaml
+python -u ../../../tools/static_trainer.py -m recall/config.yaml
 # 动态图训练rank模型
-python3 -u ../../../tools/trainer.py -m rank/config.yaml
+python -u ../../../tools/trainer.py -m rank/config.yaml
 # 静态图训练rank模型
-python3 -u ../../../tools/static_trainer.py -m rank/config.yaml
+python -u ../../../tools/static_trainer.py -m rank/config.yaml
 ```
 
 ### 模型测试
 ```shell
 # 动态图预测recall模型
-python3 -u infer.py -m recall/config.yaml
+python -u infer.py -m recall/config.yaml
 # 静态图预测recall模型
-python3 -u static_infer.py -m recall/config.yaml
+python -u static_infer.py -m recall/config.yaml
 # 动态图预测rank模型
-python3 -u infer.py -m rank/config.yaml
+python -u infer.py -m rank/config.yaml
 # 静态图预测rank模型
-python3 -u static_infer.py -m rank/config.yaml
+python -u static_infer.py -m rank/config.yaml
 ```
 
 ### 测试结果解析
 ```shell
 # recall模型的测试结果解析
-python3 parse.py recall_offline recall_infer_result
+python parse.py recall_offline recall_infer_result
 # rank模型的测试结果解析
-python3 parse.py rank_offline rank_infer_result
+python parse.py rank_offline rank_infer_result
 ```
