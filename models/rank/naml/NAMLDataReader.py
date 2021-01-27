@@ -56,7 +56,7 @@ class RecDataset(IterableDataset):
                         line[3] = line[3][:self.article_content_size]
                     self.article_map_title[id] = line[2]
                     self.article_map_content[id] = line[3]
-                    print(id)
+                    #print(id)
                 #cateId,subCateId    title    content
 
     def __iter__(self):

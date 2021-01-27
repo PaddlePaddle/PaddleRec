@@ -6,25 +6,7 @@ import paddle.fluid as fluid
 import numpy as np
 
 class NAMLLayer(nn.Layer):
-    def load_word_embedding(self,file = "data/sample_data/embedding.txt"):
-        # if file != None:
-        #     word2vec_embedding = []
-        #     word_size = 0
-        #     with open(file, "r") as rf:
-        #         for l in rf:
-        #             nums = l.split('\t')[-1]
-        #             word2vec_embedding.append([float(x) for x in nums.split(" ")])
-        #             word_size += 1
-        #     print(word_size)
-        #     print(self.word_dict_size)
-        #     word2vec_embedding = np.array(word2vec_embedding)
-        #     self.word2vec_embedding = paddle.nn.Embedding(
-        #         self.word_dict_size + 1,
-        #         self.word_dimension,
-        #         weight_attr=paddle.ParamAttr(
-        #             trainable=True,
-        #             initializer=fluid.initializer.NumpyArrayInitializer(word2vec_embedding)))
-        #     return
+    def load_word_embedding(self):
         self.word2vec_embedding = paddle.nn.Embedding(
             self.word_dict_size + 1,
             self.word_dimension,
@@ -61,33 +43,6 @@ class NAMLLayer(nn.Layer):
         # [b,conv_out]
         title_emb = self.title_attention(title_emb)
         content_emb = self.content_attention(content_emb)
-        # # [batch, title_size, project_size]
-        # title_emb_projection = paddle.tanh(self.title_attention_projection(title_emb))
-        # content_emb_projection = paddle.tanh(self.content_attention_projection(content_emb))
-        # #[batch, title_size,1]
-        # # [batch, content_size,1]
-        # title_attention_list = paddle.matmul(title_emb_projection, self.title_attention_mul_vec)
-        # content_attention_list = paddle.matmul(content_emb_projection, self.content_attention_mul_vec)
-        # #[batch, title_size]
-        # # [batch, content_size]
-        # title_attention_list = paddle.squeeze(title_attention_list,[2])
-        # content_attention_list = paddle.squeeze(content_attention_list, [2])
-        # title_attention_list = paddle.nn.functional.softmax(title_attention_list)
-        # content_attention_list = paddle.nn.functional.softmax(content_attention_list)
-        #
-        # #[batch, 1,title_size]
-        # # [batch, 1,content_size]
-        # title_attention_list = paddle.reshape(title_attention_list, [-1, 1,self.article_title_size])
-        # content_attention_list = paddle.reshape(content_attention_list, [-1, 1,self.article_content_size])
-        #
-        # # [batch, 1,conv_out_channel_size]
-        # # [batch, 1,conv_out_channel_size]
-        # title_emb = paddle.matmul(title_attention_list, title_emb)
-        # content_emb = paddle.matmul(content_attention_list, content_emb)
-        #
-        # # [batch, conv_out_channel_size]
-        # title_emb = paddle.reshape(title_emb, [-1, self.conv_out_channel_size])
-        # content_emb = paddle.reshape(content_emb, [-1, self.conv_out_channel_size])
 
         # [b,conv_out * 4]
         vec = paddle.concat([title_emb, content_emb, category, sub_category],axis=-1)
