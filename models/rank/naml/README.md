@@ -41,6 +41,11 @@
 }
 ```
 
+naml 实现了一个news-encoder, 通过text卷积提取文章特征并采用attention机制把特征压缩为一个n维向量(article embedding)，
+n篇用户浏览过的文章的article embedding向量组将再次通过attention机制被进一步压缩成最终的user-behavior-embedding（包含了用户行为特征）
+此user-behavior-embedding 和 一篇新文章的article embedding 的向量内积则表示用户对此文章的喜好程度。
+
+
 ## 数据准备
 此模型训练和预测涉及用户浏览文章历史，以及文章的具体信息，需要先收集所有训练和预测数据里出现过的文章，
 每篇文章用一行表示，存放在一个或多个以article{number}.txt为后缀的文件里，如article.txt, article3.txt
@@ -91,10 +96,11 @@ python3 -u ../../../tools/infer.py -m config.yaml
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
 同时，我们处理好了一份中等规模的microsoft news dataset的数据，可以从https://paddlerec.bj.bcebos.com/datasets/MIND/bigdata.zip下载，
-之后解压到data目录,
-运行
+之后解压到 ../../../datasets/MIND目录,也可以直接运行../../../datasets/MIND目录下的run.sh生成训练，测试数据
+
+运行方式
 ```
-python3 -u ../../../tools/trainer.py -m config.yaml
+python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 ```
 以下为训练2个epoch的结果
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
@@ -103,11 +109,8 @@ python3 -u ../../../tools/trainer.py -m config.yaml
 
 预测
 ```
-python3 -u ../../../tools/infer.py -m config.yaml
+python3 -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
-预测top1 acc:0.427
-2021-01-27 10:58:27,084 - INFO - epoch: 1 done, acc: 0.427140, epoch time: 126.27 s
-
-
-
+期待运行结果如下
+INFO - epoch: 1 done, acc: 0.427140, epoch time: 126.27 s
