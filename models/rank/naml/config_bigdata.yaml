@@ -13,20 +13,20 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/bigdata/train"
+  train_data_dir: "../../../datasets/MIND/data/train"
   train_reader_path: "NAMLDataReader" # importlib format
-  use_gpu: False
+  use_gpu: True
   train_batch_size: 50
-  epochs: 30
+  epochs: 2
   print_interval: 2
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model"
   infer_batch_size: 10
   infer_reader_path: "NAMLDataReader" # importlib format
-  test_data_dir: "data/bigdata/test"
+  test_data_dir:  "../../../datasets/MIND/data/test"
   infer_load_path: "output_model"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 1
 
 # hyper parameters of user-defined network
 hyper_parameters:

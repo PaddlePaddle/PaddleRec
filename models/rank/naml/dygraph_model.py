@@ -23,17 +23,21 @@ import net
 class DygraphModel():
     # define model
     def create_model(self, config):
-        article_content_size = config.get("hyper_parameters.article_content_size")
+        article_content_size = config.get(
+            "hyper_parameters.article_content_size")
         article_title_size = config.get("hyper_parameters.article_title_size")
         browse_size = config.get("hyper_parameters.browse_size")
-        neg_condidate_sample_size = config.get("hyper_parameters.neg_condidate_sample_size")
+        neg_condidate_sample_size = config.get(
+            "hyper_parameters.neg_condidate_sample_size")
         word_dimension = config.get("hyper_parameters.word_dimension")
         category_size = config.get("hyper_parameters.category_size")
         sub_category_size = config.get("hyper_parameters.sub_category_size")
         cate_dimension = config.get("hyper_parameters.category_dimension")
         word_dict_size = config.get("hyper_parameters.word_dict_size")
-        return net.NAMLLayer(article_content_size, article_title_size, browse_size, neg_condidate_sample_size,
-                             word_dimension, category_size, sub_category_size, cate_dimension, word_dict_size)
+        return net.NAMLLayer(article_content_size, article_title_size,
+                             browse_size, neg_condidate_sample_size,
+                             word_dimension, category_size, sub_category_size,
+                             cate_dimension, word_dict_size)
 
     # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch, config):
@@ -42,7 +46,10 @@ class DygraphModel():
 
     # define loss function by predicts and label
     def create_loss(self, raw_pred, label):
-        cost = paddle.nn.functional.cross_entropy(input=raw_pred, label=paddle.cast(label, "float32"), soft_label=True)
+        cost = paddle.nn.functional.cross_entropy(
+            input=raw_pred,
+            label=paddle.cast(label, "float32"),
+            soft_label=True)
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
@@ -63,11 +70,13 @@ class DygraphModel():
 
     # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,config)
+        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
+                                                                config)
 
         raw = dy_model(sparse_tensor, None)
 
-        loss = paddle.nn.functional.cross_entropy(input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
+        loss = paddle.nn.functional.cross_entropy(
+            input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
         correct = metrics_list[0].compute(raw, labels)
         metrics_list[0].update(correct)
         loss = paddle.mean(loss)
@@ -81,4 +90,5 @@ class DygraphModel():
         raw = paddle.nn.functional.softmax(raw)
         correct = metrics_list[0].compute(raw, label)
         metrics_list[0].update(correct)
+
         return metrics_list, None
