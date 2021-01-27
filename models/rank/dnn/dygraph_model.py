@@ -23,26 +23,35 @@ import net
 class DygraphModel():
     # define model
     def create_model(self, config):
-        article_content_size = config.get("hyper_parameters.article_content_size")
-        article_title_size = config.get("hyper_parameters.article_title_size")
-        browse_size = config.get("hyper_parameters.browse_size")
-        neg_condidate_sample_size = config.get("hyper_parameters.neg_condidate_sample_size")
-        word_dimension = config.get("hyper_parameters.word_dimension")
-        category_size = config.get("hyper_parameters.category_size")
-        sub_category_size = config.get("hyper_parameters.sub_category_size")
-        cate_dimension = config.get("hyper_parameters.category_dimension")
-        word_dict_size = config.get("hyper_parameters.word_dict_size")
-        return net.NAMLLayer(config, article_content_size, article_title_size, browse_size, neg_condidate_sample_size,
-                             word_dimension, category_size, sub_category_size, cate_dimension, word_dict_size)
+        sparse_feature_number = config.get(
+            "hyper_parameters.sparse_feature_number")
+        sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
+        fc_sizes = config.get("hyper_parameters.fc_sizes")
+        sparse_fea_num = config.get('hyper_parameters.sparse_fea_num')
+        dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
+        sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
+
+        dnn_model = net.DNNLayer(sparse_feature_number, sparse_feature_dim,
+                                 dense_feature_dim, sparse_input_slot - 1,
+                                 fc_sizes)
+        return dnn_model
 
     # define feeds which convert numpy of batch data to paddle.tensor
-    def create_feeds(self, batch, config):
-        label = batch[0]
-        return label, batch[1:], None
+    def create_feeds(self, batch_data, config):
+        dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
+        sparse_tensor = []
+        for b in batch_data[:-1]:
+            sparse_tensor.append(
+                paddle.to_tensor(b.numpy().astype('int64').reshape(-1, 1)))
+        dense_tensor = paddle.to_tensor(batch_data[-1].numpy().astype(
+            'float32').reshape(-1, dense_feature_dim))
+        label = sparse_tensor[0]
+        return label, sparse_tensor[1:], dense_tensor
 
     # define loss function by predicts and label
-    def create_loss(self, raw_pred, label):
-        cost = paddle.nn.functional.cross_entropy(input=raw_pred, label=paddle.cast(label, "float32"), soft_label=True)
+    def create_loss(self, raw_predict_2d, label):
+        cost = paddle.nn.functional.cross_entropy(
+            input=raw_predict_2d, label=label)
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
@@ -56,28 +65,32 @@ class DygraphModel():
     # define metrics such as auc/acc
     # multi-task need to define multi metric
     def create_metrics(self):
-        metrics_list_name = ["acc"]
-        auc_metric = paddle.metric.Accuracy()
+        metrics_list_name = ["auc"]
+        auc_metric = paddle.metric.Auc("ROC")
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
     # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,config)
+        label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
+                                                               config)
 
-        raw = dy_model(sparse_tensor, None)
+        raw_pred_2d = dy_model.forward(sparse_tensor, dense_tensor)
+        loss = self.create_loss(raw_pred_2d, label)
+        # update metrics
+        predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
+        metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
 
-        loss = paddle.nn.functional.cross_entropy(input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
-        correct = metrics_list[0].compute(raw, labels)
-        metrics_list[0].update(correct)
-        loss = paddle.mean(loss)
+        # print_dict format :{'loss': loss}
         print_dict = None
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
-        raw = dy_model(sparse_tensor, None)
-        correct = metrics_list[0].compute(raw, label)
-        metrics_list[0].update(correct)
+
+        raw_pred_2d = dy_model.forward(sparse_tensor, dense_tensor)
+        # update metrics
+        predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
+        metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
         return metrics_list, None
