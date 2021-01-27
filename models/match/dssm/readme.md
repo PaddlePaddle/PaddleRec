@@ -64,14 +64,14 @@ os : windows/linux/macos
 # 进入模型目录
 # cd models/match/dssm # 在任意目录均可运行
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
-python3 -u ../../../tools/infer.py -m config.yaml 
+python -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python3 -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 静态图预测
-python3 -u ../../../tools/static_infer.py -m config.yaml 
+python -u ../../../tools/static_infer.py -m config.yaml 
 ``` 
 
 ## 模型组网
