@@ -64,12 +64,18 @@ class RecDataset(IterableDataset):
         for file in self.article_file_list:
             with open(file, "r") as rf:
                 for l in rf:
-                    line = l.strip().split('\t')
-                    id = line[0]
+                    line_x = [x.strip() for x in l.split('\t')]
+                    id = line_x[0]
                     #line 0 cate   1:subcate,  2:title, 3 content;
-                    line = [[int(line[1])], [int(line[2])],
-                            [int(t) for t in line[3].split(" ")],
-                            [int(t) for t in line[4].split(" ")]]
+                    line = [[int(line_x[1])], [int(line_x[2])]]
+                    if len(line_x[3]) == 0:
+                        line.append([])
+                    else:
+                        line.append([int(t) for t in line_x[3].split(" ")])
+                    if len(line_x[4]) == 0:
+                        line.append([])
+                    else:
+                        line.append([int(t) for t in line_x[4].split(" ")])
                     line[2] += [self.word_dict_size] * (
                         self.article_title_size - len(line[2]))
                     line[3] += [self.word_dict_size] * (
