@@ -133,8 +133,8 @@ sh run.sh
 ```bash
 cd - # 切回模型目录
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
-python3 -u infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python -u infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 ```
 
 ## 进阶使用

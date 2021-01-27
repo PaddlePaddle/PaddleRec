@@ -9,8 +9,8 @@
             ├── sample_train.txt #训练数据样例
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── agnews_reader.py #数据读取程序
 ├── static_model.py # 构建静态图
@@ -35,7 +35,7 @@
 ## 模型简介
 `CTR(Click Through Rate)`，即点击率，是“推荐系统/计算广告”等领域的重要指标，对其进行预估是商品推送/广告投放等决策的基础。本模型实现了下述论文中提出的DNN模型：
 
-```text
+```
 @inproceedings{
   title={GateNet: Gating-Enhanced Deep Network for Click-Through Rate Prediction},
   author={Huifeng Guo, Ruiming Tang, Yunming Ye, Zhenguo Li and Xiuqiang He},
@@ -65,16 +65,16 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在gatednn模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-cd models/rank/gatednn # 在任意目录均可运行
+# cd models/rank/gatednn # 在任意目录均可运行
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
-python3 -u ../../../tools/infer.py -m config.yaml 
+python -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python3 -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 静态图预测
-python3 -u ../../../tools/static_infer.py -m config.yaml 
+python -u ../../../tools/static_infer.py -m config.yaml 
 ```
 
 ## 模型组网
@@ -153,16 +153,16 @@ GATE-DNN模型主要组成是一个`Embedding`层,三个`FC`层，以及相应�
 
 1. 确认您当前所在目录为PaddleRec/models/rank/gateDnn  
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Criteo全量数据集，并解压到指定文件夹。
-``` 
+```bash
 cd ../../../datasets/criteo
 sh run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
-```
+```bash
 cd - # 切回模型目录
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
-python3 -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 ```
 
 ## 进阶使用
