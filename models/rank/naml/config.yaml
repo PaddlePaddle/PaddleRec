@@ -17,14 +17,14 @@ runner:
   train_reader_path: "NAMLDataReader" # importlib format
   use_gpu: False
   train_batch_size: 10
-  epochs: 2000
+  epochs: 20
   print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
+  model_save_path: "output_model_all"
   infer_batch_size: 2
   infer_reader_path: "NAMLDataReader" # importlib format
   test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model"
+  infer_load_path: "output_model_all"
   infer_start_epoch: 0
   infer_end_epoch: 3
 
@@ -45,4 +45,3 @@ hyper_parameters:
   sub_category_size: 10
   category_dimension: 32
   word_dict_size: 101
-  fc_sizes: [512, 256, 128, 32]

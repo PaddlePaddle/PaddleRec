@@ -26,7 +26,7 @@ runner:
   test_data_dir:  "../../../datasets/MIND/data/test"
   infer_load_path: "output_model"
   infer_start_epoch: 0
-  infer_end_epoch: 1
+  infer_end_epoch: 2
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -45,4 +45,3 @@ hyper_parameters:
   sub_category_size: 260
   category_dimension: 32
   word_dict_size: 19200
-  fc_sizes: [512, 256, 128, 32]
