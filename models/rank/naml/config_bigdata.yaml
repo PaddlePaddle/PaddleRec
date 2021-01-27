@@ -15,16 +15,16 @@
 runner:
   train_data_dir: "../../../datasets/MIND/data/train"
   train_reader_path: "NAMLDataReader" # importlib format
-  use_gpu: True
+  use_gpu: False
   train_batch_size: 50
   epochs: 2
-  print_interval: 2
+  print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model"
+  model_save_path: "output_model_all"
   infer_batch_size: 10
   infer_reader_path: "NAMLDataReader" # importlib format
   test_data_dir:  "../../../datasets/MIND/data/test"
-  infer_load_path: "output_model"
+  infer_load_path: "output_model_all"
   infer_start_epoch: 0
   infer_end_epoch: 2
 
@@ -42,6 +42,6 @@ hyper_parameters:
   neg_condidate_sample_size: 4
   word_dimension: 60
   category_size: 18
-  sub_category_size: 260
+  sub_category_size: 285
   category_dimension: 32
-  word_dict_size: 19200
+  word_dict_size: 27756
