@@ -75,46 +75,43 @@
 
 
 
-
-
 <h2 align="center">快速使用</h2>
 
 ### 环境要求
-* Python 2.7/ 3.5 / 3.6 / 3.7
+* Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用pytho3.7，示例中的python默认表示python3.7
 * PaddlePaddle >=2.0 
 * 操作系统: Windows/Mac/Linux
+
 
   > Windows下PaddleRec目前仅支持单机训练，分布式训练建议使用Linux环境
   
 ### 安装Paddle
 
-- pip安装cpu
+- gpu环境pip安装
   ```bash
-  python -m pip install paddlepaddle==2.0.0rc1 -i https://mirror.baidu.com/pypi/simple 
+  python -m pip install paddlepaddle-gpu==2.0.0 
   ```
-- pip安装gpu
+- cpu环境pip安装
   ```bash
-  python -m pip install paddlepaddle-gpu==2.0.0rc1 -i https://mirror.baidu.com/pypi/simple 
+  python -m pip install paddlepaddle # gcc8 
   ```
-更多版本下载可参考paddle官网[下载安装](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/install/install_Linux.html)
+更多版本下载可参考paddle官网[下载安装](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/install/index_cn.html)
 
 ### 下载PaddleRec
 
-- github 下载
-    ```bash
-    git clone https://github.com/PaddlePaddle/PaddleRec/
-    cd PaddleRec
-    ```
+```bash
+git clone https://github.com/PaddlePaddle/PaddleRec/
+cd PaddleRec
+```
 
 ### 快速运行
 
 我们以排序模型中的`dnn`模型为例介绍PaddleRec的一键启动。训练数据来源为[Criteo数据集](https://www.kaggle.com/c/criteo-display-ad-challenge/)，我们从中截取了100条数据：
 
 ```bash
-cd models/rank/dnn
-python -u train.py -m config.yaml 
+python -u tools/trainer.py -m models/rank/dnn/config.yaml # 动态图训练 
+python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训练
 ```
-
 
 <h2 align="center">帮助文档</h2>
 
@@ -122,6 +119,17 @@ python -u train.py -m config.yaml
 * [推荐系统介绍](doc/rec_background.md)
 * [分布式深度学习介绍](doc/ps_background.md)
 
+
+### 入门教程
+* [PaddleRec功能介绍](doc/introduction.md)
+* [动态图训练](doc/dygraph_mode.md)
+* [静态图训练](doc/static_mode.md)
+* [分布式训练](doc/fleet_mode.md)
+
+### 进阶教程
+* [自定义Reader](doc/custom_reader.md)
+* [自定义模型](doc/model_develop.md)
+* [yaml配置说明](doc/yaml.md)
 * [Benchmark](doc/benchmark.md)
 
 ### FAQ
@@ -139,6 +147,7 @@ python -u train.py -m config.yaml
 <p>
 
 ### 版本历史
+- 2021.01.29 - PaddleRec v2.0.0
 - 2020.10.12 - PaddleRec v1.8.5
 - 2020.06.17 - PaddleRec v0.1.0
 - 2020.06.03 - PaddleRec v0.0.2
