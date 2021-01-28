@@ -1,7 +1,7 @@
 set -v
-wget https://paddlerec.bj.bcebos.com/datasets%2FMIND%2FMINDlarge_train.zip
-wget https://paddlerec.bj.bcebos.com/datasets%2FMIND%2FMINDlarge_dev.zip
-wget https://paddlerec.bj.bcebos.com/datasets%2FMIND%2FMINDlarge_test.zip
+#wget https://paddlerec.bj.bcebos.com/datasets%2FMIND%2FMINDlarge_train.zip
+#wget https://paddlerec.bj.bcebos.com/datasets%2FMIND%2FMINDlarge_dev.zip
+#wget https://paddlerec.bj.bcebos.com/datasets%2FMIND%2FMINDlarge_test.zip
 unzip datasets%2FMIND%2FMINDlarge_train.zip  -d ./train_raw
 unzip datasets%2FMIND%2FMINDlarge_dev.zip  -d ./dev_raw
 unzip datasets%2FMIND%2FMINDlarge_test.zip  -d ./test_raw
