@@ -17,7 +17,7 @@ runner:
   train_reader_path: "NAMLDataReader" # importlib format
   use_gpu: False
   train_batch_size: 50
-  epochs: 2
+  epochs: 10
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all"
@@ -26,7 +26,7 @@ runner:
   test_data_dir:  "../../../datasets/MIND/data/test"
   infer_load_path: "output_model_all"
   infer_start_epoch: 0
-  infer_end_epoch: 2
+  infer_end_epoch: 10
 
 # hyper parameters of user-defined network
 hyper_parameters:
