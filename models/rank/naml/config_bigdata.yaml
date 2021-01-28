@@ -15,7 +15,7 @@
 runner:
   train_data_dir: "../../../datasets/MIND/data/train"
   train_reader_path: "NAMLDataReader" # importlib format
-  use_gpu: True
+  use_gpu: False
   train_batch_size: 50
   epochs: 2
   print_interval: 10
@@ -41,7 +41,7 @@ hyper_parameters:
   browse_size: 30
   neg_condidate_sample_size: 4
   word_dimension: 60
-  category_size: 18
-  sub_category_size: 285
+  category_size: 19
+  sub_category_size: 294
   category_dimension: 32
-  word_dict_size: 27756
+  word_dict_size: 31440
