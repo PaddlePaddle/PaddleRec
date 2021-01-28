@@ -121,7 +121,7 @@ python -u static_infer.py -m config.yaml
 在全量数据下模型的指标如下：
 | 模型 | acc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| dnn | 0.579 | 100 | 5 | -- |
+| word2vec | 0.579 | 100 | 5 | -- |
 
 1. 确认您当前所在目录为PaddleRec/models/recall/word2vec 
 2. 进入paddlerec/datasets/one_billion目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。
