@@ -1,20 +1,13 @@
 # PaddleRec config.yaml配置说明
 
-## 全局变量
-
- |   名称    |         类型          |                         取值                          | 是否必须 |                      作用描述                      |
- | :-------: | :-------------------: | :---------------------------------------------------: | :------: | :------------------------------------------------: |
- | workspace |        string         |      绝对路径 或 paddlerec.models.{方向}.{模型}       |    是    |           指定model/reader/data所在位置            |
- |   mode    | string / list[string] | string：单个runner的名称 / list：多个runner名称的列表 |    是    |             指定当次运行使用哪些runner             |
- |   debug   |         bool          |                     True / False                      |    否    | 当dataset.mode=QueueDataset时，开启op耗时debug功能 |
-
-
+目前支持runner和hyper_parameters的读取。
 
 ## runner变量
 
 |             名称              |     类型     |                           取值                            | 是否必须 |                               作用描述                               |
 | :---------------------------: | :----------: | :-------------------------------------------------------: | :------: | :------------------------------------------------------------------: |
-|             name              |    string    |                           任意                            |    是    |                            指定runner名称                            |
+|             train_data_dir              |    string    |                           任意                            |    是    |                            指定训练数据目录                            |
+|             train_reader_path              |    string    |                           任意                            |    是    |                            指定训练数据目录                            |
 |             class             |    string    | train(默认) / infer / local_cluster_train / cluster_train |    是    |           指定运行runner的类别（单机/分布式， 训练/预测）            |
 |            device             |    string    |                      cpu(默认) / gpu                      |    否    |                             程序执行设备                             |
 |          fleet_mode           |    string    |               ps(默认) / pslib / collective               |    否    |                            分布式运行模式                            |
