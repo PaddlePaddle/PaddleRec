@@ -86,7 +86,7 @@ def main(args):
 
     if reader_type == 'QueueDataset':
         dataset, file_list = get_reader(input_data, config)
-    elif reader_type == 'Dataloader':
+    elif reader_type == 'DataLoader':
         train_dataloader = create_data_loader(config=config, place=place)
 
     for epoch_id in range(last_epoch_id + 1, epochs):
@@ -94,7 +94,7 @@ def main(args):
         epoch_begin = time.time()
         if use_auc:
             reset_auc()
-        if reader_type == 'Dataloader':
+        if reader_type == 'DataLoader':
             fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
                                                input_data_names, fetch_vars,
                                                exe, config)
