@@ -56,11 +56,8 @@ with open("article.txt", "w") as ar:
 
 print(inx)
 print(len(article_map))
-file_base = ["train", "dev", "test"]
-files = [
-    "train_raw/behaviors.tsv", "dev_raw/behaviors.tsv",
-    "test_raw/behaviors.tsv"
-]
+file_base = ["train", "dev"]
+files = ["train_raw/behaviors.tsv", "dev_raw/behaviors.tsv"]
 for base, aim in zip(files, file_base):
     with open(aim + "/browse.txt", "w") as w1:
         print("generate " + aim)
@@ -91,3 +88,25 @@ for base, aim in zip(files, file_base):
 
                 line = visit + "\t" + pos_sample + "\t" + neg_sample + "\n"
                 w1.write(line)
+
+
+def remove(str, sp1, sp2):
+    l = list(str)
+    index2 = -1
+    for i in range(len(l) - 1, -1, -1):
+        if l[i] == sp1:
+            index2 = i
+            break
+    if index2 == -1:
+        return '', False
+    l[index2] = sp2
+    return ''.join(l), True
+
+
+with open("test_raw/behaviors.tsv", "r") as r:
+    with open("test/browse.txt", "w") as w:
+        for l in r:
+            x, y = l.split('\t')[3:5]
+            line2, stat = remove(x, ' ', '\t')
+            if stat == True:
+                w.write(line2 + "\t" + y)
