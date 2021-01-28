@@ -41,7 +41,7 @@ hyper_parameters:
   browse_size: 30
   neg_condidate_sample_size: 4
   word_dimension: 60
+  category_dimension: 32
   category_size: 19
   sub_category_size: 294
-  category_dimension: 32
   word_dict_size: 31440
