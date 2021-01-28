@@ -94,7 +94,6 @@ def main(args):
         epoch_begin = time.time()
         if use_auc:
             reset_auc()
-
         if reader_type == 'DataLoader':
             fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
                                                input_data_names, fetch_vars,

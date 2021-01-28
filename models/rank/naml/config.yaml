@@ -12,31 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# workspace
-#workspace: "models/rank/dnn"
-
-
 runner:
   train_data_dir: "data/sample_data/train"
-  train_reader_path: "criteo_reader" # importlib format
+  train_reader_path: "NAMLDataReader" # importlib format
   use_gpu: False
-  use_auc: True
-  train_batch_size: 2
-  epochs: 3
+  train_batch_size: 10
+  epochs: 20
   print_interval: 2
-  model_save_path: "output_model_dnn"
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_all"
   infer_batch_size: 2
-  infer_reader_path: "criteo_reader" # importlib format
+  infer_reader_path: "NAMLDataReader" # importlib format
   test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model_dnn"
+  infer_load_path: "output_model_all"
   infer_start_epoch: 0
   infer_end_epoch: 3
-
-  # distribute_config
-  sync_mode: "async"
-  split_file_list: False
-  thread_num: 1
-
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -46,9 +36,12 @@ hyper_parameters:
     learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
-  sparse_inputs_slots: 27
-  sparse_feature_number: 1000001
-  sparse_feature_dim: 9
-  dense_input_dim: 13
-  fc_sizes: [512, 256, 128, 32]
-  distributed_embedding: 0
+  article_content_size: 30
+  article_title_size: 10
+  browse_size: 10
+  neg_condidate_sample_size: 4
+  word_dimension: 30
+  category_size: 4
+  sub_category_size: 10
+  category_dimension: 32
+  word_dict_size: 101

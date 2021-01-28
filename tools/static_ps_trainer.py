@@ -104,7 +104,7 @@ class Main(object):
         fleet.init_worker()
 
         save_model_path = self.config.get("runner.model_save_path")
-        if save_model_path and not os.path.exists(save_model_path):
+        if save_model_path and (not os.path.exists(save_model_path)):
             os.makedirs(save_model_path)
 
         reader_type = self.config.get("runner.reader_type", None)

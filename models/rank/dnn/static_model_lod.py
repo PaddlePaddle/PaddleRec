@@ -52,7 +52,7 @@ class StaticModel():
 
         sparse_input_ids = [
             paddle.static.data(
-                name="C" + str(i), shape=[None, 1], dtype="int64")
+                name="C" + str(i), shape=[None, 1], lod_level=1, dtype="int64")
             for i in range(1, self.sparse_inputs_slots)
         ]
 
@@ -68,11 +68,40 @@ class StaticModel():
         self.dense_input = input[-1]
         sparse_number = self.sparse_inputs_slots - 1
 
-        dnn_model = DNNLayer(self.sparse_feature_number,
-                             self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes)
+        def embedding_layer(input):
+            if self.distributed_embedding:
+                emb = fluid.contrib.layers.sparse_embedding(
+                    input=input,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=fluid.ParamAttr(
+                        name="SparseFeatFactors",
+                        initializer=fluid.initializer.Uniform()))
+            else:
+                paddle.static.Print(input)
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+                emb = paddle.fluid.layers.embedding(
+                    input=input,
+                    is_sparse=True,
+                    is_distributed=self.is_distributed,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=paddle.fluid.ParamAttr(
+                        name="SparseFeatFactors",
+                        initializer=paddle.fluid.initializer.Uniform()))
+            emb_sum = paddle.fluid.layers.sequence_pool(
+                input=emb, pool_type='sum')
+            return emb_sum
+
+        sparse_embs = list(map(embedding_layer, self.sparse_inputs))
+
+        dnn_model = StaticDNNLayer(
+            self.sparse_feature_number, self.sparse_feature_dim,
+            self.dense_input_dim, sparse_number, self.fc_sizes)
+
+        raw_predict_2d = dnn_model(sparse_embs, self.dense_input)
 
         predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 
