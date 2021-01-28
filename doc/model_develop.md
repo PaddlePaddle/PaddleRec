@@ -1,163 +1,68 @@
 # 如何添加自定义模型
 
-当您希望开发自定义模型时，需要继承模型的模板基类，并实现三个必要的方法`init_hyper_parameter`,`intput_data`,`net`
+## 动态图模型
 
-并按照以下规范添加代码。
+Tips1: 必须在模型目录实现dygraph_model.py中的class DygraphModel，不能更改py文件名也不能更改class类名。
 
-### 基类的继承
+Tips2: 必须实现方法create_model, create_optimizer, create_metrics, train_forward, infer_forward。
 
-继承`paddlerec.core.model`的ModelBase，命名为`Class Model`
+Tips3: create_feeds和create_loss由train_forward和infer_forward内部调用，可以自定义方法名称。
 
-```python
-from paddlerec.core.model import ModelBase
+### create_model
 
+返回模型的class, 一般是调用net.py中定义的组网。
 
-class Model(ModelBase):
+### create_feeds
 
-    # 构造函数无需显式指定
-    # 若继承，务必调用基类的__init__方法
-    def __init__(self, config):
-        ModelBase.__init__(self, config)
-        # ModelBase的__init__方法会调用_init_hyper_parameter()
-    
-```
+解析batch_data, 返回paddle的tensor格式，在dataloader中yield是一条数据，注意这里返回的是Batch数据。
 
-### 超参的初始化
+Tips: 因为动态图不需要占位符data, 这里实际返回的就是模型的输入tensor。
 
-继承并实现`_init_hyper_parameter`方法(必要)，可以在该方法中，从`yaml`文件获取超参或进行自定义操作。如下面的示例：
+### create_loss
 
-所有的envs调用接口在_init_hyper_parameters()方法中实现，同时类成员也推荐在此做声明及初始化。
+由于采用了动静一致的设计理念和方便计算指标的独立，将loss部分单独抽出来实现在这个函数中，也可以直接在train_forward中定义loss部分
 
-```python
- def _init_hyper_parameters(self):
-    self.feature_size = envs.get_global_env(
-        "hyper_parameters.feature_size")
-    self.expert_num = envs.get_global_env("hyper_parameters.expert_num")
-    self.gate_num = envs.get_global_env("hyper_parameters.gate_num")
-    self.expert_size = envs.get_global_env("hyper_parameters.expert_size")
-    self.tower_size = envs.get_global_env("hyper_parameters.tower_size")
-```
+### create_optimizer
 
+定义优化器, 这里由用户自定义优化器。
 
-### 数据输入的定义
-继承并实现`input_data`方法(非必要)
+### create_metrics
 
+定义评估指标，返回打印的key值和声明的指标
 
-#### 直接使用基类的数据读取方法
+Tips: 返回的指标必须是paddle.metric中的指标
 
-`ModelBase`中的input_data默认实现为slot_reader，在`config.yaml`中分别配置`reader.sparse_slot`及`reader.dense_slot`选项实现`slog:feasign`模式的数据读取。
+### train_forward
 
-> Slot : Feasign 是什么？
->
-> Slot直译是槽位，在Rec工程中，是指某一个宽泛的特征类别，比如用户ID、性别、年龄就是Slot，Feasign则是具体值，比如：12345，男，20岁。
-> 
-> 在实践过程中，很多特征槽位不是单一属性，或无法量化并且离散稀疏的，比如某用户兴趣爱好有三个：游戏/足球/数码，且每个具体兴趣又有多个特征维度，则在兴趣爱好这个Slot兴趣槽位中，就会有多个Feasign值。
->
-> PaddleRec在读取数据时，每个Slot ID对应的特征，支持稀疏，且支持变长，可以非常灵活的支持各种场景的推荐模型训练。
+自定义训练阶段，一般包含数据读入，计算loss损失，更新指标
 
-使用示例请参考`rank.dnn`模型。
+Tips: 返回3个值，第一个必须是loss, 第二个是metric_list，可以为空list。第三个是想间隔打印的tensor dict, 可以返回None。
 
-#### 自定义数据输入
+### infer_forward
+
+除了不返回loss之外其他和train_forward相同，支持和train阶段不同的组网。
 
 
-如果您不想使用`slot:feasign`模式，则需继承并实现`input_data`接口，接口定义：`def input_data(self, is_infer=False, **kwargs)`
 
-使用示例如下：
+## 静态图模型
 
-```python
-def input_data(self, is_infer=False, **kwargs):
-    ser_slot_names = fluid.data(
-        name='user_slot_names',
-        shape=[None, 1],
-        dtype='int64',
-        lod_level=1)
-    item_slot_names = fluid.data(
-        name='item_slot_names',
-        shape=[None, self.item_len],
-        dtype='int64',
-        lod_level=1)
-    lens = fluid.data(name='lens', shape=[None], dtype='int64')
-    labels = fluid.data(
-        name='labels',
-        shape=[None, self.item_len],
-        dtype='int64',
-        lod_level=1)
- 
-    train_inputs = [user_slot_names] + [item_slot_names] + [lens] + [labels]
-    infer_inputs = [user_slot_names] + [item_slot_names] + [lens]
- 
-    if is_infer:
-        return infer_inputs
-    else:
-        return train_inputs
-```
+Tips1: 必须在模型目录实现static_model.py中的class StaticModel，不能更改py文件名也不能更改class类名。
 
-更多数据读取教程，请参考[自定义数据集及Reader](custom_reader.md)
+Tips2: 必须实现方法create_feeds, net, infer_net, create_optimizer
+
+### create_feeds
+
+静态图采用graph结构，需要用paddle.static.data作为数据的占位符。
+
+Tips1: 返回的feed_list的顺序必须和reader中yield的数据保持一致。
+
+Tips2: 变长数据可以用lod_level=1表示，具体可参考models/rank/dnn/static_model_lod.py
 
 
-### 组网的定义
+### net
 
-继承并实现`net`方法(必要)
+训练组网，请注意返回的是dict, 间隔打印。 key是打印的名称，value是对应的变量，
 
-- 接口定义`def net(self, inputs, is_infer=False)`
-- 自定义网络需在该函数中使用paddle组网，实现前向逻辑，定义网络的Loss及Metrics，通过`is_infer`判断是否为infer网络。
-- 我们强烈建议`train`及`infer`尽量复用相同代码，
-- `net`中调用的其他函数以下划线为头进行命名，封装网络中的结构模块，如`_sparse_embedding_layer(self)`。
-- `inputs`为`def input_data()`的输出，若使用`slot_reader`方式，inputs为占位符，无实际意义，通过以下方法拿到dense及sparse的输入
+### infer_net
 
-  ```python
-  self.sparse_inputs = self._sparse_data_var[1:]
-  self.dense_input = self._dense_data_var[0]
-  self.label_input = self._sparse_data_var[0]
-  ```
-
-可以参考官方模型的示例学习net的构造方法。
-
-除可以使用Paddle的Metrics接口外，PaddleRec也统一封装了一些常见的Metrics评价指标，并允许开发者定义自己的Metrics类，相关文件参考[Metrics开发文档](metrics.md)。
-
-## 如何运行自定义模型
-
-记录`model.py`,`config.yaml`及数据读取`reader.py`的文件路径，建议置于同一文件夹下，如`/home/custom_model`下，更改`config.yaml`中的配置选项
-
-1. 更改 workerspace为模型文件所在文件夹 
-```yaml
-workspace: "/home/custom_model"
-```
-
-2. 更改数据地址及读取reader地址
-```yaml
-dataset:
-- name: custom_model_train
-- data_path: "{workspace}/data/train" # or  "/home/custom_model/data/train"
-- data_converter: "{workspace}/reader.py" # or "/home/custom_model/reader.py"
-```
-
-3. 更改执行器的路径配置
-```yaml
-mode: train_runner
-
-runner:
-- name: train_runner
-  class: train
-  device: cpu
-  epochs: 10
-  save_checkpoint_interval: 2
-  save_inference_interval: 5
-  save_checkpoint_path: "{workspace}/increment" # or  "/home/custom_model/increment"
-  save_inference_path: "{workspace}/inference" # or  "/home/custom_model/inference"
-  print_interval: 10
-
-phase:
-- name: train
-  model: "{workspace}/model.py" # or "/home/custom_model/model"
-  dataset_name: custom_model_train
-  thread_num: 1
-```
-
-4. 使用paddlerec.run方法运行自定义模型
-
-```shell
-python -m paddlerec.run -m /home/custom_model/config.yaml 
-```
-
-以上~请开始享受你的推荐算法高效开发流程。如有任何问题，欢迎在[issue](https://github.com/PaddlePaddle/PaddleRec/issues)提出，我们会第一时间跟进解决。
+预测组网，如若和训练组网类似，可调用net部分。
