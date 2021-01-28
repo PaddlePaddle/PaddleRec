@@ -24,3 +24,5 @@ sh data_process.sh
  |[letor07](https://paddlerec.bj.bcebos.com/match_pyramid/match_pyramid_data.tar.gz)|LETOR是一套用于学习排名研究的基准数据集，其中包含标准特征、相关性判断、数据划分、评估工具和若干基线|[LETOR: Learning to Rank for Information Retrieval](https://www.microsoft.com/en-us/research/project/letor-learning-rank-information-retrieval/?from=http%3A%2F%2Fresearch.microsoft.com%2Fen-us%2Fum%2Fbeijing%2Fprojects%2Fletor%2F)|
  |[senti_clas](https://baidu-nlp.bj.bcebos.com/sentiment_classification-dataset-1.0.0.tar.gz)|情感倾向分析（Sentiment Classification，简称Senta）针对带有主观描述的中文文本，可自动判断该文本的情感极性类别并给出相应的置信度。情感类型分为积极、消极。情感倾向分析能够帮助企业理解用户消费习惯、分析热点话题和危机舆情监控，为企业提供有利的决策支持|--|
  |[one_billion](http://www.statmt.org/lm-benchmark/)|拥有十亿个单词基准，为语言建模实验提供标准的训练和测试|[One Billion Word Benchmark for Measuring Progress in Statistical Language Modeling](https://arxiv.org/abs/1312.3005)|
+ |[MIND](https://paddlerec.bj.bcebos.com/datasets/MIND/bigdata.zip)|MIND即MIcrosoft News Dataset的简写，MIND里的数据来自Microsoft News用户的行为日志。
+MIND的数据集里包含了1,000,000的用户以及这些用户与160,000的文章的交互行为。|[Microsoft(2020)](https://msnews.github.io)|
