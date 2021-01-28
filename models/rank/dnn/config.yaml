@@ -32,6 +32,11 @@ runner:
   infer_start_epoch: 0
   infer_end_epoch: 3
 
+  # distribute_config
+  sync_mode: "async"
+  split_file_list: False
+  thread_num: 1
+
 
 # hyper parameters of user-defined network
 hyper_parameters:
