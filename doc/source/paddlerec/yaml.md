@@ -1,4 +1,4 @@
-# PaddleRec config.yaml配置说明
+# yaml配置说明
 
 目前支持runner和hyper_parameters的读取。
 
