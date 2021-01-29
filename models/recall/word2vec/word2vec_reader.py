@@ -96,13 +96,16 @@ class RecDataset(IterableDataset):
                                                                   idx)
                         output = []
                         for context_id in context_word_ids:
-                            output.append(np.array([int(target_id)]))
-                            output.append(np.array([int(context_id)]))
+                            output.append(
+                                np.array([int(target_id)]).astype('int64'))
+                            output.append(
+                                np.array([int(context_id)]).astype('int64'))
 
                             neg_array = self.cs.searchsorted(
                                 np.random.sample(self.neg_num))
                             output.append(
-                                np.array([int(str(i)) for i in neg_array]))
+                                np.array([int(str(i))
+                                          for i in neg_array]).astype('int64'))
                             yield output
 
 
