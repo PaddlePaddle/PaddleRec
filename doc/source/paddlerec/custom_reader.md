@@ -1,4 +1,4 @@
-# PaddleRec 自定义数据集及Reader
+# 自定义Reader
 
 ## PaddleRec数据支持方式
 
