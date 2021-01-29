@@ -72,7 +72,7 @@ class RecDataset(IterableDataset):
                     # sparse
                     output_list = []
                     for key, value in output[:-1]:
-                        output_list.append(np.array(value))
+                        output_list.append(np.array(value).astype('int64'))
                     # dense
                     output_list.append(
                         np.array(output[-1][1]).astype("float32"))

@@ -34,6 +34,8 @@ class RecDataset(IterableDataset):
                     label = l[101:]
                     if data is None:
                         continue
-                    data_tensor = np.array([int(i) for i in data])
-                    label_tensor = np.array([int(i) for i in label])
+                    data_tensor = np.array(
+                        [int(i) for i in data]).astype('int64')
+                    label_tensor = np.array(
+                        [int(i) for i in label]).astype('int64')
                     yield data_tensor, label_tensor

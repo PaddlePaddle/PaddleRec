@@ -64,12 +64,14 @@ class RecDataset(IterableDataset):
                         self.all_field_id_dict[field_id][0] = False
                         if len(output[index][1]) > self.max_len:
                             output_list.append(
-                                np.array(output[index][1][:self.max_len]))
+                                np.array(output[index][1][:self.max_len])
+                                .astype('int64'))
                         else:
                             for ii in range(self.max_len - len(output[index][
                                     1])):
                                 output[index][1].append(self.padding)
-                            output_list.append(np.array(output[index][1]))
-                    output_list.append(np.array([ctr]))
-                    output_list.append(np.array([ctcvr]))
+                            output_list.append(
+                                np.array(output[index][1]).astype('int64'))
+                    output_list.append(np.array([ctr]).astype('int64'))
+                    output_list.append(np.array([ctcvr]).astype('int64'))
                     yield output_list
