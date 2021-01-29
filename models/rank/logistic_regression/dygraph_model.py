@@ -35,7 +35,7 @@ class DygraphModel():
     # define feeds which convert numpy of batch data to paddle.tensor 
     def create_feeds(self, batch_data, config):
         num_field = config.get('hyper_parameters.num_field', None)
-        label = paddle.to_tensor(batch_data[0].numpy().astype('int32').reshape(
+        label = paddle.to_tensor(batch_data[0].numpy().astype('int64').reshape(
             -1, 1))
         feat_idx = paddle.to_tensor(batch_data[1].numpy().astype('int64')
                                     .reshape(-1, 1))

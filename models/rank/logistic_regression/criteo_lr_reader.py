@@ -70,5 +70,6 @@ class RecDataset(IterableDataset):
                         else:
                             self.visit[slot] = False
                     # label, feat_idx, feat_value
-                    yield np.array(output[0][1]), np.array(output[1][
-                        1]), np.array(output[2][1]).astype('float32')
+                    yield np.array(output[0][1]).astype('int64'), np.array(
+                        output[1][1]).astype('int64'), np.array(output[2][
+                            1]).astype('float32')

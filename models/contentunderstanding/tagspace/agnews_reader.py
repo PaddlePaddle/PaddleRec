@@ -52,8 +52,8 @@ class RecDataset(IterableDataset):
                             neg_index = rand_i
                             neg_tag.append(neg_index)
 
-                    output_list.append(np.array(text))
-                    output_list.append(np.array(pos_tag))
-                    output_list.append(np.array(neg_tag))
+                    output_list.append(np.array(text).astype('int64'))
+                    output_list.append(np.array(pos_tag).astype('int64'))
+                    output_list.append(np.array(neg_tag).astype('int64'))
 
                     yield output_list

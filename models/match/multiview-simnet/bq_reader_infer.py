@@ -38,7 +38,7 @@ class RecDataset(IterableDataset):
                             slot_0.append(int(i.strip().split(":")[1]))
                         if i.strip().split(":")[0] == "1":
                             slot_1.append(int(i.strip().split(":")[1]))
-                    output_list.append(np.array(slot_0))
-                    output_list.append(np.array(slot_1))
+                    output_list.append(np.array(slot_0).astype('int64'))
+                    output_list.append(np.array(slot_1).astype('int64'))
 
                     yield output_list

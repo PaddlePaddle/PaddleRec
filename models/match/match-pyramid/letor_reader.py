@@ -32,6 +32,6 @@ class RecDataset(IterableDataset):
                     features = l.strip('\n').split('\t')
                     doc1 = [int(word_id) for word_id in features[0].split(",")]
                     doc2 = [int(word_id) for word_id in features[1].split(",")]
-                    output_list.append(np.array(doc1))
-                    output_list.append(np.array(doc2))
+                    output_list.append(np.array(doc1).astype('int64'))
+                    output_list.append(np.array(doc2).astype('int64'))
                     yield output_list

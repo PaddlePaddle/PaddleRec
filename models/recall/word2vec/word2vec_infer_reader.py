@@ -90,9 +90,10 @@ class RecDataset(IterableDataset):
                     output_list = []
                     for i in range(4):
                         output_list.append(
-                            np.array([self.word_to_id[features[i]]]))
+                            np.array([self.word_to_id[features[i]]]).astype(
+                                'int64'))
                     inputs_words = [
                         self.word_to_id[features[i]] for i in range(3)
                     ]
-                    output_list.append(np.array(inputs_words))
+                    output_list.append(np.array(inputs_words).astype('int64'))
                     yield output_list

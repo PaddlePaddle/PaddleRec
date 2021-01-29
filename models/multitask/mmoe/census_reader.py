@@ -45,6 +45,6 @@ class RecDataset(IterableDataset):
                         label_marital = [1]
                     output_list = []
                     output_list.append(np.array(data).astype('float32'))
-                    output_list.append(np.array(label_income))
-                    output_list.append(np.array(label_marital))
+                    output_list.append(np.array(label_income).astype('int64'))
+                    output_list.append(np.array(label_marital).astype('int64'))
                     yield output_list
