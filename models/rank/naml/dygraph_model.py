@@ -23,7 +23,7 @@ import net
 
 class DygraphModel():
     def __init__(self):
-        self.bucket = 1000000
+        self.bucket = 100000
         self.absolute_limt = 200.0
 
     def rescale(self, number):
