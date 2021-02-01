@@ -1,4 +1,4 @@
-## 分布式学习介绍
+# 分布式深度学习介绍
 
 ## [分布式训练概述](https://fleet-x.readthedocs.io/en/latest/paddle_fleet_rst/distributed_introduction.html)
 
