@@ -54,7 +54,7 @@ class DygraphModel():
     # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch, config):
         label = batch[0]
-        return label, batch[1:], None
+        return label, batch[1:]
 
     # define loss function by predicts and label
     def create_loss(self, raw_pred, label):
@@ -84,10 +84,9 @@ class DygraphModel():
 
     # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
-                                                                config)
+        labels, sparse_tensor = self.create_feeds(batch_data, config)
 
-        raw = dy_model(sparse_tensor, None)
+        raw = dy_model(sparse_tensor)
 
         loss = paddle.nn.functional.cross_entropy(
             input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
@@ -108,9 +107,8 @@ class DygraphModel():
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
-        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
-                                                                config)
-        raw = dy_model(sparse_tensor, None)
+        labels, sparse_tensor = self.create_feeds(batch_data, config)
+        raw = dy_model(sparse_tensor)
         #predict_raw = paddle.nn.functional.softmax(raw)
 
         scaled = raw.numpy()

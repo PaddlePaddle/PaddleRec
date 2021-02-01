@@ -182,7 +182,7 @@ class NAMLLayer(nn.Layer):
 
         return func
 
-    def forward(self, sparse_inputs, dense_inputs):
+    def forward(self, sparse_inputs):
         cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit = sparse_inputs[:]
         cate = paddle.concat([cate_sample, cate_visit], axis=-1)
         sub_cate = paddle.concat([sub_cate_sample, sub_cate_visit], axis=-1)
