@@ -37,3 +37,7 @@ fleetrun --worker_num=1 --server_num=1 tools/static_ps_trainer.py -m models/rank
 ```shell
 fleetrun --workers="ip1:port1,ip2:port2...ipN:portN" --servers="ip1:port1,ip2:port2...ipN:portN" tools/static_ps_trainer.py -m models/rank/dnn/config.yaml
 ```
+
+## 常用数据集
+这是PaddleRec的数据集的的存储库。您可以在这里方便的一键下载我们处理完成的数据集，也可以使用PaddleRec轻松测试这些数据集上不同推荐模型的性能。  
+[推荐系统数据集](https://github.com/PaddlePaddle/PaddleRec/blob/master/datasets/readme.md)
