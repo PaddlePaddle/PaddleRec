@@ -17,7 +17,7 @@ runner:
   train_reader_path: "NAMLDataReader" # importlib format
   use_gpu: False
   train_batch_size: 50
-  epochs: 2
+  epochs: 3
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all"
