@@ -44,6 +44,14 @@
 .. toctree::
    :maxdepth: 1
    :numbered:
+   :caption: 模型介绍
+   :name: Model introduction
+
+   paddlerec/model_introduce.md
+   
+.. toctree::
+   :maxdepth: 1
+   :numbered:
    :caption: FAQ
    :name: FAQ
 
