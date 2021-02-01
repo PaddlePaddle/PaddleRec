@@ -118,4 +118,4 @@ python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 python3 -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
-期待预测auc为0.65
+期待预测auc为0.66
