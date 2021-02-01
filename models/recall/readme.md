@@ -27,6 +27,8 @@
 <img align="center" src="../../doc/imgs/word2vec.png">
 <p>
 
+## 使用教程
+
 ### 快速开始
 ```bash
 # 进入模型目录
@@ -47,3 +49,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 |       数据集        |       模型       |       acc        |
 | :------------------: | :--------------------: | :---------: |
 |       1 Billion Word Language Model Benchmark     |       Word2Vec       |       0.579         |
+
+### 效果复现
+您需要进入PaddleRec/datasets目录下的对应数据集中运行脚本获取全量数据集，然后在模型目录下使用全量数据的参数运行。  
+每个模型下的readme中都有详细的效果复现的教程，您可以进入模型的目录中详细查看。 
