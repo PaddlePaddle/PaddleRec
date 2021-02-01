@@ -30,6 +30,14 @@ def save_model(net, optimizer, model_path, epoch_id, prefix='rec'):
     logger.info("Already save model in {}".format(model_path))
 
 
+def save_jit_model(net, model_path, prefix='tostatic'):
+    _mkdir_if_not_exist(model_path)
+    model_prefix = os.path.join(model_path, prefix)
+    #paddle.save(net.state_dict(), model_prefix + ".pdparams")
+    paddle.jit.save(net, model_prefix)
+    logger.info("Already save jit model in {}".format(model_path))
+
+
 def load_model(model_path, net, prefix='rec'):
     logger.info("start load model from {}".format(model_path))
     model_prefix = os.path.join(model_path, prefix)
