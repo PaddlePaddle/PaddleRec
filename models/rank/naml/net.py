@@ -84,7 +84,7 @@ class NAMLLayer(nn.Layer):
         self.sub_category_size = sub_category_size
         self.cate_dimension = cate_dimension
         self.word_dict_size = word_dict_size
-        self.conv_out_channel_size = 100
+        self.conv_out_channel_size = 400
         self.attention_projection_size = 100
         self.load_word_embedding()
         self.attention_vec = []

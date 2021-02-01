@@ -63,6 +63,7 @@ class RecDataset(IterableDataset):
         #line [0]id cate_id sub_cate_id [3]title content
         for file in self.article_file_list:
             with open(file, "r") as rf:
+
                 for l in rf:
                     line_x = [x.strip() for x in l.split('\t')]
                     id = line_x[0]

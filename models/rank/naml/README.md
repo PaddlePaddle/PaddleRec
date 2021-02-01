@@ -91,7 +91,7 @@ python3 -u ../../../tools/infer.py -m config.yaml
 #### Loss及Acc计算
 - 预测的结果为一个softmax向量，表示实际浏览文章和负采样文章同时出现的情况下被用户浏览的概率
 - 样本的损失函数值由交叉熵给出
-- 我们同时还会计算预测的acc，即top1的准确率
+- 我们同时还会计算预测的auc
 
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
@@ -111,12 +111,11 @@ python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 以下为训练2个epoch的结果
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| naml | 0.43 | 512 | 4 | 约0.5小时 | 
+| naml | 0.72 | 50 | 3 | 约4小时 | 
 
 预测
 ```
 python3 -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
-期待运行结果如下
-INFO - epoch: 1 done, acc: 0.427140, epoch time: 126.27 s
+期待预测auc为0.65
