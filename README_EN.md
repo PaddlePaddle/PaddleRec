@@ -28,101 +28,83 @@
 - Recommendation algorithm library including content-understanding, match, recall, rank, multi-task, re-rank etc.
 
 
-    |         Type          |                                 Algorithm                                 |  CPU  |   GPU   | Parameter-Server | Multi-GPU | Paper                                                                                                                                                                                                       |
-    | :-------------------: | :-----------------------------------------------------------------------: | :---: | :-----: | :--------------: | :-------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-    | Content-Understanding | [Text-Classifcation](models/contentunderstanding/classification/model.py) |   ✓   |    ✓    |        ✓         |     x     | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf)                                                                                        |
-    | Content-Understanding |         [TagSpace](models/contentunderstanding/tagspace/model.py)         |   ✓   |    ✓    |        ✓         |     x     | [EMNLP 2014][TagSpace: Semantic Embeddings from Hashtags](https://www.aclweb.org/anthology/D14-1194.pdf)                                                                                                    |
-    |         Match         |                    [DSSM](models/match/dssm/model.py)                     |   ✓   |    ✓    |        ✓         |     x     | [CIKM 2013][Learning Deep Structured Semantic Models for Web Search using Clickthrough Data](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf)             |
-    |         Match         |        [MultiView-Simnet](models/match/multiview-simnet/model.py)         |   ✓   |    ✓    |        ✓         |     x     | [WWW 2015][A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf)             |
-    |        Recall         |                   [TDM](models/treebased/tdm/model.py)                    |   ✓   | >=1.8.0 |        ✓         |  >=1.8.0  | [KDD 2018][Learning Tree-based Deep Model for Recommender Systems](https://arxiv.org/pdf/1801.02294.pdf)                                                                                                    |
-    |        Recall         |                [fasttext](models/recall/fasttext/model.py)                |   ✓   |    ✓    |        x         |     x     | [EACL 2017][Bag of Tricks for Efficient Text Classification](https://www.aclweb.org/anthology/E17-2068.pdf)                                                                                                 |
-    |        Recall         |                [Word2Vec](models/recall/word2vec/model.py)                |   ✓   |    ✓    |        ✓         |     x     | [NIPS 2013][Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf) |
-    |        Recall         |                     [SSR](models/recall/ssr/model.py)                     |   ✓   |    ✓    |        ✓         |     ✓     | [SIGIR 2016][Multi-Rate Deep Learning for Temporal Recommendation](http://sonyis.me/paperpdf/spr209-song_sigir16.pdf)                                                                                       |
-    |        Recall         |                 [Gru4Rec](models/recall/gru4rec/model.py)                 |   ✓   |    ✓    |        ✓         |     ✓     | [2015][Session-based Recommendations with Recurrent Neural Networks](https://arxiv.org/abs/1511.06939)                                                                                                      |
-    |        Recall         |             [Youtube_dnn](models/recall/youtube_dnn/model.py)             |   ✓   |    ✓    |        ✓         |     ✓     | [RecSys 2016][Deep Neural Networks for YouTube Recommendations](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/45530.pdf)                                               |
-    |        Recall         |                     [NCF](models/recall/ncf/model.py)                     |   ✓   |    ✓    |        ✓         |     ✓     | [WWW 2017][Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf)                                                                                                                            |
-    |        Recall         |                     [GNN](models/recall/gnn/model.py)                     |   ✓   |    ✓    |        ✓         |     ✓     | [AAAI 2019][Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855)                                                                                                      |
-    |        Recall         |                     [RALM](models/recall/look-alike_recall/model.py)                     |   ✓   |    ✓    |        ✓         |     ✓     | [KDD 2019][Real-time Attention Based Look-alike Model for Recommender System](https://arxiv.org/pdf/1906.05022.pdf)                                                                                                      |
-    |         Rank          |      [Logistic Regression](models/rank/logistic_regression/model.py)      |   ✓   |    x    |        ✓         |     x     | /                                                                                                                                                                                                           |
-    |         Rank          |                      [Dnn](models/rank/dnn/model.py)                      |   ✓   |    ✓    |        ✓         |     ✓     | /                                                                                                                                                                                                           |
-    |         Rank          |                       [FM](models/rank/fm/model.py)                       |   ✓   |    x    |        ✓         |     x     | [IEEE Data Mining 2010][Factorization machines](https://analyticsconsultores.com.mx/wp-content/uploads/2019/03/Factorization-Machines-Steffen-Rendle-Osaka-University-2010.pdf)                             |
-    |         Rank          |                      [FFM](models/rank/ffm/model.py)                      |   ✓   |    x    |        ✓         |     x     | [RECSYS 2016][Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/pdf/10.1145/2959100.2959134)                                                                                    |
-    |         Rank          |                      [FNN](models/rank/fnn/model.py)                      |   ✓   |    x    |        ✓         |     x     | [ECIR 2016][Deep Learning over Multi-field Categorical Data](https://arxiv.org/pdf/1601.02376.pdf)                                                                                                          |
-    |         Rank          |            [Deep Crossing](models/rank/deep_crossing/model.py)            |   ✓   |    x    |        ✓         |     x     | [ACM 2016][Deep Crossing: Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf)                                                   |
-    |         Rank          |                      [Pnn](models/rank/pnn/model.py)                      |   ✓   |    x    |        ✓         |     x     | [ICDM 2016][Product-based Neural Networks for User Response Prediction](https://arxiv.org/pdf/1611.00144.pdf)                                                                                               |
-    |         Rank          |                      [DCN](models/rank/dcn/model.py)                      |   ✓   |    x    |        ✓         |     x     | [KDD 2017][Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754)                                                                                               |
-    |         Rank          |                      [NFM](models/rank/nfm/model.py)                      |   ✓   |    x    |        ✓         |     x     | [SIGIR 2017][Neural Factorization Machines for Sparse Predictive Analytics](https://dl.acm.org/doi/pdf/10.1145/3077136.3080777)                                                                             |
-    |         Rank          |                      [AFM](models/rank/afm/model.py)                      |   ✓   |    x    |        ✓         |     x     | [IJCAI 2017][Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks](https://arxiv.org/pdf/1708.04617.pdf)                                                  |
-    |         Rank          |                   [DeepFM](models/rank/deepfm/model.py)                   |   ✓   |    x    |        ✓         |     x     | [IJCAI 2017][DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)                                                                                 |
-    |         Rank          |                  [xDeepFM](models/rank/xdeepfm/model.py)                  |   ✓   |    x    |        ✓         |     x     | [KDD 2018][xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)                                                       |
-    |         Rank          |                      [DIN](models/rank/din/model.py)                      |   ✓   |    x    |        ✓         |     x     | [KDD 2018][Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)                                                                                     |
-    |         Rank          |                     [DIEN](models/rank/dien/model.py)                     |   ✓   |    x    |        ✓         |     x     | [AAAI 2019][Deep Interest Evolution Network for Click-Through Rate Prediction](https://www.aaai.org/ojs/index.php/AAAI/article/view/4545/4423)                                                              |
-    |         Rank          |                      [BST](models/rank/BST/model.py)                      |   ✓   |    x    |        ✓         |     x     | [DLP-KDD 2019][Behavior Sequence Transformer for E-commerce Recommendation in Alibaba](https://arxiv.org/pdf/1905.06874v1.pdf)                                                                              |
-    |         Rank          |                  [AutoInt](models/rank/AutoInt/model.py)                  |   ✓   |    x    |        ✓         |     x     | [CIKM 2019][AutoInt: Automatic Feature Interaction Learning via Self-Attentive Neural Networks](https://arxiv.org/pdf/1810.11921.pdf)                                                                       |
-    |         Rank          |                [Wide&Deep](models/rank/wide_deep/model.py)                |   ✓   |    x    |        ✓         |     x     | [DLRS 2016][Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)                                                                                               |
-    |         Rank          |                    [FGCNN](models/rank/fgcnn/model.py)                    |   ✓   |    ✓    |        ✓         |     ✓     | [WWW 2019][Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)                                                                      |
-    |         Rank          |                  [Fibinet](models/rank/fibinet/model.py)                  |   ✓   |    ✓    |        ✓         |     ✓     | [RecSys19][FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction]( https://arxiv.org/pdf/1905.09433.pdf)                                                 |
-    |         Rank          |                     [Flen](models/rank/flen/model.py)                     |   ✓   |    ✓    |        ✓         |     ✓     | [2019][FLEN: Leveraging Field for Scalable CTR Prediction]( https://arxiv.org/pdf/1911.04690.pdf)                                                                                                           |
-    |      Multi-Task       |                  [ESMM](models/multitask/esmm/model.py)                   |   ✓   |    ✓    |        ✓         |     ✓     | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)                                                              |
-    |      Multi-Task       |                  [MMOE](models/multitask/mmoe/model.py)                   |   ✓   |    ✓    |        ✓         |     ✓     | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)                                                       |
-    |      Multi-Task       |           [ShareBottom](models/multitask/share-bottom/model.py)           |   ✓   |    ✓    |        ✓         |     ✓     | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)                                                                                                               |
-    |        Re-Rank        |                [Listwise](models/rerank/listwise/model.py)                |   ✓   |    ✓    |        ✓         |     x     | [2019][Sequential Evaluation and Generation Framework for Combinatorial Recommender System](https://arxiv.org/pdf/1902.00245.pdf)                                                                           |
-
-
-
+    |         Type          |                                 Algorithm                                 |  CPU  |   GPU   | Parameter-Server | Multi-GPU | version | Paper                                                                                                                                                                                                       |
+    | :-------------------: | :-----------------------------------------------------------------------: | :---: | :-----: | :--------------: | :-------: | :-------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | Content-Understanding | [TextCnn](models/contentunderstanding/textcnn/) |   ✓   |    ✓    |        ✓         |     x     |      2.0     | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf)                                                                                        |
+    | Content-Understanding |         [TagSpace](models/contentunderstanding/tagspace/)         |   ✓   |    ✓    |        ✓         |     x     |      2.0     | [EMNLP 2014][TagSpace: Semantic Embeddings from Hashtags](https://www.aclweb.org/anthology/D14-1194.pdf)                                                                                                    |
+    |         Match         |                    [DSSM](models/match/dssm/)                     |   ✓   |    ✓    |        ✓         |     x     |      2.0     | [CIKM 2013][Learning Deep Structured Semantic Models for Web Search using Clickthrough Data](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf)             |
+    |         Match         |        [MultiView-Simnet](models/match/multiview-simnet/)         |   ✓   |    ✓    |        ✓         |     x     |      2.0     | [WWW 2015][A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf)             |
+    |         Match         |        [Match-Pyramid](models/match/match-pyramid/)         |   ✓   |    ✓    |        ✓         |     x     |      2.0     | [2016][Text Matching as Image Recognition](https://arxiv.org/pdf/1602.06359.pdf)             |
+    |        Recall         |                   [TDM](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/treebased/tdm/)                    |   ✓   | >=1.8.0 |        ✓         |  >=1.8.0  | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [KDD 2018][Learning Tree-based Deep Model for Recommender Systems](https://arxiv.org/pdf/1801.02294.pdf)                                                                                                    |
+    |        Recall         |                [fasttext](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/fasttext/)                |   ✓   |    ✓    |        x         |     x     |[1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [EACL 2017][Bag of Tricks for Efficient Text Classification](https://www.aclweb.org/anthology/E17-2068.pdf)                                                                                                 |
+    |        Recall         |                [Word2Vec](models/recall/word2vec/)                |   ✓   |    ✓    |        ✓         |     x     |      2.0     | [NIPS 2013][Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf) |
+    |        Recall         |                     [SSR](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/ssr/)                     |   ✓   |    ✓    |        ✓         |     ✓     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [SIGIR 2016][Multi-Rate Deep Learning for Temporal Recommendation](http://sonyis.me/paperpdf/spr209-song_sigir16.pdf)                                                                                       |
+    |        Recall         |                 [Gru4Rec](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/gru4rec/)                 |   ✓   |    ✓    |        ✓         |     ✓     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [2015][Session-based Recommendations with Recurrent Neural Networks](https://arxiv.org/abs/1511.06939)                                                                                                      |
+    |        Recall         |             [Youtube_dnn](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/youtube_dnn/)             |   ✓   |    ✓    |        ✓         |     ✓     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [RecSys 2016][Deep Neural Networks for YouTube Recommendations](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/45530.pdf)                                               |
+    |        Recall         |                     [NCF](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/ncf/)                     |   ✓   |    ✓    |        ✓         |     ✓     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [WWW 2017][Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf)                                                                                                                            |
+    |        Recall         |                     [GNN](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/gnn/)                     |   ✓   |    ✓    |        ✓         |     ✓     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [AAAI 2019][Session-based Recommendation with Graph Neural Networks](https://arxiv.org/abs/1811.00855)                                                                                                      |
+    |        Recall         |                     [RALM](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/look-alike_recall/)                     |   ✓   |    ✓    |        ✓         |     ✓     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [KDD 2019][Real-time Attention Based Look-alike Model for Recommender System](https://arxiv.org/pdf/1906.05022.pdf)                                                                                                      |
+    |         Rank          |      [Logistic Regression](models/rank/logistic_regression/)      |   ✓   |    x    |        ✓         |     x     |      2.0     | /                                                                                                                                                                                                           |
+    |         Rank          |                      [Dnn](models/rank/dnn/)                      |   ✓   |    ✓    |        ✓         |     ✓     |      2.0     | /                                                                                                                                                                                                           |
+    |         Rank          |                       [FM](models/rank/fm/)                       |   ✓   |    x    |        ✓         |     x     |      2.0     | [IEEE Data Mining 2010][Factorization machines](https://analyticsconsultores.com.mx/wp-content/uploads/2019/03/Factorization-Machines-Steffen-Rendle-Osaka-University-2010.pdf)                             |
+    |         Rank          |                      [FFM](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/ffm/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [RECSYS 2016][Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/pdf/10.1145/2959100.2959134)                                                                                    |
+    |         Rank          |                      [FNN](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/fnn/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [ECIR 2016][Deep Learning over Multi-field Categorical Data](https://arxiv.org/pdf/1601.02376.pdf)                                                                                                          |
+    |         Rank          |            [Deep Crossing](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/deep_crossing/)            |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [ACM 2016][Deep Crossing: Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf)                                                   |
+    |         Rank          |                      [Pnn](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/pnn/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [ICDM 2016][Product-based Neural Networks for User Response Prediction](https://arxiv.org/pdf/1611.00144.pdf)                                                                                               |
+    |         Rank          |                      [DCN](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/dcn/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [KDD 2017][Deep & Cross Network for Ad Click Predictions](https://dl.acm.org/doi/pdf/10.1145/3124749.3124754)                                                                                               |
+    |         Rank          |                      [NFM](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/nfm/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [SIGIR 2017][Neural Factorization Machines for Sparse Predictive Analytics](https://dl.acm.org/doi/pdf/10.1145/3077136.3080777)                                                                             |
+    |         Rank          |                      [AFM](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/afm/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [IJCAI 2017][Attentional Factorization Machines: Learning the Weight of Feature Interactions via Attention Networks](https://arxiv.org/pdf/1708.04617.pdf)                                                  |
+    |         Rank          |                   [DeepFM](models/rank/deepfm/)                   |   ✓   |    x    |        ✓         |     x     |      2.0     | [IJCAI 2017][DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/pdf/1703.04247.pdf)                                                                                 |
+    |         Rank          |                  [xDeepFM](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/xdeepfm)                  |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [KDD 2018][xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/3219819.3220023)                                                       |
+    |         Rank          |                      [DIN](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/din/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [KDD 2018][Deep Interest Network for Click-Through Rate Prediction](https://dl.acm.org/doi/pdf/10.1145/3219819.3219823)                                                                                     |
+    |         Rank          |                     [DIEN](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/dien/)                     |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [AAAI 2019][Deep Interest Evolution Network for Click-Through Rate Prediction](https://www.aaai.org/ojs/index.php/AAAI/article/view/4545/4423)                                                              |
+    |         Rank          |                      [BST](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/BST/)                      |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [DLP-KDD 2019][Behavior Sequence Transformer for E-commerce Recommendation in Alibaba](https://arxiv.org/pdf/1905.06874v1.pdf)                                                                              |
+    |         Rank          |                  [AutoInt](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/AutoInt/)                  |   ✓   |    x    |        ✓         |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [CIKM 2019][AutoInt: Automatic Feature Interaction Learning via Self-Attentive Neural Networks](https://arxiv.org/pdf/1810.11921.pdf)                                                                       |
+    |         Rank          |                [Wide&Deep](models/rank/wide_deep/)                |   ✓   |    x    |        ✓         |     x     |      2.0     | [DLRS 2016][Wide & Deep Learning for Recommender Systems](https://dl.acm.org/doi/pdf/10.1145/2988450.2988454)                                                                                               |
+    |         Rank          |                    [FGCNN](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/fgcnn/)                    |   ✓   |    ✓    |        ✓         |     ✓     |  [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [WWW 2019][Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1904.04447.pdf)                                                                      |
+    |         Rank          |                  [Fibinet](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/fibinet/)                  |   ✓   |    ✓    |        ✓         |     ✓     |  [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [RecSys19][FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction]( https://arxiv.org/pdf/1905.09433.pdf)                                                 |
+    |         Rank          |                     [Flen](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rank/flen/)                     |   ✓   |    ✓    |        ✓         |     ✓     |  [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [2019][FLEN: Leveraging Field for Scalable CTR Prediction]( https://arxiv.org/pdf/1911.04690.pdf)                                                                                                           |
+    |      Multi-Task       |                  [ESMM](models/multitask/esmm/)                   |   ✓   |    ✓    |        ✓         |     ✓     |      2.0     | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)                                                              |
+    |      Multi-Task       |                  [MMOE](models/multitask/mmoe/)                   |   ✓   |    ✓    |        ✓         |     ✓     |      2.0     | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)                                                       |
+    |      Multi-Task       |           [ShareBottom](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/multitask/share-bottom/)           |   ✓   |    ✓    |        ✓         |     ✓     |  [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)                                                                                                               |
+    |        Re-Rank        |                [Listwise](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rerank/listwise/)                |   ✓   |    ✓    |        ✓         |     x     |  [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [2019][Sequential Evaluation and Generation Framework for Combinatorial Recommender System](https://arxiv.org/pdf/1902.00245.pdf)                                                                           |
 
 
 <h2 align="center">Getting Started</h2>
 
 ### Environmental requirements
-* Python 2.7/ 3.5 / 3.6 / 3.7
-* PaddlePaddle  >= 1.7.2 <= 1.8.5 
+* Python 2.7/ 3.5 / 3.6 / 3.7 , Python 3.7 is recommended ,Python in example represents Python 3.7 by default
+* PaddlePaddle >=2.0 
 * operating system: Windows/Mac/Linux
 
   > Linux is recommended for distributed training
   
 ### Installation
 
-1. **Install by pip**
+- Install by pip in GPU environment
   ```bash
-  python -m pip install paddle-rec
+  python -m pip install paddlepaddle-gpu==2.0.0 
   ```
-  > This method will download and install `paddlepaddle-v1.7.2-cpu`. If `PaddlePaddle` can not be installed automatically，You need to install `PaddlePaddle` manually，and then install `PaddleRec` again：
-  > - Download [PaddlePaddle](https://pypi.org/project/paddlepaddle/1.7.2/#files) and install by pip.
-  > - Install `PaddlePaddle` by pip，`python -m pip install paddlepaddle==1.7.2 -i https://mirror.baidu.com/pypi/simple`
-  > - Other installation problems can be raised in [Paddle Issue](https://github.com/PaddlePaddle/Paddle/issues) or [PaddleRec Issue](https://github.com/PaddlePaddle/PaddleRec/issues)
+- Install by pip in CPU environment
+  ```bash
+  python -m pip install paddlepaddle # gcc8 
+  ```
+For download more versions, please refer to the installation tutorial [Installation Manuals](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html)
 
-2. **Install by source code**
+### Download PaddleRec
 
-  - Install PaddlePaddle  
+```bash
+git clone https://github.com/PaddlePaddle/PaddleRec/
+cd PaddleRec
+```
 
-    ```shell
-    python -m pip install paddlepaddle==1.8.5 -i https://mirror.baidu.com/pypi/simple
-    ```
-
-  - Install PaddleRec by source code
-
-    ```
-    git clone https://github.com/PaddlePaddle/PaddleRec/
-    cd PaddleRec
-    python setup.py install
-    ```
-
-- Install PaddleRec-GPU  
-
-  After installing `PaddleRec`，please install the appropriate version of `paddlepaddle-gpu` according to your environment (CUDA / cudnn)，refer to the installation tutorial [Installation Manuals](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html)
-
-
-<h2 align="center">Quick Start</h2>
+### Quick Start
 
 We take the `dnn` algorithm as an example to get start of `PaddleRec`, and we take 100 pieces of training data from [Criteo Dataset](https://www.kaggle.com/c/criteo-display-ad-challenge/):
 
 ```bash
-# Training with cpu
-git clone https://github.com/PaddlePaddle/PaddleRec.git paddle-rec
-cd paddle-rec
-
-python -m paddlerec.run -m models/rank/dnn/config.yaml  
+python -u tools/trainer.py -m models/rank/dnn/config.yaml # Training with dygraph model
+python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training with static model
 ```
 
 
@@ -132,26 +114,17 @@ python -m paddlerec.run -m models/rank/dnn/config.yaml
 * [Recommendation System](doc/rec_background.md)
 * [Distributed deep learning](doc/ps_background.md)
 
-### Introductory Project
-* [Get start of PaddleRec in ten minutes](https://aistudio.baidu.com/aistudio/projectdetail/559336)
-
 ### Introductory tutorial
-* [Data](doc/slot_reader.md)
-* [Model](doc/model.md)
-* [Loacl Train](doc/train.md)
-* [Distributed Train](doc/distributed_train.md)
-* [Predict](doc/predict.md)
-* [Serving](doc/serving.md)
+* [PaddleRec function introduction](doc/introduction.md)
+* [Dygraph Train](doc/dygraph_mode.md)
+* [Static Train](doc/static_mode.md)
+* [Distributed Train](doc/fleet_mode.md)
 
 
 ### Advanced tutorial
 * [Custom Reader](doc/custom_reader.md)
 * [Custom Model](doc/model_develop.md)
-* [Custom Training Process](doc/trainer_develop.md)
 * [Configuration description of yaml](doc/yaml.md)
-* [Design document of PaddleRec](doc/design.md)
-
-### Benchmark
 * [Benchmark](doc/benchmark.md)
 
 ### FAQ
@@ -169,6 +142,7 @@ python -m paddlerec.run -m models/rank/dnn/config.yaml
 <p>
 
 ### Version history
+- 2021.01.29 - PaddleRec v2.0.0
 - 2020.10.12 - PaddleRec v1.8.5
 - 2020.06.17 - PaddleRec v0.1.0
 - 2020.06.03 - PaddleRec v0.0.2
