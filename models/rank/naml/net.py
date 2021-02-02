@@ -144,7 +144,7 @@ class NAMLLayer(nn.Layer):
         self.content_attention = self.make_attention_layer(
             "content_attention",
             [self.conv_out_channel_size, self.attention_projection_size])
-        print(self.word2vec_embedding)
+        #print(self.word2vec_embedding)
 
     def make_attention_layer(self, name_base, size):
         row = size[0]
