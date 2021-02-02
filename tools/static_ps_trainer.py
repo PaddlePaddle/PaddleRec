@@ -144,7 +144,7 @@ class Main(object):
         self.reader, self.file_list = get_reader(self.input_data, config)
         self.example_nums = 0
         self.count_method = self.config.get(
-            "static_benchmark.example_count_method", "example")
+            "runner.example_count_method", "example")
         if self.count_method == "example":
             self.example_nums = get_example_num(self.file_list)
         elif self.count_method == "word":
