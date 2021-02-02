@@ -35,6 +35,7 @@
 
     |   方向   |                                   模型                                    | 单机CPU | 单机GPU | 分布式CPU | 分布式GPU | 支持版本| 论文                                                                                                                                                                                                        |
     | :------: | :-----------------------------------------------------------------------: | :-----: | :-----: | :-------: | :-------: |:-------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | 内容理解 |         [TextCnn](models/contentunderstanding/textcnn/)         |    ✓    |    ✓    |     ✓     |     x     | 2.0 | [EMNLP 2014][Convolutional neural networks for sentence classication](https://www.aclweb.org/anthology/D14-1181.pdf)                                                                                                    |
     | 内容理解 |         [TagSpace](models/contentunderstanding/tagspace/)         |    ✓    |    ✓    |     ✓     |     x     | 2.0 | [EMNLP 2014][TagSpace: Semantic Embeddings from Hashtags](https://www.aclweb.org/anthology/D14-1194.pdf)                                                                                                    |
     |   匹配   |                    [DSSM](models/match/dssm/)                     |    ✓    |    ✓    |     ✓     |     x     | 2.0 | [CIKM 2013][Learning Deep Structured Semantic Models for Web Search using Clickthrough Data](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf)             |
     |   匹配   |        [MultiView-Simnet](models/match/multiview-simnet/)         |    ✓    |    ✓    |     ✓     |     x     | 2.0 | [WWW 2015][A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/frp1159-songA.pdf)             |
@@ -78,7 +79,7 @@
 <h2 align="center">快速使用</h2>
 
 ### 环境要求
-* Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用pytho3.7，示例中的python默认表示python3.7
+* Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用python3.7，示例中的python默认表示python3.7
 * PaddlePaddle >=2.0 
 * 操作系统: Windows/Mac/Linux
 
