@@ -160,8 +160,6 @@ class Main(object):
                     [feed.name for feed in self.input_data],
                     self.inference_target_var,
                     mode=0)
-                if self.config.get("max_keep_days", None):
-                    fleet.shrink(int(self.config.get("max_keep_days")))
 
     def dataset_train_loop(self, cur_dataset, day, pass_index):
         logger.info("Day: {} Pass: {}, Running Dataset Begin.".format(day, pass_index))
