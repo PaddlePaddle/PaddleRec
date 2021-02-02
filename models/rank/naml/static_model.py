@@ -91,11 +91,11 @@ class StaticModel():
                           self.sub_category_size, self.cate_dimension,
                           self.word_dict_size)
 
-        raw_predict = model(self.sparse_inputs)
+        raw = model(self.sparse_inputs)
 
-        soft_predict = paddle.nn.functional.sigmoid(raw_predict)
-        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=1)
-        predict_2d = paddle.reshape(predict_2d, [-1, 2])
+        soft_predict = paddle.nn.functional.sigmoid(
+            paddle.reshape(raw, [-1, 1]))
+        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=-1)
         labels = paddle.reshape(self.labels, [-1, 1])
         #metrics_list[0].update(preds=predict_2d.numpy(), labels=labels.numpy())
         #self.predict = predict_2d
