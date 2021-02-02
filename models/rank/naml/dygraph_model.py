@@ -92,13 +92,11 @@ class DygraphModel():
         loss = paddle.nn.functional.cross_entropy(
             input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
 
-        soft_predict = paddle.nn.functional.sigmoid(raw)
-        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=1)
-        predict_2d = paddle.reshape(predict_2d, [-1, 2])
+        soft_predict = paddle.nn.functional.sigmoid(
+            paddle.reshape(raw, [-1, 1]))
+        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=-1)
         labels = paddle.reshape(labels, [-1, 1])
         metrics_list[0].update(preds=predict_2d.numpy(), labels=labels.numpy())
-        # metrics_list[0].update([1-soft_predict,soft_predict],
-        #                        paddle.cast(labels, "float32"))
 
         loss = paddle.mean(loss)
         print_dict = None
@@ -109,9 +107,9 @@ class DygraphModel():
         raw = dy_model(sparse_tensor)
         #predict_raw = paddle.nn.functional.softmax(raw)
 
-        soft_predict = paddle.nn.functional.sigmoid(raw)
-        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=1)
-        predict_2d = paddle.reshape(predict_2d, [-1, 2])
+        soft_predict = paddle.nn.functional.sigmoid(
+            paddle.reshape(raw, [-1, 1]))
+        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=-1)
         labels = paddle.reshape(labels, [-1, 1])
         metrics_list[0].update(preds=predict_2d.numpy(), labels=labels.numpy())
         return metrics_list, None
