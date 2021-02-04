@@ -54,6 +54,7 @@ class Model(ModelBase):
             param_attr=fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
+
         MF_Embedding_Item = fluid.embedding(
             input=inputs[1],
             size=[self.num_items, self.latent_dim],
@@ -67,6 +68,7 @@ class Model(ModelBase):
             param_attr=fluid.initializer.Normal(
                 loc=0.0, scale=0.01),
             is_sparse=True)
+
         MLP_Embedding_Item = fluid.embedding(
             input=inputs[1],
             size=[self.num_items, int(self.layers[0] / 2)],
@@ -98,6 +100,7 @@ class Model(ModelBase):
                     regularizer=fluid.regularizer.L2DecayRegularizer(
                         regularization_coeff=1e-4)),
                 name='layer_' + str(i))
+            print(mlp_vector)
 
         # Concatenate MF and MLP parts
         predict_vector = fluid.layers.concat(
