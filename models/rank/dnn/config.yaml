@@ -22,7 +22,7 @@ runner:
   use_gpu: False
   use_auc: True
   train_batch_size: 2
-  epochs: 1
+  epochs: 3
   print_interval: 2
   model_save_path: "output_model_dnn"
   infer_batch_size: 2
