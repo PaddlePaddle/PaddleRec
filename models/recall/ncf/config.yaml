@@ -12,55 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace: "/home/workspace/PaddleRec/models/recall/ncf"
+runner:
+  train_data_dir: "data/train"
+  train_reader_path: "movielens_reader_train"  # importlib format
+  train_batch_size: 5
+  model_save_path: "output_model_ncf"
 
-dataset:
-- name: dataset_train
-  batch_size: 5
-  type: QueueDataset
-  data_path: "{workspace}/data/train"
-  data_converter: "{workspace}/movielens_reader.py"
-- name: dataset_infer
-  batch_size: 5
-  type: QueueDataset
-  data_path: "{workspace}/data/test"
-  data_converter: "{workspace}/movielens_infer_reader.py"
+  use_gpu: False
+  epochs: 3
+  print_interval: 10
+  
+  test_data_dir: "data/test"
+  infer_reader_path: "movielens_reader_train"  # importlib format
+  infer_batch_size: 5
+  infer_load_path: "output_model_ncf"
+  infer_start_epoch: 2
+  infer_end_epoch: 3
 
 hyper_parameters:
+  optimizer: 
+    class: adam
+    learning_rate: 0.001
   num_users: 6040
   num_items: 3706
   latent_dim: 8
   fc_layers: [64, 32, 16, 8]
-  optimizer: 
-    class: adam
-    learning_rate: 0.001
-    strategy: async
-
-#use infer_runner mode and modify 'phase' below if infer
-mode: train_runner
-#mode: infer_runner
-
-runner:
-- name: train_runner
-  class: train
-  device: cpu
-  epochs: 3
-  save_checkpoint_interval: 2
-  save_inference_interval: 4
-  save_checkpoint_path: "increment"
-  save_inference_path: "inference"
-  print_interval: 10
-- name: infer_runner
-  class: infer
-  init_model_path: "increment/0"
-  device: cpu
-
-phase:
-- name: train
-  model: "{workspace}/model.py"
-  dataset_name: dataset_train
-  thread_num: 1
-# - name: infer
-#   model: "{workspace}/model.py"
-#   dataset_name: dataset_infer
-#   thread_num: 1
