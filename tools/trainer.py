@@ -123,7 +123,7 @@ def main(args):
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
                         metric_list_name[metric_id] +
-                        ": {:.6f},".format(metric_list[metric_id].accumulate())
+                        ":{:.6f}, ".format(metric_list[metric_id].accumulate())
                     )
                 tensor_print_str = ""
                 if tensor_print_dict is not None:
