@@ -77,7 +77,7 @@ class StaticModel():
                     dtype='int64')
         ]
         label = paddle.static.data(
-            name="label", shape=[None, self.browse_size], dtype="int64")
+            name="label", shape=[None, self.sample_size], dtype="int64")
         return [label] + inputs
 
     def net(self, input, is_infer=False):
@@ -110,13 +110,10 @@ class StaticModel():
             return fetch_dict
 
         cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict,
+            input=raw,
             label=paddle.cast(self.labels, "float32"),
             soft_label=True)
         avg_cost = paddle.mean(x=cost)
-        # cost = paddle.nn.functional.cross_entropy(
-        #     input=raw_predict_2d, label=self.label_input)
-        # avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
 
         fetch_dict = {'cost': avg_cost, 'auc': auc}
