@@ -1,6 +1,6 @@
 # PaddleRec 基于 Movielens 数据集的全流程示例
 
-## 模型的详细教程可以查阅： [PaddleRec公开教程V3](https://aistudio.baidu.com/aistudio/projectdetail/1431523)
+## 模型的详细教程可以查阅： [告别电影荒，手把手教你训练符合自己口味的私人电影推荐助手](https://aistudio.baidu.com/aistudio/projectdetail/1481839)
 
 ## 本地运行环境
 
