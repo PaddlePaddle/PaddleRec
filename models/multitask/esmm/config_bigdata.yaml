@@ -20,7 +20,7 @@ runner:
   use_auc: True
   train_batch_size: 1024
   epochs: 10
-  print_interval: 100
+  print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_esmm_all"
   test_data_dir: "../../../datasets/ali-ccp/test_data"
