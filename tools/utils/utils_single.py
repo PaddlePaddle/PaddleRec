@@ -134,7 +134,7 @@ def reset_auc(auc_num=1):
     # for static clear auc
     auc_var_name = []
     for i in range(auc_num * 4):
-        auc_var_name.append("_generated_var_%d".format(i))
+        auc_var_name.append("_generated_var_{}".format(i))
 
     for name in auc_var_name:
         param = paddle.fluid.global_scope().var(name)
