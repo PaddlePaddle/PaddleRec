@@ -130,11 +130,12 @@ def load_yaml(yaml_file, other_part=None):
     return running_config
 
 
-def reset_auc():
-    auc_var_name = [
-        "_generated_var_0", "_generated_var_1", "_generated_var_2",
-        "_generated_var_3"
-    ]
+def reset_auc(auc_num=1):
+    # for static clear auc
+    auc_var_name = []
+    for i in range(auc_num * 4):
+        auc_var_name.append("_generated_var_{}".format(i))
+
     for name in auc_var_name:
         param = paddle.fluid.global_scope().var(name)
         if param == None:
