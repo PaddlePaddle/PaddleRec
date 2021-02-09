@@ -62,6 +62,7 @@ def main(args):
 
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
+    auc_num = config.get("runner.auc_num", 1)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
     print_interval = config.get("runner.print_interval", None)
@@ -93,7 +94,7 @@ def main(args):
 
         epoch_begin = time.time()
         if use_auc:
-            reset_auc()
+            reset_auc(auc_num)
         if reader_type == 'DataLoader':
             fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
                                                input_data_names, fetch_vars,
