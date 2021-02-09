@@ -18,6 +18,7 @@ runner:
   train_reader_path: "esmm_reader" # importlib format
   use_gpu: True
   use_auc: True
+  auc_num: 2
   train_batch_size: 1024
   epochs: 10
   print_interval: 10
