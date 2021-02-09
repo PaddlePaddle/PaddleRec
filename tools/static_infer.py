@@ -59,6 +59,7 @@ def main(args):
 
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
+    auc_num = config.get("runner.auc_num", 1)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
     model_load_path = config.get("runner.infer_load_path", "model_output")
@@ -92,7 +93,7 @@ def main(args):
         epoch_begin = time.time()
         interval_begin = time.time()
         if use_auc:
-            reset_auc()
+            reset_auc(auc_num)
         for batch_id, batch_data in enumerate(test_dataloader()):
             fetch_batch_var = exe.run(
                 program=paddle.static.default_main_program(),
