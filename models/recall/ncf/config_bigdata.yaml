@@ -13,21 +13,21 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/train"
+  train_data_dir: "../../../datasets/movielens_pinterest_NCF/big_train"
   train_reader_path: "movielens_reader"  # importlib format
-  train_batch_size: 5
+  train_batch_size: 256
   model_save_path: "output_model_ncf"
 
   use_gpu: False
-  epochs: 3
-  print_interval: 10
+  epochs: 20
+  print_interval: 1
   
-  test_data_dir: "data/test"
+  test_data_dir: "../../../datasets/movielens_pinterest_NCF/big_test"
   infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 5
+  infer_batch_size: 1
   infer_load_path: "output_model_ncf"
-  infer_start_epoch: 2
-  infer_end_epoch: 3
+  infer_start_epoch: 19
+  infer_end_epoch: 20
 
 hyper_parameters:
   optimizer: 

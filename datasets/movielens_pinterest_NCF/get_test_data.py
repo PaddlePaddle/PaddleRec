@@ -12,28 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-runner:
-  train_data_dir: "data/train"
-  train_reader_path: "movielens_reader"  # importlib format
-  train_batch_size: 5
-  model_save_path: "output_model_ncf"
+import numpy as np
 
-  use_gpu: False
-  epochs: 3
-  print_interval: 10
-  
-  test_data_dir: "data/test"
-  infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 5
-  infer_load_path: "output_model_ncf"
-  infer_start_epoch: 2
-  infer_end_epoch: 3
+filename = './Data/ml-1m.test.negative'
+f = open(filename, "r")
+lines = f.readlines()
+f.close()
+filename = './test_data.csv'
+f = open(filename, "w")
+for line in lines:
+    line = line.strip().split("\t")
+    user_id = line[0].strip("()").split(",")[0]
+    positive_item = line[0].strip("()").split(",")[1]
+    negative_item = []
+    for item in line[1:]:
+        negative_item.append(int(item))
 
-hyper_parameters:
-  optimizer: 
-    class: adam
-    learning_rate: 0.001
-  num_users: 6040
-  num_items: 3706
-  latent_dim: 8
-  fc_layers: [64, 32, 16, 8]
+    f.write(user_id + "," + positive_item + "," + "1" + "\n")
+    for item in negative_item:
+        f.write(user_id + "," + str(item) + "," + "0" + "\n")
+
+f.close()

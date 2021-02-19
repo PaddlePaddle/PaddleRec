@@ -39,10 +39,6 @@ class StaticModel():
 
         item_input = paddle.static.data(
             name="item_input", shape=[-1, 1], dtype='int64')
-
-        if is_infer:
-            return [user_input, item_input]
-
         label = paddle.static.data(name="label", shape=[-1, 1], dtype='int64')
         feeds_list = [user_input, item_input, label]
         return feeds_list
@@ -50,11 +46,15 @@ class StaticModel():
     def net(self, input, is_infer=False):
         ncf_model = NCFLayer(self.num_users, self.num_items, self.latent_dim,
                              self.layers)
-        prediction = ncf_model(input, is_infer)
+        prediction = ncf_model(input)
 
         self.inference_target_var = prediction
         if is_infer:
-            fetch_dict = {'prediction': prediction}
+            fetch_dict = {
+                "user": input[0],
+                'prediction': prediction,
+                "label": input[2]
+            }
             return fetch_dict
         cost = F.log_loss(
             input=prediction, label=paddle.cast(

@@ -77,11 +77,10 @@ class NCFLayer(nn.Layer):
             name='prediction')
         self.sigmoid = paddle.nn.Sigmoid()
 
-    def forward(self, input_data, is_infer):
+    def forward(self, input_data):
         user_input = input_data[0]
         item_input = input_data[1]
-        if not is_infer:
-            label = input_data[2]
+        label = input_data[2]
 
         # MF part
         user_embedding_mf = self.MF_Embedding_User(user_input)

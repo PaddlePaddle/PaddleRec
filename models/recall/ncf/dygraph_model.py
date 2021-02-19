@@ -30,14 +30,11 @@ class DygraphModel():
         return ncf_model
 
     # define feeds which convert numpy of batch data to paddle.tensor 
-    def create_feeds(self, batch_data, is_infer=False):
+    def create_feeds(self, batch_data):
         user_input = paddle.to_tensor(batch_data[0].numpy().astype('int64')
                                       .reshape(-1, 1))
         item_input = paddle.to_tensor(batch_data[1].numpy().astype('int64')
                                       .reshape(-1, 1))
-        if is_infer:
-            return [user_input, item_input]
-
         label = paddle.to_tensor(batch_data[2].numpy().astype('int64')
                                  .reshape(-1, 1))
         return [user_input, item_input, label]
@@ -67,18 +64,22 @@ class DygraphModel():
 
     # construct train forward phase  
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        inputs = self.create_feeds(batch_data, False)
+        inputs = self.create_feeds(batch_data)
 
-        prediction = dy_model.forward(inputs, False)
+        prediction = dy_model.forward(inputs)
         loss = self.create_loss(prediction, inputs[2])
         # update metrics
-        print_dict = {"loss": loss, "prediction": prediction}
+        print_dict = {"loss": loss}
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
-        inputs = self.create_feeds(batch_data, True)
+        inputs = self.create_feeds(batch_data)
 
-        prediction = dy_model.forward(inputs, True)
+        prediction = dy_model.forward(inputs)
         # update metrics
-        print_dict = {"prediction": prediction}
+        print_dict = {
+            "user": inputs[0],
+            "prediction": prediction,
+            "label": inputs[2]
+        }
         return metrics_list, print_dict
