@@ -51,7 +51,7 @@ n篇用户浏览过的文章的article embedding向量组将再次通过attentio
 每篇文章用一行表示，存放在一个或多个以article{number}.txt为后缀的文件里，如article.txt, article3.txt
 每行的格式为：
 文章id 主类id 子类id 分词后的文章标题id 分词后的文章单词id
-以上5项用分号分割，id均为自然数，分词后的文章标题id 和 分词后的文章单词id 都用空格做分隔符
+以上5项用tab符号分割，id均为自然数，分词后的文章标题id 和 分词后的文章单词id 都用空格做分隔符
 另外还需要收集用户的浏览记录，存放在一个或多个以browse{number}.txt为后缀的文件里，如browse.txt, browse3.txt
 每个用户的单次浏览序列用一行表示，格式为：
 浏览过的文章id序列 接下来浏览过的文章id 接下来没浏览的文章id序列
