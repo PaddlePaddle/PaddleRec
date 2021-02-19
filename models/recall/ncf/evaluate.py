@@ -18,7 +18,7 @@ import math
 """
 Extracting information from infer data
 """
-filename = './log_test_2.txt'
+filename = './result.txt'
 f = open(filename, "r")
 lines = f.readlines()
 f.close()
