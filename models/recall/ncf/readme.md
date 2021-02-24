@@ -81,7 +81,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 | 模型 | HR@10 | NDCG@10 | batch_size | epoch_num| Time of each epoch |
 | :------| :------ |:------ | :------ | :------| :------ | 
-| NCF_NeuMF | 0.58 | 0.33 | 1024 | 20 | 约20分钟 |
+| NCF_NeuMF | 0.58 | 0.33 | 256 | 20 | 约20分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/recall/ncf  
 2. 进入paddlerec/datasets/movielens_pinterest_NCF目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens和pinterest全量数据集，并解压到指定文件夹。
