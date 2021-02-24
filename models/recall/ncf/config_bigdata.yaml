@@ -15,7 +15,7 @@
 runner:
   train_data_dir: "../../../datasets/movielens_pinterest_NCF/big_train"
   train_reader_path: "movielens_reader"  # importlib format
-  train_batch_size: 256
+  train_batch_size: 1024
   model_save_path: "output_model_ncf"
 
   use_gpu: False
@@ -35,5 +35,6 @@ hyper_parameters:
     learning_rate: 0.001
   num_users: 6040
   num_items: 3706
-  latent_dim: 8
+  mf_dim: 8
+  mode: "NCF_NeuMF"  # optional: NCF_NeuMF, NCF_GMF, NCF_MLP
   fc_layers: [64, 32, 16, 8]
