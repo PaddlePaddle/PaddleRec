@@ -16,7 +16,7 @@ import math
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from net import NCFLayer
+from net import NCF_NeuMF_Layer, NCF_GMF_Layer, NCF_MLP_Layer
 
 
 class StaticModel():
@@ -28,7 +28,8 @@ class StaticModel():
     def _init_hyper_parameters(self):
         self.num_users = self.config.get("hyper_parameters.num_users")
         self.num_items = self.config.get("hyper_parameters.num_items")
-        self.latent_dim = self.config.get("hyper_parameters.latent_dim")
+        self.mf_dim = self.config.get("hyper_parameters.mf_dim")
+        self.mode = self.config.get("hyper_parameters.mode")
         self.layers = self.config.get("hyper_parameters.fc_layers")
         self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
@@ -44,8 +45,16 @@ class StaticModel():
         return feeds_list
 
     def net(self, input, is_infer=False):
-        ncf_model = NCFLayer(self.num_users, self.num_items, self.latent_dim,
-                             self.layers)
+        if self.mode == "NCF_NeuMF":
+            ncf_model = NCF_NeuMF_Layer(self.num_users, self.num_items,
+                                        self.mf_dim, self.layers)
+        if self.mode == "NCF_GMF":
+            ncf_model = NCF_GMF_Layer(self.num_users, self.num_items,
+                                      self.mf_dim, self.layers)
+        if self.mode == "NCF_MLP":
+            ncf_model = NCF_MLP_Layer(self.num_users, self.num_items,
+                                      self.mf_dim, self.layers)
+
         prediction = ncf_model(input)
 
         self.inference_target_var = prediction

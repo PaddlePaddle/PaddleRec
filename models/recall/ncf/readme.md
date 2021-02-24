@@ -66,7 +66,7 @@ python -u infer.py -m config.yaml
 # 静态图训练
 python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 静态图预测
-python -u static_infer.py -m config.yaml 
+python -u ../../../tools/static_infer.py -m config.yaml 
 ``` 
 
 ## 模型组网
@@ -81,13 +81,13 @@ python -u static_infer.py -m config.yaml
 
 | 模型 | HR@10 | NDCG@10 | batch_size | epoch_num| Time of each epoch |
 | :------| :------ |:------ | :------ | :------| :------ | 
-| NCF | 0.58 | 0.33 | 256 | 20 | 约20分钟 |
+| NCF_NeuMF | 0.58 | 0.33 | 1024 | 20 | 约20分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/recall/ncf  
 2. 进入paddlerec/datasets/movielens_pinterest_NCF目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens和pinterest全量数据集，并解压到指定文件夹。
 ``` bash
 cd ../../../datasets/movielens_pinterest_NCF
-sh run.sh
+bash run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
 ```bash

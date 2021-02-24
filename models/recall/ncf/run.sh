@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,11 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#!/bin/bash
 echo "................run................."
-echo "................The training log has been redirected to the log_train.txt file................."
 python -u ../../../tools/trainer.py -m config_bigdata.yaml &> log_train.txt
-echo "................The testing log has been redirected to the result.txt file................."
 python -u ../../../tools/infer.py -m config_bigdata.yaml &> result.txt
-echo "..............evaluate..................."
 python3 evaluate.py

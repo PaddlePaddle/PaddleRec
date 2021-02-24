@@ -24,9 +24,16 @@ class DygraphModel():
     def create_model(self, config):
         num_users = config.get("hyper_parameters.num_users")
         num_items = config.get("hyper_parameters.num_items")
-        latent_dim = config.get("hyper_parameters.latent_dim")
+        mf_dim = config.get("hyper_parameters.mf_dim")
+        mode = config.get("hyper_parameters.mode")
         layers = config.get("hyper_parameters.fc_layers")
-        ncf_model = net.NCFLayer(num_users, num_items, latent_dim, layers)
+        if mode == "NCF_NeuMF":
+            ncf_model = net.NCF_NeuMF_Layer(num_users, num_items, mf_dim,
+                                            layers)
+        if mode == "NCF_GMF":
+            ncf_model = net.NCF_GMF_Layer(num_users, num_items, mf_dim, layers)
+        if mode == "NCF_MLP":
+            ncf_model = net.NCF_MLP_Layer(num_users, num_items, mf_dim, layers)
         return ncf_model
 
     # define feeds which convert numpy of batch data to paddle.tensor 
