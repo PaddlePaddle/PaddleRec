@@ -15,7 +15,7 @@
 runner:
   train_data_dir: "../../../datasets/movielens_pinterest_NCF/big_train"
   train_reader_path: "movielens_reader"  # importlib format
-  train_batch_size: 1024
+  train_batch_size: 256
   model_save_path: "output_model_ncf"
 
   use_gpu: False
