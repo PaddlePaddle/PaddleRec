@@ -87,13 +87,13 @@ python -u ../../../tools/static_infer.py -m config.yaml
 2. 进入paddlerec/datasets/movielens_pinterest_NCF目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens和pinterest全量数据集，并解压到指定文件夹。
 ``` bash
 cd ../../../datasets/movielens_pinterest_NCF
-bash run.sh
+sh run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
 ```bash
 cd - # 切回模型目录
-# 动态图训练并得到指标
-sh run.sh
+# 动态图训练并得到指标(这里需要使用bash启动脚本)
+bash run.sh
 ```
 
 ## 进阶使用
