@@ -1,0 +1,9 @@
+mkdir big_train
+cd big_train
+wget https://paddlerec.bj.bcebos.com/ncf/train_data.csv
+cd ..
+mkdir big_test
+cd big_test
+wget https://paddlerec.bj.bcebos.com/ncf/test_data.csv
+cd ..
+wget https://paddlerec.bj.bcebos.com/ncf/Data.zip
