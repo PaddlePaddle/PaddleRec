@@ -97,7 +97,7 @@ python3 -u ../../../tools/infer.py -m config.yaml
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
 同时，我们提供了全量数据生成的脚本，将会自动下载microsoft news dataset全量数据集并转换为模型能接受的
 输入格式，执行方法如下：
-PaddleRec/datasets/MIND/data
+进入路径PaddleRec/datasets/MIND/data
 执行 sh run.sh
 脚本运行完成后，打开dict/yaml_info.txt，将其中的词向量大小，类目大小，子类目大小信息copy到config_bigdata.yaml
 里，替换最后3行的超参数
