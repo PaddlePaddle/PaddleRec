@@ -119,3 +119,10 @@ python3 -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
 期待预测auc为0.66
+
+
+单机多卡执行方式(以训练为例)
+python3 -m paddle.distributed.launch ../../../tools/trainer.py -m config_bigdata.yaml
+在此情况下将使用单机上所有gpu卡，若需要指定部分gpu卡执行，可以通过设置环境变量CUDA_VISIBLE_DEVICES
+来实现。例如单机上有8张卡，只打算用前4卡张训练，可以设置export CUDA_VISIBLE_DEVICES=0,1,2,3
+再执行训练脚本即可。
