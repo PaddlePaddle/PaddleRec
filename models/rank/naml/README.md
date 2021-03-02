@@ -109,9 +109,9 @@ python3 -u ../../../tools/infer.py -m config.yaml
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 ```
 以下为训练2个epoch的结果
-| 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
+| 模型 | auc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| naml | 0.72 | 50 | 3 | 约4小时 | 
+| naml | 0.66 | 50 | 3 | 约4小时 | 
 
 预测
 ```
