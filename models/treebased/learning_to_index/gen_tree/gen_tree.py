@@ -1,3 +1,4 @@
+# -*- coding=utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,6 +55,8 @@ def main():
         os.path.join(args.output_dir, "id2item.json"), args.output_dir,
         args.n_clusters)
     tree_search_end_time = time.time()
+    print("Kmeans Cluster using time: {}".format(
+        cluster_end_time - cluster_start_time))
     print("Generate tree meta file using time: {}".format(
         tree_search_end_time - tree_search_start_time))
 
