@@ -23,7 +23,7 @@ def main():
     start_time = time.time()
     for i in range(args.repeats):
         predictor.run()
-    output_names =predictor.get_output_names()
+    output_names = predictor.get_output_names()
     output_handle = predictor.get_output_handle(output_names[0])
     output_data = output_handle.copy_to_cpu()
     end_time = time.time()
@@ -33,20 +33,20 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_dir", type=str,help="model dir")
-    parser.add_argument("--model_file", type=str,help="model filename")
+    parser.add_argument("--model_dir", type=str, help="model dir")
+    parser.add_argument("--model_file", type=str, help="model filename")
     parser.add_argument("--params_file", type=str, help="parameter filename")
     parser.add_argument("--batch_size", type=int, default=1, help="batch size")
     parser.add_argument("--warmup", type=int, default=0, help="warmup")
     parser.add_argument("--repeats", type=int, default=1, help="repeats")
-    parser.add_argument("--math_thread_num", type=int, default=1, help="math_thread_num")
+    parser.add_argument(
+        "--math_thread_num", type=int, default=1, help="math_thread_num")
     return parser.parse_args()
 
 
 def set_config(args):
     config = Config(args.model_file, args.params_file)
-    config.enable_lite_engine(PrecisionType.Float32,
-                              True)
+    config.enable_lite_engine(PrecisionType.Float32, True)
     # use lite xpu subgraph
     config.enable_xpu(10 * 1024 * 1024)
     # use lite cuda subgraph
@@ -57,4 +57,3 @@ def set_config(args):
 
 if __name__ == "__main__":
     main()
-
