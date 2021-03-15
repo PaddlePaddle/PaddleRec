@@ -19,19 +19,20 @@ import math
 import numpy as np
 
 import net
+import sys
 
 
 class DygraphModel():
-    def __init__(self):
-        self.bucket = 100000
-        self.absolute_limt = 200.0
-
-    def rescale(self, number):
-        if number > self.absolute_limt:
-            number = self.absolute_limt
-        elif number < -self.absolute_limt:
-            number = -self.absolute_limt
-        return (number + self.absolute_limt) / (self.absolute_limt * 2 + 1e-8)
+    # def __init__(self):
+    #     self.bucket = 100000
+    #     self.absolute_limt = 200.0
+    #
+    # def rescale(self, number):
+    #     if number > self.absolute_limt:
+    #         number = self.absolute_limt
+    #     elif number < -self.absolute_limt:
+    #         number = -self.absolute_limt
+    #     return (number + self.absolute_limt) / (self.absolute_limt * 2 + 1e-8)
 
     # define model
     def create_model(self, config):
@@ -54,7 +55,7 @@ class DygraphModel():
     # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch, config):
         label = batch[0]
-        return label, batch[1:], None
+        return label, batch[1:]
 
     # define loss function by predicts and label
     def create_loss(self, raw_pred, label):
@@ -78,50 +79,37 @@ class DygraphModel():
         # metrics_list_name = ["acc"]
         # auc_metric = paddle.metric.Accuracy()
         metrics_list_name = ["auc"]
-        auc_metric = paddle.metric.Auc(num_thresholds=self.bucket)
+        auc_metric = paddle.metric.Auc()
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
     # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
-                                                                config)
+        labels, sparse_tensor = self.create_feeds(batch_data, config)
 
-        raw = dy_model(sparse_tensor, None)
+        raw = dy_model(sparse_tensor)
 
         loss = paddle.nn.functional.cross_entropy(
             input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
 
-        scaled = raw.numpy()
-        scaled_pre = []
-        [rows, cols] = scaled.shape
-        for i in range(rows):
-            for j in range(cols):
-                scaled_pre.append(1.0 - self.rescale(scaled[i, j]))
-                scaled_pre.append(self.rescale(scaled[i, j]))
-        scaled_np_predict = np.array(scaled_pre).reshape([-1, 2])
-        metrics_list[0].update(scaled_np_predict,
-                               paddle.reshape(labels, [-1, 1]))
+        soft_predict = paddle.nn.functional.sigmoid(
+            paddle.reshape(raw, [-1, 1]))
+        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=-1)
+        labels = paddle.reshape(labels, [-1, 1])
+        metrics_list[0].update(preds=predict_2d.numpy(), labels=labels.numpy())
 
         loss = paddle.mean(loss)
         print_dict = None
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
-        labels, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
-                                                                config)
-        raw = dy_model(sparse_tensor, None)
+        labels, sparse_tensor = self.create_feeds(batch_data, config)
+        raw = dy_model(sparse_tensor)
         #predict_raw = paddle.nn.functional.softmax(raw)
 
-        scaled = raw.numpy()
-        scaled_pre = []
-        [rows, cols] = scaled.shape
-        for i in range(rows):
-            for j in range(cols):
-                scaled_pre.append(1.0 - self.rescale(scaled[i, j]))
-                scaled_pre.append(self.rescale(scaled[i, j]))
-        scaled_np_predict = np.array(scaled_pre).reshape([-1, 2])
-        metrics_list[0].update(scaled_np_predict,
-                               paddle.reshape(labels, [-1, 1]))
-
+        soft_predict = paddle.nn.functional.sigmoid(
+            paddle.reshape(raw, [-1, 1]))
+        predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=-1)
+        labels = paddle.reshape(labels, [-1, 1])
+        metrics_list[0].update(preds=predict_2d.numpy(), labels=labels.numpy())
         return metrics_list, None
