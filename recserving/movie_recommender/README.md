@@ -32,7 +32,7 @@
 ## 运行环境
 linux 终端
 Paddle 版本：1.8+  
-Python 版本：2.7/3.6  
+Python 版本：3.6  
 
 ## 设计方案
 
@@ -120,17 +120,26 @@ https://github.com/PaddlePaddle/Serving/blob/develop/doc/LATEST_PACKAGES.md
 wget http://download.redis.io/releases/redis-stable.tar.gz --no-check-certificate
 tar -xf redis-stable.tar.gz && cd redis-stable/src && make && ./redis-server &
 ```
-目前milvus需要用docker远端启动，在宿主机上启动
+目前milvus需要用docker远端启动，在宿主机上启动。
 
 ```
-sudo docker run -d --name milvus_cpu_0.11.0 \
+# 下载配置文件
+mkdir -p /home/$USER/milvus/conf
+cd /home/$USER/milvus/conf
+wget https://raw.githubusercontent.com/milvus-io/milvus/v1.0.0/core/conf/demo/server_config.yaml
+
+# 启动 Milvus 服务
+sudo docker run -d --name milvus_cpu_1.0.0 \
 -p 19530:19530 \
 -p 19121:19121 \
 -v /home/$USER/milvus/db:/var/lib/milvus/db \
 -v /home/$USER/milvus/conf:/var/lib/milvus/conf \
 -v /home/$USER/milvus/logs:/var/lib/milvus/logs \
 -v /home/$USER/milvus/wal:/var/lib/milvus/wal \
-milvusdb/milvus:0.11.0-cpu-d101620-4c44c0
+milvusdb/milvus:1.0.0-cpu-d030521-1ea92e
+
+# 安装 Milvus Python SDK
+pip install pymilvus==1.0.1
 ```
 
 3. 运行相关命令
