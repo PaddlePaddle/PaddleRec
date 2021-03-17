@@ -26,6 +26,9 @@ import redis
 # from milvus import Milvus, DataType
 from paddle_serving_app.local_predict import LocalPredictor
 import numpy as np
+
+import sys
+sys.path.append("..")
 from milvus_tool.milvus_recall import RecallByMilvus
 
 def hash2(a):

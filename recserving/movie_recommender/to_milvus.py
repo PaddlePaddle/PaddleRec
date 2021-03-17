@@ -50,6 +50,10 @@ import random
 
 
 import codecs
+
+import sys
+sys.path.append("..")
+
 from milvus_tool.milvus_insert import VecToMilvus
 
 
