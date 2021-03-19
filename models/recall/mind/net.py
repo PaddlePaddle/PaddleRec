@@ -67,16 +67,12 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
         true_log_probs, samp_log_probs, neg_samples = self.sample(labels)
         n_sample = neg_samples.shape[0]
 
-        # if self.batch_size is None:
         b1 = paddle.shape(labels)[0]
         b2 = paddle.shape(labels)[1]
-        # else:
-        #     b1 = self.batch_size
-        #     b2 = 1
+
         all_ids = paddle.concat([labels.reshape((-1, )), neg_samples])
         all_w = paddle.gather(weights, all_ids)
-        # all_w.stop_gradient = False
-        # # return all_w
+
         true_w = all_w[:-n_sample].reshape((-1, b2, embedding_dim))
         sample_w = all_w[-n_sample:].reshape((n_sample, embedding_dim))
 
@@ -88,10 +84,9 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
         # [B, D] * [B, 1,D]
         true_logist = paddle.matmul(
             true_w, inputs.unsqueeze(1), transpose_y=True).squeeze(1) + true_b
-        # true_logist.stop_gradient = False
+
         sample_logist = paddle.matmul(
             inputs.unsqueeze(1), sample_w, transpose_y=True) + sample_b
-        # sample_logist.stop_gradient = False
 
         if self.subtract_log_q:
             true_logist = true_logist - true_log_probs.unsqueeze(1)
@@ -110,7 +105,7 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
                 paddle.zeros_like(sample_logist)
             ],
             axis=1)
-        # out_label.stop_gradient = True
+
         sampled_loss = F.softmax_with_cross_entropy(
             logits=out_logist, label=out_label, soft_label=True)
         return sampled_loss, out_logist, out_label
@@ -138,16 +133,15 @@ class Mind_Capsual_Layer(nn.Layer):
         self.k_max = k_max
         self.batch_size = batch_size
 
-        # 动态路由的路由参数
+        # B2I routing
         self.routing_logits = self.create_parameter(
             shape=[1, self.k_max, self.maxlen],
             attr=paddle.ParamAttr(
                 name="routing_logits", trainable=False),
             default_initializer=nn.initializer.Normal(
                 mean=0.0, std=self.init_std))
-        # paddle.static.Print(self.routing_logits)
 
-        # 仿射变换的参数
+        # bilinear mapping
         self.bilinear_mapping_matrix = self.create_parameter(
             shape=[self.input_units, self.output_units],
             attr=paddle.ParamAttr(
@@ -189,19 +183,16 @@ class Mind_Capsual_Layer(nn.Layer):
         mask = self.sequence_mask(seq_len_tile, self.maxlen)
         pad = paddle.ones_like(mask, dtype="float32") * (-2**32 + 1)
 
-        # 仿射变换过后的胶囊 S*e
+        # S*e
         low_capsule_new = paddle.matmul(item_his_emb,
                                         self.bilinear_mapping_matrix)
-        #low_capsule_new = self.bilinear_mapping_matrix(item_his_emb)
 
-        # 进行动态路由的时候 底层的embeding保持不变，反向传播时梯度也不回传给low_capsule_new
         low_capsule_new_nograd = paddle.assign(low_capsule_new)
         low_capsule_new_nograd.stop_gradient = True
 
         B = paddle.tile(self.routing_logits,
                         [paddle.shape(item_his_emb)[0], 1, 1])
-        # B.stop_gradient = True
-        # 前n-1次迭代不带梯度
+
         for i in range(self.iters - 1):
             B_mask = paddle.where(mask, B, pad)
             # print(B_mask)
@@ -214,9 +205,7 @@ class Mind_Capsual_Layer(nn.Layer):
                 paddle.norm(
                     B_delta, p=2, axis=-1, keepdim=True),
                 paddle.ones_like(B_delta))
-            # B += B_delta
-            # paddle.static.Print(B)
-        # 最后一次迭代带梯度
+
         B_mask = paddle.where(mask, B, pad)
         W = F.softmax(B_mask, axis=-1)
         # paddle.static.Print(W)
@@ -296,12 +285,11 @@ class MindLayer(nn.Layer):
         hit_item_emb = self.item_emb(hist_item)  # [B, seqlen, embed_dim]
         user_cap, cap_weights, cap_mask = self.capsual_layer(hit_item_emb,
                                                              seqlen)
-        # paddle.static.Print(user_cap[0])
         if not self.training:
             return user_cap, cap_weights
         target_emb = self.item_emb(labels)
         user_emb, W = self.label_aware_attention(user_cap, target_emb)
-        # item_weights = self.item_emb(self.item_id_range)
+
         return self.sampled_softmax(
             user_emb, labels, self.item_emb.weight,
             self.embedding_bias), W, user_cap, cap_weights, cap_mask

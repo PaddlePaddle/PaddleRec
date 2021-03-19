@@ -44,38 +44,48 @@ class StaticModel():
     # define feeds which convert numpy of batch data to paddle.tensor 
     def create_feeds(self, is_infer=False):
         # print(batch_data)
-        hist_item = paddle.static.data(
-            name="hist_item", shape=[-1, self.maxlen], dtype="int64")
-        target_item = paddle.static.data(
-            name="target_item", shape=[-1, 1], dtype="int64")
-        seq_len = paddle.static.data(
-            name="seq_len", shape=[-1, 1], dtype="int64")
-        return [hist_item, target_item, seq_len]
+        if not is_infer:
+            hist_item = paddle.static.data(
+                name="hist_item", shape=[-1, self.maxlen], dtype="int64")
+            target_item = paddle.static.data(
+                name="target_item", shape=[-1, 1], dtype="int64")
+            seq_len = paddle.static.data(
+                name="seq_len", shape=[-1, 1], dtype="int64")
+            return [hist_item, target_item, seq_len]
+        else:
+            hist_item = paddle.static.data(
+                name="hist_item", shape=[-1, self.maxlen], dtype="int64")
+            seq_len = paddle.static.data(
+                name="seq_len", shape=[-1, 1], dtype="int64")
+            return [hist_item, seq_len]
 
     def net(self, inputs, is_infer=False):
         mind_model = net.MindLayer(self.item_count, self.embedding_dim,
                                    self.hidden_size, self.neg_samples,
                                    self.maxlen, self.pow_p, self.capsual_iters,
                                    self.capsual_max_k, self.capsual_init_std)
-
-        [loss, sampled_logist,
-         sampled_labels], weight, user_cap, cap_weights = mind_model(*inputs)
-        self.inference_target_var = user_cap
+        # self.model = mind_model
         if is_infer:
+            mind_model.eval()
+            user_cap, cap_weights = mind_model(*inputs)
+            # self.inference_target_var = user_cap
             fetch_dict = {"user_cap": user_cap}
             return fetch_dict
-        avg_cost = paddle.mean(loss)
-        self._cost = avg_cost
-        fetch_dict = {"loss": avg_cost, }
+
+        hist_item, labels, seqlen = inputs
+        [_, sampled_logist,
+         sampled_labels], weight, user_cap, cap_weights, cap_mask = mind_model(
+             hist_item, seqlen, labels)
+
+        loss = F.softmax_with_cross_entropy(
+            sampled_logist, sampled_labels, soft_label=True)
+        self._cost = paddle.mean(loss)
+        fetch_dict = {"loss": self._cost}
         return fetch_dict
 
     # define optimizer 
     def create_optimizer(self, strategy=None):
-        optimizer = paddle.optimizer.Adam(
-            learning_rate=self.lr, lazy_mode=True)
-        if strategy != None:
-            import paddle.distributed.fleet as fleet
-            optimizer = fleet.distributed_optimizer(optimizer, strategy)
+        optimizer = paddle.optimizer.Adam(learning_rate=self.lr)
         optimizer.minimize(self._cost)
 
     # construct infer forward phase  
