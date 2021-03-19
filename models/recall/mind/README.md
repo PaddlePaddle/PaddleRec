@@ -1,7 +1,7 @@
 # MIND(Multi-Interest Network with Dynamic Routing)
 
 以下是本例的简要目录结构及说明： 
-```shell
+```
 ├── data #样例数据
 │   ├── demo                    #demo训练数据
 │   │   └── demo.txt     
