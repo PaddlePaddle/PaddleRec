@@ -65,21 +65,12 @@ class StaticModel():
             name="target_cat", shape=[None], dtype="int64")
         self.data_var.append(target_cat)
 
-        # label_input = paddle.static.data(
-        #     name="label", shape=[-1, 1], dtype='int64')
-        #label = paddle.static.data(name="label", shape=[-1, 1], dtype="int64")
-        # label = paddle.static.data(name="label", shape=[None], dtype="float32")
         label = paddle.static.data(
             name="label", shape=[-1, 1], dtype="float32")
-        # label = paddle.reshape(batch[4], [-1, 1])
         self.data_var.append(label)
 
         mask = paddle.static.data(
             name="mask", shape=[None, seq_len, 1], dtype="int64")
-        # name="mask", shape=[None, seq_len, 1], dtype="float64")
-        # paddle.static.Print(mask, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
-
         self.data_var.append(mask)
 
         target_item_seq = paddle.static.data(
@@ -100,14 +91,10 @@ class StaticModel():
         self.hist_cat_seq = inputs[1]
         self.target_item = inputs[2]
         self.target_cat = inputs[3]
-        # self.label = paddle.static.data(name="label", shape=[-1, 1], dtype="float32")
         self.label = inputs[4].reshape([-1, 1])
         self.mask = inputs[5]
-        # paddle.static.Print(self.mask, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
         self.target_item_seq = inputs[6]
         self.target_cat_seq = inputs[7]
-        # StaticDINLayer
         din_model = DINLayer(self.item_emb_size, self.cat_emb_size, self.act,
                              self.is_sparse, self.use_DataLoader,
                              self.item_count, self.cat_count)
@@ -117,39 +104,20 @@ class StaticModel():
                                 self.mask, self.target_item_seq,
                                 self.target_cat_seq)
 
-        # paddle.static.Print(self.label, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
-        # paddle.static.Print(raw_predict, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
-
-        # paddle.static.Print(raw_predict, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
-
         loss = paddle.nn.functional.cross_entropy(
             input=raw_predict,
             label=paddle.cast(self.label, "float32"),
             soft_label=True)
 
-        # paddle.static.Print(loss, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
-
         avg_cost = paddle.mean(loss)
         self._cost = avg_cost
-        # paddle.static.Print(avg_cost, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
 
         self.predict = paddle.nn.functional.sigmoid(raw_predict)
-        # paddle.static.Print(self.predict, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
         predict_2d = paddle.concat([1 - self.predict, self.predict], 1)
-        # paddle.static.Print(predict_2d, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
         label_int = paddle.cast(self.label, 'int64')
         auc, batch_auc, _ = paddle.static.auc(input=predict_2d,
                                               label=label_int,
                                               slide_steps=0)
-        # paddle.static.Print(auc, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
 
         self.inference_target_var = auc
         if is_infer:
@@ -165,10 +133,6 @@ class StaticModel():
             import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
-        # paddle.static.Print(optimizer, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
-        # paddle.static.Print(self._cost, first_n=- 1, message=None, summarize=20, print_tensor_name=True,
-        #                     print_tensor_type=True, print_tensor_shape=True, print_tensor_lod=True, print_phase='both')
 
     def infer_net(self, input):
         return self.net(input, is_infer=True)
