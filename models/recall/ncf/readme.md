@@ -61,7 +61,7 @@ os : windows/linux/macos
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
-python -u infer.py -m config.yaml 
+python -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
 python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
@@ -85,11 +85,13 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 1. 确认您当前所在目录为PaddleRec/models/recall/ncf  
 2. 进入paddlerec/datasets/movielens_pinterest_NCF目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens和pinterest全量数据集，并解压到指定文件夹。
+
 ``` bash
 cd ../../../datasets/movielens_pinterest_NCF
 sh run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
+
 ```bash
 cd - # 切回模型目录
 # 动态图训练并得到指标(这里需要使用bash启动脚本)
