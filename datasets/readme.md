@@ -28,11 +28,12 @@ sh data_process.sh
  |[movielens_pinterest_NCF](https://paddlerec.bj.bcebos.com/ncf/Data.zip)|论文原作者处理过的movielens数据集和pinterest数据集|[《Neural Collaborative Filtering 》](https://arxiv.org/pdf/1708.05031.pdf)|
  |[Anime](https://paddlerec.bj.bcebos.com/datasets/Anime/archive.zip)|该数据集包含73,516个用户对12,294个动漫的用户偏好数据。每个用户都可以将动漫添加到列表中并给它一个评分，该数据集是这些评分的汇总。|[Kaggle](https://www.kaggle.com/CooperUnion/anime-recommendations-database)|
  |[LFM-1b](https://paddlerec.bj.bcebos.com/datasets/LFM_1b/LFM-1b.zip)|此数据集包含由Last.FM的120,000多个用户创建的十亿多个音乐收听记录。每条收听记录均以艺术家，专辑和曲目名称为特征，并包含一个时间戳。|[ICMR 2016](http://www.cp.jku.at/datasets/LFM-1b/)|
-|[LFM-1b UGP](https://paddlerec.bj.bcebos.com/datasets/LFM_1b_UGP/LFM-1b_UGP.zip)|LFM-1b数据集的用户类型档案,作为LFM-1b的补充扩展|[ISM 2017](http://www.cp.jku.at/datasets/LFM-1b/)|
-|[Jester](https://paddlerec.bj.bcebos.com/datasets/Jester/JesterDataset3.zip)|此数据集包含Jester Joke Recommender系统用户对笑话的匿名评分。|[UC Berkeley](http://eigentaste.berkeley.edu/dataset/)|
-|[Steam](https://paddlerec.bj.bcebos.com/datasets/steam/steam_reviews.json.gz)|该数据集是Steam的评论和游戏信息，其中包含7,793,069条评论，2,567,538位用户和32,135个游戏。除评论文本外，数据还包括每个评论中用户的游戏时间。|[ICDM 2018](https://github.com/kang205/SASRec)|
-|[Douban](https://paddlerec.bj.bcebos.com/datasets/Douban/DMSC.csv)|豆瓣电影是一个中文网站，允许互联网用户分享他们对电影的评论和观点。用户可以在电影上发表简短或长时间的评论并给他们打分。该数据集包含“豆瓣电影”网站中28部电影的200万条简短评论。|[Kaggle](https://www.kaggle.com/utmhikari/doubanmovieshortcomments)|
-|[TaFeng](https://paddlerec.bj.bcebos.com/datasets/tafeng/ta_feng_all_months_merged.csv)|该数据集包含2000年11月至2001年2月中国杂货店的交易数据。|[Kaggle](https://www.kaggle.com/chiranjivdas09/ta-feng-grocery-dataset)|
-|[Retailrocket](https://paddlerec.bj.bcebos.com/datasets/Retailrocket/Retailrocket.zip)|数据是从真实的电子商务网站中收集的。它是原始数据，即没有任何内容转换，但是，由于保密问题，所有值都被哈希化。|[Kaggle](https://www.kaggle.com/retailrocket/ecommerce-dataset)|
-|[Netflix](https://paddlerec.bj.bcebos.com/datasets/Netflix/Netflix.zip)|这是Netflix竞赛中使用的官方数据集。|[Kaggle](https://www.kaggle.com/netflix-inc/netflix-prize-data)|
-|[FourSquare](https://paddlerec.bj.bcebos.com/datasets/FourSquare/FourSquare.zip)|此数据集包含在纽约和东京进行的大约10个月收集的签到。每个签到都有其时间戳，GPS坐标及其语义相关联。|[Kaggle](https://www.kaggle.com/chetanism/foursquare-nyc-and-tokyo-checkin-dataset)|
+ |[LFM-1b UGP](https://paddlerec.bj.bcebos.com/datasets/LFM_1b_UGP/LFM-1b_UGP.zip)|LFM-1b数据集的用户类型档案,作为LFM-1b的补充扩展|[ISM 2017](http://www.cp.jku.at/datasets/LFM-1b/)|
+ |[Jester](https://paddlerec.bj.bcebos.com/datasets/Jester/JesterDataset3.zip)|此数据集包含Jester Joke Recommender系统用户对笑话的匿名评分。|[UC Berkeley](http://eigentaste.berkeley.edu/dataset/)|
+ |[Steam](https://paddlerec.bj.bcebos.com/datasets/steam/steam_reviews.json.gz)|该数据集是Steam的评论和游戏信息，其中包含7,793,069条评论，2,567,538位用户和32,135个游戏。除评论文本外，数据还包括每个评论中用户的游戏时间。|[ICDM 2018](https://github.com/kang205/SASRec)|
+ |[Douban](https://paddlerec.bj.bcebos.com/datasets/Douban/DMSC.csv)|豆瓣电影是一个中文网站，允许互联网用户分享他们对电影的评论和观点。用户可以在电影上发表简短或长时间的评论并给他们打分。该数据集包含“豆瓣电影”网站中28部电影的200万条简短评论。|[Kaggle](https://www.kaggle.com/utmhikari/doubanmovieshortcomments)|
+ |[TaFeng](https://paddlerec.bj.bcebos.com/datasets/tafeng/ta_feng_all_months_merged.csv)|该数据集包含2000年11月至2001年2月中国杂货店的交易数据。|[Kaggle](https://www.kaggle.com/chiranjivdas09/ta-feng-grocery-dataset)|
+ |[Retailrocket](https://paddlerec.bj.bcebos.com/datasets/Retailrocket/Retailrocket.zip)|数据是从真实的电子商务网站中收集的。它是原始数据，即没有任何内容转换，但是，由于保密问题，所有值都被哈希化。|[Kaggle](https://www.kaggle.com/retailrocket/ecommerce-dataset)|
+ |[Netflix](https://paddlerec.bj.bcebos.com/datasets/Netflix/Netflix.zip)|这是Netflix竞赛中使用的官方数据集。|[Kaggle](https://www.kaggle.com/netflix-inc/netflix-prize-data)|
+ |[FourSquare](https://paddlerec.bj.bcebos.com/datasets/FourSquare/FourSquare.zip)|此数据集包含在纽约和东京进行的大约10个月收集的签到。每个签到都有其时间戳，GPS坐标及其语义相关联。|[Kaggle](https://www.kaggle.com/chetanism/foursquare-nyc-and-tokyo-checkin-dataset)|
+ |[AmazonBook](https://paddlerec.bj.bcebos.com/datasets/AmazonBook/AmazonBook.tar.gz)|论文原作者处理过的AmazonBook数据集 |[《Controllable Multi-Interest Framework for Recommendation》](https://arxiv.org/abs/2005.09347)|
