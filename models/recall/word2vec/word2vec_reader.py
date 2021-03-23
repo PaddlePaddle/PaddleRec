@@ -94,8 +94,8 @@ class RecDataset(IterableDataset):
                     for idx, target_id in enumerate(word_ids):
                         context_word_ids = self.get_context_words(word_ids,
                                                                   idx)
-                        output = []
                         for context_id in context_word_ids:
+                            output = []
                             output.append(
                                 np.array([int(target_id)]).astype('int64'))
                             output.append(
