@@ -24,7 +24,7 @@ runner:
   
   test_data_dir: "data/test"
   infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 5
+  infer_batch_size: 1
   infer_load_path: "output_model_ncf"
   infer_start_epoch: 2
   infer_end_epoch: 3
