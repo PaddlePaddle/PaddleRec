@@ -62,8 +62,10 @@ def main(args):
     config = load_yaml(args.config_yaml)
     dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
+
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
+    use_visual = config.get("runner.use_visual", False)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
     print_interval = config.get("runner.print_interval", None)
@@ -72,14 +74,19 @@ def main(args):
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, train_data_dir, epochs, print_interval,
+        "use_gpu: {}, use_visual: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_visual, train_data_dir, epochs, print_interval,
                model_save_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     dy_model = dy_model_class.create_model(config)
+
+    # Create a log_visual object and store the data in the path
+    if use_visual:
+        from visualdl import LogWriter
+        log_visual = LogWriter(args.abs_dir + "/log/train")
 
     if model_init_path is not None:
         load_model(model_init_path, dy_model)
@@ -91,6 +98,7 @@ def main(args):
     train_dataloader = create_data_loader(config=config, place=place)
 
     last_epoch_id = config.get("last_epoch", -1)
+    step_num = 0
 
     for epoch_id in range(last_epoch_id + 1, epochs):
         # set train mode
@@ -125,11 +133,21 @@ def main(args):
                         metric_list_name[metric_id] +
                         ":{:.6f}, ".format(metric_list[metric_id].accumulate())
                     )
+                    if use_visual:
+                        log_visual.add_scalar(
+                            tag="train/" + metric_list_name[metric_id],
+                            step=step_num,
+                            value=metric_list[metric_id].accumulate())
                 tensor_print_str = ""
                 if tensor_print_dict is not None:
                     for var_name, var in tensor_print_dict.items():
                         tensor_print_str += (
                             "{}:".format(var_name) + str(var.numpy()) + ",")
+                        if use_visual:
+                            log_visual.add_scalar(
+                                tag="train/" + var_name,
+                                step=step_num,
+                                value=var.numpy())
                 logger.info(
                     "epoch: {}, batch_id: {}, ".format(
                         epoch_id, batch_id) + metric_str + tensor_print_str +
@@ -142,6 +160,7 @@ def main(args):
                 train_run_cost = 0.0
                 total_samples = 0
             reader_start = time.time()
+            step_num = step_num + 1
 
         metric_str = ""
         for metric_id in range(len(metric_list_name)):

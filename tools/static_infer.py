@@ -24,7 +24,6 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
 from utils.save_load import save_static_model, load_static_model
-
 import time
 import argparse
 
@@ -59,6 +58,7 @@ def main(args):
 
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
+    use_visual = config.get("runner.use_visual", False)
     auc_num = config.get("runner.auc_num", 1)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
@@ -69,9 +69,9 @@ def main(args):
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, test_data_dir, start_epoch, end_epoch, print_interval,
-               model_load_path))
+        "use_gpu: {}, use_visual: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, use_visual, test_data_dir, start_epoch, end_epoch,
+               print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -81,6 +81,12 @@ def main(args):
 
     test_dataloader = create_data_loader(
         config=config, place=place, mode="test")
+
+    # Create a log_visual object and store the data in the path
+    if use_visual:
+        from visualdl import LogWriter
+        log_visual = LogWriter(args.abs_dir + "/log/infer")
+    step_num = 0
 
     for epoch_id in range(start_epoch, end_epoch):
         logger.info("load model epoch {}".format(epoch_id))
@@ -104,12 +110,18 @@ def main(args):
                 for var_idx, var_name in enumerate(fetch_vars):
                     metric_str += "{}: {}, ".format(
                         var_name, fetch_batch_var[var_idx][0])
+                    if use_visual:
+                        log_visual.add_scalar(
+                            tag="infer/" + var_name,
+                            step=step_num,
+                            value=fetch_batch_var[var_idx][0])
                 logger.info("epoch: {}, batch_id: {}, ".format(
                     epoch_id, batch_id) + metric_str + "speed: {:.2f} ins/s".
                             format(print_interval * batch_size / (time.time(
                             ) - interval_begin)))
                 interval_begin = time.time()
             reader_start = time.time()
+            step_num = step_num + 1
 
         metric_str = ""
         for var_idx, var_name in enumerate(fetch_vars):
