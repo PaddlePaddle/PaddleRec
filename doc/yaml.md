@@ -20,6 +20,7 @@
 |             epochs            |    int    |                           >= 1                           |    是    |                       指定train阶段需要训练几个epoch                        |
 |             print_interval            |    int    |                           >= 1                           |    是    |                       训练指标打印batch间隔                        |
 |             use_auc            |    bool    |                           True/False                           |    否    |                       在每个epoch开始时重置auc指标的值                        |
+|             use_visual            |    bool    |                           True/False                           |    否    |                       开启模型训练的可视化功能，开启时需要安装visualDL                        |
 
 
 ## hyper_parameters变量
