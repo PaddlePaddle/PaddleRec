@@ -99,8 +99,8 @@ python -u static_infer.py -m config.yaml -top_n 50  #对测试数据进行预测
 在全量数据下模型的指标如下：
 | 模型 |  batch_size | epoch_num| Recall@50 | NDCG@50 | HitRate@50 |Time of each epoch |
 | :------| :------ | :------ | :------| :------ | :------|  :------ | 
-| mind(静态图) | 128 | 6 | 5.61% | 8.96% | 11.81% | -- |
-| mind(动态图) | 128 | 6 | 5.54% | 8.85% | 11.75% | -- |
+| mind | 128 | 20 | 8.43% | 13.28% | 17.22% | -- |
+
 
 1. 确认您当前所在目录为PaddleRec/models/recall/mind
 2. 进入paddlerec/datasets/AmazonBook目录下执行run.sh脚本，会下载处理完成的AmazonBook数据集，并解压到指定目录
