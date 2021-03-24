@@ -62,6 +62,7 @@ def main(args):
 
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
+    use_visual = config.get("runner.use_visual", False)
     auc_num = config.get("runner.auc_num", 1)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
@@ -73,8 +74,8 @@ def main(args):
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, train_data_dir, epochs, print_interval,
+        "use_gpu: {}, use_visual: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_visual, train_data_dir, epochs, print_interval,
                model_save_path))
     logger.info("**************common.configs**********")
 
@@ -84,6 +85,12 @@ def main(args):
     exe.run(paddle.static.default_startup_program())
 
     last_epoch_id = config.get("last_epoch", -1)
+
+    # Create a log_visual object and store the data in the path
+    if use_visual:
+        from visualdl import LogWriter
+        log_visual = LogWriter(args.abs_dir + "/log/train")
+    step_num = 0
 
     if reader_type == 'QueueDataset':
         dataset, file_list = get_reader(input_data, config)
@@ -96,9 +103,9 @@ def main(args):
         if use_auc:
             reset_auc(auc_num)
         if reader_type == 'DataLoader':
-            fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
-                                               input_data_names, fetch_vars,
-                                               exe, config)
+            fetch_batch_var, step_num = dataloader_train(
+                epoch_id, train_dataloader, input_data_names, fetch_vars, exe,
+                config, use_visual, log_visual, step_num)
             metric_str = ""
             for var_idx, var_name in enumerate(fetch_vars):
                 metric_str += "{}: {}, ".format(var_name,
@@ -139,7 +146,7 @@ def dataset_train(epoch_id, dataset, fetch_vars, exe, config):
 
 
 def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
-                     exe, config):
+                     exe, config, use_visual, log_visual, step_num):
     print_interval = config.get("runner.print_interval", None)
     batch_size = config.get("runner.train_batch_size", None)
     interval_begin = time.time()
@@ -162,6 +169,11 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
             for var_idx, var_name in enumerate(fetch_vars):
                 metric_str += "{}: {}, ".format(var_name,
                                                 fetch_batch_var[var_idx])
+                if use_visual:
+                    log_visual.add_scalar(
+                        tag="train/" + var_name,
+                        step=step_num,
+                        value=fetch_batch_var[var_idx])
             logger.info(
                 "epoch: {}, batch_id: {}, ".format(epoch_id,
                                                    batch_id) + metric_str +
@@ -174,7 +186,8 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
             train_run_cost = 0.0
             total_samples = 0
         reader_start = time.time()
-    return fetch_batch_var
+        step_num = step_num + 1
+    return fetch_batch_var, step_num
 
 
 if __name__ == "__main__":

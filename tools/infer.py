@@ -64,6 +64,7 @@ def main(args):
     config["config_abs_dir"] = args.abs_dir
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
+    use_visual = config.get("runner.use_visual", False)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
     model_load_path = config.get("runner.infer_load_path", "model_output")
@@ -72,14 +73,19 @@ def main(args):
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, test_data_dir, start_epoch, end_epoch, print_interval,
-               model_load_path))
+        "use_gpu: {}, use_visual: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, use_visual, test_data_dir, start_epoch, end_epoch,
+               print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     dy_model = dy_model_class.create_model(config)
+
+    # Create a log_visual object and store the data in the path
+    if use_visual:
+        from visualdl import LogWriter
+        log_visual = LogWriter(args.abs_dir + "/log/infer")
 
     # to do : add optimizer function
     #optimizer = dy_model_class.create_optimizer(dy_model, config)
@@ -92,6 +98,7 @@ def main(args):
     interval_begin = time.time()
 
     metric_list, metric_list_name = dy_model_class.create_metrics()
+    step_num = 0
 
     for epoch_id in range(start_epoch, end_epoch):
         logger.info("load model epoch {}".format(epoch_id))
@@ -110,18 +117,29 @@ def main(args):
                     for var_name, var in tensor_print_dict.items():
                         tensor_print_str += (
                             "{}:".format(var_name) + str(var.numpy()) + ",")
+                        if use_visual:
+                            log_visual.add_scalar(
+                                tag="infer/" + var_name,
+                                step=step_num,
+                                value=var.numpy())
                 metric_str = ""
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
                         metric_list_name[metric_id] +
                         ": {:.6f},".format(metric_list[metric_id].accumulate())
                     )
+                    if use_visual:
+                        log_visual.add_scalar(
+                            tag="infer/" + metric_list_name[metric_id],
+                            step=step_num,
+                            value=metric_list[metric_id].accumulate())
                 logger.info("epoch: {}, batch_id: {}, ".format(
                     epoch_id, batch_id) + metric_str + tensor_print_str +
                             " speed: {:.2f} ins/s".format(
                                 print_interval * batch_size / (time.time(
                                 ) - interval_begin)))
                 interval_begin = time.time()
+            step_num = step_num + 1
 
         metric_str = ""
         for metric_id in range(len(metric_list_name)):
