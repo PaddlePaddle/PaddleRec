@@ -90,6 +90,8 @@ def main(args):
     if use_visual:
         from visualdl import LogWriter
         log_visual = LogWriter(args.abs_dir + "/log/train")
+    else:
+        log_visual = None
     step_num = 0
 
     if reader_type == 'QueueDataset':
