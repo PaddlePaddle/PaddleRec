@@ -86,7 +86,7 @@ def main(args):
     # Create a log_visual object and store the data in the path
     if use_visual:
         from visualdl import LogWriter
-        log_visual = LogWriter(args.abs_dir + "/log/train")
+        log_visual = LogWriter(args.abs_dir + "/visualDL_log/train")
 
     if model_init_path is not None:
         load_model(model_init_path, dy_model)

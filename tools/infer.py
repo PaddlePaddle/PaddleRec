@@ -85,7 +85,7 @@ def main(args):
     # Create a log_visual object and store the data in the path
     if use_visual:
         from visualdl import LogWriter
-        log_visual = LogWriter(args.abs_dir + "/log/infer")
+        log_visual = LogWriter(args.abs_dir + "/visualDL_log/infer")
 
     # to do : add optimizer function
     #optimizer = dy_model_class.create_optimizer(dy_model, config)

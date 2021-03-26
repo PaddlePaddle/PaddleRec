@@ -9,7 +9,7 @@ python -m pip install visualdl -i https://mirror.baidu.com/pypi/simple
 
 ## 开启可视化功能
 1. 在各模型的yaml配置文件中，runner项下添加新的参数“use_visual”，并将该项的值填写为True。该参数为bool类型，默认值为False，用于在安装VisualDL完成的情况下开启可视化训练。
-2. 在模型的dygraph_model.py文件中，可以通过train_forward函数的metrics_list, print_dict两个返回值来输出动态图运行时您需要打印的指标或变量。同理在模型的static_model.py文件中，可以通过net函数的fetch_dict返回值来输出静态图运行时您需要打印的指标。可视化功能会自动收集这些指标，并创建一个log目录存放他们。
+2. 在模型的dygraph_model.py文件中，可以通过train_forward函数的metrics_list, print_dict两个返回值来输出动态图运行时您需要打印的指标或变量。同理在模型的static_model.py文件中，可以通过net函数的fetch_dict返回值来输出静态图运行时您需要打印的指标。可视化功能会自动收集这些指标，并创建一个visualDL_log目录存放他们。
 3. 您可以正常的训练模型
 4. 启动VisualDL面板，有一下两种方法供您选择：
 
