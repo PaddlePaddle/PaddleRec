@@ -89,7 +89,7 @@ def main(args):
     # Create a log_visual object and store the data in the path
     if use_visual:
         from visualdl import LogWriter
-        log_visual = LogWriter(args.abs_dir + "/log/train")
+        log_visual = LogWriter(args.abs_dir + "/visualDL_log/train")
     else:
         log_visual = None
     step_num = 0
