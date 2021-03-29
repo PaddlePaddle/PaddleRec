@@ -24,6 +24,7 @@ class RecDataset(IterableDataset):
         self.file_list = file_list
         self.maxlen = config.get("hyper_parameters.maxlen", 30)
         self.batch_size = config.get("runner.train_batch_size", 128)
+        self.batches_per_epoch = config.get("runner.batches_per_epoch", 1000)
         self.init()
         self.count = 0
 
@@ -52,7 +53,7 @@ class RecDataset(IterableDataset):
     def __iter__(self):
         while True:
             user_id_list = random.sample(self.users, self.batch_size)
-            if self.count >= 1000 * self.batch_size:
+            if self.count >= self.batches_per_epoch * self.batch_size:
                 self.count = 0
                 break
             for user_id in user_id_list:
