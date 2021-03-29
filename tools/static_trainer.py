@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train static script")
     parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("--device", type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -60,7 +61,12 @@ def main(args):
     logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
     static_model_class.create_optimizer()
 
-    use_gpu = config.get("runner.use_gpu", True)
+    if args.device is None:
+        use_gpu = config.get("runner.use_gpu", True)
+    elif args.device == "gpu":
+        use_gpu = True
+    else:
+        use_gpu = False
     use_auc = config.get("runner.use_auc", False)
     use_visual = config.get("runner.use_visual", False)
     auc_num = config.get("runner.auc_num", 1)
@@ -74,9 +80,9 @@ def main(args):
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, use_visual, train_data_dir, epochs, print_interval,
-               model_save_path))
+        "use_gpu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_visual, batch_size, train_data_dir, epochs,
+               print_interval, model_save_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
