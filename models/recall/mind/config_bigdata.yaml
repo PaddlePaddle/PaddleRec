@@ -15,10 +15,10 @@
 runner:
   train_data_dir: "../../../datasets/AmazonBook/train"
   train_reader_path: "mind_reader" # importlib format
-  use_gpu: True
+  use_gpu: False
   use_auc: False
   train_batch_size: 128
-  epochs: 6
+  epochs: 20
   print_interval: 500
   model_save_path: "output_model_mind"
   infer_batch_size: 128
