@@ -185,7 +185,7 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
             logger.info(
                 "epoch: {}, batch_id: {}, ".format(epoch_id,
                                                    batch_id) + metric_str +
-                "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} ins/s".
                 format(train_reader_cost / print_interval, (
                     train_reader_cost + train_run_cost) / print_interval,
                        total_samples / print_interval, total_samples / (

@@ -131,11 +131,11 @@ def main(args):
                 logger.info(
                     "epoch: {}, batch_id: {}, ".format(epoch_id,
                                                        batch_id) + metric_str +
-                    "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, speed: {:.2f} ins/s".
+                    "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
                     format(infer_reader_cost / print_interval, (
                         infer_reader_cost + infer_run_cost) / print_interval,
-                           print_interval * batch_size / (time.time() -
-                                                          interval_begin)))
+                           batch_size, print_interval * batch_size / (
+                               time.time() - interval_begin)))
                 interval_begin = time.time()
                 infer_reader_cost = 0.0
                 infer_run_cost = 0.0
