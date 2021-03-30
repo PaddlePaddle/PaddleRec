@@ -25,8 +25,8 @@ runner:
   infer_reader_path: "mind_infer_reader" # importlib format
   test_data_dir: "../../../datasets/AmazonBook/valid"
   infer_load_path: "output_model_mind"
-  infer_start_epoch: 0
-  infer_end_epoch: 1
+  infer_start_epoch: 19
+  infer_end_epoch: 20
 
   # distribute_config
   # sync_mode: "async"
