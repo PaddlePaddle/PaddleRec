@@ -76,6 +76,12 @@ os : windows/linux/macos
 
 在mind模型目录的快速执行命令如下：
 ```
+# 安装faiss
+# CPU
+pip install faiss-cpu
+# GPU
+# pip install faiss-gpu
+
 # 进入模型目录
 # cd models/recall/mind # 在任意目录均可运行
 # 动态图训练
@@ -99,7 +105,7 @@ python -u static_infer.py -m config.yaml -top_n 50  #对测试数据进行预测
 在全量数据下模型的指标如下：
 | 模型 |  batch_size | epoch_num| Recall@50 | NDCG@50 | HitRate@50 |Time of each epoch |
 | :------| :------ | :------ | :------| :------ | :------|  :------ | 
-| mind | 128 | 20 | 8.43% | 13.28% | 17.22% | -- |
+| mind | 128 | 20 | 8.43% | 13.28% | 17.22% | 398.64s(CPU) |
 
 
 1. 确认您当前所在目录为PaddleRec/models/recall/mind
@@ -108,12 +114,26 @@ python -u static_infer.py -m config.yaml -top_n 50  #对测试数据进行预测
 cd ../../../datasets/AmazonBook
 sh run.sh
 ``` 
-3. 切回模型目录,执行命令运行全量数据
+3. 安装依赖，我们使用[faiss](https://github.com/facebookresearch/faiss)来进行向量召回
+```bash
+# CPU-only version(pip)
+pip install faiss-cpu
+
+# GPU(+CPU) version(pip)
+#pip install faiss-gpu
+
+# CPU-only version(conda)
+#conda install -c pytorch faiss-cpu
+
+# GPU(+CPU) version(conda)
+#conda install -c pytorch faiss-gpu
+```
+4. 切回模型目录,执行命令运行全量数据
 ```bash
 cd - # 切回模型目录
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata
-python -u infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata
+python -u infer.py -m config_bigdata.yaml -top_n 50 # 全量数据运行config_bigdata
 ```
 
 ## 进阶使用
