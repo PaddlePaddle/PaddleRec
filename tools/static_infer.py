@@ -63,12 +63,7 @@ def main(args):
     fetch_vars = static_model_class.infer_net(input_data)
     logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
 
-    if args.device is None:
-        use_gpu = config.get("runner.use_gpu", True)
-    elif args.device == "gpu":
-        use_gpu = True
-    else:
-        use_gpu = False
+    use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
     use_visual = config.get("runner.use_visual", False)
     auc_num = config.get("runner.auc_num", 1)
