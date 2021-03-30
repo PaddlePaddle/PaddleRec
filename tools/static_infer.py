@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train static script")
     parser.add_argument("-m", "--config_yaml", type=str)
-    parser.add_argument("--device", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -48,6 +48,12 @@ def main(args):
     # load config
     config = load_yaml(args.config_yaml)
     config["config_abs_dir"] = args.abs_dir
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            config[key] = value
     # load static model class
     static_model_class = load_static_model_class(config)
 
