@@ -40,6 +40,7 @@ hyper_parameters:
     learning_rate: 0.001
     strategy: async
   
+  with_att: False
   # tree
   sparse_feature_num: 9357374
   node_emb_size: 24

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from paddle.fluid.proto import index_dataset_pb2
+from paddle.distributed.fleet.proto import index_dataset_pb2
 import numpy as np
 import struct
 import argparse
@@ -97,12 +97,12 @@ class TreeIndexBuilder:
         min_code = 0
         max_code = codes[-1]
         while max_code > 0:
-            min_code = min_code * 2 + 1
-            max_code = int((max_code - 1) / 2)
+            min_code = min_code * self.branch + 1
+            max_code = int((max_code - 1) / self.branch)
 
         for i in range(len(codes)):
             while codes[i] < min_code:
-                codes[i] = codes[i] * 2 + 1
+                codes[i] = codes[i] * self.branch + 1
 
         filter_set = set()
         max_level = 0
@@ -110,7 +110,7 @@ class TreeIndexBuilder:
 
         with open(output_filename, 'wb') as f:
             for id, code in zip(ids, codes):
-                node = index_dataset_pb2.Node()
+                node = index_dataset_pb2.IndexNode()
                 node.id = id
                 node.is_leaf = True
                 node.probability = 1.0
@@ -126,7 +126,7 @@ class TreeIndexBuilder:
 
                 for ancessor in ancessors:
                     if ancessor not in filter_set:
-                        node = index_dataset_pb2.Node()
+                        node = index_dataset_pb2.IndexNode()
                         node.id = id_offset + ancessor  # id = id_offset + code
                         node.is_leaf = False
                         node.probability = 1.0
@@ -146,7 +146,7 @@ class TreeIndexBuilder:
     def _ancessors(self, code):
         ancs = []
         while code > 0:
-            code = int((code - 1) / 2)
+            code = int((code - 1) / self.branch)
             ancs.append(code)
         return ancs
 
