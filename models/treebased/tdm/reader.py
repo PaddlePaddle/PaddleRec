@@ -22,7 +22,7 @@ import time
 import sys
 import paddle.distributed.fleet as fleet
 import logging
-from paddle.distributed.fleet.data_generator import TreeIndex
+from paddle.distributed.fleet.dataset import TreeIndex
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -41,27 +41,23 @@ class MyDataset(fleet.MultiSlotDataGenerator):
         self.with_hierachy = config.get("hyper_parameters.with_hierachy", True)
         self.seed = config.get("hyper_parameters.seed", 0)
 
-        self.set_tree_layerwise_sampler(
-            self.tree_name,
-            self.sample_layer_counts,
-            range(self.item_nums),
-            self.item_nums,
-            self.item_nums + 1,
-            start_sample_layer=self.start_sample_layer,
-            seed=self.seed,
-            with_hierarchy=self.with_hierachy)
+        self.tree = TreeIndex(
+            config.get("hyper_parameters.tree_name"),
+            config.get("hyper_parameters.tree_path"))
+        self.tree.init_layerwise_sampler(self.sample_layer_counts,
+                                         self.start_sample_layer, self.seed)
 
     def line_process(self, line):
-        history_ids = [[0]] * (self.item_nums + 2)
+        history_ids = [0] * (self.item_nums)
         features = line.strip().split("\t")
         item_id = int(features[1])
         for item in features[2:]:
             slot, feasign = item.split(":")
             slot_id = int(slot.split("_")[1])
-            history_ids[slot_id - 1] = [int(feasign)]
-        history_ids[-2] = [item_id]
-        history_ids[-1] = [1]
-        return history_ids
+            history_ids[slot_id - 1] = int(feasign)
+        res = self.tree.layerwise_sample([history_ids], [item_id],
+                                         self.with_hierachy)
+        return res
 
     def generate_sample(self, line):
         "Dataset Generator"
@@ -73,7 +69,9 @@ class MyDataset(fleet.MultiSlotDataGenerator):
                 feature_name.append("item_" + str(i + 1))
             feature_name.append("unit_id")
             feature_name.append("label")
-            yield zip(feature_name, output_list)
+            for _ in output_list:
+                output = [[item] for item in _]
+                yield zip(feature_name, output)
 
         return reader
 
@@ -87,8 +85,5 @@ if __name__ == "__main__":
     config = yaml_helper.load_yaml(yaml_path)
 
     r = MyDataset()
-    tree = TreeIndex(
-        config.get("hyper_parameters.tree_name"),
-        config.get("hyper_parameters.tree_path"))
     r.init(config)
     r.run_from_stdin()

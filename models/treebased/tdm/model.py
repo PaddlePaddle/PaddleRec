@@ -140,6 +140,7 @@ def dnn_model_define(user_input,
                      fea_groups="20,20,10,10,2,2,2,1,1,1",
                      active_op='prelu',
                      use_batch_norm=True,
+                     with_att=False,
                      is_infer=False,
                      topk=10):
     fea_groups = [int(s) for s in fea_groups.split(',')]
@@ -148,30 +149,37 @@ def dnn_model_define(user_input,
 
     layer_data = []
     # start att
-    att_user_input = paddle.concat(
-        user_input, axis=1)  # [bs, total_group_length, emb_size]
-    att_node_input = fluid.layers.expand(
-        unit_id_emb, expand_times=[1, total_group_length, 1])
-    att_din = paddle.concat(
-        [att_user_input, att_user_input * att_node_input, att_node_input],
-        axis=2)
+    if with_att:
+        print("TDM Attention DNN")
+        att_user_input = paddle.concat(
+            user_input, axis=1)  # [bs, total_group_length, emb_size]
+        att_node_input = fluid.layers.expand(
+            unit_id_emb, expand_times=[1, total_group_length, 1])
+        att_din = paddle.concat(
+            [att_user_input, att_user_input * att_node_input, att_node_input],
+            axis=2)
 
-    att_active_op = 'prelu'
-    att_layer_arr = []
-    att_layer1 = FullyConnected3D(
-        3 * node_emb_size, 36, active_op=att_active_op, version=1)
-    att_layer_arr.append(att_layer1)
-    att_layer2 = FullyConnected3D(36, 1, active_op=att_active_op, version=2)
-    att_layer_arr.append(att_layer2)
+        att_active_op = 'prelu'
+        att_layer_arr = []
+        att_layer1 = FullyConnected3D(
+            3 * node_emb_size, 36, active_op=att_active_op, version=1)
+        att_layer_arr.append(att_layer1)
+        att_layer2 = FullyConnected3D(
+            36, 1, active_op=att_active_op, version=2)
+        att_layer_arr.append(att_layer2)
 
-    layer_data.append(att_din)
-    for layer in att_layer_arr:
-        layer_data.append(layer.call(layer_data[-1]))
-    att_dout = layer_data[-1]
+        layer_data.append(att_din)
+        for layer in att_layer_arr:
+            layer_data.append(layer.call(layer_data[-1]))
+        att_dout = layer_data[-1]
 
-    att_dout = fluid.layers.expand(
-        att_dout, expand_times=[1, 1, node_emb_size])
-    user_input = att_user_input * att_dout
+        att_dout = fluid.layers.expand(
+            att_dout, expand_times=[1, 1, node_emb_size])
+        user_input = att_user_input * att_dout
+    else:
+        print("TDM DNN")
+        user_input = paddle.concat(
+            user_input, axis=1)  # [bs, total_group_length, emb_size]
     # end att
 
     idx = 0
@@ -207,13 +215,13 @@ def dnn_model_define(user_input,
     layer_arr.append(layer2)
     layer3 = paddle_dnn_layer(
         64,
-        32,
+        24,
         active_op=active_op,
         use_batch_norm=use_batch_norm,
         version="%d_%s" % (3, net_version))
     layer_arr.append(layer3)
     layer4 = paddle_dnn_layer(
-        32,
+        24,
         2,
         active_op='',
         use_batch_norm=False,

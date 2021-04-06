@@ -30,7 +30,7 @@ runner:
 
   train_batch_size: 100  # 30000
   epochs: 5
-  print_interval: 1000   # 1000
+  print_interval: 10   # 1000
   model_save_path: "tdm_demo_output"
 
 # hyper parameters of user-defined network
@@ -40,7 +40,8 @@ hyper_parameters:
     class: Adam
     learning_rate: 0.001
     strategy: async
-  
+ 
+  with_att: False
   # tree
   sparse_feature_num: 5171136
   node_emb_size: 24

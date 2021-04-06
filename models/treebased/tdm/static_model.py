@@ -35,6 +35,7 @@ class StaticModel():
         self.item_nums = self.config.get("hyper_parameters.item_nums", 69)
         self.fea_group = self.config.get("hyper_parameters.fea_group",
                                          "20,20,10,10,2,2,2,1,1,1")
+        self.with_att = self.config.get("hyper_parameters.with_att", False)
 
     def create_feeds(self, is_infer=False):
         user_input = [
@@ -80,7 +81,8 @@ class StaticModel():
             unit_id_emb,
             input[-1],
             node_emb_size=self.node_emb_size,
-            fea_groups=self.fea_group)
+            fea_groups=self.fea_group,
+            with_att=self.with_att)
         self._cost = avg_cost
 
         self.inference_target_var = softmax_prob
