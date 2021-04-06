@@ -164,7 +164,8 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 亦可通过以下方式与我们沟通交流：
 
 - QQ群号码：`861717190`
-- 微信小助手微信号：`paddlerec2020`
+- 微信小助手微信号：`wxid_0xksppzk5p7f22`
+- 备注`Rec`自动加群
 
 <p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="doc/imgs/weixin_supporter.png"/></p>
 <p align="center">PaddleRec交流QQ群&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec微信小助手</p>
