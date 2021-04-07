@@ -158,7 +158,8 @@ For any feedback, please propose a [GitHub Issue](https://github.com/PaddlePaddl
 You can also communicate with us in the following ways：
 
 - QQ group id：`861717190`
-- Wechat account：`paddlerec2020`
+- Wechat account：`wxid_0xksppzk5p7f22`
+- Remarks `REC` add group automatically
 
 <p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/QQ_group.png"/>&#8194;&#8194;&#8194;&#8194;&#8194<img width="200" height="200"  src="doc/imgs/weixin_supporter.png"/></p>
 <p align="center">PaddleRec QQ Group&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;PaddleRec Wechat account</p>
