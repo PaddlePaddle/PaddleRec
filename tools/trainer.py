@@ -50,6 +50,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser(description='paddle-rec run')
     parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -62,6 +63,12 @@ def main(args):
     config = load_yaml(args.config_yaml)
     dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            config[key] = value
 
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
@@ -69,14 +76,15 @@ def main(args):
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
     print_interval = config.get("runner.print_interval", None)
+    train_batch_size = config.get("runner.train_batch_size", None)
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, use_visual, train_data_dir, epochs, print_interval,
-               model_save_path))
+        "use_gpu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_visual, train_batch_size, train_data_dir, epochs,
+               print_interval, model_save_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -151,7 +159,7 @@ def main(args):
                 logger.info(
                     "epoch: {}, batch_id: {}, ".format(
                         epoch_id, batch_id) + metric_str + tensor_print_str +
-                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} ins/s".
                     format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,
                            total_samples / print_interval, total_samples / (
@@ -168,8 +176,15 @@ def main(args):
                 metric_list_name[metric_id] +
                 ": {:.6f},".format(metric_list[metric_id].accumulate()))
 
+        tensor_print_str = ""
+        if tensor_print_dict is not None:
+            for var_name, var in tensor_print_dict.items():
+                tensor_print_str += (
+                    "{}:".format(var_name) + str(var.numpy()) + ",")
+
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
-                    "epoch time: {:.2f} s".format(time.time() - epoch_begin))
+                    tensor_print_str + " epoch time: {:.2f} s".format(
+                        time.time() - epoch_begin))
 
         save_model(
             dy_model, optimizer, model_save_path, epoch_id, prefix='rec')

@@ -50,6 +50,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser(description='paddle-rec run')
     parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -62,20 +63,28 @@ def main(args):
     config = load_yaml(args.config_yaml)
     dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            config[key] = value
+
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
     use_visual = config.get("runner.use_visual", False)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
+    infer_batch_size = config.get("runner.infer_batch_size", None)
     model_load_path = config.get("runner.infer_load_path", "model_output")
     start_epoch = config.get("runner.infer_start_epoch", 0)
     end_epoch = config.get("runner.infer_end_epoch", 10)
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, use_visual, test_data_dir, start_epoch, end_epoch,
-               print_interval, model_load_path))
+        "use_gpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, use_visual, infer_batch_size, test_data_dir,
+               start_epoch, end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -105,11 +114,19 @@ def main(args):
         model_path = os.path.join(model_load_path, str(epoch_id))
         load_model(model_path, dy_model)
         dy_model.eval()
+        infer_reader_cost = 0.0
+        infer_run_cost = 0.0
+        reader_start = time.time()
+
         for batch_id, batch in enumerate(test_dataloader()):
+            infer_reader_cost += time.time() - reader_start
+            infer_start = time.time()
             batch_size = len(batch[0])
 
             metric_list, tensor_print_dict = dy_model_class.infer_forward(
                 dy_model, metric_list, batch, config)
+
+            infer_run_cost += time.time() - infer_start
 
             if batch_id % print_interval == 0:
                 tensor_print_str = ""
@@ -133,13 +150,19 @@ def main(args):
                             tag="infer/" + metric_list_name[metric_id],
                             step=step_num,
                             value=metric_list[metric_id].accumulate())
-                logger.info("epoch: {}, batch_id: {}, ".format(
-                    epoch_id, batch_id) + metric_str + tensor_print_str +
-                            " speed: {:.2f} ins/s".format(
-                                print_interval * batch_size / (time.time(
-                                ) - interval_begin)))
+                logger.info(
+                    "epoch: {}, batch_id: {}, ".format(
+                        epoch_id, batch_id) + metric_str + tensor_print_str +
+                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
+                    format(infer_reader_cost / print_interval, (
+                        infer_reader_cost + infer_run_cost) / print_interval,
+                           infer_batch_size, print_interval * batch_size / (
+                               time.time() - interval_begin)))
                 interval_begin = time.time()
+                infer_reader_cost = 0.0
+                infer_run_cost = 0.0
             step_num = step_num + 1
+            reader_start = time.time()
 
         metric_str = ""
         for metric_id in range(len(metric_list_name)):
