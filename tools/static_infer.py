@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train static script")
     parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -47,6 +48,12 @@ def main(args):
     # load config
     config = load_yaml(args.config_yaml)
     config["config_abs_dir"] = args.abs_dir
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            config[key] = value
     # load static model class
     static_model_class = load_static_model_class(config)
 
@@ -69,9 +76,9 @@ def main(args):
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, use_visual, test_data_dir, start_epoch, end_epoch,
-               print_interval, model_load_path))
+        "use_gpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, use_visual, batch_size, test_data_dir, start_epoch,
+               end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -98,13 +105,20 @@ def main(args):
 
         epoch_begin = time.time()
         interval_begin = time.time()
+        infer_reader_cost = 0.0
+        infer_run_cost = 0.0
+        reader_start = time.time()
+
         if use_auc:
             reset_auc(auc_num)
         for batch_id, batch_data in enumerate(test_dataloader()):
+            infer_reader_cost += time.time() - reader_start
+            infer_start = time.time()
             fetch_batch_var = exe.run(
                 program=paddle.static.default_main_program(),
                 feed=dict(zip(input_data_names, batch_data)),
                 fetch_list=[var for _, var in fetch_vars.items()])
+            infer_run_cost += time.time() - infer_start
             if batch_id % print_interval == 0:
                 metric_str = ""
                 for var_idx, var_name in enumerate(fetch_vars):
@@ -115,11 +129,17 @@ def main(args):
                             tag="infer/" + var_name,
                             step=step_num,
                             value=fetch_batch_var[var_idx][0])
-                logger.info("epoch: {}, batch_id: {}, ".format(
-                    epoch_id, batch_id) + metric_str + "speed: {:.2f} ins/s".
-                            format(print_interval * batch_size / (time.time(
-                            ) - interval_begin)))
+                logger.info(
+                    "epoch: {}, batch_id: {}, ".format(epoch_id,
+                                                       batch_id) + metric_str +
+                    "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
+                    format(infer_reader_cost / print_interval, (
+                        infer_reader_cost + infer_run_cost) / print_interval,
+                           batch_size, print_interval * batch_size / (
+                               time.time() - interval_begin)))
                 interval_begin = time.time()
+                infer_reader_cost = 0.0
+                infer_run_cost = 0.0
             reader_start = time.time()
             step_num = step_num + 1
 
