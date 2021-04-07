@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 from utils.static_ps.reader_helper import get_reader
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
-from utils.save_load import save_static_model
+from utils.save_load import save_static_model, save_inference_model
 
 import time
 import argparse
@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train static script")
     parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -49,6 +50,12 @@ def main(args):
     config = load_yaml(args.config_yaml)
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            config[key] = value
     # load static model class
     static_model_class = load_static_model_class(config)
 
@@ -63,6 +70,7 @@ def main(args):
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
     use_visual = config.get("runner.use_visual", False)
+    use_inference = config.get("runner.use_inference", False)
     auc_num = config.get("runner.auc_num", 1)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
@@ -74,9 +82,9 @@ def main(args):
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, use_visual, train_data_dir, epochs, print_interval,
-               model_save_path))
+        "use_gpu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_visual, batch_size, train_data_dir, epochs,
+               print_interval, model_save_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -124,11 +132,44 @@ def main(args):
         else:
             logger.info("reader type wrong")
 
-        save_static_model(
-            paddle.static.default_main_program(),
-            model_save_path,
-            epoch_id,
-            prefix='rec_static')
+        if use_inference:
+            feed_var_names = config.get("runner.save_inference_feed_varnames",
+                                        [])
+            feedvars = []
+            fetch_var_names = config.get(
+                "runner.save_inference_fetch_varnames", [])
+            fetchvars = []
+            for var_name in feed_var_names:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
+                    raise ValueError(
+                        "Feed variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
+                else:
+                    feedvars.append(paddle.static.default_main_program()
+                                    .global_block().vars[var_name])
+            for var_name in fetch_var_names:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
+                    raise ValueError(
+                        "Fetch variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
+                else:
+                    fetchvars.append(paddle.static.default_main_program()
+                                     .global_block().vars[var_name])
+
+            save_inference_model(model_save_path, epoch_id, feedvars,
+                                 fetchvars, exe)
+        else:
+            save_static_model(
+                paddle.static.default_main_program(),
+                model_save_path,
+                epoch_id,
+                prefix='rec_static')
 
 
 def dataset_train(epoch_id, dataset, fetch_vars, exe, config):
@@ -179,7 +220,7 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
             logger.info(
                 "epoch: {}, batch_id: {}, ".format(epoch_id,
                                                    batch_id) + metric_str +
-                "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} ins/s".
                 format(train_reader_cost / print_interval, (
                     train_reader_cost + train_run_cost) / print_interval,
                        total_samples / print_interval, total_samples / (

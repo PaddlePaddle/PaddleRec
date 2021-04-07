@@ -28,8 +28,12 @@ runner:
   infer_reader_path: "criteo_reader" # importlib format
   infer_batch_size: 5
   infer_load_path: "output_model_wide_deep"
-  infer_start_epoch: 0
+  infer_start_epoch: 2
   infer_end_epoch: 3
+  #use inference save model
+  use_inference: True
+  save_inference_feed_varnames: ["label","C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","dense_input"]
+  save_inference_fetch_varnames: ["cast_0.tmp_0"]
 
 # hyper parameters of user-defined network
 hyper_parameters:
