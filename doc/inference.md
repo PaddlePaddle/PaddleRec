@@ -37,6 +37,7 @@ paddlerec提供tools/paddle_infer.py脚本，供您方便的使用inference预�
 |       --data_dir        |    string    |       任意路径         |    是    |                            测试数据目录                            |
 |       --reader_file        |    string    |       任意路径         |    是    |                          测试时用的Reader()所在python文件地址                            |
 |       --batchsize        |    int    |       >= 1         |    是    |                            批训练样本数量                            |
+|       --model_name        |    str    |       任意名字         |    否    |                            输出模型名字                            |
 
 2. 以wide_deep模型的demo数据为例，启动预测：
 ```bash
