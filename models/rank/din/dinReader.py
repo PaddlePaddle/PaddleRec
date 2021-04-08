@@ -43,7 +43,6 @@ class RecDataset(IterableDataset):
         self.batch_size = self.config.get("runner.train_batch_size")
         self.group_size = (self.batch_size) * 20
 
-
     def __iter__(self):
         file_dir = self.file_list
         res0 = []
@@ -88,10 +87,9 @@ class RecDataset(IterableDataset):
                     target_cat_seq = np.array(
                         [[x[3]] * max_len for x in b]).astype("int64").reshape(
                             [-1, max_len])
-                    # res = []
+
                     for i in range(len(b)):
                         res = []
-                        # for ii in len(i):
                         res.append(np.array(item[i]))
                         res.append(np.array(cat[i]))
                         res.append(np.array(int(b[i][2])))
