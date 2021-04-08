@@ -43,7 +43,6 @@ class RecDataset(IterableDataset):
         self.batch_size = self.config.get("runner.train_batch_size")
         self.group_size = (self.batch_size) * 20
 
-        # max_len
 
     def __iter__(self):
         file_dir = self.file_list
