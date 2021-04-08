@@ -132,6 +132,12 @@ def main(args):
         else:
             logger.info("reader type wrong")
 
+        save_static_model(
+            paddle.static.default_main_program(),
+            model_save_path,
+            epoch_id,
+            prefix='rec_static')
+
         if use_inference:
             feed_var_names = config.get("runner.save_inference_feed_varnames",
                                         [])
@@ -164,12 +170,6 @@ def main(args):
 
             save_inference_model(model_save_path, epoch_id, feedvars,
                                  fetchvars, exe)
-        else:
-            save_static_model(
-                paddle.static.default_main_program(),
-                model_save_path,
-                epoch_id,
-                prefix='rec_static')
 
 
 def dataset_train(epoch_id, dataset, fetch_vars, exe, config):
