@@ -92,7 +92,7 @@ def log_print(args, results_type, num_test_data, average_preprocess_time,
                                                                        1))
     print("----------------------- Perf info -----------------------")
     print(
-        "average preprocess_time(ms): {}\naverage inference_time(ms): {}\naverage postprocess_time(ms): {}".
+        "preprocess_time(ms): {}\ninference_time(ms): {}\npostprocess_time(ms): {}".
         format(average_preprocess_time * 1000, average_inference_time * 1000,
                average_postprocess_time * 1000))
     print("The number of predicted data: {}".format(num_test_data))

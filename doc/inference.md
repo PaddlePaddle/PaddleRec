@@ -3,7 +3,7 @@ paddlerec目前提供在静态图训练时使用save_inference_model接口保存
 
 ## 使用save_inference_model接口保存模型
 在服务器端使用python部署需要先使用save_inference_model接口保存模型。  
-1. 首先需要在模型的yaml配置中，加入use_inference参数。use_inference决定是否使用save_inference_model接口保存模型，默认为否。若使用save_inference_model接口保存模型，保存下来的模型支持使用Paddle Inference的方法预测，但不支持直接使用paddlerec原生的的预测方法加载模型。  
+1. 首先需要在模型的yaml配置中，加入use_inference参数，并把值设置成True。use_inference决定是否使用save_inference_model接口保存模型，默认为否。若使用save_inference_model接口保存模型，保存下来的模型支持使用Paddle Inference的方法预测，但不支持直接使用paddlerec原生的的预测方法加载模型。  
 2. 确定需要的输入和输出的预测模型变量，将其变量名以字符串的形式填入save_inference_feed_varnames和save_inference_fetch_varnames列表中。  
 以wide_deep模型为例，可以在其config.yaml文件中观察到如下结构。训练及测试数据集选用[Display Advertising Challenge](https://www.kaggle.com/c/criteo-display-ad-challenge/)所用的Criteo数据集。该数据集包括两部分：训练集和测试集。训练集包含一段时间内Criteo的部分流量，测试集则对应训练数据后一天的广告点击流量。feed参数的名字中```<label>```表示广告是否被点击，点击用1表示，未点击用0表示，```<integer feature>```代表数值特征（连续特征dense_input），共有13个连续特征，```<categorical feature>```代表分类特征（离散特征C1~C26），共有26个离散特征。fetch参数输出的是auc，具体意义为static_model.py里def net（）函数中将auc使用cast转换为float32类型语句中的cast算子。  
 ```yaml
