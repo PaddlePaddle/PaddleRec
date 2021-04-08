@@ -28,6 +28,9 @@ from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 from paddle.inference import Config
 from paddle.inference import create_predictor
+import pynvml
+import psutil
+import GPUtil
 
 
 def parse_args():
@@ -39,6 +42,7 @@ def parse_args():
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
+    parser.add_argument("--model_name", type=str, default="not specified")
     args = parser.parse_args()
     return args
 
@@ -71,6 +75,74 @@ def create_data_loader(args):
     return loader
 
 
+def log_print(args, results_type, num_test_data, average_preprocess_time,
+              average_inference_time, average_postprocess_time, cpu_rss,
+              gpu_rss, gpu_util):
+    print("----------------------- Model info ----------------------")
+    print("model_name: {}\ntype: {}\nmodel_sorce: {}".format(
+        args.model_name, "static", "PaddleRec"))
+    print("----------------------- Data info -----------------------")
+    print("batch_size: {}".format(args.batchsize))
+    print("----------------------- Conf info -----------------------")
+    print("runtime_device: {}".format("gpu" if args.use_gpu else "cpu"))
+    print("ir_optim: {}\nenable_memory_optim: {}\nenable_tensorrt: {}".format(
+        "False", "False", "False"))
+    print("precision: {}".format([str(x).split(".")[1] for x in results_type]))
+    print("enable_mkldnn: {}\ncpu_math_library_num_threads: {}".format("False",
+                                                                       1))
+    print("----------------------- Perf info -----------------------")
+    print(
+        "average preprocess_time(ms): {}\naverage inference_time(ms): {}\naverage postprocess_time(ms): {}".
+        format(average_preprocess_time * 1000, average_inference_time * 1000,
+               average_postprocess_time * 1000))
+    print("The number of predicted data: {}".format(num_test_data))
+    print("cpu_rss(MB): {}, gpu_rss(MB): {}".format(cpu_rss, gpu_rss))
+    print("gpu_util: {}%".format(str(gpu_util * 100)[:4]))
+
+
+class Times(object):
+    def __init__(self):
+        self.time = 0.
+        self.st = 0.
+        self.et = 0.
+
+    def start(self):
+        self.st = time.time()
+
+    def end(self, accumulative=True):
+        self.et = time.time()
+        if accumulative:
+            self.time += self.et - self.st
+        else:
+            self.time = self.et - self.st
+
+    def reset(self):
+        self.time = 0.
+        self.st = 0.
+        self.et = 0.
+
+    def value(self):
+        return round(self.time, 4)
+
+
+def get_current_memory_mb(gpu_id=None):
+    pid = os.getpid()
+    p = psutil.Process(pid)
+    info = p.memory_full_info()
+    cpu_mem = info.uss / 1024. / 1024.
+    gpu_mem = 0
+    gpu_precent = 0
+    if gpu_id is not None:
+        GPUs = GPUtil.getGPUs()
+        gpu_load = GPUs[gpu_id].load
+        gpu_precent = gpu_load
+        pynvml.nvmlInit()
+        handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+        meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+        gpu_mem = meminfo.used / 1024. / 1024.
+    return cpu_mem, gpu_mem, gpu_precent
+
+
 def main(args):
     predictor = init_predictor(args)
     place = paddle.set_device('gpu' if args.use_gpu else 'cpu')
@@ -78,18 +150,47 @@ def main(args):
     input_names = predictor.get_input_names()
     output_names = predictor.get_output_names()
     test_dataloader = create_data_loader(args)
+    preprocess_time = Times()
+    inference_time = Times()
+    postprocess_time = Times()
+    cpu_mem, gpu_mem = 0, 0
+    gpu_id = 0
+    gpu_util = 0
     for batch_id, batch_data in enumerate(test_dataloader):
         name_data_pair = dict(zip(input_names, batch_data))
+        preprocess_time.start()
         for name in input_names:
             input_tensor = predictor.get_input_handle(name)
             input_tensor.copy_from_cpu(name_data_pair[name].numpy())
+        preprocess_time.end(accumulative=True)
+        inference_time.start()
         predictor.run()
+        inference_time.end(accumulative=True)
         results = []
+        results_type = []
+        postprocess_time.start()
         for name in output_names:
             output_tensor = predictor.get_output_handle(name)
-            output_data = output_tensor.copy_to_cpu()[0]
-            results.append(output_data)
+            results_type.append(output_tensor.type())
+            output_data = output_tensor.copy_to_cpu()
+            results.append(output_data[0])
+        postprocess_time.end(accumulative=True)
+        cm, gm, gu = get_current_memory_mb(gpu_id)
+        cpu_mem += cm
+        gpu_mem += gm
+        gpu_util += gu
         print(results)
+
+    num_test_data = args.batchsize * (batch_id + 1)
+    average_preprocess_time = preprocess_time.value() / num_test_data
+    average_inference_time = inference_time.value() / num_test_data
+    average_postprocess_time = postprocess_time.value() / num_test_data
+    cpu_rss = cpu_mem / num_test_data
+    gpu_rss = gpu_mem / num_test_data
+    gpu_util = gpu_util / num_test_data
+    log_print(args, results_type, num_test_data, average_preprocess_time,
+              average_inference_time, average_postprocess_time, cpu_rss,
+              gpu_rss, gpu_util)
 
 
 if __name__ == '__main__':
