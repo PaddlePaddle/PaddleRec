@@ -15,7 +15,7 @@
 runner:
   train_data_dir: "../data/train"
   train_reader_path: "reader"  # importlib format
-  train_batch_size: 128
+  train_batch_size: 1
   model_save_path: "user_model"
 
   use_gpu: True
@@ -24,7 +24,7 @@ runner:
   
   test_data_dir: "../data/test"
   infer_reader_path: "reader"  # importlib format
-  infer_batch_size: 128
+  infer_batch_size: 1
   infer_load_path: "user_model"
   infer_start_epoch: 4
   infer_end_epoch: 5
