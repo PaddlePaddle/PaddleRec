@@ -91,15 +91,15 @@ for line in lines:
         dic["title"].append(hash2(item_info.title))
         dic["genres"].extend([hash2(x) for x in item_info.genres])
 
-    dic["title"][:4]
     if len(dic["title"]) <= 4:
         for i in range(4 - len(dic["title"])):
             dic["title"].append("0")
-    dic["genres"][:3]
+    dic["title"] = dic["title"][:4]
     if len(dic["genres"]) <= 3:
         for i in range(3 - len(dic["genres"])):
             dic["genres"].append("0")
-    print(dic["movieid"], dic["title"], dic["genres"])
+    dic["genres"] = dic["genres"][:3]
+
     dic["movieid"] = np.array(dic["movieid"]).astype(np.int64).reshape(-1, 1)
     dic["title"] = np.array(dic["title"]).astype(np.int64).reshape(-1, 4)
     dic["genres"] = np.array(dic["genres"]).astype(np.int64).reshape(-1, 3)
