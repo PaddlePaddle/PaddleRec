@@ -63,11 +63,13 @@ def init_predictor(args):
 
 def create_data_loader(args):
     data_dir = args.data_dir
-    reader_file = args.reader_file.split(".")[0]
+    reader_path, reader_file = os.path.split(args.reader_file)
+    reader_file, extension = os.path.splitext(reader_file)
     batchsize = args.batchsize
     place = args.place
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
-    sys.path.append(os.path.abspath("."))
+    sys.path.append(reader_path)
+    #sys.path.append(os.path.abspath("."))
     reader_class = import_module(reader_file)
     dataset = reader_class.RecDataset(file_list, config=None)
     loader = DataLoader(
