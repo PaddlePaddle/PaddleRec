@@ -61,6 +61,25 @@ def save_static_model(program, model_path, epoch_id, prefix='rec_static'):
     logger.info("Already save model in {}".format(model_path))
 
 
+def save_inference_model(model_path,
+                         epoch_id,
+                         feed_vars,
+                         fetch_vars,
+                         exe,
+                         prefix='rec_inference'):
+    """
+    save inference model to target path
+    """
+    model_path = os.path.join(model_path, str(epoch_id))
+    _mkdir_if_not_exist(model_path)
+    model_prefix = os.path.join(model_path, prefix)
+    paddle.static.save_inference_model(
+        path_prefix=model_prefix,
+        feed_vars=feed_vars,
+        fetch_vars=fetch_vars,
+        executor=exe)
+
+
 def load_static_model(program, model_path, prefix='rec_static'):
     logger.info("start load model from {}".format(model_path))
     model_prefix = os.path.join(model_path, prefix)

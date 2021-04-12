@@ -12,28 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# global settings 
-
 runner:
-  train_data_dir: "data/sample_data/train"
-  train_reader_path: "criteo_reader" # importlib format
-  use_gpu: False
-  use_auc: True
-  train_batch_size: 2
-  epochs: 3
-  print_interval: 2
-  #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_wide_deep"
-  test_data_dir: "data/sample_data/train"
-  infer_reader_path: "criteo_reader" # importlib format
-  infer_batch_size: 5
-  infer_load_path: "output_model_wide_deep"
-  infer_start_epoch: 2
-  infer_end_epoch: 3
+  train_data_dir: "../data/train"
+  train_reader_path: "reader"  # importlib format
+  train_batch_size: 1
+  model_save_path: "user_model"
+
+  use_gpu: True
+  epochs: 5
+  print_interval: 20
+  
+  test_data_dir: "../data/test"
+  infer_reader_path: "reader"  # importlib format
+  infer_batch_size: 1
+  infer_load_path: "user_model"
+  infer_start_epoch: 4
+  infer_end_epoch: 5
+
+  runner_result_dump_path: "recall_infer_result"
+
   #use inference save model
-  use_inference: False
-  save_inference_feed_varnames: ["label","C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","dense_input"]
-  save_inference_fetch_varnames: ["cast_0.tmp_0"]
+  use_inference: True
+  save_inference_feed_varnames: ["userid", "gender", "age", "occupation"]
+  save_inference_fetch_varnames: ["linear_11.tmp_1"]
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -41,11 +42,8 @@ hyper_parameters:
   optimizer:
     class: Adam
     learning_rate: 0.001
-    strategy: async
   # user-defined <key, value> pairs
-  sparse_inputs_slots: 27
-  sparse_feature_number: 1000001
+  sparse_feature_number: 600000
   sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
-  distributed_embedding: 0
