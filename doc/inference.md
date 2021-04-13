@@ -26,6 +26,13 @@ python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行co
 ## 将保存的模型使用Inference预测库进行服务端部署
 paddlerec提供tools/paddle_infer.py脚本，供您方便的使用inference预测库高效的对模型进行预测。  
 
+需要安装的库：
+```bash
+pip install pynvml
+pip install psutil
+pip install GPUtil
+```
+
 1. 启动paddle_infer.py脚本的参数：
 
 |        名称         |    类型    |             取值             | 是否必须 |                               作用描述                               |
