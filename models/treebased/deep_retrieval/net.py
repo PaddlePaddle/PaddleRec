@@ -62,8 +62,8 @@ class DeepRetrieval(nn.Layer):
                 shape=[1, 1], fill_value=self.beam_search_num, dtype='int64')
             height = paddle.full(
                 shape=[1, 1], fill_value=self.height, dtype='int64')
-            layer_porb = []
 
+            layer_porb = []
             prev_index = []
             prev_index.append([])
             cur_index = []
@@ -84,7 +84,7 @@ class DeepRetrieval(nn.Layer):
                     beam_prob = paddle.reshape(paddle.matmul(
                         prev_prob, cur_prob), [-1, self.beam_search_num * self.height])
 
-                    # (batch_size, K)
+                    # (batch_size, B)
                     print("beam_prob: {}".format(beam_prob))
                     cur_top_prob, cur_top_index = paddle.topk(
                         beam_prob, self.beam_search_num)

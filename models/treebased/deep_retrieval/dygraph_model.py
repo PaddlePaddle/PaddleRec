@@ -87,7 +87,7 @@ class DygraphModel():
     # define loss function by predicts and label
     def create_loss(self, layer_prob_output, item_path_kd_label):
         # layer_prob_output: list[ (batch_size, K), ... , (batch_size, K)]
-        # item_path_kd_label: list [ list[ (1, D), ..., (1, D) ] ]
+        # item_path_kd_label: list [ list[ (1, D), ..., (1, D) ],..., ]
         kd_label_list = []
         for idx, all_kd_val in enumerate(item_path_kd_label):
             kd_label_list.append(paddle.concat(all_kd_val, axis=0))  # (J, D)
@@ -105,7 +105,7 @@ class DygraphModel():
                 self.item_path_volume * layer_prob_output[idx].shape[1], layer_prob_output[idx].shape[2]))
 
         selected_prob = []
-        for idx in range(self.width):
+        for idx in range(self.width):  # D
             # find prob of every layer
             print("layer_prob_output[{}]: {}".format(
                 idx, layer_prob_output[idx]))
@@ -118,15 +118,16 @@ class DygraphModel():
             selected_prob.append(cur_prob)
 
         path_prob = paddle.concat(selected_prob, axis=1)  # (batch_size * J, D)
-        path_prob = paddle.prod(path_prob, axis=1, keepdim=True)
+        path_prob = paddle.prod(
+            path_prob, axis=1, keepdim=True)  # (batch_size* J, 1)
 
-        one_label = paddle.full(shape=path_prob.shape, fill_value=1.0)
-
-        cost = paddle.nn.functional.log_loss(
-            input=path_prob, label=one_label)
-
-        avg_cost = paddle.mean(cost)
-        return avg_cost
+        item_path_prob = paddle.reshape(
+            path_prob, (-1, self.item_path_volume))
+        item_path_prob = paddle.sum(item_path_prob, axis=1, keepdim=True)
+        item_path_prob_log = paddle.log(item_path_prob)
+        cost = -1 * paddle.sum(item_path_prob_log)
+        print("cost: {}".format(cost))
+        return cost
 
     # define optimizer
     def create_optimizer(self, dy_model, config):
@@ -162,6 +163,7 @@ class DygraphModel():
         kd_prob_list = kd_prob.numpy().tolist()
 
         em_dict = {}
+        # item = 0
         em_dict[0] = []
         for batch_idx, batch in enumerate(kd_path_list):
             for path_idx, path in enumerate(batch):
