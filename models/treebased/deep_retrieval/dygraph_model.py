@@ -53,29 +53,30 @@ class DygraphModel():
     def create_feeds(self, batch_data, config):
         user_embedding = paddle.to_tensor(batch_data[0].numpy().astype(
             'float32').reshape(-1, self.user_embedding_size))
-        item_id = batch_data[1]
-        print("item_id: {}".format(item_id))
-        print("item_path_id: {}".format(item_id.numpy().tolist()))
+
+        item_id = batch_data[1]  # (batch_size, 1)
         item_id = item_id.numpy().tolist()
         item_path_id = []
         for i in item_id:
             item_path_id.append(self.graph_index.get_path_of_item(i))
 
         item_path_kd_label = []
+        print("item_path_id: {}".format(item_path_id))
+
+        # for every example
         for item_path in item_path_id:
             item_kd_represent = []
-            print("item_path: {}".format(item_path))
-            for item_path_j in item_path:
-                print("item_path_j: {}".format(item_path_j))
+
+            print("item_path: {}".format(item_path[0]))
+            # for every path choice of item
+            for item_path_j in item_path[0]:
                 path_label = np.array(
-                    self.graph_index.path_id_to_kd_represent(item_path_j[0]))
-                print("path_label: {}".format(path_label))
+                    self.graph_index.path_id_to_kd_represent(item_path_j))
                 item_kd_represent.append(paddle.to_tensor(
                     path_label.astype('int64').reshape(1, self.width)))
 
             item_path_kd_label.append(item_kd_represent)
         print("item_path_kd_label: {}".format(item_path_kd_label))
-
         return user_embedding, item_path_kd_label
 
     def create_infer_feeds(self, batch_data, config):
@@ -87,29 +88,44 @@ class DygraphModel():
     def create_loss(self, layer_prob_output, item_path_kd_label):
         # layer_prob_output: list[ (batch_size, K), ... , (batch_size, K)]
         # item_path_kd_label: list [ list[ (1, D), ..., (1, D) ] ]
-        for i, val in enumerate(layer_prob_output):
-            layer_prob_output[i] = paddle.expand(layer_prob_output[i], shape=[
-                                                 self.item_path_volume, self.height])
-        batch_layer_prob = paddle.concat(
-            layer_prob_output, axis=1)  # (batch_size * J, D*K)
+        kd_label_list = []
+        for idx, all_kd_val in enumerate(item_path_kd_label):
+            kd_label_list.append(paddle.concat(all_kd_val, axis=0))  # (J, D)
+        kd_label = paddle.concat(kd_label_list, axis=0)  # (batch_size * J, D)
+        print("kd_label: {}".format(kd_label))
+        print("layer_prob_output: {}".format(layer_prob_output))
 
-        for i, val in enumerate(item_path_kd_label):
-            item_path_kd_label[i] = paddle.concat(
-                item_path_kd_label[i], axis=0)  # (batch_size, D)
-        item_path_kd_label = paddle.concat(
-            item_path_kd_label, axis=0)  # (batch_size * J , D)
+        for idx, val in enumerate(layer_prob_output):
+            # (batch_size * J, K)
+            layer_prob_output[idx] = paddle.unsqueeze(
+                layer_prob_output[idx], axis=0)
+            layer_prob_output[idx] = paddle.expand(layer_prob_output[idx], shape=[self.item_path_volume,
+                                                                                  layer_prob_output[idx].shape[1], layer_prob_output[idx].shape[2]])
+            layer_prob_output[idx] = paddle.reshape(layer_prob_output[idx], (
+                self.item_path_volume * layer_prob_output[idx].shape[1], layer_prob_output[idx].shape[2]))
 
-        prob = paddle.index_sample(batch_layer_prob, item_path_kd_label)
-        path_prob = paddle.prod(prob, axis=1, keepdim=True)
+        selected_prob = []
+        for idx in range(self.width):
+            # find prob of every layer
+            print("layer_prob_output[{}]: {}".format(
+                idx, layer_prob_output[idx]))
+            cur_prob_idx = paddle.slice(
+                kd_label, axes=[1], starts=[idx], ends=[idx+1])  # (batch_size * J, 1)
+            print("cur_prob_idx: {}".format(cur_prob_idx))
+            cur_prob = paddle.index_sample(
+                layer_prob_output[idx], cur_prob_idx)  # (batch_size * J, 1)
+            print("cur_prob: {}".format(cur_prob))
+            selected_prob.append(cur_prob)
+
+        path_prob = paddle.concat(selected_prob, axis=1)  # (batch_size * J, D)
+        path_prob = paddle.prod(path_prob, axis=1, keepdim=True)
 
         one_label = paddle.full(shape=path_prob.shape, fill_value=1.0)
 
-        print("path_prob: {}".format(path_prob))
-        print("one_label: {}".format(one_label))
-
         cost = paddle.nn.functional.log_loss(
             input=path_prob, label=one_label)
-        avg_cost = paddle.mean(x=cost)
+
+        avg_cost = paddle.mean(cost)
         return avg_cost
 
     # define optimizer

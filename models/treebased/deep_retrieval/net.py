@@ -112,7 +112,10 @@ class DeepRetrieval(nn.Layer):
             print("prev_index: {}".format(prev_index))
 
             kd_path.append(cur_index[-1])
+            print("cur_index[-1]: {}".format(cur_index[-1]))
             for i in range(self.width - 1, 0, -1):
+                print("cur_index[{}]: {}".format(i-1, cur_index[i-1]))
+                print("prev_index[{}]: {}".format(i, prev_index[i]))
                 kd_path.append(paddle.index_sample(
                     cur_index[i-1], prev_index[i]))
             kd_path.reverse()
@@ -121,6 +124,8 @@ class DeepRetrieval(nn.Layer):
             # (batch_size, B, D)
             kd_path_concat = paddle.reshape(paddle.concat(
                 kd_path, axis=-1), [-1, self.beam_search_num, self.width])
+
+            print("kd_path_concat: {}".format(kd_path_concat))
             print("layer_porb: {}".format(layer_porb))
 
             return kd_path_concat, layer_porb[-1]
