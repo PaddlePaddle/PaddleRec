@@ -68,6 +68,7 @@ def main(args):
     logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
 
     use_gpu = config.get("runner.use_gpu", True)
+    use_xpu = config.get("runner.use_xpu", False)
     use_auc = config.get("runner.use_auc", False)
     use_visual = config.get("runner.use_visual", False)
     auc_num = config.get("runner.auc_num", 1)
@@ -80,12 +81,16 @@ def main(args):
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, use_visual, batch_size, test_data_dir, start_epoch,
-               end_epoch, print_interval, model_load_path))
+        "use_gpu: {}, use_xpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, use_xpu, use_visual, batch_size, test_data_dir,
+               start_epoch, end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
-    place = paddle.set_device('gpu' if use_gpu else 'cpu')
+    if use_xpu:
+        xpu_device = 'xpu:{0}'.format(os.getenv('FLAGS_selected_xpus', 0))
+        place = paddle.set_device(xpu_device)
+    else:
+        place = paddle.set_device('gpu' if use_gpu else 'cpu')
     exe = paddle.static.Executor(place)
     # initialize
     exe.run(paddle.static.default_startup_program())
