@@ -85,44 +85,12 @@ class DygraphModel():
         return user_embedding
 
     # define loss function by predicts and label
-    def create_loss(self, layer_prob_output, item_path_kd_label):
-        # layer_prob_output: list[ (batch_size, K), ... , (batch_size, K)]
-        # item_path_kd_label: list [ list[ (1, D), ..., (1, D) ],..., ]
-        kd_label_list = []
-        for idx, all_kd_val in enumerate(item_path_kd_label):
-            kd_label_list.append(paddle.concat(all_kd_val, axis=0))  # (J, D)
-        kd_label = paddle.concat(kd_label_list, axis=0)  # (batch_size * J, D)
-        print("kd_label: {}".format(kd_label))
-        print("layer_prob_output: {}".format(layer_prob_output))
-
-        for idx, val in enumerate(layer_prob_output):
-            # (batch_size * J, K)
-            layer_prob_output[idx] = paddle.unsqueeze(
-                layer_prob_output[idx], axis=0)
-            layer_prob_output[idx] = paddle.expand(layer_prob_output[idx], shape=[self.item_path_volume,
-                                                                                  layer_prob_output[idx].shape[1], layer_prob_output[idx].shape[2]])
-            layer_prob_output[idx] = paddle.reshape(layer_prob_output[idx], (
-                self.item_path_volume * layer_prob_output[idx].shape[1], layer_prob_output[idx].shape[2]))
-
-        selected_prob = []
-        for idx in range(self.width):  # D
-            # find prob of every layer
-            print("layer_prob_output[{}]: {}".format(
-                idx, layer_prob_output[idx]))
-            cur_prob_idx = paddle.slice(
-                kd_label, axes=[1], starts=[idx], ends=[idx+1])  # (batch_size * J, 1)
-            print("cur_prob_idx: {}".format(cur_prob_idx))
-            cur_prob = paddle.index_sample(
-                layer_prob_output[idx], cur_prob_idx)  # (batch_size * J, 1)
-            print("cur_prob: {}".format(cur_prob))
-            selected_prob.append(cur_prob)
-
-        path_prob = paddle.concat(selected_prob, axis=1)  # (batch_size * J, D)
+    def create_loss(self, path_prob):
+        # path_prob: (batch_size * J, D)
         path_prob = paddle.prod(
             path_prob, axis=1, keepdim=True)  # (batch_size* J, 1)
-
         item_path_prob = paddle.reshape(
-            path_prob, (-1, self.item_path_volume))
+            path_prob, (-1, self.item_path_volume))  # (batch_size, J)
         item_path_prob = paddle.sum(item_path_prob, axis=1, keepdim=True)
         item_path_prob_log = paddle.log(item_path_prob)
         cost = -1 * paddle.sum(item_path_prob_log)
@@ -147,9 +115,10 @@ class DygraphModel():
         user_embedding, item_path_kd_label = self.create_feeds(batch_data,
                                                                config)
 
-        layer_prob_output = dy_model.forward(user_embedding)
+        path_prob = dy_model.forward(
+            user_embedding, item_path_kd_label)
 
-        loss = self.create_loss(layer_prob_output, item_path_kd_label)
+        loss = self.create_loss(path_prob)
 
         print_dict = {'loss': loss}
         return loss, metrics_list, print_dict
