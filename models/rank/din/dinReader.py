@@ -1,8 +1,11 @@
 #   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
+
 #     http://www.apache.org/licenses/LICENSE-2.0
+
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -75,9 +78,9 @@ class RecDataset(IterableDataset):
                     cat = catRes0.astype("int64").reshape([-1, max_len])
 
                     len_array = [len(x[0]) for x in b]
-                    mask = np.array([[0] * x + [-1e9] * (max_len - x)
-                                     for x in len_array]).reshape(
-                                         [-1, max_len, 1])
+                    mask = np.array(
+                        [[0] * x + [-1e9] * (max_len - x)
+                         for x in len_array]).reshape([-1, max_len, 1])
                     target_item_seq = np.array(
                         [[x[2]] * max_len for x in b]).astype("int64").reshape(
                             [-1, max_len])
@@ -93,13 +96,8 @@ class RecDataset(IterableDataset):
                         res.append(np.array(int(b[i][3])))
                         res.append(np.array(b[i][4]).astype('float32'))
                         res.append(np.array(mask[i]).astype('int64'))
-                        # res.append(np.array(mask[i]))
-                        # res.append(np.array(float(mask[i])))
                         res.append(np.array(target_item_seq[i]))
                         res.append(np.array(target_cat_seq[i]))
-                        # res.append(np.array([item[i], cat[i], np.array(int(b[i][2])), np.array(int(b[i][3])),np.array(int(b[i][4])), mask[i],
-                        #     target_item_seq[i], target_cat_seq[i]])
-                        # )
                         yield res
 
         len_bg = len(bg)
@@ -138,12 +136,8 @@ class RecDataset(IterableDataset):
                     res.append(np.array(cat[i]))
                     res.append(np.array(int(b[i][2])))
                     res.append(np.array(int(b[i][3])))
-                    # .astype('float32')
                     res.append(np.array(b[i][4]).astype('float32'))
-                    # res.append(np.array(float(b[i][4])))
-                    # res.append(np.array(mask[i]))
                     res.append(np.array(mask[i]).astype('int64'))
-                    # res.append(np.array(float(mask[i])))
                     res.append(np.array(target_item_seq[i]))
                     res.append(np.array(target_cat_seq[i]))
                     yield res
