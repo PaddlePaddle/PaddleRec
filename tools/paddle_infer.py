@@ -38,12 +38,13 @@ def parse_args():
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--params_file", type=str)
     parser.add_argument("--model_dir", type=str)
-    parser.add_argument("--use_gpu", type=bool)
+    parser.add_argument("--use_gpu", type=str)
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
     parser.add_argument("--model_name", type=str, default="not specified")
     args = parser.parse_args()
+    args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
     return args
 
 
@@ -57,6 +58,8 @@ def init_predictor(args):
         config.enable_use_gpu(1000, 0)
     else:
         config.disable_gpu()
+        print(config)
+        # config.delete('repeated_fc_relu_fuse_pass')
     predictor = create_predictor(config)
     return predictor
 
