@@ -33,9 +33,6 @@ class DINLayer(nn.Layer):
         self.item_count = item_count
         self.cat_count = cat_count
 
-        # self.item_emb_attr = paddle.ParamAttr(name="item_emb")
-        # self.cat_emb_attr = paddle.ParamAttr(name="cat_emb")
-
         self.hist_item_emb_attr = paddle.nn.Embedding(
             self.item_count,
             self.item_emb_size,

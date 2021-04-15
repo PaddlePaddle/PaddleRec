@@ -28,7 +28,6 @@ class StaticModel():
     def _init_hyper_parameters(self):
         self.is_distributed = False
         self.distributed_embedding = False
-
         if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
             self.distributed_embedding = True
 
@@ -46,7 +45,6 @@ class StaticModel():
             "hyper_parameters.optimizer.learning_rate")
 
     def create_feeds(self, is_infer=False):
-
         seq_len = -1
         self.data_var = []
         hist_item_seq = paddle.static.data(
