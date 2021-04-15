@@ -1,5 +1,4 @@
 #! /bin/bash
-
 set -e
 echo "begin download data"
 mkdir raw_data
