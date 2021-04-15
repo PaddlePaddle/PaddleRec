@@ -120,9 +120,9 @@ class RecDataset(IterableDataset):
                 cat = catRes0.astype("int64").reshape([-1, max_len])
 
                 len_array = [len(x[0]) for x in b]
-                mask = np.array([[0] * x + [-1e9] * (max_len - x)
-                                 for x in len_array]).reshape(
-                                     [-1, max_len, 1])
+                mask = np.array(
+                    [[0] * x + [-1e9] * (max_len - x)
+                     for x in len_array]).reshape([-1, max_len, 1])
                 target_item_seq = np.array(
                     [[x[2]] * max_len for x in b]).astype("int64").reshape(
                         [-1, max_len])
