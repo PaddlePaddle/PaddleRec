@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 from utils.static_ps.reader_helper import get_reader
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
-from utils.save_load import save_static_model
+from utils.save_load import save_static_model, save_inference_model
 
 import time
 import argparse
@@ -70,6 +70,7 @@ def main(args):
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
     use_visual = config.get("runner.use_visual", False)
+    use_inference = config.get("runner.use_inference", False)
     auc_num = config.get("runner.auc_num", 1)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
@@ -136,6 +137,39 @@ def main(args):
             model_save_path,
             epoch_id,
             prefix='rec_static')
+
+        if use_inference:
+            feed_var_names = config.get("runner.save_inference_feed_varnames",
+                                        [])
+            feedvars = []
+            fetch_var_names = config.get(
+                "runner.save_inference_fetch_varnames", [])
+            fetchvars = []
+            for var_name in feed_var_names:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
+                    raise ValueError(
+                        "Feed variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
+                else:
+                    feedvars.append(paddle.static.default_main_program()
+                                    .global_block().vars[var_name])
+            for var_name in fetch_var_names:
+                if var_name not in paddle.static.default_main_program(
+                ).global_block().vars:
+                    raise ValueError(
+                        "Fetch variable: {} not in default_main_program, global block has follow vars: {}".
+                        format(var_name,
+                               paddle.static.default_main_program()
+                               .global_block().vars.keys()))
+                else:
+                    fetchvars.append(paddle.static.default_main_program()
+                                     .global_block().vars[var_name])
+
+            save_inference_model(model_save_path, epoch_id, feedvars,
+                                 fetchvars, exe)
 
 
 def dataset_train(epoch_id, dataset, fetch_vars, exe, config):
