@@ -59,6 +59,16 @@ class DeepRetrieval(nn.Layer):
 
     def forward(self, user_embedding, item_path_kd_label=None, is_infer=False):
 
+        def expand_layer(input, n):
+            # expand input (batch_size, shape) -> (batch_size * n, shape)
+            input = paddle.unsqueeze(
+                input, axis=1)
+            input = paddle.expand(input, shape=[
+                input.shape[1], n, input.shape[2]])
+            input = paddle.reshape(
+                input, (n * input.shape[1], input.shape[2]))
+            return input
+
         def train_forward():
             # item_path_kd_label: list [ list[ (1, D), ..., (1, D) ],..., ]
             kd_label_list = []
@@ -80,16 +90,12 @@ class DeepRetrieval(nn.Layer):
             path_emb = []
             for idx in range(self.width):
                 emb = self.path_embedding[idx](
-                    path_emb_idx_lists[idx])  # (batch_size * J, emb_shape)
+                    path_emb_idx_lists[idx])  # (batch_size * J, 1, emb_shape)
                 path_emb.append(emb)
 
             # expand user_embedding (batch_size, emb_shape) -> (batch_size * J, emb_shape)
-            input_embedding = paddle.unsqueeze(
-                user_embedding, axis=0)
-            input_embedding = paddle.expand(input_embedding, shape=[self.item_path_volume,
-                                                                    input_embedding.shape[1], input_embedding.shape[2]])
-            input_embedding = paddle.reshape(
-                input_embedding, (self.item_path_volume * input_embedding.shape[1], input_embedding.shape[2]))
+            input_embedding = expand_layer(
+                user_embedding, self.item_path_volume)
 
             # calc prob of every layer
             path_prob_list = []
@@ -128,6 +134,8 @@ class DeepRetrieval(nn.Layer):
             prev_embedding = []
             prev_index.append([])
 
+            beam_search_path = None
+
             for i in range(self.width):
                 if i == 0:
                     # first layer, input only use user embedding
@@ -135,33 +143,61 @@ class DeepRetrieval(nn.Layer):
                     # assert beam_search_num < height
                     _, index = paddle.topk(
                         tmp_output, self.beam_search_num)
+                    beam_search_path = index  # (batch_size, B)
 
                     # expand user_embedding (batch_size, emb_shape) -> (batch_size * B, emb_shape)
-                    input_embedding = paddle.unsqueeze(
-                        user_embedding, axis=0)
-                    input_embedding = paddle.expand(input_embedding, shape=[self.beam_search_num,
-                                                                            input_embedding.shape[1], input_embedding.shape[2]])
-                    input_embedding = paddle.reshape(
-                        input_embedding, (self.beam_search_num * input_embedding.shape[1], input_embedding.shape[2]))
-
-                    # append user embedding
+                    input_embedding = expand_layer(
+                        user_embedding, self.beam_search_num)
                     prev_embedding.append(input_embedding)
 
-                    # append cur path embedding
-                    input_emb = self.path_embedding[i](index)
-                    prev_embedding.append(input_emb)
+                    # expand index
+                    # (batch_size * B, 1)
+                    index = expand_layer(index, self.beam_search_num)
 
-                    cur_index.append(index)
+                    # append cur path embedding
+                    cur_emb = self.path_embedding[i](index)
+                    cur_emb = paddle.reshape(
+                        cur_emb, (-1, self.user_embedding_size))
+                    # (batch_size * B, emb_shape)
+                    prev_embedding.append(cur_emb)
                 else:
                     # other layer, use user embedding + path_embedding
 
-                    # (batch_size, B, 1)
-                    prev_prob = paddle.unsqueeze(layer_porb[-1], axis=2)
-                    # (batch_size, 1, K)
-                    cur_prob = paddle.unsqueeze(tmp_output, axis=1)
+                    # (batch_size * B, emb_size * N)
+                    cur_layer_input = paddle.concat(prev_embedding, axis=1)
+                    # (batch_size * B, K)
+                    tmp_output = F.softmax(self.mlp_layers[i](cur_layer_input))
                     # (batch_size, B * K)
-                    beam_prob = paddle.reshape(paddle.matmul(
-                        prev_prob, cur_prob), [-1, self.beam_search_num * self.height])
+                    tmp_output = paddle.reshape(
+                        tmp_output, (-1, self.beam_search_num * self.height))
+                    # (batch_size, B)
+                    _, index = paddle.topk(
+                        tmp_output, self.beam_search_num)
+
+                    # prev_index of B
+                    # (batch_size, B)
+                    prev_top_index = paddle.floor_divide(
+                        index, height)
+                    # (batch_size * B, emb_size)
+                    prev_embedding_last_layer = paddle.reshape(
+                        prev_embedding[-1], (-1, self.user_embedding_size))
+                    # (batch_size, emb_size)
+                    prev_embedding_update = paddle.index_sample(
+                        prev_embedding_last_layer, prev_top_index)
+                    prev_embedding_update = paddle.reshape(
+                        prev_embedding_update, (-1, self.user_embedding_size))
+
+                    # cur_index of K
+                    # (batch_size * B, 1)
+                    cur_top_abs_index = paddle.mod(
+                        cur_top_index, beam_search_num)
+                    cur_top_abs_index = paddle.reshape(
+                        cur_top_abs_index, (-1, 1))
+                    # append cur path embedding
+                    cur_emb = self.path_embedding[i](index)
+                    cur_emb = paddle.reshape(
+                        cur_emb, (-1, self.user_embedding_size))
+                    prev_embedding.append(cur_emb)
 
                     # (batch_size, B)
                     print("beam_prob: {}".format(beam_prob))
@@ -169,7 +205,6 @@ class DeepRetrieval(nn.Layer):
                         beam_prob, self.beam_search_num)
                     layer_porb.append(cur_top_prob)
 
-                    # prev_index of B
                     prev_top_index = paddle.floor_divide(
                         cur_top_index, height)
                     print("cur_top_index: {}, prev_top_index: {}".format(
