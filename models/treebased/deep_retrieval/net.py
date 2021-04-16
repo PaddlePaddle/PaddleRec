@@ -135,6 +135,7 @@ class DeepRetrieval(nn.Layer):
                 [[i for i in range(self.height)]], dtype='int64')
 
             prev_embedding = []
+            prev_index = []
             path_prob = []
             beam_search_path = []
 
@@ -158,6 +159,11 @@ class DeepRetrieval(nn.Layer):
                         cur_emb, (-1, self.user_embedding_size))
                     # (batch_size * B, emb_shape)
                     prev_embedding.append(cur_emb)
+
+                    # expand index (batch_size, B)
+                    prev_index.append(index)
+                    print("fist prev_index: {}".format(prev_index))
+
                 else:
                     # other layer, use user embedding + path_embedding
                     # (batch_size * B, emb_size * N)
@@ -173,9 +179,14 @@ class DeepRetrieval(nn.Layer):
                     path_prob.append(prob)
 
                     # prev_index of B
+                    print("index: {}".format(index))
                     prev_top_index = paddle.floor_divide(
                         index, height)
-                    prev_emb = self.path_embedding[i-1](prev_top_index)
+                    print("prev_top_index: {}".format(prev_top_index))
+                    prev_top_abs_index = paddle.index_sample(
+                        prev_index[-1], prev_top_index)
+                    print("prev_top_abs_index: {}".format(prev_top_abs_index))
+                    prev_emb = self.path_embedding[i-1](prev_top_abs_index)
                     prev_emb = paddle.reshape(
                         prev_emb, (-1, self.user_embedding_size))
                     prev_embedding.pop()
@@ -183,11 +194,13 @@ class DeepRetrieval(nn.Layer):
 
                     # cur_index of K
                     cur_top_abs_index = paddle.mod(
-                        index, beam_search_num)
+                        index, height)
                     cur_emb = self.path_embedding[i](cur_top_abs_index)
                     cur_emb = paddle.reshape(
                         cur_emb, (-1, self.user_embedding_size))
                     prev_embedding.append(cur_emb)
+                    prev_index.append(cur_top_abs_index)
+                    print("cur_top_abs_index: {}".format(cur_top_abs_index))
 
                     # record path
                     beam_search_path.append(prev_top_index)
