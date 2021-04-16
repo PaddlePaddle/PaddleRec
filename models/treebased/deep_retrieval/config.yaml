@@ -25,7 +25,7 @@ runner:
   model_save_path: "output_model_dr"
   test_data_dir: "test_data"
   infer_reader_path: "fake_infer_reader" # importlib format
-  infer_batch_size: 1
+  infer_batch_size: 2
   infer_load_path: "output_model_dr"
   infer_start_epoch: 0
   infer_end_epoch: 1
@@ -43,6 +43,6 @@ hyper_parameters:
   # user-defined <key, value> pairs
   width: 3
   height: 5
-  beam_search_num: 2
+  beam_search_num: 3
   item_path_volume: 3
   user_embedding_size: 2

@@ -127,9 +127,9 @@ class DygraphModel():
         user_embedding = self.create_infer_feeds(batch_data,
                                                  config)
 
-        kd_path_concat, kd_prob = dy_model.forward(user_embedding, True)
-        kd_path_list = kd_path_concat.numpy().tolist()
-        kd_prob_list = kd_prob.numpy().tolist()
+        kd_path, path_prob = dy_model.forward(user_embedding, is_infer=True)
+        kd_path_list = kd_path.numpy().tolist()
+        print("path_prob: {}".format(path_prob))
 
         em_dict = {}
         # item = 0
@@ -137,14 +137,13 @@ class DygraphModel():
         for batch_idx, batch in enumerate(kd_path_list):
             for path_idx, path in enumerate(batch):
                 path_id = self.graph_index.kd_represent_to_path_id(path)
-                prob = kd_prob_list[batch_idx][path_idx]
-                em_dict[0].append("{}:{}".format(path_id, prob))
-        print(em_dict)
-        self.graph_index.update_Jpath_of_item(
-            em_dict,  T=3, J=self.item_path_volume, lamd=1e-7, factor=2)
-        print("get_path_of_item(0): {}".format(
-            self.graph_index.get_path_of_item(0)))
-        print("get_item_of_path(0): {}".format(
-            self.graph_index.get_item_of_path(0)))
+                # em_dict[0].append("{}:{}".format(path_id, prob))
+        # print(em_dict)
+        # self.graph_index.update_Jpath_of_item(
+        #     em_dict,  T=3, J=self.item_path_volume, lamd=1e-7, factor=2)
+        # print("get_path_of_item(0): {}".format(
+        #     self.graph_index.get_path_of_item(0)))
+        # print("get_item_of_path(0): {}".format(
+        #     self.graph_index.get_item_of_path(0)))
 
         return metrics_list, None
