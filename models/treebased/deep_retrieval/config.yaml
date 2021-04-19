@@ -46,3 +46,6 @@ hyper_parameters:
   beam_search_num: 3
   item_path_volume: 3
   user_embedding_size: 2
+  use_multi_task_learning: True
+  multi_task_layer_size: [128,128,128]
+  item_count: 10000

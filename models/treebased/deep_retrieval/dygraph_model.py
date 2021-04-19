@@ -43,9 +43,14 @@ class DygraphModel():
             "test", self.width, self.height, self.item_path_volume)
         self.graph_index._init_by_random(
             self.item_input_file, self.item_output_proto)
-
+        self.use_multi_task_learning = config.get("hyper_parameters.use_multi_task_learning")
+        self.item_count = config.get("hyper_parameters.item_count")
+        if self.use_multi_task_learning:
+            self.multi_task_layer_size = config.get("hyper_parameters.multi_task_layer_size")
+        else:
+            self.multi_task_layer_size = None
         dr_model = DeepRetrieval(self.width, self.height, self.beam_search_num,
-                                 self.item_path_volume, self.user_embedding_size)
+                                 self.item_path_volume, self.user_embedding_size, self.item_count, self.use_multi_task_learning, self.multi_task_layer_size)
 
         return dr_model
 
@@ -54,11 +59,17 @@ class DygraphModel():
         user_embedding = paddle.to_tensor(batch_data[0].numpy().astype(
             'float32').reshape(-1, self.user_embedding_size))
 
-        item_id = batch_data[1]  # (batch_size, 1)
-        item_id = item_id.numpy().tolist()
+        item_id = batch_data[1]  # (batch_size, 1)   if use_multi_task (batch_size,3)
+        #item_id = item_id.numpy().tolist()
         item_path_id = []
+        multi_task_pos_label = []
+        multi_task_neg_label = []
         for i in item_id:
-            item_path_id.append(self.graph_index.get_path_of_item(i))
+            item_path_id.append(self.graph_index.get_path_of_item(i[0]))
+            if self.use_multi_task_learning:
+                multi_task_pos_label.append([i[1]])
+                multi_task_neg_label.append([i[2]])
+
 
         item_path_kd_label = []
         print("item_path_id: {}".format(item_path_id))
@@ -77,7 +88,9 @@ class DygraphModel():
 
             item_path_kd_label.append(item_kd_represent)
         print("item_path_kd_label: {}".format(item_path_kd_label))
-        return user_embedding, item_path_kd_label
+        if self.use_multi_task_learning:
+            return user_embedding, item_path_kd_label, multi_task_pos_label ,   multi_task_neg_label
+        return user_embedding, item_path_kd_label, multi_task_pos_label ,   multi_task_neg_label
 
     def create_infer_feeds(self, batch_data, config):
         user_embedding = paddle.to_tensor(batch_data[0].numpy().astype(
@@ -85,7 +98,7 @@ class DygraphModel():
         return user_embedding
 
     # define loss function by predicts and label
-    def create_loss(self, path_prob):
+    def create_loss(self, path_prob, multi_task_loss):
         # path_prob: (batch_size * J, D)
         path_prob = paddle.prod(
             path_prob, axis=1, keepdim=True)  # (batch_size* J, 1)
@@ -95,6 +108,8 @@ class DygraphModel():
         item_path_prob_log = paddle.log(item_path_prob)
         cost = -1 * paddle.sum(item_path_prob_log)
         print("cost: {}".format(cost))
+        if self.use_multi_task_learning:
+            cost = cost + multi_task_loss
         return cost
 
     # define optimizer
@@ -112,13 +127,13 @@ class DygraphModel():
 
     # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        user_embedding, item_path_kd_label = self.create_feeds(batch_data,
+        user_embedding, item_path_kd_label,multi_task_pos_label,multi_task_neg_label = self.create_feeds(batch_data,
                                                                config)
 
-        path_prob = dy_model.forward(
-            user_embedding, item_path_kd_label)
+        path_prob,multi_task_loss = dy_model.forward(
+            user_embedding, item_path_kd_label,multi_task_pos_label,multi_task_neg_label)
 
-        loss = self.create_loss(path_prob)
+        loss = self.create_loss(path_prob,multi_task_loss)
 
         print_dict = {'loss': loss}
         return loss, metrics_list, print_dict

@@ -18,8 +18,9 @@ import paddle.nn.functional as F
 import math
 
 
+
 class DeepRetrieval(nn.Layer):
-    def __init__(self, width, height, beam_search_num, item_path_volume, user_embedding_size):
+    def __init__(self, width, height, beam_search_num, item_path_volume, user_embedding_size, item_count, use_multi_task_learning = False, multi_task_mlp_size = None):
         super(DeepRetrieval, self).__init__()
         self.width = width
         self.height = height
@@ -34,7 +35,29 @@ class DeepRetrieval(nn.Layer):
         print("out_sizes: {}".format(out_sizes))
 
         self.mlp_layers = []
-
+        self.multi_task_mlp_layers_size = [user_embedding_size]
+        if use_multi_task_learning:
+            self.item_count = item_count
+            for i in multi_task_mlp_size:
+                self.multi_task_mlp_layers_size.append(i)
+            for i in range(len(self.multi_task_mlp_layers_size) - 1):
+                linear = paddle.nn.Linear(
+                    in_features=self.multi_task_mlp_layers_size[i],
+                    out_features=self.multi_task_mlp_layers_size[i + 1],
+                    weight_attr=paddle.ParamAttr(
+                        name="C_{}_mlp_weight".format(i),
+                        initializer=paddle.nn.initializer.Normal(
+                            std=1.0 / math.sqrt(out_sizes[i]))))
+                self.multi_task_mlp_layers.append(linear)
+            self.dot_product_size = self.multi_task_mlp_layers[-1]
+            self.multi_task_item_embedding = paddle.nn.Embedding(
+                self.item_count,
+                self.dot_product_size,
+                sparse=True,
+                weight_attr=paddle.ParamAttr(
+                    name="C_{}_path_embedding".format(i),
+                    initializer=paddle.nn.initializer.Uniform())
+            )
         for i in range(width):
             linear = paddle.nn.Linear(
                 in_features=in_sizes[i],
@@ -57,7 +80,7 @@ class DeepRetrieval(nn.Layer):
             )
             self.path_embedding.append(emb)
 
-    def forward(self, user_embedding, item_path_kd_label=None, is_infer=False):
+    def forward(self, user_embedding, item_path_kd_label=None, multi_task_positive_labels = None,multi_task_negative_labels = None, is_infer=False, ):
 
         def expand_layer(input, n):
             # expand input (batch_size, shape) -> (batch_size * n, shape)
@@ -123,7 +146,27 @@ class DeepRetrieval(nn.Layer):
             path_prob = paddle.concat(
                 path_prob_list, axis=1)  # (batch_size * J, D)
 
-            return path_prob
+            multi_task_loss = None
+            if self.use_multi_task_learning:
+                temp = user_embedding
+                for i in range(5):
+                   temp = self.multi_task_mlp_layers[i](temp)
+                new_multi_task_positive_label = paddle.mod(multi_task_positive_labels, self.multi_task_item_count)
+                new_multi_task_negative_label = paddle.mod(multi_task_negative_labels, self.multi_task_item_count)
+                pos_item_embedding = self.multi_task_item_embedding(new_multi_task_positive_label)
+                neg_item_embedding = self.multi_task_item_embedding(new_multi_task_negative_label)
+                pos = paddle.dot(temp, pos_item_embedding)
+                neg = paddle.dot(temp, neg_item_embedding)
+                pos = paddle.log(paddle.nn.functional.sigmoid(pos))
+                neg = paddle.log(1 - paddle.nn.functional.sigmoid(neg))
+                neg = paddle.concat(pos,neg,axis=1)
+                multi_task_loss = paddle.sum(neg)[0]
+                multi_task_loss = multi_task_loss * -1
+
+
+
+
+            return path_prob,multi_task_loss
 
         def infer_forward():
             # beamsearch
@@ -142,8 +185,11 @@ class DeepRetrieval(nn.Layer):
             for i in range(self.width):
                 if i == 0:
                     # first layer, input only use user embedding
+                    # user-embedding [batch, emb_shape]
+                    # [batch, K]
                     tmp_output = F.softmax(self.mlp_layers[i](user_embedding))
                     # assert beam_search_num < height
+                    # [batch, B]
                     prob, index = paddle.topk(
                         tmp_output, self.beam_search_num)
                     path_prob.append(prob)

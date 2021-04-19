@@ -16,13 +16,16 @@ from __future__ import print_function
 import numpy as np
 
 from paddle.io import IterableDataset
-
+import random
 
 class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
         self.init()
+        self.use_multi_task_learning = config.get("hyper_parameters.use_multi_task_learning")
+        self.item_count = config.get("hyper_parameters.item_count")
+
 
     def init(self):
         pass
@@ -41,7 +44,11 @@ class RecDataset(IterableDataset):
                     output_list = []
                     output_list.append(
                         np.array(user_embedding).astype('float32'))
+                    label = [item_id]
+                    if self.use_multi_task_learning:
+                            label.append(item_id)
+                            label.append(random.random(0,self.item_count -1))
                     output_list.append(
-                        np.array([item_id]).astype('int64'))
+                        np.array(label).astype('int64'))
 
                     yield output_list
