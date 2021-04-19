@@ -105,7 +105,7 @@ cat_count:  品类的种类数目
 同时，我们提供了全量数据生成的脚本，将会自动下载microsoft news dataset全量数据集并转换为模型能接受的
 输入格式，执行方法如下：
 PaddleRec/datasets/DIN/data
-执行 sh run.sh
+执行 sh data_process.sh;  python build_dataset.py
 脚本运行完成后，打开dict/yaml_info.txt，将其中的商品的种类数目、品类的种类数目信息，copy到config_bigdata.yaml
 里，替换超参数
   item_count
