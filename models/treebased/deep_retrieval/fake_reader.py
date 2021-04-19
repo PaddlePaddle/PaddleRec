@@ -47,8 +47,8 @@ class RecDataset(IterableDataset):
                     label = [item_id]
                     if self.use_multi_task_learning:
                             label.append(item_id)
-                            label.append(random.random(0,self.item_count -1))
+                            label.append(random.randint(0,self.item_count -1))
                     output_list.append(
-                        np.array(label).astype('int64'))
+                        np.array(label).astype('int'))
 
                     yield output_list

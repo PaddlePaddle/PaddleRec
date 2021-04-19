@@ -33,31 +33,10 @@ class DeepRetrieval(nn.Layer):
         print("in_sizes: {}".format(in_sizes))
         out_sizes = [self.height] * self.width
         print("out_sizes: {}".format(out_sizes))
-
+        self.use_multi_task_learning = use_multi_task_learning
         self.mlp_layers = []
         self.multi_task_mlp_layers_size = [user_embedding_size]
-        if use_multi_task_learning:
-            self.item_count = item_count
-            for i in multi_task_mlp_size:
-                self.multi_task_mlp_layers_size.append(i)
-            for i in range(len(self.multi_task_mlp_layers_size) - 1):
-                linear = paddle.nn.Linear(
-                    in_features=self.multi_task_mlp_layers_size[i],
-                    out_features=self.multi_task_mlp_layers_size[i + 1],
-                    weight_attr=paddle.ParamAttr(
-                        name="C_{}_mlp_weight".format(i),
-                        initializer=paddle.nn.initializer.Normal(
-                            std=1.0 / math.sqrt(out_sizes[i]))))
-                self.multi_task_mlp_layers.append(linear)
-            self.dot_product_size = self.multi_task_mlp_layers[-1]
-            self.multi_task_item_embedding = paddle.nn.Embedding(
-                self.item_count,
-                self.dot_product_size,
-                sparse=True,
-                weight_attr=paddle.ParamAttr(
-                    name="C_{}_path_embedding".format(i),
-                    initializer=paddle.nn.initializer.Uniform())
-            )
+        self.multi_task_mlp_layers = []
         for i in range(width):
             linear = paddle.nn.Linear(
                 in_features=in_sizes[i],
@@ -68,6 +47,28 @@ class DeepRetrieval(nn.Layer):
                         std=1.0 / math.sqrt(out_sizes[i]))))
             self.mlp_layers.append(linear)
 
+        if use_multi_task_learning:
+            self.item_count = item_count
+            for i in multi_task_mlp_size:
+                self.multi_task_mlp_layers_size.append(i)
+            for i in range(len(self.multi_task_mlp_layers_size) - 1):
+                linear = paddle.nn.Linear(
+                    in_features=self.multi_task_mlp_layers_size[i],
+                    out_features=self.multi_task_mlp_layers_size[i + 1],
+                    weight_attr=paddle.ParamAttr(
+                        name="multi_task_{}_mlp_weight".format(i),
+                        initializer=paddle.nn.initializer.Normal(
+                            std=1.0 / math.sqrt(out_sizes[i]))))
+                self.multi_task_mlp_layers.append(linear)
+            self.dot_product_size = self.multi_task_mlp_layers_size[-1]
+            print("item_count", self.item_count)
+            print("multi_task_embedding", self.dot_product_size)
+            self.multi_task_item_embedding = paddle.nn.Embedding(
+                self.item_count,
+                self.dot_product_size,
+                weight_attr=paddle.ParamAttr(
+                    name="multi_task_item_embedding",
+                    initializer=paddle.nn.initializer.Uniform()))
         self.path_embedding = []
         for i in range(width):
             emb = paddle.nn.Embedding(
@@ -149,17 +150,15 @@ class DeepRetrieval(nn.Layer):
             multi_task_loss = None
             if self.use_multi_task_learning:
                 temp = user_embedding
-                for i in range(5):
+                for i in range(len(self.multi_task_mlp_layers)):
                    temp = self.multi_task_mlp_layers[i](temp)
-                new_multi_task_positive_label = paddle.mod(multi_task_positive_labels, self.multi_task_item_count)
-                new_multi_task_negative_label = paddle.mod(multi_task_negative_labels, self.multi_task_item_count)
-                pos_item_embedding = self.multi_task_item_embedding(new_multi_task_positive_label)
-                neg_item_embedding = self.multi_task_item_embedding(new_multi_task_negative_label)
+                pos_item_embedding = self.multi_task_item_embedding(paddle.to_tensor(multi_task_positive_labels))
+                neg_item_embedding = self.multi_task_item_embedding(paddle.to_tensor(multi_task_negative_labels))
                 pos = paddle.dot(temp, pos_item_embedding)
                 neg = paddle.dot(temp, neg_item_embedding)
                 pos = paddle.log(paddle.nn.functional.sigmoid(pos))
                 neg = paddle.log(1 - paddle.nn.functional.sigmoid(neg))
-                neg = paddle.concat(pos,neg,axis=1)
+                neg = paddle.concat([pos,neg],axis=1)
                 multi_task_loss = paddle.sum(neg)[0]
                 multi_task_loss = multi_task_loss * -1
 

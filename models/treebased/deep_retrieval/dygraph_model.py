@@ -60,15 +60,17 @@ class DygraphModel():
             'float32').reshape(-1, self.user_embedding_size))
 
         item_id = batch_data[1]  # (batch_size, 1)   if use_multi_task (batch_size,3)
-        #item_id = item_id.numpy().tolist()
+        print("item id shape", item_id.shape)
+        item_id = item_id.numpy().astype(int).tolist()
         item_path_id = []
         multi_task_pos_label = []
         multi_task_neg_label = []
         for i in item_id:
+            print("i",i)
             item_path_id.append(self.graph_index.get_path_of_item(i[0]))
             if self.use_multi_task_learning:
-                multi_task_pos_label.append([i[1]])
-                multi_task_neg_label.append([i[2]])
+                multi_task_pos_label.append(i[1])
+                multi_task_neg_label.append(i[2])
 
 
         item_path_kd_label = []
