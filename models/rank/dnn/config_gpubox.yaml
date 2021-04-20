@@ -26,7 +26,7 @@ runner:
   print_interval: 10
   model_save_path: "output_model_dnn_queue"
 
-  sync_mode: "paddlebox"
+  sync_mode: "gpubox"
   thread_num: 12
   reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
   pipe_command: "python models/rank/dnn/queuedataset_reader.py"
