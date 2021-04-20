@@ -3,7 +3,6 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
 #     http://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
@@ -78,8 +77,9 @@ class RecDataset(IterableDataset):
                     cat = catRes0.astype("int64").reshape([-1, max_len])
 
                     len_array = [len(x[0]) for x in b]
-                    mask = np.array([[0] * x + [-1e9] * (max_len - x) for x in 
-                                     len_array]).reshape([-1, max_len, 1])
+                    mask = np.array(
+                        [[0] * x + [-1e9] * (max_len - x)
+                         for x in len_array]).reshape([-1, max_len, 1])
                     target_item_seq = np.array(
                         [[x[2]] * max_len for x in b]).astype("int64").reshape(
                             [-1, max_len])
@@ -119,8 +119,9 @@ class RecDataset(IterableDataset):
                 cat = catRes0.astype("int64").reshape([-1, max_len])
 
                 len_array = [len(x[0]) for x in b]
-                mask = np.array([[0] * x + [-1e9] * (max_len - x) for x in 
-                                 len_array]).reshape([-1, max_len, 1])
+                mask = np.array(
+                    [[0] * x + [-1e9] * (max_len - x)
+                     for x in len_array]).reshape([-1, max_len, 1])
                 target_item_seq = np.array(
                     [[x[2]] * max_len for x in b]).astype("int64").reshape(
                         [-1, max_len])

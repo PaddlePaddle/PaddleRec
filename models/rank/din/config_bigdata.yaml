@@ -42,8 +42,8 @@ hyper_parameters:
   item_count: 63001
   cat_count: 801
 
-#192403
-#63001
-#801
+  #192403
+  #63001
+  #801
 
   act: "relu"

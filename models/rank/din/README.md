@@ -110,8 +110,7 @@ PaddleRec/datasets/amazonElec_Din
 执行 sh data_process.sh;  python build_dataset.py
 脚本运行完成后，打开config.txt，将其中的商品的种类数目、品类的种类数目信息，copy到config_bigdata.yaml
 里，替换超参数
-  item_count
-  cat_count  
+  item_count cat_count  
 完成后运行：
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
