@@ -18,9 +18,11 @@ import argparse
 import paddle
 import os
 import time
+import json
 from paddle_serving_client import Client
 from importlib import import_module
 from paddle.io import DataLoader
+import requests
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
@@ -33,6 +35,7 @@ def parse_args():
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
+    parser.add_argument("--client_mode", type=str)
     args = parser.parse_args()
     args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
     return args
@@ -53,7 +56,7 @@ def create_data_loader(args):
     return loader
 
 
-def run_client(args):
+def run_rpc_client(args):
     client = Client()
     client.load_client_config(args.client_config)
     client.connect([args.connect])
@@ -71,6 +74,31 @@ def run_client(args):
         print(fetch_map)
 
 
+def run_web_client(args):
+    headers = {"Content-type": "application/json"}
+    url = "http://" + args.connect + "/rec/prediction"
+    place = paddle.set_device('gpu' if args.use_gpu else 'cpu')
+    args.place = place
+    test_dataloader = create_data_loader(args)
+    client = Client()
+    client.load_client_config(args.client_config)
+    feed_names = client.feed_names_
+    fetch_names = client.fetch_names_
+    start = time.time()
+    while True:
+        for batch_id, batch_data in enumerate(test_dataloader):
+            batch_data = [tensor.numpy().tolist() for tensor in batch_data]
+            feed_dict = dict(zip(feed_names, batch_data))
+            data = {"feed": [feed_dict], "fetch": fetch_names}
+            r = requests.post(url=url, headers=headers, data=json.dumps(data))
+            print(r.json())
+        if time.time() - start > 30:
+            break
+
+
 if __name__ == '__main__':
     args = parse_args()
-    run_client(args)
+    if args.client_mode == "web":
+        run_web_client(args)
+    if args.client_mode == "rpc":
+        run_rpc_client(args)
