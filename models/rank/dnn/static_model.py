@@ -69,9 +69,13 @@ class StaticModel():
         self.dense_input = input[-1]
         sparse_number = self.sparse_inputs_slots - 1
 
-        dnn_model = DNNLayer(self.sparse_feature_number,
-                             self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes, sync_mode = self.sync_mode)
+        dnn_model = DNNLayer(
+            self.sparse_feature_number,
+            self.sparse_feature_dim,
+            self.dense_input_dim,
+            sparse_number,
+            self.fc_sizes,
+            sync_mode=self.sync_mode)
 
         raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
 

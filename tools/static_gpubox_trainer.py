@@ -116,7 +116,7 @@ class Main(object):
 
         gpus_env = os.getenv("FLAGS_selected_gpus")
         self.PSGPU = paddle.fluid.core.PSGPU()
-        gpuslot = [int(i) for i in range(1,self.model.sparse_inputs_slots)]
+        gpuslot = [int(i) for i in range(1, self.model.sparse_inputs_slots)]
         print("gpuslot: {}".format(gpuslot))
         self.PSGPU.set_slot_vector(gpuslot)
         self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
@@ -156,8 +156,8 @@ class Main(object):
             return
         self.reader, self.file_list = get_reader(self.input_data, config)
         self.example_nums = 0
-        self.count_method = self.config.get(
-            "runner.example_count_method", "example")
+        self.count_method = self.config.get("runner.example_count_method",
+                                            "example")
         if self.count_method == "example":
             self.example_nums = get_example_num(self.file_list)
         elif self.count_method == "word":
@@ -170,7 +170,8 @@ class Main(object):
     def dataset_train_loop(self, epoch):
         start_time = time.time()
         self.reader.load_into_memory()
-        print("self.reader.load_into_memory cost :{} seconds".format(time.time() - start_time))
+        print("self.reader.load_into_memory cost :{} seconds".format(time.time(
+        ) - start_time))
         self.PSGPU.set_dataset(self.reader.dataset)
         start_time = time.time()
         self.PSGPU.build_gpu_ps(1, 8)
@@ -264,9 +265,9 @@ class Main(object):
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec".
                     format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,
-                        total_samples / print_interval, total_samples / (
-                        train_reader_cost + train_run_cost),
-                        self.count_method))
+                           total_samples / print_interval, total_samples / (
+                               train_reader_cost + train_run_cost),
+                           self.count_method))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0

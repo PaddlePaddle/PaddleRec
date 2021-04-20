@@ -17,9 +17,15 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 import math
 
+
 class DNNLayer(nn.Layer):
-    def __init__(self, sparse_feature_number, sparse_feature_dim,
-                 dense_feature_dim, num_field, layer_sizes, sync_mode = None):
+    def __init__(self,
+                 sparse_feature_number,
+                 sparse_feature_dim,
+                 dense_feature_dim,
+                 num_field,
+                 layer_sizes,
+                 sync_mode=None):
         super(DNNLayer, self).__init__()
         self.sync_mode = sync_mode
         self.sparse_feature_number = sparse_feature_number
@@ -59,9 +65,12 @@ class DNNLayer(nn.Layer):
         sparse_embs = []
         for s_input in sparse_inputs:
             if self.sync_mode == "gpubox":
-                emb = paddle.fluid.contrib.sparse_embedding(input=s_input,
-                          size=[self.sparse_feature_number, self.sparse_feature_dim], 
-                          param_attr=paddle.ParamAttr(name="embedding"))
+                emb = paddle.fluid.contrib.sparse_embedding(
+                    input=s_input,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim
+                    ],
+                    param_attr=paddle.ParamAttr(name="embedding"))
             else:
                 emb = self.embedding(s_input)
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
