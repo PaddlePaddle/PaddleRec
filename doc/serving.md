@@ -70,6 +70,8 @@ serving_io.inference_model_to_serving(dirname, serving_server="serving_server", 
 ```
 
 ## 启动PaddleServing服务
+
+### 启动rpc服务端
 ```bash
 # GPU
 python -m paddle_serving_server_gpu.serve --model serving_server --port 9393 --gpu_ids 0
@@ -91,13 +93,24 @@ python -m paddle_serving_server.serve --model serving_server --port 9393
 | `use_lite` (Only for ARM) | - | - | Run PaddleLite inference |
 | `use_xpu` (Only for ARM+XPU) | - | - | Run PaddleLite XPU inference |
 
+### 启动web服务端
+```bash
+# GPU
+python ../../../tools/webserver.py gpu 9393
+
+# CPU
+python ../../../tools/webserver.py cpu 9393
+```
+
+运行PaddleRec/tools目录下的webserer.py文件，传入两个参数，第一个参数指定使用设备为cpu还是gpu，第二个参数指定端口号。
+
 ## 测试部署的服务
 在服务器端启动serving服务成功后，部署客户端需要您打开新的终端页面。
 ```bash
 # 进入模型目录
 # cd models/rank/wide_deep # 在任意目录均可运行
 # 启动客户端
-python -u ../../../tools/rpc_client.py --client_config=serving_client/serving_client_conf.prototxt --connect=0.0.0.0:9393 --use_gpu=true --data_dir=data/sample_data/train/ --reader_file=criteo_reader.py --batchsize=5
+python -u ../../../tools/rec_client.py --client_config=serving_client/serving_client_conf.prototxt --connect=0.0.0.0:9393 --use_gpu=true --data_dir=data/sample_data/train/ --reader_file=criteo_reader.py --batchsize=5 --client_mode=web
 ```
 
 | 参数 | 类型 | 默认值 | 描述 |
@@ -108,3 +121,4 @@ python -u ../../../tools/rpc_client.py --client_config=serving_client/serving_cl
 | `data_dir` | str | - | 数据集所在的目录 |
 | `reader_file` | str | - | 模型指定的reader，能够将数据读取进来按行完成预处理 |
 | `batchsize` | int | - | 数据的batch_size大小 |
+| `client_mode` | str | - | 使用rpc方式或web方式，取值为“rpc”或“web” |
