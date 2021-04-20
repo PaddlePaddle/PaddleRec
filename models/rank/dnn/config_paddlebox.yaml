@@ -28,7 +28,7 @@ runner:
 
   sync_mode: "paddlebox"
   thread_num: 12
-  reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset
+  reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
   pipe_command: "python models/rank/dnn/queuedataset_reader.py"
   dataset_debug: False
   split_file_list: False
