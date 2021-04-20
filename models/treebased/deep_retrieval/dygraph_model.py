@@ -69,8 +69,8 @@ class DygraphModel():
             print("i",i)
             item_path_id.append(self.graph_index.get_path_of_item(i[0]))
             if self.use_multi_task_learning:
-                multi_task_pos_label.append(i[1])
-                multi_task_neg_label.append(i[2])
+                multi_task_pos_label.append(i[0])
+                multi_task_neg_label.append(i[1])
 
 
         item_path_kd_label = []
