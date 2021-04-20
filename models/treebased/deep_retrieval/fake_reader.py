@@ -46,7 +46,8 @@ class RecDataset(IterableDataset):
                         np.array(user_embedding).astype('float32'))
                     label = [item_id]
                     if self.use_multi_task_learning:
-                            label.append(random.randint(0,self.item_count -1))
+                            #label.append(random.randint(0,self.item_count -1))
+                            label.append((item_id + self.item_count/2 ) % self.item_count)
                     output_list.append(
                         np.array(label).astype('int'))
 

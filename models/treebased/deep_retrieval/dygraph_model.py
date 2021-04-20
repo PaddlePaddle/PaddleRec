@@ -44,6 +44,7 @@ class DygraphModel():
         self.graph_index._init_by_random(
             self.item_input_file, self.item_output_proto)
         self.use_multi_task_learning = config.get("hyper_parameters.use_multi_task_learning")
+        print("use multi_task_learning ", self.use_multi_task_learning)
         self.item_count = config.get("hyper_parameters.item_count")
         if self.use_multi_task_learning:
             self.multi_task_layer_size = config.get("hyper_parameters.multi_task_layer_size")
@@ -60,13 +61,11 @@ class DygraphModel():
             'float32').reshape(-1, self.user_embedding_size))
 
         item_id = batch_data[1]  # (batch_size, 1)   if use_multi_task (batch_size,3)
-        print("item id shape", item_id.shape)
         item_id = item_id.numpy().astype(int).tolist()
         item_path_id = []
         multi_task_pos_label = []
         multi_task_neg_label = []
         for i in item_id:
-            print("i",i)
             item_path_id.append(self.graph_index.get_path_of_item(i[0]))
             if self.use_multi_task_learning:
                 multi_task_pos_label.append(i[0])
@@ -115,10 +114,11 @@ class DygraphModel():
         return cost
 
     # define optimizer
-    def create_optimizer(self, dy_model, config):
+    def create_optimizer(self, dr_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
+        print("dr params ",dr_model.parameters())
         optimizer = paddle.optimizer.Adam(
-            learning_rate=lr, parameters=dy_model.parameters())
+            learning_rate=lr, parameters=dr_model.parameters())
         return optimizer
 
     # define metrics such as auc/acc
