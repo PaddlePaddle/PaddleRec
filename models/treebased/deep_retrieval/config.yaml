@@ -19,7 +19,7 @@ runner:
   use_gpu: False
   use_auc: False
   train_batch_size: 2
-  epochs: 5000
+  epochs: 1
   print_interval: 1
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_dr"
