@@ -12,7 +12,7 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "../../../datasets/DIN/data/train"
+  train_data_dir: "../../../datasets/amazonElec_Din/train"
   train_reader_path: "dinReader" # importlib format
   use_gpu: False
   train_batch_size: 50
@@ -21,8 +21,8 @@ runner:
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all"
   infer_batch_size: 10
-  infer_reader_path: "NAMLDataReader" # importlib format
-  test_data_dir:  "../../../datasets/DIN/data/test"
+  infer_reader_path: "dinReader" # importlib format
+  test_data_dir:  "../../../datasets/amazonElec_Din/test"
   infer_load_path: "output_model_all"
   infer_start_epoch: 1
   infer_end_epoch: 2
@@ -41,5 +41,9 @@ hyper_parameters:
   is_sparse: False
   item_count: 63001
   cat_count: 801
+
+#192403
+#63001
+#801
 
   act: "relu"

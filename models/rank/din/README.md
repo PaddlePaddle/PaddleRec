@@ -102,11 +102,13 @@ cat_count:  品类的种类数目
 
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
-同时，我们提供了全量数据生成的脚本，将会自动下载microsoft news dataset全量数据集并转换为模型能接受的
-输入格式，执行方法如下：
-PaddleRec/datasets/DIN/data
+同时，我们提供了全量数据生成的脚本，将会自动下载amazon eletronics dataset全量数据集并转换为模型能接受的
+输入格式，处理好的原始数据集下载执行方法：PaddleRec/datasets/amazonElec_Din目录下，sh run.sh
+
+或自行进行原始数据下载预处理，执行方法如下：
+PaddleRec/datasets/amazonElec_Din
 执行 sh data_process.sh;  python build_dataset.py
-脚本运行完成后，打开dict/yaml_info.txt，将其中的商品的种类数目、品类的种类数目信息，copy到config_bigdata.yaml
+脚本运行完成后，打开config.txt，将其中的商品的种类数目、品类的种类数目信息，copy到config_bigdata.yaml
 里，替换超参数
   item_count
   cat_count  
