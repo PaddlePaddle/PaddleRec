@@ -36,11 +36,14 @@ def get_reader(input_var, config):
 
     train_data_path = os.path.join(config["config_abs_dir"], train_data_path)
 
-    assert reader_type in ["QueueDataset", "DataLoader", "RecDataset", None]
+    assert reader_type in ["QueueDataset", "DataLoader", "RecDataset", "InmemoryDataset", None]
     file_list = get_file_list(train_data_path, config)
 
     if reader_type == "QueueDataset":
         reader_instance = QueueDatset(input_var, file_list, config)
+        return reader_instance.get_reader(), file_list
+    elif reader_type == "InmemoryDataset":
+        reader_instance = InmemoryDatset(input_var, file_list, config)
         return reader_instance.get_reader(), file_list
     elif reader_type == "DataLoader":
         reader_instance = DataLoader(input_var, file_list, config)
@@ -214,6 +217,41 @@ class QueueDatset(object):
     def get_reader(self):
         logger.info("Get Dataset")
         dataset = paddle.distributed.QueueDataset()
+        dataset.init(
+            use_var=self.input_var,
+            pipe_command=self.pipe_command,
+            batch_size=self.batch_size,
+            thread_num=self.thread_num)
+        dataset.set_filelist(self.file_list)
+        return dataset
+
+class InmemoryDatset(object):
+    def __init__(self, input_var, file_list, config):
+        assert isinstance(input_var, list)
+        assert len(file_list) > 0
+        self.config = config
+        self.input_var = input_var
+        self.file_list = file_list
+        self.pipe_command = self.config.get("runner.pipe_command")
+        self.train_reader = self.config.get("runner.train_reader_path")
+        assert self.pipe_command != None
+        utils_path = common.get_utils_file_path()
+        print("utils_path: {}".format(utils_path))
+        abs_train_reader = os.path.join(config["config_abs_dir"],
+                                        self.train_reader)
+        self.pipe_command = self.pipe_command.replace(self.train_reader,
+                                                      abs_train_reader)
+        self.pipe_command = "{} {} {}".format(self.pipe_command,
+                                              config.get("yaml_path"),
+                                              utils_path)
+        self.batch_size = int(self.config.get("runner.train_batch_size"))
+        assert self.batch_size >= 1
+        self.thread_num = int(self.config.get("runner.thread_num"))
+        assert self.thread_num >= 1
+
+    def get_reader(self):
+        logger.info("Get InmemoryDataset")
+        dataset = paddle.distributed.InMemoryDataset()
         dataset.init(
             use_var=self.input_var,
             pipe_command=self.pipe_command,
