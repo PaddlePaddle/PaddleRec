@@ -36,7 +36,9 @@ def get_reader(input_var, config):
 
     train_data_path = os.path.join(config["config_abs_dir"], train_data_path)
 
-    assert reader_type in ["QueueDataset", "DataLoader", "RecDataset", "InmemoryDataset", None]
+    assert reader_type in [
+        "QueueDataset", "DataLoader", "RecDataset", "InmemoryDataset", None
+    ]
     file_list = get_file_list(train_data_path, config)
 
     if reader_type == "QueueDataset":
@@ -224,6 +226,7 @@ class QueueDatset(object):
             thread_num=self.thread_num)
         dataset.set_filelist(self.file_list)
         return dataset
+
 
 class InmemoryDatset(object):
     def __init__(self, input_var, file_list, config):
