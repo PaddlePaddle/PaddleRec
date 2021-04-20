@@ -34,7 +34,7 @@ def get_strategy(config):
         )
         return None
     sync_mode = config.get("runner.sync_mode")
-    assert sync_mode in ["async", "sync", "geo", "heter", "paddlebox"]
+    assert sync_mode in ["async", "sync", "geo", "heter", "gpubox"]
     if sync_mode == "sync":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = False
@@ -49,7 +49,7 @@ def get_strategy(config):
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
         strategy.a_sync_configs = {"heter_worker_device_guard": "gpu"}
-    elif sync_mode == "paddlebox":
+    elif sync_mode == "gpubox":
         print("sync_mode = {}".format(sync_mode))
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
