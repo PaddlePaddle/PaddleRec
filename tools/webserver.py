@@ -41,7 +41,7 @@ class RecService(WebService):
 
 
 rec_service = RecService(name="rec")
-rec_service.setup_profile(30)
+#rec_service.setup_profile(30)
 rec_service.load_model_config("serving_server")
 rec_service.prepare_server(workdir="workdir", port=int(sys.argv[2]))
 if sys.argv[1] == 'gpu':

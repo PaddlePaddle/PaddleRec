@@ -122,5 +122,3 @@ python -u ../../../tools/rec_client.py --client_config=serving_client/serving_cl
 | `reader_file` | str | - | 模型指定的reader，能够将数据读取进来按行完成预处理 |
 | `batchsize` | int | - | 数据的batch_size大小 |
 | `client_mode` | str | - | 使用rpc方式或web方式，取值为“rpc”或“web” |
-
-预测会至少进行30秒以生成benchmark.log,若预测时间不足30秒则会循环再预测一次。
