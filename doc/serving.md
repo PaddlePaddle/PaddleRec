@@ -70,7 +70,7 @@ serving_io.inference_model_to_serving(dirname, serving_server="serving_server", 
 ```
 
 ## 启动PaddleServing服务
-
+服务端我们提供rpc和web两种方式，您可以选择一种启动。
 ### 启动rpc服务端
 ```bash
 # GPU
@@ -94,6 +94,7 @@ python -m paddle_serving_server.serve --model serving_server --port 9393
 | `use_xpu` (Only for ARM+XPU) | - | - | Run PaddleLite XPU inference |
 
 ### 启动web服务端
+运行PaddleRec/tools目录下的webserer.py文件，传入两个参数，第一个参数指定使用设备为cpu还是gpu，第二个参数指定端口号。
 ```bash
 # GPU
 python ../../../tools/webserver.py gpu 9393
@@ -101,8 +102,6 @@ python ../../../tools/webserver.py gpu 9393
 # CPU
 python ../../../tools/webserver.py cpu 9393
 ```
-
-运行PaddleRec/tools目录下的webserer.py文件，传入两个参数，第一个参数指定使用设备为cpu还是gpu，第二个参数指定端口号。
 
 ## 测试部署的服务
 在服务器端启动serving服务成功后，部署客户端需要您打开新的终端页面。
