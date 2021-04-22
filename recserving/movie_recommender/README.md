@@ -267,23 +267,23 @@ score_pairs {
 1. 获得Recall所需模型
 在`models/demo/movie_recommand`下分别执行
 ```
-python3 -m paddlerec.run -m recall/user.yaml
-python3 -m paddlerec.run -m recall/movie.yaml
+python3 -u ../../../tools/static_trainer.py -m recall/movie.yaml
+python3 -u ../../../tools/static_trainer.py -m recall/user.yaml
 ```
 训练好的user/movie模型首先需要参照[Paddle保存的预测模型转为Paddle Serving格式可部署的模型](https://github.com/PaddlePaddle/Serving/blob/develop/doc/INFERENCE_TO_SERVING_CN.md)
 
 2. 获得用于milvus建库的电影向量文件
-`movie.yaml`训练所保存的模型可以用于生成全库的电影向量，运行
+`movie.yaml`训练所保存的模型可以用于生成全库的电影向量。需要将数据 movie.dat 复制一份到 get_movie_vector.py 同一目录下，在运行的时候需要直接读取数据集。此外 serving_service 也需要和 get_movie_vector.py 放在同一级目录。运行
 ```
 python3 get_movie_vectors.py
 ```
 获得movie端embedding配送文件，该文件用于milvus建库。
 
-注：user端的模型，直接用于`recall.py`的用户向量预测。
+注：user端的模型，直接用于`recall.py`的用户向量预测。 
 
 3. 获得rank模型
 在`models/demo/movie_recommand`下执行
 ```
-python3 -m paddlerec.run -m rank/config.yaml
+python3 -u ../../../tools/static_trainer.py -m rank/config.yaml
 ```
 可以得到排序模型。转换成Serving格式可部署模型后，可以用于`rank.py`的排序模型。
