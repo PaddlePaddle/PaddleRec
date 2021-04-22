@@ -23,8 +23,6 @@ export FLAGS_selected_xpus=0
 export XPU_CONV_AUTOTUNE=2
 
 cd PaddleRec/models/rank/naml 
-# 全量数据动态图训练
-python3.7 -u ../../../tools/trainer.py -m config_bigdata_kunlun.yaml # 使用示例数据，请指定config_kunlun.yaml
 # 全量数据静态图训练
 python3.7 -u ../../../tools/static_trainer.py -m config_bigdata_kunlun.yaml # 使用示例数据，请指定config_kunlun.yaml
 ```
@@ -37,8 +35,6 @@ export FLAGS_selected_xpus=0
 export XPU_CONV_AUTOTUNE=2
 
 cd PaddleRec/models/rank/naml 
-# 全量数据动态图预测
-python3.7 -u ../../../tools/infer.py -m config_bigdata_kunlun.yaml # 使用示例数据，请指定config_kunlun.yaml
 # 全量数据静态图预测
 python3.7 -u ../../../tools/static_infer.py -m config_bigdata_kunlun.yaml # 使用示例数据，请指定config_kunlun.yaml
 ```
