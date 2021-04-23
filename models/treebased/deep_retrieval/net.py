@@ -48,6 +48,14 @@ class DeepRetrieval(nn.Layer):
             self.mlp_layers.append(linear)
             self.add_sublayer("C_{}_mlp_weight".format(i), linear)
 
+        self.path_embedding = paddle.nn.Embedding(
+                self.height,
+                self.user_embedding_size,
+                sparse=True,
+                weight_attr=paddle.ParamAttr(
+                    name="path_embedding",
+                    initializer=paddle.nn.initializer.Uniform())
+        )
         if self.use_multi_task_learning:
             self.item_count = item_count
             for i in multi_task_mlp_size:
@@ -71,17 +79,92 @@ class DeepRetrieval(nn.Layer):
                 weight_attr=paddle.ParamAttr(
                     name="multi_task_item_embedding_weight",
                     initializer=paddle.nn.initializer.Uniform()))
-        self.path_embedding = []
-        for i in range(width):
-            emb = paddle.nn.Embedding(
-                self.height,
-                self.user_embedding_size,
-                sparse=True,
-                weight_attr=paddle.ParamAttr(
-                    name="C_{}_path_embedding".format(i),
-                    initializer=paddle.nn.initializer.Uniform())
-            )
-            self.path_embedding.append(emb)
+
+
+    def generate_candidate_path_for_item(self, input_embeddings, beam_size):
+        if beam_size > self.height:
+            beam_size = self.height
+        height = paddle.full(
+                shape=[1, 1], fill_value=self.height, dtype='int64')
+        batch_size = input_embeddings.shape[0]
+        prob_list = []
+        saved_path = None
+        print("width ------------= ",self.width)
+        for i in range(self.width):
+            print("-------",i)
+            if i == 0:
+                # [batch, height]
+                pro = F.softmax(self.mlp_layers[0](input_embeddings))
+                # [height]
+                pro_sum = paddle.sum(pro,axis=0)
+                # [beam_size],[beam_size]
+                _, index = paddle.topk(pro_sum, beam_size)
+                #[1, beam_size]
+                saved_path = paddle.unsqueeze(index,0)
+                #[1,beam_size]
+                multi_index = paddle.unsqueeze(index,0)
+                multi_index = paddle.expand(multi_index,[batch_size,beam_size])
+                #[batch_size,beam_size]
+                last_prob = paddle.index_sample(pro,multi_index)
+                prob_list.append(last_prob)
+                #[batch, 1, emb_size]
+                input_embeddings = paddle.unsqueeze(input_embeddings,1)
+                # [batch,beam,emb_size]
+                input_embeddings = paddle.expand(input_embeddings, [batch_size, beam_size, self.user_embedding_size])
+                print("first loop ends",i)
+                print(self.width)
+            else:
+                #[beam, i]
+                reverse_saved_path = paddle.transpose(saved_path,[1,0])
+                #[beam, i,emb_size ]
+                saved_path_emb = self.path_embedding(reverse_saved_path)
+                # [beam, i * emb_size ]
+                input = paddle.reshape(saved_path_emb,[beam_size,-1])
+                # input = paddle.concat(emb_list,axis=-1)
+                input = paddle.unsqueeze(input,0)
+                # [batch, beam, i * emb_size]
+                input = paddle.expand(input,[batch_size,beam_size, i * self.user_embedding_size])
+
+                # [batch, beam, (i+1) * emb_size]
+                input = paddle.concat([input_embeddings,input],axis=-1)
+                # [batch, beam_size, height]
+                out = F.softmax(self.mlp_layers[i](input))
+                # [beam, height]
+                pro_sum = paddle.sum(out,axis=0)
+                # [beam * height]
+                pro_sum = paddle.reshape(pro_sum,[-1])
+                #[beam]
+                _, index = paddle.topk(pro_sum, beam_size)
+                # [1,beam]
+                beam_index = paddle.floor_divide(index, height)
+                item_index = paddle.mod(index, height)
+                # [batch,beam]
+                batch_beam_index = paddle.expand(beam_index, [batch_size, beam_size])
+                # [i,beam_size]
+                saved_path_index = paddle.expand(beam_index, [saved_path.shape[0], beam_size])
+                saved_path = paddle.index_sample(saved_path,saved_path_index)
+                for j in range(len(prob_list)):
+                    prob_list[j] = paddle.index_sample(prob_list[j], batch_beam_index)
+
+                #[i + 1,emb_size]
+                #[i + 1,emb_size]
+                saved_path = paddle.concat([saved_path, item_index],axis=0)
+
+            # [beam, width]
+        saved_path = paddle.transpose(saved_path, [1,0])
+
+            # [batch, beam]
+        final_prob = prob_list[0]
+        for i in range(1,len(prob_list)):
+            final_prob = paddle.multiply(final_prob, prob_list[i])
+
+            # [beam]
+        final_prob = paddle.sum(final_prob, axis=0)
+
+        print("saved_path",saved_path)
+        print("final_prob",final_prob)
+        return saved_path, final_prob
+
 
     def forward(self, user_embedding, item_path_kd_label=None, multi_task_positive_labels = None,multi_task_negative_labels = None, is_infer=False):
 
@@ -118,7 +201,7 @@ class DeepRetrieval(nn.Layer):
             # The main purpose of two-step table lookup is for distributed PS training
             path_emb = []
             for idx in range(self.width):
-                emb = self.path_embedding[idx](
+                emb = self.path_embedding(
                     path_emb_idx_lists[idx])  # (batch_size * J, 1, emb_shape)
                 path_emb.append(emb)
 
@@ -208,7 +291,7 @@ class DeepRetrieval(nn.Layer):
                     input = input_embedding
                     for j in range(len(prev_index)):
                         # [batch,beam,emb_size]
-                        emb = self.path_embedding[j](prev_index[j])
+                        emb = self.path_embedding(prev_index[j])
                         # [batch*beam,emb_size]
                         emb = paddle.reshape(emb, [-1,self.user_embedding_size])
                         print("emb_shape",emb.shape)
