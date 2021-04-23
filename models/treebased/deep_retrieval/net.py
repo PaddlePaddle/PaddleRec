@@ -159,8 +159,6 @@ class DeepRetrieval(nn.Layer):
                 
                 # (batch, dot_prodcut_size)
                 pos_item_embedding = self.multi_task_item_embedding(paddle.to_tensor(multi_task_positive_labels))
-
-                print("pos_item_embedding shape",pos_item_embedding.shape)
                 neg_item_embedding = self.multi_task_item_embedding(paddle.to_tensor(multi_task_negative_labels))
                 #(batch,1)
                 pos = paddle.dot(temp, pos_item_embedding)
@@ -175,24 +173,15 @@ class DeepRetrieval(nn.Layer):
                 multi_task_loss = paddle.sum(sum)[0]
                 multi_task_loss = multi_task_loss * -1
 
-            print("multi_task_loss ",multi_task_loss)
-
-
             return path_prob,multi_task_loss
 
         def infer_forward():
-            # beamsearch
-            beam_search_num = paddle.full(
-                shape=[1, 1], fill_value=self.beam_search_num, dtype='int64')
+
             height = paddle.full(
                 shape=[1, 1], fill_value=self.height, dtype='int64')
-            height_index = paddle.to_tensor(
-                [[i for i in range(self.height)]], dtype='int64')
 
-            prev_embedding = []
             prev_index = []
             path_prob = []
-            beam_search_path = []
 
             for i in range(self.width):
                 if i == 0:
@@ -209,70 +198,60 @@ class DeepRetrieval(nn.Layer):
                     # expand user_embedding (batch_size, emb_shape) -> (batch_size * B, emb_shape)
                     input_embedding = expand_layer(
                         user_embedding, self.beam_search_num)
-                    prev_embedding.append(input_embedding)
-
-                    # append cur path embedding
-                    cur_emb = self.path_embedding[i](index)
-                    cur_emb = paddle.reshape(
-                        cur_emb, (-1, self.user_embedding_size))
-                    # (batch_size * B, emb_shape)
-                    prev_embedding.append(cur_emb)
-
-                    # expand index (batch_size, B)
                     prev_index.append(index)
                     print("fist prev_index: {}".format(prev_index))
 
                 else:
                     # other layer, use user embedding + path_embedding
                     # (batch_size * B, emb_size * N)
-                    cur_layer_input = paddle.concat(prev_embedding, axis=1)
+                    #cur_layer_input = paddle.concat(prev_embedding, axis=1)
+                    input = input_embedding
+                    for j in range(len(prev_index)):
+                        # [batch,beam,emb_size]
+                        emb = self.path_embedding[j](prev_index[j])
+                        # [batch*beam,emb_size]
+                        emb = paddle.reshape(emb, [-1,self.user_embedding_size])
+                        print("emb_shape",emb.shape)
+                        input = paddle.concat([input,emb],axis=1)
+                        print("input shape",input.shape)
+
                     # (batch_size * B, K)
-                    tmp_output = F.softmax(self.mlp_layers[i](cur_layer_input))
+                    #tmp_output = F.softmax(self.mlp_layers[i](cur_layer_input))
+                    tmp_output = F.softmax(self.mlp_layers[i](input))
                     # (batch_size, B * K)
                     tmp_output = paddle.reshape(
                         tmp_output, (-1, self.beam_search_num * self.height))
                     # (batch_size, B)
                     prob, index = paddle.topk(
                         tmp_output, self.beam_search_num)
-                    path_prob.append(prob)
+                    #path_prob.append(prob)
 
                     # prev_index of B
                     print("index: {}".format(index))
                     prev_top_index = paddle.floor_divide(
                         index, height)
                     print("prev_top_index: {}".format(prev_top_index))
-                    prev_top_abs_index = paddle.index_sample(
-                        prev_index[-1], prev_top_index)
-                    print("prev_top_abs_index: {}".format(prev_top_abs_index))
-                    prev_emb = self.path_embedding[i-1](prev_top_abs_index)
-                    prev_emb = paddle.reshape(
-                        prev_emb, (-1, self.user_embedding_size))
-                    prev_embedding.pop()
-                    prev_embedding.append(prev_emb)
-
-                    # cur_index of K
+                    for j in range(len(prev_index)):  #
+                        prev_index[j] = paddle.index_sample(prev_index[j],prev_top_index)
+                        path_prob[j] = paddle.index_sample(path_prob[j], prev_top_index)
+                    path_prob.append(prob)
                     cur_top_abs_index = paddle.mod(
                         index, height)
-                    cur_emb = self.path_embedding[i](cur_top_abs_index)
-                    cur_emb = paddle.reshape(
-                        cur_emb, (-1, self.user_embedding_size))
-                    prev_embedding.append(cur_emb)
                     prev_index.append(cur_top_abs_index)
                     print("cur_top_abs_index: {}".format(cur_top_abs_index))
 
-                    # record path
-                    beam_search_path.append(prev_top_index)
-                    if i == self.width - 1:
-                        beam_search_path.append(cur_top_abs_index)
+            final_prob = path_prob[0]
+            for i in range(1,len(path_prob)):
+                final_prob = paddle.multiply(final_prob, path_prob[i])
+            for i in range(len(prev_index)):
+                # [batch,beam,1]
+                prev_index[i] = paddle.reshape(prev_index[i],[-1,self.beam_search_num,1])
 
-            print("beam_search_path: {}".format(beam_search_path))
-            kd_path = paddle.concat(beam_search_path, axis=0)
-            kd_path = paddle.transpose(kd_path, [1, 0])
-            kd_path = paddle.reshape(
-                kd_path, (-1, self.beam_search_num, self.width))
-            print("kd_path: {}".format(kd_path))
-
-            return kd_path, path_prob
+            # [batch,beam,width],[batch,beam]
+            kd_path = paddle.concat(prev_index,axis=-1)
+            print("kd_path",kd_path)
+            print("final_prob",final_prob)
+            return kd_path, final_prob
 
         if is_infer:
             return infer_forward()
