@@ -55,7 +55,7 @@ class Linear(paddle.nn.Layer):
         self.num_field = num_field
         self.sparse_feature_dim = sparse_feature_dim
         self.dense_feature_dim = dense_feature_dim
-        self.init_value_ = 1.0 
+        self.init_value_ = 0.1 
         self.dense_emb_dim = self.sparse_feature_dim
         
         # sparse coding
