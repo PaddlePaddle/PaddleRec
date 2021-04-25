@@ -20,7 +20,7 @@ runner:
   use_gpu: True
   use_auc: False
   train_batch_size: 4096
-  epochs: 5
+  epochs: 1
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_bigdata_deepfm_dy"
