@@ -1,11 +1,11 @@
-# Paddle TDM解决方案
+# Paddle TDM系列模型解决方案
 
-本示例代码提供了基于PaddlePaddle实现的[TDM](https://arxiv.org/pdf/1801.02294.pdf)推荐搜索算法。TDM模型是为大规模推荐系统设计的、能承载任意先进模型来高效检索用户兴趣的推荐算法解决方案。该方案基于树结构，提出了一套对用户兴趣度量进行层次化建模与检索的方法论，使得系统能直接利高级深度学习模型在全库范围内检索用户兴趣。其基本原理是使用树结构对全库item进行索引，然后训练深度模型以支持树上的逐层检索，从而将大规模推荐中全库检索的复杂度由O(n)（n为所有item的量级）下降至O(log n)。
+本示例代码提供了基于PaddlePaddle实现的树模型推荐搜索算法，包括[TDM](https://arxiv.org/pdf/1801.02294.pdf)，[JTM](https://arxiv.org/pdf/1902.07565.pdf)。树模型是为大规模推荐系统设计的、能承载任意先进模型来高效检索用户兴趣的推荐算法解决方案。该方案基于树结构，提出了一套对用户兴趣度量进行层次化建模与检索的方法论，使得系统能直接利高级深度学习模型在全库范围内检索用户兴趣。其基本原理是使用树结构对全库item进行索引，然后训练深度模型以支持树上的逐层检索，从而将大规模推荐中全库检索的复杂度由O(n)（n为所有item的量级）下降至O(log n)。
 
 
 ## 快速开始
 
-基于demo数据集，快速上手TDM模型，为您后续设计适合特定使用场景的模型做准备。
+基于demo数据集，快速上手TDM系列模型，为您后续设计适合特定使用场景的模型做准备。
 
 假定您PaddleRec所在目录为${PaddleRec_Home}。
 
@@ -21,15 +21,15 @@ demo数据集预处理一键命令为 `./data_prepare.sh demo` 。若对具体�
 ├── treebased
 ├── demo_data
 |   ├── samples                      JTM Tree-Learning算法所需，
-|   |   ├── samples_{item_id}.json   记录了所有和 `item_id` 相关的训练集样本。
+|   |   ├── samples_{item_id}.json   记录了所有和item_id相关的训练集样本。
 |   ├── train_data                   训练集目录
 |   ├── test_data                    测试集目录
 |   ├── ItemCate.txt                 记录所有item的类别信息，用于初始化建树。
 |   ├── Stat.txt                     记录所有item在训练集中出现的频次信息，用于采样。
-|   ├── tree.pb                      初始化化树文件
+|   ├── tree.pb                      预处理后，生成的初始化树文件
 ```
 
-- Step2: 快速运行。config.yaml中配置了模型训练所有的超参，运行方式同PaddleRec其他模型静态图运行方式。当前树模型暂不支持动态图运行模式。
+- Step2: TDM快速运行。config.yaml中配置了模型训练所有的超参，运行方式同PaddleRec其他模型静态图运行方式。当前树模型暂不支持动态图运行模式。
 
 ```shell
 python -u ../../../tools/static_trainer.py -m config.yaml 

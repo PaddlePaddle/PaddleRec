@@ -76,13 +76,21 @@ class StaticModel():
         user_feature_emb = list(map(embedding, user_feature))  # [(bs, emb)]
 
         unit_id_emb = embedding(input[-2])
-        avg_cost, softmax_prob = dnn_model_define(
+        dout = dnn_model_define(
             user_feature_emb,
             unit_id_emb,
-            input[-1],
             node_emb_size=self.node_emb_size,
             fea_groups=self.fea_group,
             with_att=self.with_att)
+
+        cost, softmax_prob = paddle.nn.functional.softmax_with_cross_entropy(
+            logits=dout, label=input[-1], return_softmax=True, ignore_index=-1)
+
+        ignore_label = paddle.full_like(input[-1], fill_value=-1)
+        avg_cost = paddle.sum(cost) / paddle.sum(
+            paddle.cast(
+                paddle.not_equal(input[-1], ignore_label), dtype='int32'))
+
         self._cost = avg_cost
 
         self.inference_target_var = softmax_prob
