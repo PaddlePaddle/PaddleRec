@@ -135,14 +135,11 @@ class paddle_dnn_layer(object):
 
 def dnn_model_define(user_input,
                      unit_id_emb,
-                     label,
                      node_emb_size=24,
                      fea_groups="20,20,10,10,2,2,2,1,1,1",
                      active_op='prelu',
                      use_batch_norm=True,
-                     with_att=False,
-                     is_infer=False,
-                     topk=10):
+                     with_att=False):
     fea_groups = [int(s) for s in fea_groups.split(',')]
     total_group_length = np.sum(np.array(fea_groups))
     print "fea_groups", fea_groups, "total_group_length", total_group_length, "eb_dim", node_emb_size
@@ -215,13 +212,13 @@ def dnn_model_define(user_input,
     layer_arr.append(layer2)
     layer3 = paddle_dnn_layer(
         64,
-        24,
+        32,
         active_op=active_op,
         use_batch_norm=use_batch_norm,
         version="%d_%s" % (3, net_version))
     layer_arr.append(layer3)
     layer4 = paddle_dnn_layer(
-        24,
+        32,
         2,
         active_op='',
         use_batch_norm=False,
@@ -233,22 +230,23 @@ def dnn_model_define(user_input,
         layer_data.append(layer.call(layer_data[-1]))
     dout = layer_data[-1]
 
-    if is_infer:
-        softmax_prob = paddle.nn.functional.softmax(dout)
-        positive_prob = paddle.slice(
-            softmax_prob, axes=[1], starts=[1], ends=[2])
-        prob_re = paddle.reshape(positive_prob, [-1])
+    return dout
+    # if is_infer:
+    #     softmax_prob = paddle.nn.functional.softmax(dout)
+    #     positive_prob = paddle.slice(
+    #         softmax_prob, axes=[1], starts=[1], ends=[2])
+    #     prob_re = paddle.reshape(positive_prob, [-1])
 
-        _, topk_i = paddle.topk(prob_re, k=topk)
-        topk_node = paddle.index_select(label, topk_i)
-        return topk_node
-    else:
-        cost, softmax_prob = paddle.nn.functional.softmax_with_cross_entropy(
-            logits=dout, label=label, return_softmax=True, ignore_index=-1)
+    #     _, topk_i = paddle.topk(prob_re, k=topk)
+    #     topk_node = paddle.index_select(label, topk_i)
+    #     return topk_node
+    # else:
+    #     cost, softmax_prob = paddle.nn.functional.softmax_with_cross_entropy(
+    #         logits=dout, label=label, return_softmax=True, ignore_index=-1)
 
-        ignore_label = paddle.full_like(label, fill_value=-1)
-        avg_cost = paddle.sum(cost) / paddle.sum(
-            paddle.cast(
-                paddle.not_equal(label, ignore_label), dtype='int32'))
+    #     ignore_label = paddle.full_like(label, fill_value=-1)
+    #     avg_cost = paddle.sum(cost) / paddle.sum(
+    #         paddle.cast(
+    #             paddle.not_equal(label, ignore_label), dtype='int32'))
 
-        return avg_cost, softmax_prob
+    #     return avg_cost, softmax_prob
