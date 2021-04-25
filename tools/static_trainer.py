@@ -118,8 +118,8 @@ def main(args):
                 config, use_visual, log_visual, step_num)
             metric_str = ""
             for var_idx, var_name in enumerate(fetch_vars):
-                metric_str += "{}: {}, ".format(var_name,
-                                                fetch_batch_var[var_idx])
+                metric_str += "{}: {}, ".format(
+                    var_name, str(fetch_batch_var[var_idx]).strip("[]"))
             logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                         "epoch time: {:.2f} s".format(time.time() -
                                                       epoch_begin))
