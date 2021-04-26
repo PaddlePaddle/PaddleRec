@@ -80,7 +80,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 ## 模型组网
 
-xDeepFM模型的组网本质是一个二分类任务，代码参考xdeepfm1.8.5中的`model.py`。模型主要组成是线性层部分, cin部分,dnn部分以及相应的分类任务的loss计算和auc计算。模型的组网结构和deepfm相似，其中deepfm的fm部分被换成了cin部分并且多了一个线性层，xdeepfm整体计算流程可概括如下。
+xDeepFM模型的组网本质是一个二分类任务，代码参考xDeepFM1.8.5中的`model.py`。模型主要组成是线性层部分, cin部分,dnn部分以及相应的分类任务的loss计算和auc计算。模型的组网结构和deepfm相似，其中deepfm的fm部分被换成了cin部分并且多了一个线性层，xdeepfm整体计算流程可概括如下。
 
 <img align="center" src="picture/1.png">
 
