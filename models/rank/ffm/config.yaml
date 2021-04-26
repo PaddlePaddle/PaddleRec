@@ -18,7 +18,7 @@ runner:
   use_gpu: False 
   use_auc: True
   train_batch_size: 2
-  epochs: 3
+  epochs: 1
   print_interval: 2
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_ffm"
@@ -27,7 +27,7 @@ runner:
   infer_batch_size: 5
   infer_load_path: "output_model_ffm"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 1
 
 # hyper parameters of user-defined network
 hyper_parameters:
