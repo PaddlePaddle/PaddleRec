@@ -31,7 +31,7 @@ runner:
   train_batch_size: 100  # 30000
   epochs: 5
   print_interval: 10   # 1000
-  model_save_path: "tdm_demo_output"
+  model_save_path: "output_model_tdm_demo"
 
 # hyper parameters of user-defined network
 hyper_parameters:
