@@ -20,17 +20,17 @@ runner:
   
   model_path: "static_model.py"
   reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
-  pipe_command: "python ub_reader.py"
+  pipe_command: "python reader.py"
   dataset_debug: False
   split_file_list: False
 
-  train_data_dir: "../ub_data/debug_data"
-  train_reader_path: "ub_reader"
+  train_data_dir: "../ub_data/train_data"
+  train_reader_path: "reader"
 
-  train_batch_size: 300
+  train_batch_size: 30000
   epochs: 5
-  print_interval: 10   # 1000
-  model_save_path: "tdm_demo_ub"
+  print_interval: 1000
+  model_save_path: "output_model_tdm_ub"
 
 # hyper parameters of user-defined network
 hyper_parameters:
