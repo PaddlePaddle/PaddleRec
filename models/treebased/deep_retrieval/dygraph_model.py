@@ -14,6 +14,7 @@
 
 import numpy as np
 import paddle
+import os
 import paddle.nn as nn
 import paddle.nn.functional as F
 import math
@@ -24,7 +25,21 @@ from paddle.distributed.fleet.dataset.index_dataset import GraphIndex
 
 class DygraphModel():
     # define model
+    def save_item_path(self, path, prefix):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        path = os.path.join(path, str(prefix))
+        if not os.path.exists(path):
+            os.makedirs(path)
+        path = os.path.join(path, self.path_save_file_name)
+        self.graph_index._graph.save(path)     
+
+    def load_item_path(self, path):
+        path = os.path.join(path, self.path_save_file_name)
+        self.graph_index._graph.load(path)
+
     def create_model(self, config):
+        self.path_save_file_name = "path_save";
         self.width = config.get("hyper_parameters.width")
         self.height = config.get("hyper_parameters.height")
         self.beam_search_num = config.get(
@@ -41,10 +56,14 @@ class DygraphModel():
 
         self.graph_index = GraphIndex(
             "test", self.width, self.height, self.item_path_volume)
-        self.graph_index._init_by_random(
+
+        init_model_path = config.get("model_init_path")
+        if init_model_path == None:
+            self.graph_index._init_by_random(
             self.item_input_file, self.item_output_proto)
+        else:
+             self.graph_index._init_graph(os.path.join(init_model_path, self.path_save_file_name))
         self.use_multi_task_learning = config.get("hyper_parameters.use_multi_task_learning")
-        print("use multi_task_learning ", self.use_multi_task_learning)
         self.item_count = config.get("hyper_parameters.item_count")
         if self.use_multi_task_learning:
             self.multi_task_layer_size = config.get("hyper_parameters.multi_task_layer_size")
@@ -61,15 +80,15 @@ class DygraphModel():
             'float32').reshape(-1, self.user_embedding_size))
 
         item_id = batch_data[1]  # (batch_size, 1)   if use_multi_task (batch_size,3)
-        item_id = item_id.numpy().astype(int).tolist()
+        item_id = item_id.numpy().tolist()
         item_path_id = []
         multi_task_pos_label = []
         multi_task_neg_label = []
         for i in item_id:
             item_path_id.append(self.graph_index.get_path_of_item(i[0]))
             if self.use_multi_task_learning:
-                multi_task_pos_label.append(i[0])
-                multi_task_neg_label.append(i[1])
+                multi_task_pos_label.append([i[0]])
+                multi_task_neg_label.append([i[1]])
 
 
         item_path_kd_label = []
@@ -78,8 +97,6 @@ class DygraphModel():
         # for every example
         for item_path in item_path_id:
             item_kd_represent = []
-
-            print("item_path: {}".format(item_path[0]))
             # for every path choice of item
             for item_path_j in item_path[0]:
                 path_label = np.array(
@@ -88,7 +105,7 @@ class DygraphModel():
                     path_label.astype('int64').reshape(1, self.width)))
 
             item_path_kd_label.append(item_kd_represent)
-        print("item_path_kd_label: {}".format(item_path_kd_label))
+        # print("item_path_kd_label: {}".format(item_path_kd_label))
         if self.use_multi_task_learning:
             return user_embedding, item_path_kd_label, multi_task_pos_label ,   multi_task_neg_label
         return user_embedding, item_path_kd_label, multi_task_pos_label ,   multi_task_neg_label
@@ -114,11 +131,10 @@ class DygraphModel():
         return cost
 
     # define optimizer
-    def create_optimizer(self, dr_model, config):
+    def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
-        print("dr params ",dr_model.parameters())
         optimizer = paddle.optimizer.Adam(
-            learning_rate=lr, parameters=dr_model.parameters())
+            learning_rate=lr, parameters=dy_model.parameters())
         return optimizer
 
     # define metrics such as auc/acc
