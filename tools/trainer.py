@@ -79,6 +79,7 @@ def main(args):
     train_batch_size = config.get("runner.train_batch_size", None)
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
+    use_fleet = config.get("runner.use_fleet", False)
 
     logger.info("**************common.configs**********")
     logger.info(
@@ -101,6 +102,14 @@ def main(args):
 
     # to do : add optimizer function
     optimizer = dy_model_class.create_optimizer(dy_model, config)
+
+    # use fleet run collective
+    if use_fleet:
+        from paddle.distributed import fleet
+        strategy = fleet.DistributedStrategy()
+        fleet.init(is_collective=True, strategy=strategy)
+        optimizer = fleet.distributed_optimizer(optimizer)
+        dy_model = fleet.distributed_model(dy_model)
 
     logger.info("read data")
     train_dataloader = create_data_loader(config=config, place=place)
