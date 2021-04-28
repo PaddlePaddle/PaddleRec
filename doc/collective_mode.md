@@ -53,3 +53,7 @@ python -m paddle.distributed.launch --ips="xx.xx.xx.xx,yy.yy.yy.yy" --gpus 0,1,2
 # 静态图执行训练
 python -m paddle.distributed.launch --ips="xx.xx.xx.xx,yy.yy.yy.yy" --gpus 0,1,2,3,4,5,6,7 ../../../tools/static_trainer.py -m config.yaml
 ```
+
+## 修改reader
+目前我们paddlerec模型默认使用的reader都是继承自paddle.io.IterableDataset，在reader的__iter__函数中拆分文件，按行处理数据。当 paddle.io.DataLoader 中 num_workers > 0 时，每个子进程都会遍历全量的数据集返回全量样本，所以数据集会重复 num_workers 次，也就是每张卡都会获得全部的数据。您在训练时可能需要调整学习率等参数以保证训练效果。  
+如果需要数据集样本不会重复，可通过 [paddle.io.get_worker_info](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/fluid/dataloader/dataloader_iter/get_worker_info_cn.html#get-worker-info) 获取各子进程的信息。并在 __iter__ 函数中划分各子进程的数据。[paddle.io.IterableDataset](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/fluid/dataloader/dataset/IterableDataset_cn.html#iterabledataset)的相关信息以及划分数据的示例可以点击这里获取。
