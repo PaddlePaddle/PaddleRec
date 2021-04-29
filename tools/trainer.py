@@ -195,8 +195,18 @@ def main(args):
                     tensor_print_str + " epoch time: {:.2f} s".format(
                         time.time() - epoch_begin))
 
-        save_model(
-            dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
+        if use_fleet:
+            trainer_id = paddle.distributed.get_rank()
+            if trainer_id == 0:
+                save_model(
+                    dy_model,
+                    optimizer,
+                    model_save_path,
+                    epoch_id,
+                    prefix='rec')
+        else:
+            save_model(
+                dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':

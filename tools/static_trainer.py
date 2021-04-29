@@ -143,11 +143,20 @@ def main(args):
         else:
             logger.info("reader type wrong")
 
-        save_static_model(
-            paddle.static.default_main_program(),
-            model_save_path,
-            epoch_id,
-            prefix='rec_static')
+        if use_fleet:
+            trainer_id = paddle.distributed.get_rank()
+            if trainer_id == 0:
+                save_static_model(
+                    paddle.static.default_main_program(),
+                    model_save_path,
+                    epoch_id,
+                    prefix='rec_static')
+        else:
+            save_static_model(
+                paddle.static.default_main_program(),
+                model_save_path,
+                epoch_id,
+                prefix='rec_static')
 
         if use_inference:
             feed_var_names = config.get("runner.save_inference_feed_varnames",
