@@ -59,8 +59,7 @@ class DygraphModel():
 
         init_model_path = config.get("model_init_path")
         if init_model_path == None:
-            self.graph_index._init_by_random(
-            self.item_input_file, self.item_output_proto)
+            self.graph_index._init_by_random()
         else:
              self.graph_index._init_graph(os.path.join(init_model_path, self.path_save_file_name))
         self.use_multi_task_learning = config.get("hyper_parameters.use_multi_task_learning")

@@ -30,9 +30,6 @@ runner:
   infer_load_path: "output_model_dr"
   infer_start_epoch: 0
   infer_end_epoch: 1
-  item_input_file: index/item_demo.txt
-  item_output_proto: index/graph_item.proto
-
 
 # hyper parameters of user-defined network
 hyper_parameters:
