@@ -68,6 +68,10 @@ def main(args):
         for parameter in args.opt:
             parameter = parameter.strip()
             key, value = parameter.split("=")
+            if type(config.get(key)) is int:
+                value = int(value)
+            if type(config.get(key)) is bool:
+                value = (True if value.lower() == "true" else False)
             config[key] = value
 
     # tools.vars
