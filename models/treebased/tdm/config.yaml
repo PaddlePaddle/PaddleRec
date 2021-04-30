@@ -54,3 +54,4 @@ hyper_parameters:
   tree_name: "demo"
   tree_path: "../demo_data/tree.pb"
   with_hierachy: True
+  topk: 100

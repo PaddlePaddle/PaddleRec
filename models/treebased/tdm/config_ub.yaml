@@ -53,3 +53,4 @@ hyper_parameters:
   tree_name: "ub"
   tree_path: "../ub_data/tree.pb"
   with_hierachy: False
+  topk: 200
