@@ -29,8 +29,28 @@ demo数据集预处理一键命令为 `./data_prepare.sh demo` 。若对具体�
 |   ├── tree.pb                      预处理后，生成的初始化树文件
 ```
 
-- Step2: TDM快速运行。config.yaml中配置了模型训练所有的超参，运行方式同PaddleRec其他模型静态图运行方式。当前树模型暂不支持动态图运行模式。
+- Step2: 训练。config.yaml中配置了模型训练所有的超参，运行方式同PaddleRec其他模型静态图运行方式。当前树模型暂不支持动态图运行模式。
 
 ```shell
 python -u ../../../tools/static_trainer.py -m config.yaml 
 ```
+
+- Step3: 预测，命令如下所示。其中第一个参数为训练config.yaml位置，第二个参数为预测模型地址。
+
+```
+python infer.py config.yaml ./output_model_tdm_demo/0/
+```
+
+- Step4: 提取Item（叶子节点）的Embedding，用于重新建树，开始下一轮训练。命令如下所示，其中第一个参数为训练config.yaml位置，第二个参数模型地址，第三个参数为输出文件名称。
+
+```
+python get_leaf_embedding.py config.yaml  ./output_model_tdm_demo/0/ epoch_0_item_embedding.txt
+```
+
+- Step5: 基于Step4得到的Item的Embedding，重新建树。命令如下所示。
+
+```
+cd ../builder && python tree_index_builder.py --mode by_kmeans --input epoch_0_item_embedding.txt --output new_tree.pb
+```
+
+- Step6: 修改config.yaml中tree文件的路径为最新tree.pb，返回Step2，开始新一轮的训练。
