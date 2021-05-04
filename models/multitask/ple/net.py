@@ -105,7 +105,36 @@ class PLELayer(nn.Layer):
 
 class SinglePLELayer(nn.Layer):
     def __init__(self, input_feature_size, task_num, exp_per_task, shared_num,
-                 expert_size, tower_size, level_number):
+                 expert_size, level_name):
         super(PLELayer, self).__init__()
 
-        self.expert_num = expert_num
+        self.task_num = task_num
+        self.exp_per_task = exp_per_task
+        self.shared_num = shared_num
+        self.expert_size = expert_size
+
+        self._param_expert = []
+        # task-specific expert part
+        for i in range(0, self.task_num):
+            for j in range(0, self.exp_per_task):
+                linear = self.add_sublayer(
+                    name=level_name + "_exp_" + str(i) + "_" + str(j),
+                    sublayer=nn.Linear(
+                        feature_size,
+                        expert_size,
+                        weight_attr=nn.initializer.Constant(value=0.1),
+                        bias_attr=nn.initializer.Constant(value=0.1),
+                        name=level_name + "_exp_" + str(i) + "_" + str(j)))
+                self._param_expert.append(linear)
+
+        # shared expert part
+        for i in range(0, self.shared_num):
+            linear = self.add_sublayer(
+                name=level_name + "_exp_shared_" + str(i),
+                sublayer=nn.Linear(
+                    feature_size,
+                    expert_size,
+                    weight_attr=nn.initializer.Constant(value=0.1),
+                    bias_attr=nn.initializer.Constant(value=0.1),
+                    name=level_name + "_exp_shared_" + str(i)))
+            self._param_expert.append(linear)
