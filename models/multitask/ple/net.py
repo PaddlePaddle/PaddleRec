@@ -138,3 +138,31 @@ class SinglePLELayer(nn.Layer):
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_exp_shared_" + str(i)))
             self._param_expert.append(linear)
+
+        # task gate part
+        self._param_gate = []
+        cur_expert_num = self.exp_per_task + self.shared_num
+        for i in range(0, self.task_num):
+            linear = self.add_sublayer(
+                name=level_name + "_gate_" + str(i),
+                sublayer=nn.Linear(
+                    feature_size,
+                    expert_size,
+                    weight_attr=nn.initializer.Constant(value=0.1),
+                    bias_attr=nn.initializer.Constant(value=0.1),
+                    name=level_name + "_gate_" + str(i)))
+            self._param_gate.append(linear)
+
+        # shared gate
+        if not if_last:
+            self._param_gate_shared = []
+            cur_expert_num = self.task_num * self.exp_per_task + self.shared_num
+            linear = self.add_sublayer(
+                name=level_name + "_gate_shared_",
+                sublayer=nn.Linear(
+                    feature_size,
+                    expert_size,
+                    weight_attr=nn.initializer.Constant(value=0.1),
+                    bias_attr=nn.initializer.Constant(value=0.1),
+                    name=level_name + "_gate_shared_"))
+            self._param_gate_shared.append(linear)
