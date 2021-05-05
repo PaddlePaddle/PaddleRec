@@ -21,21 +21,24 @@ runner:
   epochs: 100
   print_interval: 100
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_mmoe_all"
+  model_save_path: "output_model_ple_all"
   test_data_dir: "../../../datasets/census/test_all"
   infer_batch_size: 32
   infer_reader_path: "census_reader" # importlib format
-  infer_load_path: "output_model_mmoe_all"
+  infer_load_path: "output_model_ple_all"
   infer_start_epoch: 0
   infer_end_epoch: 100
 
 
 hyper_parameters:
   feature_size: 499
-  expert_num: 8
-  gate_num: 2
+  task_num: 2
+  shared_num: 2
+  exp_per_task: 3
+  level_number: 1
   expert_size: 16
   tower_size: 8
   optimizer: 
     class: adam
     learning_rate: 0.001
+    strategy: async

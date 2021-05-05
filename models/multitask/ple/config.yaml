@@ -21,18 +21,20 @@ runner:
   epochs: 3
   print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_mmoe"
+  model_save_path: "output_model_ple"
   test_data_dir: "data/test"
   infer_batch_size: 2
   infer_reader_path: "census_reader" # importlib format
-  infer_load_path: "output_model_mmoe"
+  infer_load_path: "output_model_ple"
   infer_start_epoch: 0
   infer_end_epoch: 3
 
 hyper_parameters:
   feature_size: 499
-  expert_num: 8
-  gate_num: 2
+  task_num: 2
+  shared_num: 2
+  exp_per_task: 3
+  level_number: 1
   expert_size: 16
   tower_size: 8
   optimizer: 
