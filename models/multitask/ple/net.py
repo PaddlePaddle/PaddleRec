@@ -38,7 +38,7 @@ class PLELayer(nn.Layer):
                     sublayer=SinglePLELayer(
                         feature_size, task_num, exp_per_task, shared_num,
                         expert_size, 'lev_' + str(i), True))
-                self.ple_layers(ple_layer)
+                self.ple_layers.append(ple_layer)
                 break
             else:
                 ple_layer = self.add_sublayer(
@@ -46,7 +46,7 @@ class PLELayer(nn.Layer):
                     sublayer=SinglePLELayer(
                         feature_size, task_num, exp_per_task, shared_num,
                         expert_size, 'lev_' + str(i), False))
-                self.ple_layers(ple_layer)
+                self.ple_layers.append(ple_layer)
                 feature_size = expert_size
 
         # task tower
@@ -101,7 +101,7 @@ class PLELayer(nn.Layer):
 class SinglePLELayer(nn.Layer):
     def __init__(self, input_feature_size, task_num, exp_per_task, shared_num,
                  expert_size, level_name, if_last):
-        super(PLELayer, self).__init__()
+        super(SinglePLELayer, self).__init__()
 
         self.task_num = task_num
         self.exp_per_task = exp_per_task
@@ -116,7 +116,7 @@ class SinglePLELayer(nn.Layer):
                 linear = self.add_sublayer(
                     name=level_name + "_exp_" + str(i) + "_" + str(j),
                     sublayer=nn.Linear(
-                        feature_size,
+                        input_feature_size,
                         expert_size,
                         weight_attr=nn.initializer.Constant(value=0.1),
                         bias_attr=nn.initializer.Constant(value=0.1),
@@ -128,7 +128,7 @@ class SinglePLELayer(nn.Layer):
             linear = self.add_sublayer(
                 name=level_name + "_exp_shared_" + str(i),
                 sublayer=nn.Linear(
-                    feature_size,
+                    input_feature_size,
                     expert_size,
                     weight_attr=nn.initializer.Constant(value=0.1),
                     bias_attr=nn.initializer.Constant(value=0.1),
@@ -142,8 +142,8 @@ class SinglePLELayer(nn.Layer):
             linear = self.add_sublayer(
                 name=level_name + "_gate_" + str(i),
                 sublayer=nn.Linear(
-                    feature_size,
-                    expert_size,
+                    input_feature_size,
+                    cur_expert_num,
                     weight_attr=nn.initializer.Constant(value=0.1),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_gate_" + str(i)))
@@ -155,8 +155,8 @@ class SinglePLELayer(nn.Layer):
             linear = self.add_sublayer(
                 name=level_name + "_gate_shared_",
                 sublayer=nn.Linear(
-                    feature_size,
-                    expert_size,
+                    input_feature_size,
+                    cur_expert_num,
                     weight_attr=nn.initializer.Constant(value=0.1),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_gate_shared_"))
@@ -183,11 +183,12 @@ class SinglePLELayer(nn.Layer):
             cur_expert_num = self.exp_per_task + self.shared_num
             linear_out = self._param_gate[i](input_data[i])
             cur_gate = F.softmax(linear_out)
+            cur_gate = paddle.reshape(cur_gate, [-1, cur_expert_num, 1])
             # f^{k}(x) = sum_{i=1}^{n}(g^{k}(x)_{i} * f_{i}(x))
             cur_experts = expert_outputs[i * self.exp_per_task:(
                 i + 1) * self.exp_per_task] + expert_outputs[-int(
                     self.shared_num):]
-            expert_concat = paddle.concat(x=expert_outputs, axis=1)
+            expert_concat = paddle.concat(x=cur_experts, axis=1)
             expert_concat = paddle.reshape(
                 expert_concat, [-1, cur_expert_num, self.expert_size])
             cur_gate_expert = paddle.multiply(x=expert_concat, y=cur_gate)
@@ -198,9 +199,10 @@ class SinglePLELayer(nn.Layer):
         if not self.if_last:
             cur_expert_num = self.task_num * self.exp_per_task + self.shared_num
             linear_out = self._param_gate_shared(input_data[-1])
-            cu_rgate = F.relu(linear_out)
+            cur_gate = F.softmax(linear_out)
+            cur_gate = paddle.reshape(cur_gate, [-1, cur_expert_num, 1])
             cur_experts = expert_outputs
-            expert_concat = paddle.concat(x=expert_outputs, axis=1)
+            expert_concat = paddle.concat(x=cur_experts, axis=1)
             expert_concat = paddle.reshape(
                 expert_concat, [-1, cur_expert_num, self.expert_size])
             cur_gate_expert = paddle.multiply(x=expert_concat, y=cur_gate)

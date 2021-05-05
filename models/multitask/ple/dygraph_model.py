@@ -23,14 +23,16 @@ import net
 class DygraphModel():
     # define model
     def create_model(self, config):
-        feature_size = config.get('hyper_parameters.feature_size', None)
-        expert_num = config.get('hyper_parameters.expert_num', None)
-        expert_size = config.get('hyper_parameters.expert_size', None)
-        tower_size = config.get('hyper_parameters.tower_size', None)
-        gate_num = config.get('hyper_parameters.gate_num', None)
+        feature_size = config.get("hyper_parameters.feature_size")
+        task_num = config.get("hyper_parameters.task_num")
+        exp_per_task = config.get("hyper_parameters.exp_per_task")
+        shared_num = config.get("hyper_parameters.shared_num")
+        expert_size = config.get("hyper_parameters.expert_size")
+        tower_size = config.get("hyper_parameters.tower_size")
+        level_number = config.get("hyper_parameters.level_number")
 
-        PLE = net.PLELayer(feature_size, expert_num, expert_size, tower_size,
-                           gate_num)
+        PLE = net.PLELayer(feature_size, task_num, exp_per_task, shared_num,
+                           expert_size, tower_size, level_number)
 
         return PLE
 

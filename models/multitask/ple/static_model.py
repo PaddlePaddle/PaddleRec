@@ -14,7 +14,7 @@
 
 import paddle
 
-from net import MMoELayer
+from net import PLELayer
 
 
 class StaticModel():
@@ -25,10 +25,12 @@ class StaticModel():
 
     def _init_hyper_parameters(self):
         self.feature_size = self.config.get("hyper_parameters.feature_size")
-        self.expert_num = self.config.get("hyper_parameters.expert_num")
-        self.gate_num = self.config.get("hyper_parameters.gate_num")
+        self.task_num = self.config.get("hyper_parameters.task_num")
+        self.exp_per_task = self.config.get("hyper_parameters.exp_per_task")
+        self.shared_num = self.config.get("hyper_parameters.shared_num")
         self.expert_size = self.config.get("hyper_parameters.expert_size")
         self.tower_size = self.config.get("hyper_parameters.tower_size")
+        self.level_number = self.config.get("hyper_parameters.level_number")
         self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
 
@@ -49,9 +51,10 @@ class StaticModel():
         label_income = inputs[1]
         label_marital = inputs[2]
 
-        MMoE = MMoELayer(self.feature_size, self.expert_num, self.expert_size,
-                         self.tower_size, self.gate_num)
-        pred_income, pred_marital = MMoE(input_data)
+        PLE = PLELayer(self.feature_size, self.task_num, self.exp_per_task,
+                       self.shared_num, self.expert_size, self.tower_size,
+                       self.level_number)
+        pred_income, pred_marital = PLE(input_data)
 
         pred_income_1 = paddle.slice(
             pred_income, axes=[1], starts=[1], ends=[2])
