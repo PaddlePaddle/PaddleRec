@@ -45,6 +45,9 @@ pip install GPUtil
 |       --reader_file        |    string    |       任意路径         |    是    |                          测试时用的Reader()所在python文件地址                            |
 |       --batchsize        |    int    |       >= 1         |    是    |                            批训练样本数量                            |
 |       --model_name        |    str    |       任意名字         |    否    |                            输出模型名字                            |
+|       --cpu_threads        |    int    |       >= 1         |    否    |                            在使用cpu时指定线程数，在使用gpu时此参数无效                            |
+|       --enable_mkldnn        |    bool    |       True/False         |    否    |                        在使用cpu时是否开启mkldnn加速，在使用gpu时此参数无效                        |
+|       --enable_tensorRT        |    bool    |       True/False         |    否    |                        在使用gpu时是否开启tensorRT加速，在使用cpu时此参数无效                        |
 
 2. 以wide_deep模型的demo数据为例，启动预测：
 ```bash
