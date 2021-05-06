@@ -72,8 +72,8 @@ class Main(object):
         self.exe = paddle.static.Executor(place)
 
         init_model_path = config.get("runner.model_save_path")
-        init_model_path = os.path.join(
-            config["config_abs_dir"], init_model_path)
+        init_model_path = os.path.join(config["config_abs_dir"],
+                                       init_model_path)
         logger.info("init_model_path: {}".format(init_model_path))
         for file in os.listdir(init_model_path):
             file_path = os.path.join(init_model_path, file)
@@ -114,12 +114,13 @@ class Main(object):
                                    fetch_list=fetch_targets)
             batch_id += 1
             print_step = int(config.get("runner.print_interval"))
+            for var_idx, var_name in enumerate(results):
+                infer_res.append(results[var_idx])
             if batch_id % print_step == 0:
                 metrics_string = ""
                 for var_idx, var_name in enumerate(results):
                     metrics_string += "Infer res: {}, ".format(results[
                         var_idx])
-                    infer_res.append(results[var_idx])
                 logger.info("Model: {}, Batch: {}, {}".format(
                     model_name, batch_id, metrics_string))
         return np.mean(infer_res)
