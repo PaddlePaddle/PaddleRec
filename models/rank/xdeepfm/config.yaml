@@ -28,7 +28,7 @@ runner:
   infer_batch_size: 5
   infer_load_path: "output_model_deepfm"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 1
 
 
 # hyper parameters of user-defined network
