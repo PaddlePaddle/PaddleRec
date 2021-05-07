@@ -55,6 +55,10 @@ def main(args):
         for parameter in args.opt:
             parameter = parameter.strip()
             key, value = parameter.split("=")
+            if type(config.get(key)) is int:
+                value = int(value)
+            if type(config.get(key)) is bool:
+                value = (True if value.lower() == "true" else False)
             config[key] = value
     # load static model class
     static_model_class = load_static_model_class(config)
@@ -63,9 +67,9 @@ def main(args):
     input_data_names = [data.name for data in input_data]
 
     fetch_vars = static_model_class.net(input_data)
+
     #infer_target_var = model.infer_target_var
     logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-    static_model_class.create_optimizer()
 
     use_gpu = config.get("runner.use_gpu", True)
     use_auc = config.get("runner.use_auc", False)
@@ -79,6 +83,7 @@ def main(args):
     model_init_path = config.get("runner.model_init_path", None)
     batch_size = config.get("runner.train_batch_size", None)
     reader_type = config.get("runner.reader_type", "DataLoader")
+    use_fleet = config.get("runner.use_fleet", False)
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
@@ -88,6 +93,16 @@ def main(args):
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
+
+    if use_fleet:
+        from paddle.distributed import fleet
+        strategy = fleet.DistributedStrategy()
+        fleet.init(is_collective=True, strategy=strategy)
+    if use_fleet:
+        static_model_class.create_optimizer(strategy)
+    else:
+        static_model_class.create_optimizer()
+
     exe = paddle.static.Executor(place)
     # initialize
     exe.run(paddle.static.default_startup_program())
@@ -132,11 +147,20 @@ def main(args):
         else:
             logger.info("reader type wrong")
 
-        save_static_model(
-            paddle.static.default_main_program(),
-            model_save_path,
-            epoch_id,
-            prefix='rec_static')
+        if use_fleet:
+            trainer_id = paddle.distributed.get_rank()
+            if trainer_id == 0:
+                save_static_model(
+                    paddle.static.default_main_program(),
+                    model_save_path,
+                    epoch_id,
+                    prefix='rec_static')
+        else:
+            save_static_model(
+                paddle.static.default_main_program(),
+                model_save_path,
+                epoch_id,
+                prefix='rec_static')
 
         if use_inference:
             feed_var_names = config.get("runner.save_inference_feed_varnames",

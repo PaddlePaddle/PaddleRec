@@ -24,6 +24,7 @@
 |             use_inference            |    bool    |                           True/False                           |    否    |                     是否使用save_inference_model接口保存                      |
 |             save_inference_feed_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的入口变量name                     |
 |             save_inference_fetch_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的出口变量name                     |
+|             use_fleet         |    bool    |                      True/False                      |    否    |                     指定是否使用分布式运行单机多卡或多机多卡                     |
 
 
 ## hyper_parameters变量
