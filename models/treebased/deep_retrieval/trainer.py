@@ -39,7 +39,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 print(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../tools')))
 
-from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
+from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from utils.save_load import load_model, save_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
@@ -48,6 +48,26 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def create_data_loader1(config, place, graph_index, mode="train"):
+    if mode == "train":
+        data_dir = config.get("runner.train_data_dir", None)
+        batch_size = config.get('runner.train_batch_size', None)
+        reader_path = config.get('runner.train_reader_path', 'reader')
+    else:
+        data_dir = config.get("runner.test_data_dir", None)
+        batch_size = config.get('runner.infer_batch_size', None)
+        reader_path = config.get('runner.infer_reader_path', 'reader')
+    config_abs_dir = config.get("config_abs_dir", None)
+    data_dir = os.path.join(config_abs_dir, data_dir)
+    file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
+    user_define_reader = config.get('runner.user_define_reader', False)
+    logger.info("reader path:{}".format(reader_path))
+    from importlib import import_module
+    reader_class = import_module(reader_path)
+    dataset = reader_class.RecDataset(file_list, config=config, graph_index =graph_index)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, places=place, drop_last=True)
+    return loader
 
 def parse_args():
     parser = argparse.ArgumentParser(description='paddle-rec run')
@@ -68,7 +88,6 @@ def main(args):
         if not item_id in item_to_user_emb:
             item_to_user_emb[item_id] = []
         item_to_user_emb[item_id].append(user_emb)
-        print("add ",item_id," ---> ",user_emb)
 
     paddle.seed(12345)
     # load config
@@ -83,7 +102,7 @@ def main(args):
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
     em_execution_interval = config.get("hyper_parameters.em_execution_interval", 4)
-    pernalize_path_to_item_count = config.get("hyper_parameters.em_execution_interval")
+    pernalize_path_to_item_count = config.get("pernalize_path_to_item_count", False)
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
@@ -93,8 +112,10 @@ def main(args):
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
+    print("model prepare")
     dy_model = dy_model_class.create_model(config)
 
+    print("model done")
     if model_init_path is not None:
         load_model(model_init_path, dy_model)
 
@@ -102,7 +123,7 @@ def main(args):
     optimizer = dy_model_class.create_optimizer(dy_model, config)
 
     logger.info("read data")
-    train_dataloader = create_data_loader(config=config, place=place)
+    train_dataloader = create_data_loader1(config=config, place=place, graph_index=dy_model_class.graph_index)
 
     last_epoch_id = config.get("last_epoch", -1)
 
@@ -118,15 +139,16 @@ def main(args):
         train_run_cost = 0.0
         total_samples = 0
         reader_start = time.time()
-        record_item_to_user_emb = True
+        record_item_to_user_emb = False
         if (epoch_id + 1) % em_execution_interval == 0:
             record_item_to_user_emb = True
             clear_item_to_user_emb()
         for batch_id, batch in enumerate(train_dataloader()):
             if record_item_to_user_emb:
-                input_emb = batch[0].numpy()
-                item_set = batch[1].numpy()
+                input_emb = batch[1].numpy()
+                item_set = batch[0].numpy()
                 for user_emb,items in zip(input_emb,item_set):
+                    #print("a pair",user_emb, dy_model_class.graph_index.kd_represent_to_path_id(items))
                     add_item_to_user_emb(items[0],user_emb)
 
             train_reader_cost += time.time() - reader_start
@@ -188,7 +210,7 @@ def main(args):
                 user_emb = paddle.to_tensor(np.array(user_emb).astype('float32'))
                 path,pro = dy_model.generate_candidate_path_for_item(user_emb,beam_size)
                 list = []
-                path = np.array(path).astype("int64")
+                path = np.array(path).astype("int32")
                 pro = np.array(pro).astype("float")
                 if not pernalize_path_to_item_count:
                     for single_path,single_pro in zip(path,pro):
@@ -198,7 +220,7 @@ def main(args):
                     for i in range(dy_model_class.item_path_volume):
                         topk.append(dy_model_class.graph_index.kd_represent_to_path_id(list[i][1]))
 
-                    topk = np.array(topk).astype("int64")
+                    topk = np.array(topk).astype("int32")
                     dy_model_class.graph_index._graph.add_item(key, topk)
                 else:
                     for single_path,single_pro in zip(path,pro):
@@ -208,9 +230,6 @@ def main(args):
                 dy_model_class.graph_index.update_Jpath_of_item(item_to_path_map)
 
             dict = dy_model_class.graph_index._graph.get_item_path_dict()
-            print("display new path mapping")
-            for key in dict:
-                print(key,"------>",dict[key])
             dy_model_class.save_item_path(model_save_path, epoch_id)
             #dy_model.save_item_path(model_save_path, epoch_id):
 
