@@ -49,6 +49,8 @@ class RecDataset(IterableDataset):
             with open(train_file, "r") as fin:
                 for line in fin:
                     line = line.strip().split(';')
+                    if len(line)<5:
+                        continue
                     hist = line[0].split()
                     cate = line[1].split()
                     res0.append([hist, cate, line[2], line[3], float(line[4])])
