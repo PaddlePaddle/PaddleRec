@@ -29,7 +29,7 @@ class RecDataset(IterableDataset):
                     for i in line[:-1]:
                         user_embedding.append(float(i))
                     output_list = []
-                    output_list.append(np.array([item_id]).astype("int32"))
+                    output_list.append(np.array([item_id]).astype("int64"))
                     output_list.append(
                         np.array(user_embedding).astype('float32'))
                     path_set = self.graph_index.get_path_of_item(item_id)
@@ -38,10 +38,10 @@ class RecDataset(IterableDataset):
                     for path in path_set[0]:
                             path_label = np.array(self.graph_index.path_id_to_kd_represent(path))
                             item_path_kd_label.append(path_label)
-                    output_list.append(np.array(item_path_kd_label).astype("int32"))                
+                    output_list.append(np.array(item_path_kd_label).astype("int64"))                
                     if self.use_multi_task_learning:
                         label = [item_id]
                         output_list.append(
-                            np.array(label).astype('int32'))                           
-                        output_list.append(np.array([(item_id + self.item_count/2 ) % self.item_count]).astype("int32"))
+                            np.array(label).astype('int64'))                           
+                        output_list.append(np.array([(item_id + self.item_count/2 ) % self.item_count]).astype("int64"))
                     yield output_list

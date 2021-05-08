@@ -56,34 +56,33 @@ class StaticModel():
         else:
             self.multi_task_layer_size = None
 
-
     def create_feeds(self, is_infer=False):
         inputs = [
-                        paddle.static.data(
-                    name="item_id",
-                    shape=[None, 1],
-                    dtype='int32'),
+            paddle.static.data(
+                name="item_id",
+                shape=[None, 1],
+                dtype='int64'),
             paddle.static.data(
                 name="user_embedding_input",
                 shape=[None, self.user_embedding_size],
-                dtype='float32'), 
-                paddle.static.data(
-                    name="kd_path_input",
-                    shape=[None, self.item_path_volume, self.width],
-                    dtype='int32')
+                dtype='float32'),
+            paddle.static.data(
+                name="kd_path_input",
+                shape=[None, self.item_path_volume, self.width],
+                dtype='int64')
         ]
         if self.use_multi_task_learning:
             print("use multi_task_learning----")
-            inputs.append(            paddle.static.data(
+            inputs.append(paddle.static.data(
                 name="multi_task_pos_label",
                 shape=[None, 1],
-                dtype='int32'))
+                dtype='int64'))
             inputs.append(paddle.static.data(
                 name="multi_task_neg_label",
                 shape=[None, 1],
-                dtype='int32'))
+                dtype='int64'))
         return inputs
-        
+
     def net(self, input, is_infer=False):
         self.user_embedding = input[1]
         self.kd_path = input[2]
@@ -92,14 +91,13 @@ class StaticModel():
             self.multi_task_pos_label = input[3]
             self.multi_task_neg_label = input[4]
 
-
         self.model = DeepRetrieval(self.width, self.height,
-                          self.beam_search_num, self.item_path_volume,
-                          self.user_embedding_size, self.item_count,
-                          self.use_multi_task_learning, self.multi_task_layer_size, is_static = True)
+                                   self.beam_search_num, self.item_path_volume,
+                                   self.user_embedding_size, self.item_count,
+                                   self.use_multi_task_learning, self.multi_task_layer_size, is_static=True)
 
-        path_prob, multi_task_loss = self.model(self.user_embedding, self.kd_path, self.multi_task_pos_label, self.multi_task_neg_label)
-
+        path_prob, multi_task_loss = self.model(self.user_embedding, self.kd_path, self.multi_task_pos_label,
+                                                self.multi_task_neg_label)
 
         cost = self.create_loss(path_prob, multi_task_loss)
         avg_cost = paddle.mean(x=cost)
@@ -108,11 +106,11 @@ class StaticModel():
         fetch_dict = {'cost': avg_cost}
         return fetch_dict
 
-    def create_optimizer(self, strategy=None):
+    def create_optimizer(self, strategy=None, fleet=None):
         optimizer = paddle.optimizer.Adam(
             learning_rate=self.learning_rate, lazy_mode=True)
         if strategy != None:
-            import paddle.distributed.fleet as fleet
+            #import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
 

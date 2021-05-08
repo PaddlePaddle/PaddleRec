@@ -101,7 +101,7 @@ class DeepRetrieval(nn.Layer):
         prob_list = []
         saved_path = None
         w = []
-        row = row = paddle.zeros_like(input_embeddings,dtype="int32")
+        row = row = paddle.zeros_like(input_embeddings,dtype="int64")
         row = paddle.sum(row, axis=-1)
         row = paddle.reshape(row, [-1, 1])
 

@@ -22,6 +22,7 @@ runner:
   train_batch_size: 100
   epochs: 1000
   print_interval: 1
+  distributed_training: False
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_dr"
   em_execution_interval: 2
