@@ -102,7 +102,7 @@ python ../../../tools/webserver.py gpu 9393
 # CPU
 python ../../../tools/webserver.py cpu 9393
 ```
-## 调整reader
+### 调整reader
 我们在服务端底层使用Inference预测库预测。和直接使用Inference预测库一样,需要在reader中将输入和输出做出对应的调整。比如我们保存的模型为wide_deep模型的组网中。输入为26个离散特征组成的list以及1个连续特征，输出为prediction预测值。  
 将criteo_reader.py输入数据中的label部分去除：  
 ```python
