@@ -17,7 +17,7 @@ runner:
   use_gpu: True
   use_auc: True
   train_batch_size: 4096
-  epochs: 10
+  epochs: 1
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all_ffm"
@@ -26,7 +26,7 @@ runner:
   infer_batch_size: 512
   infer_load_path: "output_model_all_ffm"
   infer_start_epoch: 0
-  infer_end_epoch: 4
+  infer_end_epoch: 1
 
 hyper_parameters:
   # optimizer config

@@ -24,6 +24,7 @@ class StaticModel():
         self.infer_target_var = None
         self.config = config
         self._init_hyper_parameters()
+        self.sync_mode = config.get("runner.sync_mode")
 
     def _init_hyper_parameters(self):
         self.is_distributed = False
@@ -68,9 +69,13 @@ class StaticModel():
         self.dense_input = input[-1]
         sparse_number = self.sparse_inputs_slots - 1
 
-        dnn_model = DNNLayer(self.sparse_feature_number,
-                             self.sparse_feature_dim, self.dense_input_dim,
-                             sparse_number, self.fc_sizes)
+        dnn_model = DNNLayer(
+            self.sparse_feature_number,
+            self.sparse_feature_dim,
+            self.dense_input_dim,
+            sparse_number,
+            self.fc_sizes,
+            sync_mode=self.sync_mode)
 
         raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
 

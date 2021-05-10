@@ -210,8 +210,8 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
         if batch_id % print_interval == 0:
             metric_str = ""
             for var_idx, var_name in enumerate(fetch_vars):
-                metric_str += "{}: {}, ".format(var_name,
-                                                fetch_batch_var[var_idx])
+                metric_str += "{}: {}, ".format(
+                    var_name, str(fetch_batch_var[var_idx]).strip("[]"))
                 if use_visual:
                     log_visual.add_scalar(
                         tag="train/" + var_name,
