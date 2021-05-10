@@ -75,12 +75,12 @@ os : windows/linux/macos
 # 进入模型目录
 cd models/rank/din 
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据 替换运行config_bigdata.yaml 
 # 动态图预测
 python3 -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据 替换运行config_bigdata.yaml 
 # 静态图预测
 python -u ../../../tools/static_infer.py -m config.yaml 
 ```
@@ -107,10 +107,12 @@ cat_count:  品类的种类数目
 
 或自行进行原始数据下载预处理，执行方法如下：
 PaddleRec/datasets/amazonElec_Din
-执行 sh data_process.sh;  python build_dataset.py
-脚本运行完成后，打开config.txt，将其中的商品的种类数目、品类的种类数目信息，copy到config_bigdata.yaml
-里，替换超参数
-  item_count cat_count  
+执行 
+sh data_process.sh;  
+python build_dataset.py
+脚本运行完成后，打开config.txt，
+将其中的商品的种类数目、品类的种类数目信息，
+copy到config_bigdata.yaml里，替换超参数item_count cat_count  
 完成后运行：
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
