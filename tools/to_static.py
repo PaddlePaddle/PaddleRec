@@ -56,6 +56,7 @@ def main(args):
     print_interval = config.get("runner.print_interval", None)
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
+    end_epoch = config.get("runner.infer_end_epoch", 0)
 
     logger.info("**************common.configs**********")
     logger.info(
@@ -67,6 +68,7 @@ def main(args):
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     dy_model = dy_model_class.create_model(config)
+    model_save_path = os.path.join(model_save_path, str(end_epoch - 1))
 
     load_model(model_init_path, dy_model)
     # example dnn model forward
