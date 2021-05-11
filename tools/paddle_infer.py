@@ -43,8 +43,15 @@ def parse_args():
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
     parser.add_argument("--model_name", type=str, default="not specified")
+    parser.add_argument("--cpu_threads", type=int, default=1)
+    parser.add_argument("--enable_mkldnn", type=str, default="False")
+    parser.add_argument("--enable_tensorRT", type=str, default="False")
     args = parser.parse_args()
     args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
+    args.enable_mkldnn = (True
+                          if args.enable_mkldnn.lower() == "true" else False)
+    args.enable_tensorRT = (True if args.enable_tensorRT.lower() == "true" else
+                            False)
     return args
 
 
@@ -56,10 +63,17 @@ def init_predictor(args):
 
     if args.use_gpu:
         config.enable_use_gpu(1000, 0)
+        if args.enable_tensorRT:
+            config.enable_tensorrt_engine(
+                max_batch_size=args.batchsize,
+                min_subgraph_size=1,
+                precision_mode=paddle.inference.PrecisionType.Float32)
     else:
         config.disable_gpu()
-        print(config)
-        # config.delete('repeated_fc_relu_fuse_pass')
+        # config.delete_pass("repeated_fc_relu_fuse_pass")
+        config.set_cpu_math_library_num_threads(args.cpu_threads)
+        if args.enable_mkldnn:
+            config.enable_mkldnn()
     predictor = create_predictor(config)
     return predictor
 
@@ -91,16 +105,19 @@ def log_print(args, results_type, num_test_data, average_preprocess_time,
     print("----------------------- Conf info -----------------------")
     print("runtime_device: {}".format("gpu" if args.use_gpu else "cpu"))
     print("ir_optim: {}\nenable_memory_optim: {}\nenable_tensorrt: {}".format(
-        "False", "False", "False"))
+        "False", "False", args.enable_tensorRT))
     print("precision: {}".format([str(x).split(".")[1] for x in results_type]))
-    print("enable_mkldnn: {}\ncpu_math_library_num_threads: {}".format("False",
-                                                                       1))
+    print("enable_mkldnn: {}\ncpu_math_library_num_threads: {}".format(
+        args.enable_mkldnn, args.cpu_threads))
     print("----------------------- Perf info -----------------------")
     print(
         "preprocess_time(ms): {}\ninference_time(ms): {}\npostprocess_time(ms): {}".
         format(average_preprocess_time * 1000, average_inference_time * 1000,
                average_postprocess_time * 1000))
     print("The number of predicted data: {}".format(num_test_data))
+    print("total time spend(s): {:.5f}".format(
+        (average_preprocess_time + average_inference_time +
+         average_postprocess_time) * num_test_data))
     print("cpu_rss(MB): {}, gpu_rss(MB): {}".format(cpu_rss, gpu_rss))
     print("gpu_util: {}%".format(str(gpu_util * 100)[:4]))
 
@@ -190,9 +207,9 @@ def main(args):
     average_preprocess_time = preprocess_time.value() / num_test_data
     average_inference_time = inference_time.value() / num_test_data
     average_postprocess_time = postprocess_time.value() / num_test_data
-    cpu_rss = cpu_mem / num_test_data
-    gpu_rss = gpu_mem / num_test_data
-    gpu_util = gpu_util / num_test_data
+    cpu_rss = cpu_mem / (batch_id + 1)
+    gpu_rss = gpu_mem / (batch_id + 1)
+    gpu_util = gpu_util / (batch_id + 1)
     log_print(args, results_type, num_test_data, average_preprocess_time,
               average_inference_time, average_postprocess_time, cpu_rss,
               gpu_rss, gpu_util)
