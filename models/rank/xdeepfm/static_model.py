@@ -15,7 +15,7 @@
 import math
 import paddle
 
-from net import xDeepFMLayer
+from net import StaticxDeepFMLayer
 
 
 class StaticModel():
@@ -75,7 +75,7 @@ class StaticModel():
         sparse_number = self.sparse_inputs_slot - 1
         assert sparse_number == len(self.sparse_inputs)
 
-        xdeepfm_model = xDeepFMLayer(
+        xdeepfm_model = StaticxDeepFMLayer(
             self.sparse_feature_number, self.sparse_feature_dim,
             self.dense_input_dim, sparse_number, self.layer_sizes_cin,
             self.layer_sizes_dnn)
