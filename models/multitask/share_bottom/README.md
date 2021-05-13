@@ -54,7 +54,7 @@ python 2.7/3.5/3.6/3.7
 os : windows/linux/macos 
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在mmoe模型目录的快速执行命令如下： 
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在share_bottom模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
 # cd models/multitask/share_bottom # 在任意目录均可运行
@@ -76,7 +76,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 在全量数据下模型的指标如下：
 | 模型 | auc_marital | batch_size | epoch_num | Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| MMOE | 0.99 | 32 | 100 | 约1分钟 |
+| Share_bottom | 0.99 | 32 | 100 | 约1分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/multitask/share_bottom  
 2. 进入paddlerec/datasets/census目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的census全量数据集，并解压到指定文件夹。
