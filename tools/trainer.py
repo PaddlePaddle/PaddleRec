@@ -12,19 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import paddle
 import os
 import paddle.nn as nn
@@ -68,6 +55,10 @@ def main(args):
         for parameter in args.opt:
             parameter = parameter.strip()
             key, value = parameter.split("=")
+            if type(config.get(key)) is int:
+                value = int(value)
+            if type(config.get(key)) is bool:
+                value = (True if value.lower() == "true" else False)
             config[key] = value
 
     # tools.vars
@@ -79,6 +70,7 @@ def main(args):
     train_batch_size = config.get("runner.train_batch_size", None)
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
+    use_fleet = config.get("runner.use_fleet", False)
 
     logger.info("**************common.configs**********")
     logger.info(
@@ -101,6 +93,14 @@ def main(args):
 
     # to do : add optimizer function
     optimizer = dy_model_class.create_optimizer(dy_model, config)
+
+    # use fleet run collective
+    if use_fleet:
+        from paddle.distributed import fleet
+        strategy = fleet.DistributedStrategy()
+        fleet.init(is_collective=True, strategy=strategy)
+        optimizer = fleet.distributed_optimizer(optimizer)
+        dy_model = fleet.distributed_model(dy_model)
 
     logger.info("read data")
     train_dataloader = create_data_loader(config=config, place=place)
@@ -186,8 +186,18 @@ def main(args):
                     tensor_print_str + " epoch time: {:.2f} s".format(
                         time.time() - epoch_begin))
 
-        save_model(
-            dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
+        if use_fleet:
+            trainer_id = paddle.distributed.get_rank()
+            if trainer_id == 0:
+                save_model(
+                    dy_model,
+                    optimizer,
+                    model_save_path,
+                    epoch_id,
+                    prefix='rec')
+        else:
+            save_model(
+                dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
 
 if __name__ == '__main__':
