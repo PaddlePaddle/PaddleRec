@@ -86,7 +86,7 @@ class StaticModel():
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        auc, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
+        auc, batch_auc_var, _ = paddle.static.auc(input=predict_2d,
                                                         label=self.label_input,
                                                         slide_steps=0)
 
