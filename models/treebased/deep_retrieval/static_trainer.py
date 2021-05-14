@@ -25,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def create_data_loader(config, place, graph_index, mode="train", distributed_training = False):
+def create_data_loader(config, place, graph_index, mode="train"):
     if mode == "train":
         data_dir = config.get("runner.train_data_dir", None)
         batch_size = config.get('runner.train_batch_size', None)
@@ -34,10 +34,12 @@ def create_data_loader(config, place, graph_index, mode="train", distributed_tra
         data_dir = config.get("runner.test_data_dir", None)
         batch_size = config.get('runner.infer_batch_size', None)
         reader_path = config.get('runner.infer_reader_path', 'reader')
+    distributed_training = config.get("runner.distributed_training", True)
+    data_partition = config.get("runner.data_partition", False)
     config_abs_dir = config.get("config_abs_dir", None)
     data_dir = os.path.join(config_abs_dir, data_dir)
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
-    sub_file_list = fleet.util.get_file_shard(file_list) if distributed_training == True else file_list
+    sub_file_list = fleet.util.get_file_shard(file_list) if distributed_training == True and data_partition == True else file_list
     user_define_reader = config.get('runner.user_define_reader', False)
     logger.info("reader path:{}".format(reader_path))
     from importlib import import_module
@@ -83,7 +85,7 @@ def main(args):
     input_data = static_model_class.create_feeds()
     input_data_names = [data.name for data in input_data]
 
-    fetch_vars = static_model_class.net(input_data)
+    fetch_vars = static_model_class.net(input_data,is_static = True)
     logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
     strategy = None
     if distributed_training == True:
@@ -97,6 +99,7 @@ def main(args):
     use_auc = config.get("runner.use_auc", False)
     auc_num = config.get("runner.auc_num", 1)
     train_data_dir = config.get("runner.train_data_dir", None)
+    item_path_volume = config.get("hyper_parameters.item_path_volume")
     epochs = config.get("runner.epochs", None)
     print_interval = config.get("runner.print_interval", None)
     model_save_path = config.get("runner.model_save_path", "model_output")
@@ -139,7 +142,7 @@ def main(args):
             fleet.run_server()
             return
 
-    train_dataloader = create_data_loader(config=config, place=place, graph_index=static_model_class.graph_index, distributed_training = distributed_training)
+    train_dataloader = create_data_loader(config=config, place=place, graph_index=static_model_class.graph_index)
     exe.run(em_startup_program)
     exe.run(paddle.static.default_startup_program())
     if distributed_training:
@@ -149,6 +152,7 @@ def main(args):
         interval_begin = time.time()
         train_reader_cost = 0.0
         train_run_cost = 0.0
+        total_samples = 0
         reader_start = time.time()
         record_item_to_user_emb = False
         if (epoch_id + 1) % em_execution_interval == 0:
@@ -163,9 +167,33 @@ def main(args):
                     add_item_to_user_emb(items[0], user_emb)
 
             print("start to train----------------------------")
-            fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
-                                               input_data_names, fetch_vars,
-                                               exe, config)
+            # fetch_batch_var = dataloader_train(epoch_id, train_dataloader,
+            #                                    input_data_names, fetch_vars,
+            #                                    exe, config)
+            train_start = time.time()
+            fetch_batch_var = exe.run(
+                program=paddle.static.default_main_program(),
+                feed=dict(zip(input_data_names, batch)),
+                fetch_list=[var for _, var in fetch_vars.items()])
+            train_run_cost += time.time() - train_start
+            total_samples += batch_size
+            if batch_id % print_interval == 0:
+                metric_str = ""
+                for var_idx, var_name in enumerate(fetch_vars):
+                    metric_str += "{}: {}, ".format(var_name,
+                                                    fetch_batch_var[var_idx])
+                logger.info(
+                    "epoch: {}, batch_id: {}, ".format(epoch_id,
+                                                       batch_id) + metric_str +
+                    "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
+                    format(train_reader_cost / print_interval, (
+                            train_reader_cost + train_run_cost) / print_interval,
+                           total_samples / print_interval, total_samples / (
+                                   train_reader_cost + train_run_cost)))
+                train_reader_cost = 0.0
+                train_run_cost = 0.0
+                total_samples = 0
+            reader_start = time.time()
             print("train ends--------------------------------")
             # metric_str = ""
             # for var_idx, var_name in enumerate(fetch_vars):
@@ -207,12 +235,31 @@ def main(args):
             if pernalize_path_to_item_count:
                 static_model_class.graph_index.update_Jpath_of_item(item_to_path_map)
 
-            dict = static_model_class.graph_index._graph.get_item_path_dict()
+            path_dict = static_model_class.graph_index._graph.get_item_path_dict()
             print("display new path mapping")
-            for key in dict:
-                print(key, "------>", dict[key])
-            static_model_class.save_item_path(model_save_path, epoch_id)
+            for key in path_dict:
+                print(key, "------>", path_dict[key])
+        if epoch_id == epochs - 1 and  distributed_training:
+            list = []
+            for key in path_dict:
+                list += key
+                list += path_dict[key]
+            final_list = fleet.util.all_gather_list(list)
+            static_model_class.graph_index._graph.reset_mapping()
+            item_length_for_each = 1 + item_path_volume
+            item_count = len(final_list)//item_length_for_each
+            for i in range(item_count):
+                start = i * item_length_for_each
+                key = final_list[start]
+                path_list = final_list[start + 1: start + item_length_for_each]
+                static_model_class.graph_index._graph.add_item(key,path_list)
 
+            path_dict = static_model_class.graph_index._graph.get_item_path_dict()
+            print("display final path mapping")
+            for key in path_dict:
+                print(key, "------>", path_dict[key])
+
+        static_model_class.save_item_path(model_save_path, epoch_id)
         save_static_model(
             paddle.static.default_main_program(),
             model_save_path,
@@ -222,21 +269,6 @@ def main(args):
     if distributed_training:
         fleet.stop_worker()
 
-
-def dataset_train(epoch_id, dataset, fetch_vars, exe, config):
-    # logger.info("Epoch: {}, Running Dataset Begin.".format(epoch))
-    fetch_info = [
-        "Epoch {} Var {}".format(epoch_id, var_name) for var_name in fetch_vars
-    ]
-    fetch_vars = [var for _, var in fetch_vars.items()]
-    print_interval = config.get("runner.print_interval")
-    exe.train_from_dataset(
-        program=paddle.static.default_main_program(),
-        dataset=dataset,
-        fetch_list=fetch_vars,
-        fetch_info=fetch_info,
-        print_period=print_interval,
-        debug=config.get("runner.dataset_debug"))
 
 
 def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
@@ -251,7 +283,6 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
     for batch_id, batch_data in enumerate(train_dataloader()):
         train_reader_cost += time.time() - reader_start
         train_start = time.time()
-
         fetch_batch_var = exe.run(
             program=paddle.static.default_main_program(),
             feed=dict(zip(input_data_names, batch_data)),

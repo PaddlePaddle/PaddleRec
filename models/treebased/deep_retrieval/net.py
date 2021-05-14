@@ -22,7 +22,7 @@ import paddle.fluid as fluid
 
 class DeepRetrieval(nn.Layer):
 
-    def expand_layer(self,input, n):
+    def expand_layer(self, input, n):
         # expand input (batch_size, shape) -> (batch_size * n, shape)
         col_size = input.shape[1]
         arr = [input] * n
@@ -31,8 +31,39 @@ class DeepRetrieval(nn.Layer):
         input = paddle.reshape(input, [-1, col_size])
         return input
 
+    def rerank(self, user_emb, item_ids):
+        temp = user_emb
+        # (batch, dot_product_size)
+        for i in range(len(self.multi_task_mlp_layers)):
+            temp = self.multi_task_mlp_layers[i](temp)     
+        item_emb = self.multi_task_item_embedding(item_ids)
+        return paddle.dot(temp, item_emb)
+
+    def init_metrics(self):
+        self.accuracy = 0
+        self.count = 0
+        self.recall = 0
+
+    def upate_metrics(self, accuracy_value, recall_value):
+        self.count = self.count + 1
+        self.accuracy = self.accuracy + accuracy_value
+        self.recall = self.recall + recall_value
+
+    def final_metrics(self):
+        return self.accuracy/self.count, self.recall/self.count
+
+    def calculate_metric(self,recall_list,user_items_list):
+        if len(recall_list) == 0:
+            recall_list = [0]
+        print("recall_list",recall_list)
+        print("user_items_list",user_items_list)
+        user_dict = set(user_items_list)
+        recall_dict = set(recall_list)
+        common_len = len(user_dict & recall_dict)
+        self.upate_metrics(common_len/len(recall_dict), common_len/len(user_dict))
+
     def __init__(self, width, height, beam_search_num, item_path_volume, user_embedding_size, item_count,
-                 use_multi_task_learning=False, multi_task_mlp_size=None, is_static=False):
+                 use_multi_task_learning=True, multi_task_mlp_size=None, is_static=False):
         super(DeepRetrieval, self).__init__()
         self.width = width
         self.height = height
@@ -68,9 +99,6 @@ class DeepRetrieval(nn.Layer):
                 name="path_embedding",
                 initializer=paddle.nn.initializer.Uniform())
         )
-        if is_static:
-            self.em_startup_program = fluid.default_startup_program().clone()
-            self.em_main_program = paddle.static.default_main_program().clone()
         if self.use_multi_task_learning:
             self.item_count = item_count
             for i in multi_task_mlp_size:
@@ -93,6 +121,10 @@ class DeepRetrieval(nn.Layer):
                     name="multi_task_item_embedding_weight",
                     initializer=paddle.nn.initializer.Uniform()))
 
+        if is_static:
+            self.em_startup_program = fluid.default_startup_program().clone()
+            self.em_main_program = paddle.static.default_main_program().clone()
+
     def generate_candidate_path_for_item(self, input_embeddings, beam_size):
         if beam_size > self.height:
             beam_size = self.height
@@ -101,12 +133,11 @@ class DeepRetrieval(nn.Layer):
         prob_list = []
         saved_path = None
         w = []
-        row = row = paddle.zeros_like(input_embeddings,dtype="int64")
+        row = row = paddle.zeros_like(input_embeddings, dtype="int64")
         row = paddle.sum(row, axis=-1)
         row = paddle.reshape(row, [-1, 1])
 
         for i in range(beam_size):
-
             x = row + i
             w.append(x)
         # [batch] all zeros
@@ -130,7 +161,7 @@ class DeepRetrieval(nn.Layer):
                 # # [batch_size,beam_size]
                 # last_prob = paddle.index_sample(pro, multi_index)
                 # [batch_size,beam_size]
-                last_prob = paddle.index_select(paddle.reshape(pro,[self.height,-1]),index)
+                last_prob = paddle.index_select(paddle.reshape(pro, [self.height, -1]), index)
                 last_prob = paddle.reshape(last_prob, [-1, beam_size])
                 prob_list.append(last_prob)
                 # [batch * beam, emb_size]
@@ -149,9 +180,9 @@ class DeepRetrieval(nn.Layer):
 
                 # [beam * batch, i * emb_size]
                 input = paddle.index_select(input, row)
-                print("input shape ",input.shape)
+                print("input shape ", input.shape)
                 # [batch, beam, i * emb_size]
-                input = paddle.reshape(input,[-1, beam_size, i * self.user_embedding_size])
+                input = paddle.reshape(input, [-1, beam_size, i * self.user_embedding_size])
                 # # input = paddle.concat(emb_list,axis=-1)
                 # input = paddle.unsqueeze(input, 0)
                 # # [batch, beam, i * emb_size]
@@ -201,35 +232,13 @@ class DeepRetrieval(nn.Layer):
 
         print("in train forward")
         print("user_emb", user_embedding)
-        print("kd-Label", kd_label)
-        print("pos_label", multi_task_positive_labels)
+
 
         # print("item_path_kd_label = ", item_path_kd_label)
 
         def train_forward(user_embedding, kd_label=None, multi_task_positive_labels=None,
                           multi_task_negative_labels=None):
-            # item_path_kd_label: list [ list[ (1, D), ..., (1, D) ],..., ]
-            # print("in train forward ",user_embedding.shape)
-            # kd_label_list = []
-            # batch_size = len(item_path_kd_label)
-            # print("batch_size = ",batch_size)
-            # print(item_path_kd_label)
-            # J = self.item_path_volume
-            # D = self.width
-            # print(item_path_kd_label[0][0].shape)
-            # for idx, all_kd_val in enumerate(item_path_kd_label):
-            #     kd_label_list.append(paddle.concat(
-            #         all_kd_val, axis=0))  # (J, D)
-            # kd_label = paddle.concat(
-            #     kd_label_list, axis=0)  # (batch_size * J, D)
-            # print(kd_label.shape)
-            # print("kd shape ",batch_size * J," ",D)
 
-            # find path emb idx for every item
-            print("user_emb--$$$$$", user_embedding)
-            print("kd-Label_shape---$$$$$$$", kd_label.shape)
-            print("multi-pos-label-$$$$$$$$", multi_task_positive_labels)
-            print("multi-neg-label--$$$$$$$$$$$$", multi_task_negative_labels)
             kd_label = paddle.reshape(kd_label, [-1, self.width])
             path_emb_idx_lists = []
             for idx in range(self.width):
@@ -306,7 +315,7 @@ class DeepRetrieval(nn.Layer):
             return path_prob, multi_task_loss
 
         def infer_forward(user_embedding):
-
+            print("in infer ",user_embedding.shape)
             height = paddle.full(
                 shape=[1, 1], fill_value=self.height, dtype='int64')
 
@@ -326,6 +335,8 @@ class DeepRetrieval(nn.Layer):
                     path_prob.append(prob)
 
                     # expand user_embedding (batch_size, emb_shape) -> (batch_size * B, emb_shape)
+                    print("user_embedding shape ",user_embedding.shape)
+                    print("beam search num ",self.beam_search_num)
                     input_embedding = self.expand_layer(
                         user_embedding, self.beam_search_num)
                     prev_index.append(index)
@@ -376,7 +387,7 @@ class DeepRetrieval(nn.Layer):
                 prev_index[i] = paddle.reshape(prev_index[i], [-1, self.beam_search_num, 1])
 
             # [batch,beam,width],[batch,beam]
-            kd_path = paddle.concat(prev_index, axis=-1)
+            kd_path = paddle.concat(prev_index, axis=-1,name="kd_path")
             # print("kd_path", kd_path)
             # print("final_prob", final_prob)
             return kd_path, final_prob
