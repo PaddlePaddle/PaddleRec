@@ -63,6 +63,7 @@ def main(args):
 
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
+    use_xpu = config.get("runner.use_xpu", False)
     use_visual = config.get("runner.use_visual", False)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
@@ -74,12 +75,16 @@ def main(args):
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, use_visual, train_batch_size, train_data_dir, epochs,
-               print_interval, model_save_path))
+        "use_gpu: {}, use_xpu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_xpu, use_visual, train_batch_size, train_data_dir,
+               epochs, print_interval, model_save_path))
     logger.info("**************common.configs**********")
 
-    place = paddle.set_device('gpu' if use_gpu else 'cpu')
+    if use_xpu:
+        xpu_device = 'xpu:{0}'.format(os.getenv('FLAGS_selected_xpus', 0))
+        place = paddle.set_device(xpu_device)
+    else:
+        place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     dy_model = dy_model_class.create_model(config)
 
