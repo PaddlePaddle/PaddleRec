@@ -13,11 +13,14 @@
 # limitations under the License.
 
 import paddle
+import paddle.nn as nn
+import paddle.nn.functional as F
 import math
+
 from paddle.regularizer import L2Decay
 
 
-class xDeepFMLayer(paddle.nn.Layer):
+class xDeepFMLayer(nn.Layer):
     def __init__(self, sparse_feature_number, sparse_feature_dim,
                  dense_feature_dim, sparse_num_field, layer_sizes_cin,
                  layer_sizes_dnn):
@@ -28,44 +31,44 @@ class xDeepFMLayer(paddle.nn.Layer):
         self.sparse_num_field = sparse_num_field
         self.layer_sizes_cin = layer_sizes_cin
         self.layer_sizes_dnn = layer_sizes_dnn
-        self.dense_emb_dim = self.sparse_feature_dim
 
-        self.linear = Linear(sparse_feature_number,
-                             dense_feature_dim + sparse_num_field,
-                             sparse_feature_dim, dense_feature_dim)
+        self.fm = Linear(sparse_feature_number, sparse_feature_dim,
+                         dense_feature_dim, sparse_num_field)
         self.cin = CIN(sparse_feature_dim,
                        dense_feature_dim + sparse_num_field, layer_sizes_cin)
 
         self.dnn = DNN(sparse_feature_dim,
                        dense_feature_dim + sparse_num_field, layer_sizes_dnn)
 
+        self.bias = paddle.create_parameter(
+            shape=[1],
+            dtype='float32',
+            default_initializer=paddle.nn.initializer.Constant(value=0.0))
+
     def forward(self, sparse_inputs, dense_inputs):
 
-        y_linear, feat_embeddings = self.linear(sparse_inputs, dense_inputs)
+        y_linear, feat_embeddings = self.fm(sparse_inputs, dense_inputs)
         y_cin = self.cin(feat_embeddings)
         y_dnn = self.dnn(feat_embeddings)
-
-        predict = paddle.nn.functional.sigmoid(y_linear + y_cin + y_dnn)
-
+        predict = F.sigmoid(y_linear + self.bias + y_cin + y_dnn)
         return predict
 
 
-class Linear(paddle.nn.Layer):
-    def __init__(self, sparse_feature_number, num_field, sparse_feature_dim,
-                 dense_feature_dim):
+class Linear(nn.Layer):
+    def __init__(self, sparse_feature_number, sparse_feature_dim,
+                 dense_feature_dim, sparse_num_field):
         super(Linear, self).__init__()
         self.sparse_feature_number = sparse_feature_number
-        self.num_field = num_field
         self.sparse_feature_dim = sparse_feature_dim
         self.dense_feature_dim = dense_feature_dim
-        self.init_value_ = 0.1
         self.dense_emb_dim = self.sparse_feature_dim
+        self.sparse_num_field = sparse_num_field
+        self.init_value_ = 0.1
 
-        # sparse coding
+        # sparse part coding
         self.embedding_one = paddle.nn.Embedding(
             sparse_feature_number,
             1,
-            padding_idx=0,
             sparse=True,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
@@ -77,29 +80,22 @@ class Linear(paddle.nn.Layer):
             self.sparse_feature_number,
             self.sparse_feature_dim,
             sparse=True,
-            padding_idx=0,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
                     std=self.init_value_ /
                     math.sqrt(float(self.sparse_feature_dim)))))
 
-        # dense coding
+        # dense part coding
         self.dense_w_one = paddle.create_parameter(
             shape=[self.dense_feature_dim],
             dtype='float32',
-            default_initializer=paddle.nn.initializer.TruncatedNormal(
-                mean=0.0,
-                std=self.init_value_ /
-                math.sqrt(float(self.sparse_feature_dim))))
+            default_initializer=paddle.nn.initializer.Constant(value=1.0))
 
         self.dense_w = paddle.create_parameter(
             shape=[1, self.dense_feature_dim, self.dense_emb_dim],
             dtype='float32',
-            default_initializer=paddle.nn.initializer.TruncatedNormal(
-                mean=0.0,
-                std=self.init_value_ /
-                math.sqrt(float(self.sparse_feature_dim))))
+            default_initializer=paddle.nn.initializer.Constant(value=1.0))
 
     def forward(self, sparse_inputs, dense_inputs):
         sparse_inputs_concat = paddle.concat(sparse_inputs, axis=1)
@@ -108,36 +104,55 @@ class Linear(paddle.nn.Layer):
         dense_emb_one = paddle.multiply(dense_inputs, self.dense_w_one)
         dense_emb_one = paddle.unsqueeze(dense_emb_one, axis=2)
 
+        y_linear = paddle.sum(sparse_emb_one, 1) + paddle.sum(dense_emb_one, 1)
+
         sparse_embeddings = self.embedding(sparse_inputs_concat)
         dense_inputs_re = paddle.unsqueeze(dense_inputs, axis=2)
         dense_embeddings = paddle.multiply(dense_inputs_re, self.dense_w)
         feat_embeddings = paddle.concat([sparse_embeddings, dense_embeddings],
                                         1)
 
-        b_linear = paddle.create_parameter(
-            shape=[1],
-            dtype='float32',
-            default_initializer=paddle.nn.initializer.Constant(value=0))
-
-        y_linear = paddle.sum(sparse_emb_one, 1) + paddle.sum(dense_emb_one,
-                                                              1) + b_linear
-
         return y_linear, feat_embeddings
 
 
-class CIN(paddle.nn.Layer):
+class CIN(nn.Layer):
     def __init__(self, sparse_feature_dim, num_field, layer_sizes_cin):
         super(CIN, self).__init__()
         self.sparse_feature_dim = sparse_feature_dim
         self.num_field = num_field
         self.layer_sizes_cin = layer_sizes_cin
 
-    def forward(self, feat_embeddings):
+        self.cnn_layers = []
+        last_s = self.num_field
+        for i in range(len(layer_sizes_cin)):
+            _conv = nn.Conv2D(
+                in_channels=last_s * self.num_field,
+                out_channels=layer_sizes_cin[i],
+                kernel_size=(1, 1),
+                weight_attr=paddle.ParamAttr(
+                    regularizer=L2Decay(coeff=0.0001),
+                    initializer=paddle.nn.initializer.Normal(
+                        std=1.0 / math.sqrt(last_s * self.num_field))),
+                bias_attr=False)
+            last_s = layer_sizes_cin[i]
+            self.add_sublayer('cnn_%d' % i, _conv)
+            self.cnn_layers.append(_conv)
+        tmp_sum = sum(self.layer_sizes_cin)
+        self.cin_linear = paddle.nn.Linear(
+            in_features=tmp_sum,
+            out_features=1,
+            weight_attr=paddle.ParamAttr(
+                regularizer=L2Decay(coeff=0.0001),
+                initializer=paddle.nn.initializer.Normal(std=0.1 /
+                                                         math.sqrt(tmp_sum))))
+        self.add_sublayer('cnn_fc', self.cin_linear)
 
+    def forward(self, feat_embeddings):
         Xs = [feat_embeddings]
         last_s = self.num_field
         #m = paddle.nn.Dropout(p=0.5)
-        for s in self.layer_sizes_cin:
+
+        for s, _conv in zip(self.layer_sizes_cin, self.cnn_layers):
             # calculate Z^(k+1) with X^k and X^0
             X_0 = paddle.reshape(
                 x=paddle.transpose(Xs[0], [0, 2, 1]),
@@ -163,16 +178,9 @@ class CIN(paddle.nn.Layer):
                     -1, last_s * self.num_field, 1, self.sparse_feature_dim
                 ]
             )  # None, last_s*num_field, 1, embedding_size  (None, channal_in, h, w)
-            _conv = paddle.nn.Conv2D(
-                in_channels=last_s * self.num_field,
-                out_channels=s,
-                kernel_size=(1, 1),
-                weight_attr=paddle.ParamAttr(
-                    regularizer=L2Decay(coeff=0.0001),
-                    initializer=paddle.nn.initializer.Normal(
-                        std=1.0 / math.sqrt(last_s * self.num_field))),
-                bias_attr=False)
+
             X_k_1 = _conv(Z_k_1)
+
             X_k_1 = paddle.reshape(
                 x=X_k_1,
                 shape=[-1, s,
@@ -180,26 +188,18 @@ class CIN(paddle.nn.Layer):
             #X_k_1 = m(X_k_1)
             Xs.append(X_k_1)
             last_s = s
-
         # sum pooling
         y_cin = paddle.concat(
             x=Xs[1:], axis=1)  # None, (num_field++), embedding_size
-        y_cin = paddle.sum(x=y_cin, axis=-1)  # None, (num_field++)
+        y_cin = paddle.sum(x=y_cin, axis=-1)  # None, (num_field++)i
         tmp_sum = sum(self.layer_sizes_cin)
-        cin_linear = paddle.nn.Linear(
-            in_features=tmp_sum,
-            out_features=1,
-            weight_attr=paddle.ParamAttr(
-                regularizer=L2Decay(coeff=0.0001),
-                initializer=paddle.nn.initializer.Normal(std=1.0 /
-                                                         math.sqrt(tmp_sum))))
-        y_cin = cin_linear(y_cin)
+        y_cin = self.cin_linear(y_cin)
         y_cin = paddle.sum(x=y_cin, axis=-1, keepdim=True)
 
         return y_cin
 
 
-class DNN(paddle.nn.Layer):
+class DNN(nn.Layer):
     def __init__(self, sparse_feature_dim, num_field, layer_sizes_dnn):
         super(DNN, self).__init__()
         self.sparse_feature_dim = sparse_feature_dim
@@ -216,7 +216,7 @@ class DNN(paddle.nn.Layer):
                 weight_attr=paddle.ParamAttr(
                     regularizer=L2Decay(coeff=0.0001),
                     initializer=paddle.nn.initializer.Normal(
-                        std=1.0 / math.sqrt(sizes[i]))))
+                        std=0.1 / math.sqrt(sizes[i]))))
             self.add_sublayer('linear_%d' % i, linear)
             self._mlp_layers.append(linear)
             if acts[i] == 'relu':
