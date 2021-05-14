@@ -69,9 +69,9 @@ class StaticModel():
         return feeds_list
 
     def net(self, input, is_infer=False):
-        self.sparse_inputs = self._sparse_data_var[1:]
-        self.dense_input = self._dense_data_var[0]
-        self.label_input = self._sparse_data_var[0]
+        self.sparse_inputs = input[1:self.sparse_inputs_slot]
+        self.dense_input = input[-1]
+        self.label_input = input[0]
         sparse_number = self.sparse_inputs_slot - 1
         assert sparse_number == len(self.sparse_inputs)
 
