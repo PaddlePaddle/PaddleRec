@@ -33,7 +33,7 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-`CTR(Click Through Rate)`，即点击率，是“推荐系统/计算广告”等领域的重要指标，对其进行预估是商品推送/广告投放等决策的基础。简单来说，CTR预估对每次广告的点击情况做出预测，预测用户是点击还是不点击。CTR预估模型综合考虑各种因素、特征，在大量历史数据上训练，最终对商业决策提供帮助。本模型实现了下述论文中的deepFM模型：
+`CTR(Click Through Rate)`，即点击率，是“推荐系统/计算广告”等领域的重要指标，对其进行预估是商品推送/广告投放等决策的基础。简单来说，CTR预估对每次广告的点击情况做出预测，预测用户是点击还是不点击。CTR预估模型综合考虑各种因素、特征，在大量历史数据上训练，最终对商业决策提供帮助。本模型实现了下述论文中的xDeepFM模型：
 
 ```text
 @inproceedings{lian2018xdeepfm,
@@ -63,10 +63,10 @@ python 2.7/3.5/3.6/3.7
 os : windows/linux/macos 
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在deepfm模型目录的快速执行命令如下： 
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在xdeepfm模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/rank/deepfm # 在任意目录均可运行
+# cd models/rank/xdeepfm # 在任意目录均可运行
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
@@ -114,9 +114,9 @@ cin结合了rnn和cnn的优点，有多个卷积层构成，对于除了初始�
 在全量数据下模型的指标如下：  
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| xDeepFM | 0.777 | 4096 | 1 | 约1.84小时 |
+| xDeepFM | 0.79 | 512 | 1 | 约2.5小时 |
 
-1. 确认您当前所在目录为PaddleRec/models/rank/deepfm
+1. 确认您当前所在目录为PaddleRec/models/rank/xdeepfm
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。
 ``` bash
 cd ../../../datasets/criteo
