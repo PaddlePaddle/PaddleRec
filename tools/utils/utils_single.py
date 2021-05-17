@@ -130,7 +130,7 @@ def load_yaml(yaml_file, other_part=None):
     return running_config
 
 
-def reset_auc(auc_num=1):
+def reset_auc(use_fleet=False, auc_num=1):
     # for static clear auc
     auc_var_name = []
     for i in range(auc_num * 4):
@@ -143,5 +143,9 @@ def reset_auc(auc_num=1):
         tensor = param.get_tensor()
         if param:
             tensor_array = np.zeros(tensor._get_dims()).astype("int64")
-            tensor.set(tensor_array, paddle.CPUPlace())
+            if use_fleet:
+                trainer_id = paddle.distributed.get_rank()
+                tensor.set(tensor_array, paddle.CUDAPlace(trainer_id))
+            else:
+                tensor.set(tensor_array, paddle.CPUPlace())
             logger.info("AUC Reset To Zero: {}".format(name))
