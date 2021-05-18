@@ -132,6 +132,9 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 * [自定义Reader](doc/custom_reader.md)
 * [自定义模型](doc/model_develop.md)
 * [yaml配置说明](doc/yaml.md)
+* [训练可视化](doc/visualization.md)
+* [在线Serving部署](doc/serving.md)
+* [python端预测库推理](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
 
 ### FAQ
