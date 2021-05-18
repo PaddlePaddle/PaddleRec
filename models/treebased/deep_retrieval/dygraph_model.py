@@ -71,7 +71,7 @@ class DygraphModel():
 
     # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
-        print("batch_data ",batch_data, "len_batch_data",len(batch_data))
+        #print("batch_data ",batch_data, "len_batch_data",len(batch_data))
         # user_embedding = paddle.to_tensor(batch_data[0].numpy().astype(
         #     'float32').reshape(-1, self.user_embedding_size))
 

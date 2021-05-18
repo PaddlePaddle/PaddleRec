@@ -180,7 +180,7 @@ class DeepRetrieval(nn.Layer):
 
                 # [beam * batch, i * emb_size]
                 input = paddle.index_select(input, row)
-                print("input shape ", input.shape)
+                #print("input shape ", input.shape)
                 # [batch, beam, i * emb_size]
                 input = paddle.reshape(input, [-1, beam_size, i * self.user_embedding_size])
                 # # input = paddle.concat(emb_list,axis=-1)
@@ -229,12 +229,6 @@ class DeepRetrieval(nn.Layer):
 
     def forward(self, user_embedding, kd_label=None, multi_task_positive_labels=None,
                 multi_task_negative_labels=None, is_infer=False):
-
-        print("in train forward")
-        print("user_emb", user_embedding)
-
-
-        # print("item_path_kd_label = ", item_path_kd_label)
 
         def train_forward(user_embedding, kd_label=None, multi_task_positive_labels=None,
                           multi_task_negative_labels=None):
@@ -315,7 +309,6 @@ class DeepRetrieval(nn.Layer):
             return path_prob, multi_task_loss
 
         def infer_forward(user_embedding):
-            print("in infer ",user_embedding.shape)
             height = paddle.full(
                 shape=[1, 1], fill_value=self.height, dtype='int64')
 

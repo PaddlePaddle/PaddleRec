@@ -102,7 +102,7 @@ def main(args):
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
     em_execution_interval = config.get("hyper_parameters.em_execution_interval", 4)
-    pernalize_path_to_item_count = config.get("pernalize_path_to_item_count", False)
+    pernalize_path_to_item_count = config.get("hyper_parameters.pernalize_path_to_item_count", False)
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
@@ -202,14 +202,17 @@ def main(args):
             dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
         if record_item_to_user_emb:
+            print("-------------------------------------",record_item_to_user_emb,"pernalize",pernalize_path_to_item_count)
             beam_size = dy_model.beam_search_num * 4
             dy_model_class.graph_index.reset_graph_mapping()
             item_to_path_map = {}
+            item_to_path_score_map = {}
             for key in item_to_user_emb:
                 user_emb = item_to_user_emb[key]
                 user_emb = paddle.to_tensor(np.array(user_emb).astype('float32'))
                 path,pro = dy_model.generate_candidate_path_for_item(user_emb,beam_size)
                 list = []
+                score_list = []
                 path = np.array(path).astype("int32")
                 pro = np.array(pro).astype("float")
                 if not pernalize_path_to_item_count:
@@ -224,10 +227,13 @@ def main(args):
                     dy_model_class.graph_index._graph.add_item(key, topk)
                 else:
                     for single_path,single_pro in zip(path,pro):
-                        list.append(str(dy_model_class.graph_index.kd_represent_to_path_id(single_path)) + ":" + str(single_pro))
+                        list.append(dy_model_class.graph_index.kd_represent_to_path_id(single_path))
+                        score_list.append(single_pro)
                     item_to_path_map[key] = list
+                    item_to_path_score_map[key] = score_list
             if pernalize_path_to_item_count:
-                dy_model_class.graph_index.update_Jpath_of_item(item_to_path_map)
+                #print("in update j path",item_to_path_score_map,item_to_path_score_map)
+                dy_model_class.graph_index.update_Jpath_of_item(item_to_path_map,item_to_path_score_map, 10,0.1)
 
             dict = dy_model_class.graph_index._graph.get_item_path_dict()
             dy_model_class.save_item_path(model_save_path, epoch_id)

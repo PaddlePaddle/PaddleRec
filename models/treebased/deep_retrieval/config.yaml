@@ -20,9 +20,9 @@ runner:
   use_gpu: False
   use_auc: False
   train_batch_size: 100
-  epochs: 1000
+  epochs: 4
   print_interval: 1
-  distributed_training: False
+  distributed_training: True
   data_partition: True
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_dr"
@@ -31,8 +31,8 @@ runner:
   infer_reader_path: "fake_infer_reader" # importlib format
   infer_batch_size: 2
   infer_load_path: "output_model_dr"
-  infer_start_epoch: 1
-  infer_end_epoch: 2
+  infer_start_epoch: 3
+  infer_end_epoch: 4
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -49,6 +49,6 @@ hyper_parameters:
   user_embedding_size: 10
   use_multi_task_learning: True
   multi_task_layer_size: [128,128,128]
-  pernalize_path_to_item_count: False
+  pernalize_path_to_item_count: True
   item_count: 10000
   recall_num: 2

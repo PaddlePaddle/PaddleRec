@@ -92,7 +92,7 @@ def main(args):
     static_model_class.load_item_path(model_save_path, epoch)
     batch_emb = []
     batch_items = []
-    graph_index = static_model_class.graph_index._graph
+    graph_index = static_model_class.graph_index._graph  
     static_model_class.model.init_metrics()
     net_emb_input = []
     net_item_input = []
