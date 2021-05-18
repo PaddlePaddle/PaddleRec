@@ -70,7 +70,7 @@ PaddlePaddle>=2.0
 
 python 2.7/3.5/3.6/3.7
 
-os : windows/linux/macos
+os : linux/macos
 
 ## 快速开始
 
