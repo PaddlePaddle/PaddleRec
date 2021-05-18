@@ -74,6 +74,7 @@ class Main(object):
             fleet.stop_worker()
             self.record_result()
         logger.info("Run Success, Exit.")
+        logger.info("-" * 100)
 
     def network(self):
         self.model = get_model(self.config)
@@ -150,6 +151,9 @@ class Main(object):
                     self.exe, model_dir,
                     [feed.name for feed in self.input_data],
                     self.inference_target_var)
+            self.reader.release_memory()
+            self.PSGPU.end_pass()
+            logger.info("finish {} epoch training....".format(epoch))
 
     def init_reader(self):
         if fleet.is_server():
