@@ -126,6 +126,9 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 * [Custom Reader](doc/custom_reader.md)
 * [Custom Model](doc/model_develop.md)
 * [Configuration description of yaml](doc/yaml.md)
+* [Training visualization](doc/visualization.md)
+* [Serving](doc/serving.md)
+* [Python inference](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
 
 ### FAQ
