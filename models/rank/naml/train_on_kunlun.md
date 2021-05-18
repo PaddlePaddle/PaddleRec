@@ -6,7 +6,7 @@
 ## 数据准备
 
 ### 示例数据
-参考 [数据准备](README##数据准备)
+参考 [数据准备](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/naml/README.md#数据准备)
 
 
 ### 全量数据
