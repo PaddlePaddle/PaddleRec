@@ -165,7 +165,7 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.861 | 10 | 3 | 约12小时 | 
+| DIN | 0.861 | 10 | 8 | 约12小时 | 
 
 - 静态图训练日志
 ```
