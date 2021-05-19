@@ -22,7 +22,10 @@ class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
-        use_fleet = config.get("runner.use_fleet", False)
+        if config:
+            use_fleet = config.get("runner.use_fleet", False)
+        else:
+            use_fleet = False
         if use_fleet:
             worker_id = paddle.distributed.get_rank()
             worker_num = paddle.distributed.get_world_size()
