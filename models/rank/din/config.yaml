@@ -26,7 +26,7 @@ runner:
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
   model_save_path: "output_model_all"
-  infer_batch_size: 32*16
+  infer_batch_size: 32
   infer_reader_path: "dinReader" # importlib format
   test_data_dir: "data/train_data"
   infer_load_path: "output_model_all"
@@ -35,20 +35,15 @@ runner:
 
 # hyper parameters of user-defined network
 hyper_parameters:
-  # optimizer config
   optimizer:
     class: SGD
-    learning_rate_base_lr: 0.85 #0.001 #0.0001
-      # base_lr: 0.85
+    learning_rate_base_lr: 0.85 
     strategy: async
-  # user-defined <key, value> pairs
   use_DataLoader: True
   item_emb_size: 64
   cat_emb_size: 64
   is_sparse: False
   item_count: 63001
   cat_count: 801
-
   act: "sigmoid"
-  #c_sizes: [ 512, 256, 128, 32 ]
   distributed_embedding: 0
