@@ -131,7 +131,7 @@ def main(args):
 
         epoch_begin = time.time()
         if use_auc:
-            reset_auc(auc_num)
+            reset_auc(use_fleet, auc_num)
         if reader_type == 'DataLoader':
             fetch_batch_var, step_num = dataloader_train(
                 epoch_id, train_dataloader, input_data_names, fetch_vars, exe,
@@ -234,6 +234,7 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
             program=paddle.static.default_main_program(),
             feed=dict(zip(input_data_names, batch_data)),
             fetch_list=[var for _, var in fetch_vars.items()])
+        # print(paddle.fluid.global_scope().find_var("_generated_var_2").get_tensor())
         train_run_cost += time.time() - train_start
         total_samples += batch_size
         if batch_id % print_interval == 0:
