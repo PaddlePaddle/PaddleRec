@@ -130,7 +130,7 @@ python build_dataset.py
 ```
 
 - 脚本运行完成后，打开config.txt，
-将其中的商品的种类数目、品类的种类数目信息，
+将其中的商品的种类数目（第二行数值）、品类的种类数目信息（第三行数值），
 copy到config_bigdata.yaml里，替换超参数item_count cat_count  
 
 ### 模型训练及效果复现
