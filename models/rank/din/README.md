@@ -138,7 +138,6 @@ copy到config_bigdata.yaml里，替换超参数item_count cat_count
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 
-python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ```
 
 - 动态图训练2个epoch的结果
