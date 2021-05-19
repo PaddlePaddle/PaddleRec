@@ -8,8 +8,8 @@
 
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── dinReader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
@@ -82,7 +82,7 @@ python3 -u ../../../tools/trainer.py -m config.yaml
 python3 -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m 
+python -u ../../../tools/static_trainer.py -m config.yaml 
 
 # 静态图预测
 python -u ../../../tools/static_infer.py -m config.yaml 
@@ -99,9 +99,9 @@ cat_count:  品类的种类数目
 ```
 
 #### Loss及Acc计算
+- 本文Attention及模型组网，采用sigmoid激活函数
 - 预测的结果为一个sigmoid向量，表示推荐的商品广告被用户点击的概率
-- 样本的损失函数值由交叉熵给出
-- 我们同时还会计算预测的auc
+- 样本的损失函数值由交叉熵给出，同时计算预测的auc
 
 ## 效果复现
 
@@ -130,7 +130,7 @@ python build_dataset.py
 ```
 
 - 脚本运行完成后，打开config.txt，
-将其中的商品的种类数目、品类的种类数目信息，
+将其中的商品的种类数目（第二行数值）、品类的种类数目信息（第三行数值），
 copy到config_bigdata.yaml里，替换超参数item_count cat_count  
 
 ### 模型训练及效果复现
@@ -138,7 +138,6 @@ copy到config_bigdata.yaml里，替换超参数item_count cat_count
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 
-python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ```
 
 - 动态图训练2个epoch的结果
@@ -165,7 +164,7 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.861 | 10 | 3 | 约12小时 | 
+| DIN | 0.899 | 10 | 13 | 约21小时 | 
 
 - 静态图训练日志
 ```
@@ -173,7 +172,8 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 .......
 
-2021-05-19 03:45:24,383 - INFO - epoch: 7, batch_id: 48570, auc: [0.86112926], cost: [0.4195686], avg_reader_cost: 0.00011 sec, avg_batch_cost: 0.04986 sec, avg_samples: 32.00000, ips: 641.75805 images/sec
+2021-05-19 10:54:53,015 - INFO - epoch: 13, batch_id: 1850, auc: [0.89995722], cost: [0.05815201], avg_reader_cost: 0.00012 sec, avg_batch_cost: 0.05322 sec, avg_samples: 32.00000, ips: 601.24394 images/sec
+
 ```
 
 ### 模型预测及效果复现
