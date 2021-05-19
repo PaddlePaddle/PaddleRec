@@ -57,19 +57,26 @@ class DygraphModel():
 
     # define loss function by predicts and label
     def create_loss(self, raw_pred, label):
-        cost = paddle.nn.functional.cross_entropy(
-            input=raw_pred,
-            label=paddle.cast(label, "float32"),
-            soft_label=True)
-        avg_cost = paddle.mean(x=cost)
-        return avg_cost
+        avg_loss = paddle.nn.functional.binary_cross_entropy_with_logits(
+            raw_pred, label, reduction='mean')
+        # self._cost = avg_loss
+        return avg_loss
 
     # define optimizer
     def create_optimizer(self, dy_model, config):
-        lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
-        optimizer = paddle.optimizer.SGD(learning_rate=lr,
-                                         parameters=dy_model.parameters())
-        return optimizer
+        # lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
+        # optimizer = paddle.optimizer.SGD(learning_rate=lr,
+        #                                  parameters=dy_model.parameters())
+        boundaries = [410000]
+        base_lr = config.get(
+            "hyper_parameters.optimizer.learning_rate_base_lr")
+        values = [base_lr, 0.2]
+        sgd_optimizer = paddle.optimizer.SGD(
+            learning_rate=paddle.optimizer.lr.PiecewiseDecay(
+                boundaries=boundaries, values=values),
+            parameters=dy_model.parameters())
+        # sgd_optimizer.minimize(self._cost)
+        return sgd_optimizer
 
     # define metrics such as auc/acc
     # multi-task need to define multi metric
@@ -86,13 +93,14 @@ class DygraphModel():
         hist_item_seq, hist_cat_seq, target_item, target_cat, label, mask, target_item_seq, target_cat_seq = self.create_feeds(
             batch_data, config)
 
-        raw = dy_model(hist_item_seq, hist_cat_seq, target_item, target_cat,
-                       label, mask, target_item_seq, target_cat_seq)
+        raw_pred = dy_model(hist_item_seq, hist_cat_seq, target_item,
+                            target_cat, label, mask, target_item_seq,
+                            target_cat_seq)
+        loss = self.create_loss(raw_pred, label)
+        # loss = paddle.nn.functional.cross_entropy(
+        #     input=raw, label=paddle.cast(label, "float32"), soft_label=True)
 
-        loss = paddle.nn.functional.cross_entropy(
-            input=raw, label=paddle.cast(label, "float32"), soft_label=True)
-
-        scaled = raw.numpy()
+        scaled = raw_pred.numpy()
         scaled_pre = []
         [rows, cols] = scaled.shape
         for i in range(rows):
@@ -103,7 +111,7 @@ class DygraphModel():
         metrics_list[0].update(scaled_np_predict,
                                paddle.reshape(label, [-1, 1]))
 
-        loss = paddle.mean(loss)
+        # loss = paddle.mean(loss)
         print_dict = None
         return loss, metrics_list, print_dict
 

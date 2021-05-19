@@ -35,32 +35,50 @@ class DINLayer(nn.Layer):
             self.item_count,
             self.item_emb_size,
             sparse=self.is_sparse,
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            # bias_attr = paddle.ParamAttr(initializer=paddle.nn.initializer.Constant(value=0.0))
             name="item_emb")
         self.hist_cat_emb_attr = paddle.nn.Embedding(
             self.cat_count,
             self.cat_emb_size,
             sparse=self.is_sparse,
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            # bias_attr = paddle.ParamAttr(initializer=paddle.nn.initializer.Constant(value=0.0))
             name="cat_emb")
         self.target_item_emb_attr = paddle.nn.Embedding(
             self.item_count,
             self.item_emb_size,
             sparse=self.is_sparse,
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            # bias_attr = paddle.ParamAttr(initializer=paddle.nn.initializer.Constant(value=0.0)),
             name="item_emb")
         self.target_cat_emb_attr = paddle.nn.Embedding(
             self.cat_count,
             self.cat_emb_size,
             sparse=self.is_sparse,
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            # bias_attr = paddle.ParamAttr(initializer=paddle.nn.initializer.Constant(value=0.0)),
             name="cat_emb")
         self.target_item_seq_emb_attr = paddle.nn.Embedding(
             self.item_count,
             self.item_emb_size,
             sparse=self.is_sparse,
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            # bias_attr = paddle.ParamAttr(initializer=paddle.nn.initializer.Constant(value=0.0)),
             name="item_emb")
 
         self.target_cat_seq_emb_attr = paddle.nn.Embedding(
             self.cat_count,
             self.cat_emb_size,
             sparse=self.is_sparse,
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            # bias_attr = paddle.ParamAttr(initializer=paddle.nn.initializer.Constant(value=0.0)),
             name="cat_emb")
 
         self.item_b_attr = paddle.nn.Embedding(
@@ -73,19 +91,21 @@ class DINLayer(nn.Layer):
         self.attention_layer = []
         sizes = [(self.item_emb_size + self.cat_emb_size) * 4
                  ] + [80] + [40] + [1]
-        acts = ["relu" for _ in range(len(sizes) - 2)] + [None]
+        acts = ["sigmoid" for _ in range(len(sizes) - 2)] + [None]
 
         for i in range(len(sizes) - 1):
             linear = paddle.nn.Linear(
                 in_features=sizes[i],
                 out_features=sizes[i + 1],
-                weight_attr=paddle.ParamAttr(
-                    initializer=paddle.nn.initializer.Normal(
-                        std=1.0 / math.sqrt(sizes[i]))), )
+                # weight_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.XavierNormal()),
+                weight_attr=paddle.framework.ParamAttr(
+                    initializer=paddle.nn.initializer.XavierUniform()),
+                bias_attr=paddle.ParamAttr(
+                    initializer=paddle.nn.initializer.Constant(value=0.0)))
             self.add_sublayer('linear_%d' % i, linear)
             self.attention_layer.append(linear)
-            if acts[i] == 'relu':
-                act = paddle.nn.ReLU()
+            if acts[i] == 'sigmoid':
+                act = paddle.nn.Sigmoid()
                 self.add_sublayer('act_%d' % i, act)
                 self.attention_layer.append(act)
 
@@ -98,28 +118,30 @@ class DINLayer(nn.Layer):
         linearCon = paddle.nn.Linear(
             in_features=self.firInDim,
             out_features=self.firOutDim,
-            weight_attr=paddle.ParamAttr(
-                initializer=paddle.nn.initializer.Normal(
-                    std=1.0 / math.sqrt(self.firInDim))), )
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            bias_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Constant(value=0.0)))
         self.add_sublayer('linearCon', linearCon)
         self.con_layer.append(linearCon)
 
         conDim = self.item_emb_size + self.cat_emb_size + self.item_emb_size + self.cat_emb_size
 
         conSizes = [conDim] + [80] + [40] + [1]
-        conActs = ["relu" for _ in range(len(conSizes) - 2)] + [None]
+        conActs = ["sigmoid" for _ in range(len(conSizes) - 2)] + [None]
 
         for i in range(len(conSizes) - 1):
             linear = paddle.nn.Linear(
                 in_features=conSizes[i],
                 out_features=conSizes[i + 1],
-                weight_attr=paddle.ParamAttr(
-                    initializer=paddle.nn.initializer.Normal(
-                        std=1.0 / math.sqrt(conSizes[i]))), )
+                weight_attr=paddle.framework.ParamAttr(
+                    initializer=paddle.nn.initializer.XavierUniform()),
+                bias_attr=paddle.ParamAttr(
+                    initializer=paddle.nn.initializer.Constant(value=0.0)))
             self.add_sublayer('linear_%d' % i, linear)
             self.con_layer.append(linear)
-            if conActs[i] == 'relu':
-                act = paddle.nn.ReLU()
+            if conActs[i] == 'sigmoid':
+                act = paddle.nn.Sigmoid()
                 self.add_sublayer('act_%d' % i, act)
                 self.con_layer.append(act)
 
@@ -187,8 +209,14 @@ class StaticDINLayer(nn.Layer):
         self.item_count = item_count
         self.cat_count = cat_count
 
-        self.item_emb_attr = paddle.ParamAttr(name="item_emb")
-        self.cat_emb_attr = paddle.ParamAttr(name="cat_emb")
+        self.item_emb_attr = paddle.ParamAttr(
+            name="item_emb",
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()))
+        self.cat_emb_attr = paddle.ParamAttr(
+            name="cat_emb",
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()))
 
         self.hist_item_emb_attr = paddle.nn.Embedding(
             self.item_count,
@@ -238,13 +266,12 @@ class StaticDINLayer(nn.Layer):
             linear = paddle.nn.Linear(
                 in_features=sizes[i],
                 out_features=sizes[i + 1],
-                weight_attr=paddle.ParamAttr(
-                    initializer=paddle.nn.initializer.Normal(
-                        std=1.0 / math.sqrt(sizes[i]))), )
+                weight_attr=paddle.framework.ParamAttr(
+                    initializer=paddle.nn.initializer.XavierUniform()))
             self.add_sublayer('linear_%d' % i, linear)
             self.attention_layer.append(linear)
-            if acts[i] == 'relu':
-                act = paddle.nn.ReLU()
+            if acts[i] == 'sigmoid':
+                act = paddle.nn.Sigmoid()
                 self.add_sublayer('act_%d' % i, act)
                 self.attention_layer.append(act)
 
@@ -257,28 +284,30 @@ class StaticDINLayer(nn.Layer):
         linearCon = paddle.nn.Linear(
             in_features=self.firInDim,
             out_features=self.firOutDim,
-            weight_attr=paddle.ParamAttr(
-                initializer=paddle.nn.initializer.Normal(
-                    std=1.0 / math.sqrt(self.firInDim))), )
+            weight_attr=paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.XavierUniform()),
+            bias_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Constant(value=0.0)))
         self.add_sublayer('linearCon', linearCon)
         self.con_layer.append(linearCon)
 
         conDim = self.item_emb_size + self.cat_emb_size + self.item_emb_size + self.cat_emb_size
 
         conSizes = [conDim] + [80] + [40] + [1]
-        conActs = ["relu" for _ in range(len(conSizes) - 2)] + [None]
+        conActs = ["sigmoid" for _ in range(len(conSizes) - 2)] + [None]
 
         for i in range(len(conSizes) - 1):
             linear = paddle.nn.Linear(
                 in_features=conSizes[i],
                 out_features=conSizes[i + 1],
-                weight_attr=paddle.ParamAttr(
-                    initializer=paddle.nn.initializer.Normal(
-                        std=1.0 / math.sqrt(conSizes[i]))), )
+                weight_attr=paddle.framework.ParamAttr(
+                    initializer=paddle.nn.initializer.XavierUniform()),
+                bias_attr=paddle.ParamAttr(
+                    initializer=paddle.nn.initializer.Constant(value=0.0)))
             self.add_sublayer('linear_%d' % i, linear)
             self.con_layer.append(linear)
-            if conActs[i] == 'relu':
-                act = paddle.nn.ReLU()
+            if conActs[i] == 'sigmoid':
+                act = paddle.nn.Sigmoid()
                 self.add_sublayer('act_%d' % i, act)
                 self.con_layer.append(act)
 

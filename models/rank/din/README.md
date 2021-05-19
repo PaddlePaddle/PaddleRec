@@ -74,13 +74,16 @@ os : windows/linux/macos
 ```
 # 进入模型目录
 cd models/rank/din 
+
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据 替换运行config_bigdata.yaml 
+python3 -u ../../../tools/trainer.py -m config.yaml 
+
 # 动态图预测
 python3 -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据 替换运行config_bigdata.yaml 
+python -u ../../../tools/static_trainer.py -m 
+
 # 静态图预测
 python -u ../../../tools/static_infer.py -m config.yaml 
 ```
@@ -101,30 +104,84 @@ cat_count:  品类的种类数目
 - 我们同时还会计算预测的auc
 
 ## 效果复现
-为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
-同时，我们提供了全量数据生成的脚本，将会自动下载amazon eletronics dataset全量数据集并转换为模型能接受的
-输入格式，处理好的原始数据集下载执行方法：PaddleRec/datasets/amazonElec_Din目录下，sh run.sh
 
-或自行进行原始数据下载预处理，执行方法如下：
-PaddleRec/datasets/amazonElec_Din
-执行 
-sh data_process.sh;  
+### 数据集获取及预处理
+
+- 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
+
+- 同时，我们提供了全量数据生成的脚本，将会自动下载amazon eletronics dataset全量数据集并转换为模型能接受的
+输入格式。
+
+- 处理好的原始数据集下载执行方法：
+
+```
+cd ./PaddleRec/datasets/amazonElec_Din
+
+sh run.sh
+```
+
+- 或自行进行原始数据下载预处理，执行方法如下：
+```
+cd ./PaddleRec/datasets/amazonElec_Din
+
+sh data_process.sh
+
 python build_dataset.py
-脚本运行完成后，打开config.txt，
+```
+
+- 脚本运行完成后，打开config.txt，
 将其中的商品的种类数目、品类的种类数目信息，
 copy到config_bigdata.yaml里，替换超参数item_count cat_count  
-完成后运行：
+
+### 模型训练及效果复现
+- 动态图训练，运行：
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
+
+python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ```
-以下为训练2个epoch的结果
+
+- 动态图训练2个epoch的结果
+
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.72 | 50 | 3 | 约*小时 | 
+| DIN | 0.826 | 10 | 3 | 约7.5小时 | 
 
-预测
+- 动态图训练日志
 ```
+2021-05-18 14:47:24,504 - INFO - epoch: 0, batch_id: 0, auc:0.516194,  avg_reader_cost: 2.87606 sec, avg_batch_cost: 2.88912 sec      avg_samples: 3.20000, ips: 1.10760 images/sec
+
+.......
+
+16550 2021-05-18 22:15:39,269 - INFO - epoch: 2, batch_id: 2330, auc:0.826235,  avg_reader_cost: 0.00020 sec, avg_batch_cost: 0.05756       sec, avg_samples: 32.00000, ips: 555.93342 images/sec
+```
+
+- 静态图训练，运行：
+```
+python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
+```
+
+- 静态图训练2个epoch的结果
+
+| 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
+| :------| :------ | :------ | :------| :------ | 
+| DIN | 0.861 | 10 | 3 | 约12小时 | 
+
+- 静态图训练日志
+```
+2021-05-18 15:35:04,723 - INFO - epoch: 0, batch_id: 0, auc: [0.55627706], cost: [1.0343832], avg_reader_cost: 3.14529 sec, avg_      batch_cost: 3.16356 sec, avg_samples: 3.20000, ips: 1.01152 images/sec
+
+.......
+
+2021-05-19 03:45:24,383 - INFO - epoch: 7, batch_id: 48570, auc: [0.86112926], cost: [0.4195686], avg_reader_cost: 0.00011 sec, avg_batch_cost: 0.04986 sec, avg_samples: 32.00000, ips: 641.75805 images/sec
+```
+
+### 模型预测及效果复现
+```
+# 动态图预测
 python3 -u ../../../tools/infer.py -m config_bigdata.yaml
-```
 
-期待预测auc为0.66
+# 静态图预测
+python3 -u ../../../tools/static_infer.py -m config_bigdata.yaml
+```
+- 对标预测AUC：0.86

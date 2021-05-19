@@ -15,8 +15,8 @@ runner:
   train_data_dir: "../../../datasets/amazonElec_Din/train"
   train_reader_path: "dinReader" # importlib format
   use_gpu: False
-  train_batch_size: 50
-  epochs: 2
+  train_batch_size: 32
+  epochs: 100
   print_interval: 10
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all"
@@ -32,7 +32,8 @@ hyper_parameters:
   # optimizer config
   optimizer:
     class: SGD
-    learning_rate: 0.001
+    learning_rate_base_lr: 0.85
+  # learning_rate: 0.001
     strategy: async
   # user-defined <key, value> pairs
   use_DataLoader: True
@@ -46,4 +47,4 @@ hyper_parameters:
   #63001
   #801
 
-  act: "relu"
+  act: "sigmoid"

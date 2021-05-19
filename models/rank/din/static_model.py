@@ -38,8 +38,8 @@ class StaticModel():
             "hyper_parameters.use_DataLoader", False)
         self.item_count = self.config.get("hyper_parameters.item_count", 63001)
         self.cat_count = self.config.get("hyper_parameters.cat_count", 801)
-        self.learning_rate = self.config.get(
-            "hyper_parameters.optimizer.learning_rate")
+        self.learning_rate_base_lr = self.config.get(
+            "hyper_parameters.optimizer.learning_rate_base_lr")
 
     def create_feeds(self, is_infer=False):
         seq_len = -1
@@ -99,13 +99,9 @@ class StaticModel():
                                 self.mask, self.target_item_seq,
                                 self.target_cat_seq)
 
-        loss = paddle.nn.functional.cross_entropy(
-            input=raw_predict,
-            label=paddle.cast(self.label, "float32"),
-            soft_label=True)
-
-        avg_cost = paddle.mean(loss)
-        self._cost = avg_cost
+        avg_loss = paddle.nn.functional.binary_cross_entropy_with_logits(
+            raw_predict, self.label, reduction='mean')
+        self._cost = avg_loss
 
         self.predict = paddle.nn.functional.sigmoid(raw_predict)
         predict_2d = paddle.concat([1 - self.predict, self.predict], 1)
@@ -119,15 +115,27 @@ class StaticModel():
             fetch_dict = {'auc': auc}
             return fetch_dict
 
-        fetch_dict = {'cost': avg_cost, 'auc': auc}
+        fetch_dict = {'cost': avg_loss, 'auc': auc}
         return fetch_dict
 
     def create_optimizer(self, strategy=None):
-        optimizer = paddle.optimizer.Adam(learning_rate=self.learning_rate)
+        # optimizer = paddle.optimizer.Adam(learning_rate=self.learning_rate)
+        # if strategy != None:
+        #     import paddle.distributed.fleet as fleet
+        #     optimizer = fleet.distributed_optimizer(optimizer, strategy)
+        # optimizer.minimize(self._cost)
+
+        boundaries = [410000]
+        values = [self.learning_rate_base_lr, 0.2]
+        optimizer = paddle.optimizer.SGD(
+            learning_rate=paddle.optimizer.lr.PiecewiseDecay(
+                boundaries=boundaries, values=values))
+
         if strategy != None:
             import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
         optimizer.minimize(self._cost)
+        return optimizer
 
     def infer_net(self, input):
         return self.net(input, is_infer=True)

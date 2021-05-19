@@ -17,8 +17,8 @@ runner:
   train_data_dir: "data/train_data"
   train_reader_path: "dinReader" # importlib format
   use_gpu: False
-  train_batch_size: 10
-  epochs: 20
+  train_batch_size: 32
+  epochs: 100
   print_interval: 2
   #model_init_path: "output_model/0" # init model
   save_checkpoint_interval: 1
@@ -26,19 +26,20 @@ runner:
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
   model_save_path: "output_model_all"
-  infer_batch_size: 2
+  infer_batch_size: 32*16
   infer_reader_path: "dinReader" # importlib format
   test_data_dir: "data/train_data"
   infer_load_path: "output_model_all"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 10
 
 # hyper parameters of user-defined network
 hyper_parameters:
   # optimizer config
   optimizer:
     class: SGD
-    learning_rate: 0.001 #0.0001
+    learning_rate_base_lr: 0.85 #0.001 #0.0001
+      # base_lr: 0.85
     strategy: async
   # user-defined <key, value> pairs
   use_DataLoader: True
@@ -48,6 +49,6 @@ hyper_parameters:
   item_count: 63001
   cat_count: 801
 
-  act: "relu"
+  act: "sigmoid"
   #c_sizes: [ 512, 256, 128, 32 ]
   distributed_embedding: 0
