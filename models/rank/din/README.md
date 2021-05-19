@@ -165,7 +165,7 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.861 | 10 | 8 | 约12小时 | 
+| DIN | 0.863 | 10 | 8 | 约12小时 | 
 
 - 静态图训练日志
 ```
@@ -173,7 +173,8 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 .......
 
-2021-05-19 03:45:24,383 - INFO - epoch: 7, batch_id: 48570, auc: [0.86112926], cost: [0.4195686], avg_reader_cost: 0.00011 sec, avg_batch_cost: 0.04986 sec, avg_samples: 32.00000, ips: 641.75805 images/sec
+2021-05-19 04:04:25,619 - INFO - epoch: 7, batch_id: 68720, auc: [0.86301067], cost: [0.347408], avg_reader_cost: 0.00011 sec, avg_batch_cost: 0.06352 sec, avg_samples: 32.00000, ips: 503.78059 images/sec
+
 ```
 
 ### 模型预测及效果复现
