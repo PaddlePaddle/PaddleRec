@@ -49,7 +49,6 @@ class DygraphModel():
         target_item = batch[2]
         target_cat = batch[3]
         label = paddle.reshape(batch[4], [-1, 1])
-        # label=batch[4].reshape([None,1])
         mask = batch[5]
         target_item_seq = batch[6]
         target_cat_seq = batch[7]
@@ -59,14 +58,10 @@ class DygraphModel():
     def create_loss(self, raw_pred, label):
         avg_loss = paddle.nn.functional.binary_cross_entropy_with_logits(
             raw_pred, label, reduction='mean')
-        # self._cost = avg_loss
         return avg_loss
 
     # define optimizer
     def create_optimizer(self, dy_model, config):
-        # lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
-        # optimizer = paddle.optimizer.SGD(learning_rate=lr,
-        #                                  parameters=dy_model.parameters())
         boundaries = [410000]
         base_lr = config.get(
             "hyper_parameters.optimizer.learning_rate_base_lr")
@@ -75,14 +70,11 @@ class DygraphModel():
             learning_rate=paddle.optimizer.lr.PiecewiseDecay(
                 boundaries=boundaries, values=values),
             parameters=dy_model.parameters())
-        # sgd_optimizer.minimize(self._cost)
         return sgd_optimizer
 
     # define metrics such as auc/acc
     # multi-task need to define multi metric
     def create_metrics(self):
-        # metrics_list_name = ["acc"]
-        # auc_metric = paddle.metric.Accuracy()
         metrics_list_name = ["auc"]
         auc_metric = paddle.metric.Auc(num_thresholds=self.bucket)
         metrics_list = [auc_metric]
@@ -97,8 +89,6 @@ class DygraphModel():
                             target_cat, label, mask, target_item_seq,
                             target_cat_seq)
         loss = self.create_loss(raw_pred, label)
-        # loss = paddle.nn.functional.cross_entropy(
-        #     input=raw, label=paddle.cast(label, "float32"), soft_label=True)
 
         scaled = raw_pred.numpy()
         scaled_pre = []
@@ -111,7 +101,6 @@ class DygraphModel():
         metrics_list[0].update(scaled_np_predict,
                                paddle.reshape(label, [-1, 1]))
 
-        # loss = paddle.mean(loss)
         print_dict = None
         return loss, metrics_list, print_dict
 
@@ -120,7 +109,6 @@ class DygraphModel():
             batch_data, config)
         raw = dy_model(hist_item_seq, hist_cat_seq, target_item, target_cat,
                        label, mask, target_item_seq, target_cat_seq)
-        #predict_raw = paddle.nn.functional.softmax(raw)
 
         scaled = raw.numpy()
         scaled_pre = []
