@@ -8,8 +8,8 @@
 
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── dinReader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
@@ -82,7 +82,7 @@ python3 -u ../../../tools/trainer.py -m config.yaml
 python3 -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m 
+python -u ../../../tools/static_trainer.py -m config.yaml 
 
 # 静态图预测
 python -u ../../../tools/static_infer.py -m config.yaml 
