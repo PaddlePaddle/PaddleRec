@@ -24,6 +24,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from utils.save_load import save_model, load_model
+from utils.benchmark_utils import PaddleInferBenchmark
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 from paddle.inference import Config
@@ -75,7 +76,7 @@ def init_predictor(args):
         if args.enable_mkldnn:
             config.enable_mkldnn()
     predictor = create_predictor(config)
-    return predictor
+    return predictor, config
 
 
 def create_data_loader(args):
@@ -166,7 +167,7 @@ def get_current_memory_mb(gpu_id=None):
 
 
 def main(args):
-    predictor = init_predictor(args)
+    predictor, pred_config = init_predictor(args)
     place = paddle.set_device('gpu' if args.use_gpu else 'cpu')
     args.place = place
     input_names = predictor.get_input_names()
@@ -187,33 +188,49 @@ def main(args):
         preprocess_time.end(accumulative=True)
         inference_time.start()
         predictor.run()
+        for name in output_names:
+            output_tensor = predictor.get_output_handle(name)
+            output_data = output_tensor.copy_to_cpu()
         inference_time.end(accumulative=True)
         results = []
         results_type = []
         postprocess_time.start()
         for name in output_names:
-            output_tensor = predictor.get_output_handle(name)
             results_type.append(output_tensor.type())
-            output_data = output_tensor.copy_to_cpu()
             results.append(output_data[0])
         postprocess_time.end(accumulative=True)
         cm, gm, gu = get_current_memory_mb(gpu_id)
         cpu_mem += cm
         gpu_mem += gm
         gpu_util += gu
-        print(results)
+        #print(results)
 
-    num_test_data = args.batchsize * (batch_id + 1)
-    average_preprocess_time = preprocess_time.value() / num_test_data
-    average_inference_time = inference_time.value() / num_test_data
-    average_postprocess_time = postprocess_time.value() / num_test_data
+    # num_test_data = args.batchsize * (batch_id + 1)
+    average_preprocess_time = preprocess_time.value() / (batch_id + 1)
+    average_inference_time = inference_time.value() / (batch_id + 1)
+    average_postprocess_time = postprocess_time.value() / (batch_id + 1)
     cpu_rss = cpu_mem / (batch_id + 1)
     gpu_rss = gpu_mem / (batch_id + 1)
     gpu_util = gpu_util / (batch_id + 1)
-    log_print(args, results_type, num_test_data, average_preprocess_time,
-              average_inference_time, average_postprocess_time, cpu_rss,
-              gpu_rss, gpu_util)
 
+    perf_info = {'inference_time_s': average_inference_time,
+                 'preprocess_time_s': average_preprocess_time,
+                 'postprocess_time_s': average_postprocess_time}
+    model_info = {
+        'model_name': args.model_name,
+        'precision': "fp32"
+    }
+    data_info = {
+        'batch_size': args.batchsize,
+        'shape': "dynamic_shape",
+        'data_num': num_test_data
+    }
+    resource_info = {'cpu_rss_mb': cpu_rss,
+                     'gpu_rss_mb': gpu_rss,
+                     'gpu_util': gpu_util}
+    rec_log = PaddleInferBenchmark(
+        pred_config, model_info, data_info, perf_info, resource_info)
+    rec_log('Rec')
 
 if __name__ == '__main__':
     args = parse_args()
