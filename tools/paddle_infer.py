@@ -203,9 +203,9 @@ def main(args):
         cpu_mem += cm
         gpu_mem += gm
         gpu_util += gu
-        #print(results)
+        # print(results)
 
-    # num_test_data = args.batchsize * (batch_id + 1)
+    num_test_data = args.batchsize * (batch_id + 1)
     average_preprocess_time = preprocess_time.value() / (batch_id + 1)
     average_inference_time = inference_time.value() / (batch_id + 1)
     average_postprocess_time = postprocess_time.value() / (batch_id + 1)
