@@ -4,10 +4,8 @@
 
 ```
 ├── data #样例数据
-    ├── sample_data #样例数据
-        ├── train
-            ├── sample_train.txt #训练数据样例
-├── __init__.py
+    ├── train_data #样例数据
+        ├── paddle_train.txt #训练数据样例
 ├── README.md #文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据配置
@@ -15,8 +13,6 @@
 ├── amazon_reader.py #数据读取程序
 ├── static_model.py # 构建静态图
 ├── dygraph_model.py # 构建动态图
-├── benchmark.yaml # benchmark的配置
-├── benchmark_reader.py # benchmark的数据读取程序
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
