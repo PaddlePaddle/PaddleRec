@@ -1,0 +1,63 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+runner:
+  train_data_dir: "./data/all_data/train_data"
+  train_reader_path: "amazon_reader" # importlib format
+  use_gpu: True
+  use_auc: True
+  train_batch_size: 256
+  epochs: 7
+  print_interval: 2
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_bst_bigdata"
+  test_data_dir: "./data/all_data/test_data"
+  infer_reader_path: "amazon_reader" # importlib format
+  infer_batch_size: 256
+  infer_load_path: "output_model_bst_bigdata"
+  infer_start_epoch: 6
+  infer_end_epoch: 7
+
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: SGD
+    learning_rate: 0.0001
+  # user-defined <key, value> pairs
+  distributed_embedding: 0
+  use_DataLoader: True
+  item_emb_size: 96
+  cat_emb_size: 96
+  position_emb_size: 96
+  is_sparse: True
+  item_count: 63001
+  user_count: 192403
+  cat_count: 801
+  position_count: 5001
+  n_encoder_layers: 1
+  d_model: 288
+  d_key: 48
+  d_value: 48
+  n_head: 6
+  dropout_rate: 0.2
+  postprocess_cmd: "da"
+  preprocess_cmd: "n"
+  prepostprocess_dropout: 0.2
+  d_inner_hid: 512
+  relu_dropout: 0.2
+  act: "relu"
+  fc_sizes: [1024, 512, 256]
