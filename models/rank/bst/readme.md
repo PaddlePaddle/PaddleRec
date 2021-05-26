@@ -49,7 +49,7 @@
 
 ## 数据准备
 
-训练及测试数据集选用(http://snap.stanford.edu/data/amazon/productGraph/categoryFiles)Amazon数据集。该数据集包括两部分：训练集和测试集。
+训练及测试数据集选用(http://snap.stanford.edu/data/amazon/productGraph/categoryFiles) Amazon数据集。该数据集包括两部分：训练集和测试集。
 每一行数据格式如下所示：
 ```
 <label> <userid> <history> <cate> <position> <target> <target_cate> <target_position>
@@ -82,7 +82,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 ## 模型组网
 
-###商品特征部分
+### 商品特征部分
 BST模型的组网本质是一个二分类任务，代码参考bst1.8.5版本的`model.py`。模型主要组成是线性层部分, transformer部分以及相应的分类任务的loss计算和auc计算。bst将用户点击的商品特征序列和目标商品特征序列分别过embedding层后，拼接到一起并使用transformer编码，与原生transformer不同的是，bst的位置编码如下所示：
 
 <img align="center" src="picture/1.png">
@@ -95,7 +95,7 @@ BST模型的组网本质是一个二分类任务，代码参考bst1.8.5版本的
 
 <img align="center" src="picture/3.png">
 
-###用户特征部分
+### 用户特征部分
 对于用户特征，论文中将该特征过完embedding层之后，只是与经过transformer之后的商品特征进行简单的拼接，并过了三个fc层，每一层都加入了LeakyReLU激活函数。    
 
 最后一层为输出维度为1的fc层，方便计算预测值。  
