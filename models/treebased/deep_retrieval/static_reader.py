@@ -40,7 +40,7 @@ class RecDataset(IterableDataset):
                             item_path_kd_label.append(path_label)
                     output_list.append(np.array(item_path_kd_label).astype("int64"))                
                     if self.use_multi_task_learning:
-                        label = [item_id]
+                        label = [item_id % self.item_count]
                         output_list.append(
                             np.array(label).astype('int64'))                           
                         output_list.append(np.array([(item_id + self.item_count/2 ) % self.item_count]).astype("int64"))

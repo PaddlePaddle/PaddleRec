@@ -117,6 +117,7 @@ class DeepRetrieval(nn.Layer):
             self.multi_task_item_embedding = paddle.nn.Embedding(
                 self.item_count,
                 self.dot_product_size,
+                sparse=True,
                 weight_attr=paddle.ParamAttr(
                     name="multi_task_item_embedding_weight",
                     initializer=paddle.nn.initializer.Uniform()))
@@ -242,7 +243,7 @@ class DeepRetrieval(nn.Layer):
                 # print("cur_path_emb_idx shape",batch_size *J," 1")
                 path_emb_idx_lists.append(cur_path_emb_idx)
 
-                print("path_emb_idx.shape", cur_path_emb_idx.shape)
+                #print("path_emb_idx.shape", cur_path_emb_idx.shape)
             # Lookup table path emb
             # The main purpose of two-step table lookup is for distributed PS training
             path_emb = []
@@ -251,7 +252,7 @@ class DeepRetrieval(nn.Layer):
                     path_emb_idx_lists[idx])  # (batch_size * J, 1, emb_shape)
                 path_emb.append(emb)
 
-                print("emb_shape ", emb.shape)
+                #print("emb_shape ", emb.shape)
 
             # expand user_embedding (batch_size, emb_shape) -> (batch_size * J, emb_shape)
 

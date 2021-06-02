@@ -263,8 +263,8 @@ def main(args):
             print("display final path mapping")
             for key in path_dict:
                 print(key, "------>", path_dict[key])
-
-        print("index - ",fleet.worker_index())
+        if distributed_training:
+            print("index - ",fleet.worker_index())
         if not distributed_training or fleet.worker_index() == 0:
             print("saved epoch_id",epoch_id)
             static_model_class.save_item_path(model_save_path, epoch_id)
@@ -279,44 +279,6 @@ def main(args):
     if distributed_training:
         fleet.stop_worker()
 
-
-
-def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
-                     exe, config):
-    print_interval = config.get("runner.print_interval", None)
-    batch_size = config.get("runner.train_batch_size", None)
-    interval_begin = time.time()
-    train_reader_cost = 0.0
-    train_run_cost = 0.0
-    total_samples = 0
-    reader_start = time.time()
-    for batch_id, batch_data in enumerate(train_dataloader()):
-        train_reader_cost += time.time() - reader_start
-        train_start = time.time()
-        fetch_batch_var = exe.run(
-            program=paddle.static.default_main_program(),
-            feed=dict(zip(input_data_names, batch_data)),
-            fetch_list=[var for _, var in fetch_vars.items()])
-        train_run_cost += time.time() - train_start
-        total_samples += batch_size
-        if batch_id % print_interval == 0:
-            metric_str = ""
-            for var_idx, var_name in enumerate(fetch_vars):
-                metric_str += "{}: {}, ".format(var_name,
-                                                fetch_batch_var[var_idx])
-            logger.info(
-                "epoch: {}, batch_id: {}, ".format(epoch_id,
-                                                   batch_id) + metric_str +
-                "avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} images/sec".
-                format(train_reader_cost / print_interval, (
-                        train_reader_cost + train_run_cost) / print_interval,
-                       total_samples / print_interval, total_samples / (
-                               train_reader_cost + train_run_cost)))
-            train_reader_cost = 0.0
-            train_run_cost = 0.0
-            total_samples = 0
-        reader_start = time.time()
-    return fetch_batch_var
 
 
 if __name__ == "__main__":
