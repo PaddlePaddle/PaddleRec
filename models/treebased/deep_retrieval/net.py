@@ -35,7 +35,7 @@ class DeepRetrieval(nn.Layer):
         temp = user_emb
         # (batch, dot_product_size)
         for i in range(len(self.multi_task_mlp_layers)):
-            temp = self.multi_task_mlp_layers[i](temp)     
+            temp = self.multi_task_mlp_layers[i](temp)
         item_emb = self.multi_task_item_embedding(item_ids)
         return paddle.dot(temp, item_emb)
 
@@ -134,8 +134,9 @@ class DeepRetrieval(nn.Layer):
         prob_list = []
         saved_path = None
         w = []
-        row = row = paddle.zeros_like(input_embeddings, dtype="int64")
+        row = paddle.zeros_like(input_embeddings, dtype="int64")
         row = paddle.sum(row, axis=-1)
+        # [batch,1]
         row = paddle.reshape(row, [-1, 1])
 
         for i in range(beam_size):
@@ -156,15 +157,14 @@ class DeepRetrieval(nn.Layer):
                 _, index = paddle.topk(pro_sum, beam_size)
                 # [1, beam_size]
                 saved_path = paddle.unsqueeze(index, 0)
-                # [1,beam_size]
-                # multi_index = paddle.unsqueeze(index, 0)
-                # multi_index = paddle.expand(multi_index, [batch_size, beam_size])
-                # # [batch_size,beam_size]
-                # last_prob = paddle.index_sample(pro, multi_index)
-                # [batch_size,beam_size]
-                last_prob = paddle.index_select(paddle.reshape(pro, [self.height, -1]), index)
-                last_prob = paddle.reshape(last_prob, [-1, beam_size])
-                prob_list.append(last_prob)
+
+                # [batch,height] -> [height, batch] -> [beam,batch]
+                #last_prob = paddle.index_select(paddle.reshape(pro, [self.height, -1]), index)
+                last_prob = paddle.index_select(paddle.transpose(pro, [1,0]), index)
+                # [batch, beam]
+                #last_prob = paddle.reshape(last_prob, [-1, beam_size])
+                last_prob = paddle.transpose(last_prob,[1,0])
+                #prob_list.append(last_prob)
                 # [batch * beam, emb_size]
                 input_embeddings = self.expand_layer(input_embeddings, beam_size)
                 # # [batch, 1, emb_size]
@@ -172,7 +172,7 @@ class DeepRetrieval(nn.Layer):
                 # # [batch,beam,emb_size]
                 input_embeddings = paddle.reshape(input_embeddings, [-1, beam_size, self.user_embedding_size])
             else:
-                # [beam, i]
+                # [i,beam] ->[beam, i]
                 reverse_saved_path = paddle.transpose(saved_path, [1, 0])
                 # [beam, i,emb_size ]
                 saved_path_emb = self.path_embedding(reverse_saved_path)
@@ -193,8 +193,20 @@ class DeepRetrieval(nn.Layer):
                 input = paddle.concat([input_embeddings, input], axis=-1)
                 # [batch, beam_size, height]
                 out = F.softmax(self.mlp_layers[i](input))
+
+                # [batch, beam] -> [batch * height, beam]
+                extend_pro = self.expand_layer(last_prob,self.height)
+
+                # [batch * height, beam] -> [batch, height, beam]
+                extend_pro = paddle.reshape(extend_pro, [-1, self.height, beam_size])
+
+                # [batch, beam, height]
+                extend_pro = paddle.transpose(extend_pro,[0,2,1])
+
+                # [batch, beam, height]
+                temp_prob = paddle.multiply(extend_pro, out)
                 # [beam, height]
-                pro_sum = paddle.sum(out, axis=0)
+                pro_sum = paddle.sum(temp_prob, axis=0)
                 # [beam * height]
                 pro_sum = paddle.reshape(pro_sum, [-1])
                 # [beam]
@@ -202,29 +214,40 @@ class DeepRetrieval(nn.Layer):
                 # [1,beam]
                 beam_index = paddle.floor_divide(index, height)
                 item_index = paddle.mod(index, height)
+
+                # [batch, beam, height] to be checked
+                temp_prob = paddle.index_select(temp_prob,paddle.reshape(beam_index,[-1]),axis=1)
+                # [batch * beam, height]
+                temp_prob = paddle.reshape(temp_prob, [-1, self.height])
+
                 # [batch,beam]
-                batch_beam_index = paddle.index_select(beam_index, batch_row)
+                batch_item_index = paddle.index_select(item_index, batch_row)
+
+                # [batch,beam] -> [batch * beam,1]
+                batch_item_index = paddle.reshape(batch_item_index, [-1,1])
+
+                # [batch * beam, 1]
+                last_prob = paddle.index_sample(temp_prob, batch_item_index)
+
+                # [batch * beam, 1] -> [batch, beam]
+                last_prob = paddle.reshape(last_prob, [-1, beam_size])
+
+                # [batch *beam,1]
+                # batch_beam_index = paddle.reshape(batch_beam_index, [-1,1])
                 # batch_beam_index = paddle.expand(beam_index, [batch_size, beam_size])
                 # [i,beam_size]
                 saved_path_index = paddle.expand(beam_index, [saved_path.shape[0], beam_size])
                 saved_path = paddle.index_sample(saved_path, saved_path_index)
-                for j in range(len(prob_list)):
-                    prob_list[j] = paddle.index_sample(prob_list[j], batch_beam_index)
+                # for j in range(len(prob_list)):
+                #     prob_list[j] = paddle.index_sample(prob_list[j], batch_beam_index)
 
-                # [i + 1,emb_size]
-                # [i + 1,emb_size]
+                # [i + 1, beam_size]
                 saved_path = paddle.concat([saved_path, item_index], axis=0)
 
             # [beam, width]
         saved_path = paddle.transpose(saved_path, [1, 0])
-
-        # [batch, beam]
-        final_prob = prob_list[0]
-        for i in range(1, len(prob_list)):
-            final_prob = paddle.multiply(final_prob, prob_list[i])
-
-            # [beam]
-        final_prob = paddle.sum(final_prob, axis=0)
+        # [batch, beam] -> [beam]
+        final_prob = paddle.sum(last_prob, axis=0)
 
         return saved_path, final_prob
 
@@ -329,8 +352,8 @@ class DeepRetrieval(nn.Layer):
                     path_prob.append(prob)
 
                     # expand user_embedding (batch_size, emb_shape) -> (batch_size * B, emb_shape)
-                    print("user_embedding shape ",user_embedding.shape)
-                    print("beam search num ",self.beam_search_num)
+                    #print("user_embedding shape ",user_embedding.shape)
+                    #print("beam search num ",self.beam_search_num)
                     input_embedding = self.expand_layer(
                         user_embedding, self.beam_search_num)
                     prev_index.append(index)

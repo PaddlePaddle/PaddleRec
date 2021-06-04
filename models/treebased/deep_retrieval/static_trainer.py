@@ -81,7 +81,7 @@ def main(args):
     static_model_class = load_static_model_class(config)
     distributed_training = config.get("runner.distributed_training", True)
     if distributed_training:
-        os.environ["PADDLE_WITH_GLOO"] = "2"
+        os.environ["PADDLE_WITH_GLOO"] = "1"
         role = role_maker.PaddleCloudRoleMaker(init_gloo = True)
         fleet.init(role)
     input_data = static_model_class.create_feeds()
@@ -124,7 +124,7 @@ def main(args):
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
     exe = paddle.static.Executor(place)
 
-    beam_size = static_model_class.beam_search_num * 4
+    beam_size = static_model_class.item_path_volume * 4
     last_epoch_id = config.get("last_epoch", -1)
     em_main_program = static_model_class.model.em_main_program
     em_startup_program = static_model_class.model.em_startup_program
