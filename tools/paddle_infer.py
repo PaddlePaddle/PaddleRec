@@ -43,7 +43,7 @@ def parse_args():
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
-    parser.add_argument("--model_name", type=str, default="not specified")
+    parser.add_argument("--model_name", type=str, default="rec_model")
     parser.add_argument("--cpu_threads", type=int, default=1)
     parser.add_argument("--enable_mkldnn", type=str, default="False")
     parser.add_argument("--enable_tensorRT", type=str, default="False")
@@ -71,7 +71,7 @@ def init_predictor(args):
                 precision_mode=paddle.inference.PrecisionType.Float32)
     else:
         config.disable_gpu()
-        # config.delete_pass("repeated_fc_relu_fuse_pass")
+        config.delete_pass("repeated_fc_relu_fuse_pass")
         config.set_cpu_math_library_num_threads(args.cpu_threads)
         if args.enable_mkldnn:
             config.enable_mkldnn()
@@ -95,6 +95,7 @@ def create_data_loader(args):
     return loader
 
 
+'''
 def log_print(args, results_type, num_test_data, average_preprocess_time,
               average_inference_time, average_postprocess_time, cpu_rss,
               gpu_rss, gpu_util):
@@ -121,6 +122,8 @@ def log_print(args, results_type, num_test_data, average_preprocess_time,
          average_postprocess_time) * num_test_data))
     print("cpu_rss(MB): {}, gpu_rss(MB): {}".format(cpu_rss, gpu_rss))
     print("gpu_util: {}%".format(str(gpu_util * 100)[:4]))
+
+'''
 
 
 class Times(object):
@@ -203,7 +206,7 @@ def main(args):
         cpu_mem += cm
         gpu_mem += gm
         gpu_util += gu
-        # print(results)
+        print(results)
 
     num_test_data = args.batchsize * (batch_id + 1)
     average_preprocess_time = preprocess_time.value() / (batch_id + 1)
@@ -213,24 +216,26 @@ def main(args):
     gpu_rss = gpu_mem / (batch_id + 1)
     gpu_util = gpu_util / (batch_id + 1)
 
-    perf_info = {'inference_time_s': average_inference_time,
-                 'preprocess_time_s': average_preprocess_time,
-                 'postprocess_time_s': average_postprocess_time}
-    model_info = {
-        'model_name': args.model_name,
-        'precision': "fp32"
+    perf_info = {
+        'inference_time_s': average_inference_time,
+        'preprocess_time_s': average_preprocess_time,
+        'postprocess_time_s': average_postprocess_time
     }
+    model_info = {'model_name': args.model_name, 'precision': "fp32"}
     data_info = {
         'batch_size': args.batchsize,
         'shape': "dynamic_shape",
         'data_num': num_test_data
     }
-    resource_info = {'cpu_rss_mb': cpu_rss,
-                     'gpu_rss_mb': gpu_rss,
-                     'gpu_util': gpu_util}
-    rec_log = PaddleInferBenchmark(
-        pred_config, model_info, data_info, perf_info, resource_info)
+    resource_info = {
+        'cpu_rss_mb': cpu_rss,
+        'gpu_rss_mb': gpu_rss,
+        'gpu_util': gpu_util
+    }
+    rec_log = PaddleInferBenchmark(pred_config, model_info, data_info,
+                                   perf_info, resource_info)
     rec_log('Rec')
+
 
 if __name__ == '__main__':
     args = parse_args()
