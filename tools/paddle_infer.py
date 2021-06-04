@@ -95,37 +95,6 @@ def create_data_loader(args):
     return loader
 
 
-'''
-def log_print(args, results_type, num_test_data, average_preprocess_time,
-              average_inference_time, average_postprocess_time, cpu_rss,
-              gpu_rss, gpu_util):
-    print("----------------------- Model info ----------------------")
-    print("model_name: {}\ntype: {}\nmodel_sorce: {}".format(
-        args.model_name, "static", "PaddleRec"))
-    print("----------------------- Data info -----------------------")
-    print("batch_size: {}".format(args.batchsize))
-    print("----------------------- Conf info -----------------------")
-    print("runtime_device: {}".format("gpu" if args.use_gpu else "cpu"))
-    print("ir_optim: {}\nenable_memory_optim: {}\nenable_tensorrt: {}".format(
-        "False", "False", args.enable_tensorRT))
-    print("precision: {}".format([str(x).split(".")[1] for x in results_type]))
-    print("enable_mkldnn: {}\ncpu_math_library_num_threads: {}".format(
-        args.enable_mkldnn, args.cpu_threads))
-    print("----------------------- Perf info -----------------------")
-    print(
-        "preprocess_time(ms): {}\ninference_time(ms): {}\npostprocess_time(ms): {}".
-        format(average_preprocess_time * 1000, average_inference_time * 1000,
-               average_postprocess_time * 1000))
-    print("The number of predicted data: {}".format(num_test_data))
-    print("total time spend(s): {:.5f}".format(
-        (average_preprocess_time + average_inference_time +
-         average_postprocess_time) * num_test_data))
-    print("cpu_rss(MB): {}, gpu_rss(MB): {}".format(cpu_rss, gpu_rss))
-    print("gpu_util: {}%".format(str(gpu_util * 100)[:4]))
-
-'''
-
-
 class Times(object):
     def __init__(self):
         self.time = 0.
