@@ -20,7 +20,7 @@ runner:
 
   use_gpu: False
   epochs: 1
-  print_interval: 1
+  print_interval: 10
   
   test_data_dir: "data/test_data"
   infer_reader_path: "agnews_reader"  # importlib format
@@ -28,6 +28,7 @@ runner:
   infer_load_path: "output_model_tagspace"
   infer_start_epoch: 0
   infer_end_epoch: 1
+  CE: True
 
 # hyper parameters of user-defined network
 hyper_parameters:
