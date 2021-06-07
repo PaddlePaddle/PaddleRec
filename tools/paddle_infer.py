@@ -70,7 +70,7 @@ def init_predictor(args):
                 precision_mode=paddle.inference.PrecisionType.Float32)
     else:
         config.disable_gpu()
-        # config.delete_pass("repeated_fc_relu_fuse_pass")
+        config.delete_pass("repeated_fc_relu_fuse_pass")
         config.set_cpu_math_library_num_threads(args.cpu_threads)
         if args.enable_mkldnn:
             config.enable_mkldnn()
@@ -88,7 +88,8 @@ def create_data_loader(args):
     sys.path.append(reader_path)
     #sys.path.append(os.path.abspath("."))
     reader_class = import_module(reader_file)
-    dataset = reader_class.RecDataset(file_list, config=None)
+    config = {"use_inference": True}
+    dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batchsize, places=place, drop_last=True)
     return loader
