@@ -93,8 +93,8 @@ class DygraphModel():
         metrics_list[1].update(
             preds=pred_marital.numpy(), labels=label_marital.numpy())
 
-        # print_dict format :{'loss': loss} 
-        print_dict = None
+        print_dict = {'loss': loss}
+        # print_dict = None
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
