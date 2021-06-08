@@ -89,7 +89,8 @@ def create_data_loader(args):
     sys.path.append(reader_path)
     #sys.path.append(os.path.abspath("."))
     reader_class = import_module(reader_file)
-    dataset = reader_class.RecDataset(file_list, config=None)
+    config = {"use_inference": True}
+    dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batchsize, places=place, drop_last=True)
     return loader
