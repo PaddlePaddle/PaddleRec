@@ -21,10 +21,14 @@ class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
+        if config:
+            self.CE = config.get("runner.CE", False)
 
     def __iter__(self):
         full_lines = []
         self.data = []
+        if self.CE:
+            np.random.seed(12345)
         for file in self.file_list:
             with open(file, "r") as rf:
                 for l in rf:
