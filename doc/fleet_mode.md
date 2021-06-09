@@ -95,7 +95,7 @@ def create_optimizer(self, strategy=None):
     optimizer.minimize(self._cost)
 ```
 
-### 多机多卡训练
+### 多机多卡训练启动命令
 使用多机多卡训练，您需要另外一台或多台能够互相ping通的机器。每台机器中都需要安装paddlepaddle-2.0.0-rc-gpu及以上版本的飞桨开源框架，同时将需要运行的paddlerec模型，数据集复制到每一台机器上。
 - 首先确保各个节点之间是联通的，相互之间通过IP可访问
 - 在每个节点上都需要持有代码与数据
