@@ -202,8 +202,8 @@ def main(args):
             dy_model, optimizer, model_save_path, epoch_id, prefix='rec')
 
         if record_item_to_user_emb:
-            print("-------------------------------------",record_item_to_user_emb,"pernalize",pernalize_path_to_item_count)
-            beam_size = dy_model.beam_search_num * 4
+            #print("-------------------------------------",record_item_to_user_emb,"pernalize",pernalize_path_to_item_count)
+            beam_size = dy_model.item_path_volume * 4
             dy_model_class.graph_index.reset_graph_mapping()
             item_to_path_map = {}
             item_to_path_score_map = {}
