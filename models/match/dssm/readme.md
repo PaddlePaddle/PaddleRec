@@ -57,7 +57,7 @@ PaddlePaddle>=2.0
 python 2.7/3.5/3.6/3.7
 
 os : windows/linux/macos 
-
+12234
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在dssm模型目录的快速执行命令如下： 
 ```bash
@@ -89,7 +89,7 @@ Query 和 Doc 的语义相似性可以用这两个向量的 cosine 距离表示�
 
 | 模型 | 正序率 | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| DSSM | 0.79 | 128 | 1 | 约7分钟 |  
+| DSSM | 0.93 | 128 | 1 | 约9分钟 |  
 
 1. 确认您当前所在目录为PaddleRec/models/match/dssm
 2. 进入paddlerec/datasets/BQ_dssm目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的BQ全量数据集，并解压到指定文件夹。  
