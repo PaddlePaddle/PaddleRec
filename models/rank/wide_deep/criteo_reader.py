@@ -24,7 +24,7 @@ class RecDataset(IterableDataset):
         self.file_list = file_list
         if config:
             use_fleet = config.get("runner.use_fleet", False)
-            self.use_inference = config.get("runner.use_inference", False)
+            self.inference = config.get("runner.inference", False)
         else:
             use_fleet = False
         if use_fleet:
@@ -96,7 +96,7 @@ class RecDataset(IterableDataset):
                     output_list.append(
                         np.array(output[-1][1]).astype("float32"))
                     # list
-                    if self.use_inference:
+                    if self.inference:
                         yield output_list[1:]
                     else:
                         yield output_list
