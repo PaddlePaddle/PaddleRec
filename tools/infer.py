@@ -129,7 +129,8 @@ def main(args):
                 if tensor_print_dict is not None:
                     for var_name, var in tensor_print_dict.items():
                         tensor_print_str += (
-                            "{}:".format(var_name) + str(var.numpy()) + ",")
+                            "{}:".format(var_name) +
+                            str(var.numpy()).strip("[]") + ",")
                         if use_visual:
                             log_visual.add_scalar(
                                 tag="infer/" + var_name,
@@ -170,7 +171,8 @@ def main(args):
         if tensor_print_dict is not None:
             for var_name, var in tensor_print_dict.items():
                 tensor_print_str += (
-                    "{}:".format(var_name) + str(var.numpy()) + ",")
+                    "{}:".format(var_name) + str(var.numpy()).strip("[]") + ","
+                )
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     tensor_print_str + " epoch time: {:.2f} s".format(
