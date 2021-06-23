@@ -154,6 +154,7 @@ class Main(object):
             self.reader.release_memory()
             self.PSGPU.end_pass()
             logger.info("finish {} epoch training....".format(epoch))
+        self.PSGPU.finalize()
 
     def init_reader(self):
         if fleet.is_server():
