@@ -1,0 +1,66 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# global settings
+
+runner:
+  train_data_dir: "data/sample_data"
+  train_reader_path: "alimama_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 100
+  epochs: 1
+  print_interval: 1
+  # model_init_path: "output_model_dmr/0" # init model
+  model_save_path: "output_model_dmr"
+  test_data_dir: "data/sample_data"
+  infer_reader_path: "alimama_reader" # importlib format
+  infer_batch_size: 256
+  infer_load_path: "output_model_dmr"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.008
+    strategy: async
+  # user-defined <key, value> pairs
+  # user feature size
+  user_size: 1141730
+  cms_segid_size: 97
+  cms_group_id_size: 13
+  final_gender_code_size: 3
+  age_level_size: 7
+  pvalue_level_size: 4
+  shopping_level_size: 4
+  occupation_size: 3
+  new_user_class_level_size: 5
+
+  # item feature size
+  adgroup_id_size: 846812
+  cate_size: 12978
+  campaign_id_size: 423437
+  customer_size: 255876
+  brand_size: 461529
+
+  # context feature size
+  btag_size: 5
+  pid_size: 2
+
+  # embedding size
+  main_embedding_size: 32
+  other_embedding_size: 8
