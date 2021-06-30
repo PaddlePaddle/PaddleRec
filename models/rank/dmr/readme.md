@@ -79,7 +79,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 2. 进入paddlerec/datasets/Ali_Display_Ad_Click目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Alimama全量数据集，并解压到指定文件夹。若您希望从原始数据集自行处理，请详见该目录下的readme。
 
 ``` bash
-cd ../../../datasets/mAli_Display_Ad_Click
+cd ../../../datasets/Ali_Display_Ad_Click
 sh run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
