@@ -60,8 +60,8 @@ class DygraphModel():
         theta = 0.5 * np.ones(z.shape[1]) # assume that each feature is selected with prob. 0.5
         alpha = np.log(1 - theta) - np.log(theta)
         tmp = paddle.multiply(alpha, z)
-        cost += (lamb * (paddle.matmul(z, z, False, True) + np.dot(v, v, False, True)) + 
-            np.dot(tmp, tmp, False, True))
+        cost += (lamb * (paddle.matmul(z, z, False, True) + paddle.matmul(v, v, False, True)) + 
+            paddle.matmul(tmp, tmp, False, True))
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
