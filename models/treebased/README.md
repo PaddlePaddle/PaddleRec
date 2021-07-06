@@ -32,6 +32,7 @@ demo数据集预处理一键命令为 `./data_prepare.sh demo` 。若对具体�
 - Step2: 训练。config.yaml中配置了模型训练所有的超参，运行方式同PaddleRec其他模型静态图运行方式。当前树模型暂不支持动态图运行模式。
 
 ```shell
+cd tdm
 python -u ../../../tools/static_trainer.py -m config.yaml 
 ```
 
@@ -50,7 +51,7 @@ python get_leaf_embedding.py config.yaml  ./output_model_tdm_demo/0/ epoch_0_ite
 - Step5: 基于Step4得到的Item的Embedding，重新建树。命令如下所示。
 
 ```
-cd ../builder && python tree_index_builder.py --mode by_kmeans --input epoch_0_item_embedding.txt --output new_tree.pb
+cd ../builder && python tree_index_builder.py --mode by_kmeans --input ../tdm/epoch_0_item_embedding.txt --output ../demo_data/new_tree.pb
 ```
 
 - Step6: 修改config.yaml中tree文件的路径为最新tree.pb，返回Step2，开始新一轮的训练。
