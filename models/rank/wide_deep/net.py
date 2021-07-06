@@ -43,6 +43,11 @@ class WideDeepLayer(nn.Layer):
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.Uniform()))
 
+        self.z = paddle.create_parameter( 
+            shape=[1, self.sparse_feature_dim],
+            dtype='float32',
+            default_initializer=paddle.nn.initializer.Constant(value=1.0))
+
         sizes = [sparse_feature_dim * num_field + dense_feature_dim
                  ] + self.layer_sizes + [1]
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
@@ -69,6 +74,7 @@ class WideDeepLayer(nn.Layer):
         sparse_embs = []
         for s_input in sparse_inputs:
             emb = self.embedding(s_input)
+            emb = paddle.multiply(emb, self.z)
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
             sparse_embs.append(emb)
 
@@ -78,4 +84,4 @@ class WideDeepLayer(nn.Layer):
 
         prediction = paddle.add(x=wide_output, y=deep_output)
         pred = F.sigmoid(prediction)
-        return pred
+        return pred, self.z, sparse_embs
