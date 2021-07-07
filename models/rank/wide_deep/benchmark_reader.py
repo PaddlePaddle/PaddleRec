@@ -16,6 +16,7 @@ import yaml
 import six
 import os
 import copy
+import xxhash
 import paddle.distributed.fleet as fleet
 import logging
 
@@ -47,7 +48,9 @@ class Reader(fleet.MultiSlotDataGenerator):
                     (float(features[idx]) - cont_min_[idx - 1]) /
                     cont_diff_[idx - 1])
         for idx in categorical_range_:
-            sparse_feature.append([hash(str(idx) + features[idx]) % hash_dim_])
+            sparse_feature.append([
+                xxhash.xxh32(str(idx) + features[idx]).intdigest() % hash_dim_
+            ])
         label = [int(features[0])]
         return [label] + sparse_feature + [dense_feature]
 
