@@ -87,9 +87,12 @@ class StaticModel():
             logits=dout, label=input[-1], return_softmax=True, ignore_index=-1)
 
         ignore_label = paddle.full_like(input[-1], fill_value=-1)
-        avg_cost = paddle.sum(cost) / paddle.sum(
+#        avg_cost = paddle.sum(cost) / paddle.sum(
+#            paddle.cast(
+#                paddle.not_equal(input[-1], ignore_label), dtype='int32'))
+        avg_cost = paddle.divide(paddle.sum(cost), paddle.sum(
             paddle.cast(
-                paddle.not_equal(input[-1], ignore_label), dtype='int32'))
+                paddle.not_equal(input[-1], ignore_label), dtype='float32')))
 
         self._cost = avg_cost
 
