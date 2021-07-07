@@ -51,18 +51,28 @@ class DygraphModel():
         return label, sparse_tensor[1:], dense_tensor
 
     # define loss function by predicts and label
-    def create_loss(self, pred, label, z, v):
+    def create_loss(self, pred, label, w, z, emb_matrix):
         cost = paddle.nn.functional.log_loss(
             input=pred, label=paddle.cast(
                 label, dtype="float32"))
-        import numpy as np
+
         lamb = 1.0
-        theta = 0.5 * np.ones(z.shape[1]) # assume that each feature is selected with prob. 0.5
-        alpha = np.log(1 - theta) - np.log(theta)
-        tmp = paddle.multiply(alpha, z)
-        cost += (lamb * (paddle.matmul(z, z, False, True) + paddle.matmul(v, v, False, True)) + 
-            paddle.matmul(tmp, tmp, False, True))
+        theta = 0.5 * paddle.ones(paddle.shape(z), dtype='float32') # assume that each feature is selected with prob. 0.5
+        alpha = paddle.log(1 - theta) - paddle.log(theta)
+        loss1 = lamb * paddle.matmul(w, w, transpose_x = False, transpose_y = True)
+
+        out1 = paddle.matmul(emb_matrix, emb_matrix, transpose_x = False, transpose_y = True)
+        out2 = paddle.reshape(out1, [-1])
+        out3 = paddle.sum(out2)
+        loss2 = lamb * out3
+
+        out4 = paddle.multiply(alpha, z)
+        loss3 = paddle.sum(out4)
+
         avg_cost = paddle.mean(x=cost)
+        
+        batch_size = pred.shape[0]
+        avg_cost += ((loss1 + loss2 + loss3) / batch_size)
         return avg_cost
 
     # define optimizer 
@@ -85,8 +95,8 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        pred, z, v = dy_model(sparse_tensor, dense_tensor)
-        loss = self.create_loss(pred, label, z, v)
+        pred, w, z, emb_matrix = dy_model(sparse_tensor, dense_tensor)
+        loss = self.create_loss(pred, label, w, z, emb_matrix)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())

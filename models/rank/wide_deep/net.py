@@ -35,6 +35,8 @@ class WideDeepLayer(nn.Layer):
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0, std=1.0 / math.sqrt(self.dense_feature_dim))))
 
+        self.w = self.wide_part.weight
+
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
@@ -72,11 +74,16 @@ class WideDeepLayer(nn.Layer):
 
         # deep part
         sparse_embs = []
-        for s_input in sparse_inputs:
-            emb = self.embedding(s_input)
-            emb = paddle.multiply(emb, self.z)
+        emb_matrix = []
+        for s_input in sparse_inputs:  # s_input: 50,1,1
+            emb = self.embedding(s_input)  # emb: 50,1,9
+            emb = paddle.multiply(emb, self.z)  # emb: 50,1,9   self.z: 1,9
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
-            sparse_embs.append(emb)
+            sparse_embs.append(emb)  # emb: 50,9   sparse_embs: 26(size)
+            emb = paddle.mean(emb, axis = 0)
+            emb_matrix.append(emb)  # emb, 9
+ 
+        emb_matrix = paddle.to_tensor(emb_matrix)  # emb_matrix: 26,9
 
         deep_output = paddle.concat(x=sparse_embs + [dense_inputs], axis=1)
         for n_layer in self._mlp_layers:
@@ -84,4 +91,4 @@ class WideDeepLayer(nn.Layer):
 
         prediction = paddle.add(x=wide_output, y=deep_output)
         pred = F.sigmoid(prediction)
-        return pred, self.z, sparse_embs
+        return pred, self.w, self.z, emb_matrix 
