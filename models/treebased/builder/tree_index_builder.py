@@ -300,7 +300,6 @@ class TreeIndexBuilder:
     def _make_key(self, code):
         return str(code).encode('utf-8')
 
-
     def _write_kv(self, fwr, message):
         fwr.write(struct.pack('i', len(message)))
         fwr.write(message)

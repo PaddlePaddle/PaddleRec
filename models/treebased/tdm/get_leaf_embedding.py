@@ -44,9 +44,11 @@ def get_emb_numpy(tree_node_num, node_emb_size, init_model_path=""):
     exe.run(fluid.default_startup_program())
     if init_model_path != "":
         #fluid.io.load_persistables(exe, init_model_path)
-        paddle.static.load(paddle.static.default_main_program(), init_model_path + '/rec_static')
+        paddle.static.load(paddle.static.default_main_program(),
+                           init_model_path + '/rec_static')
 
-    return np.array(fluid.global_scope().find_var("tdm.bw_emb.weight").get_tensor())
+    return np.array(fluid.global_scope().find_var("tdm.bw_emb.weight")
+                    .get_tensor())
 
 
 if __name__ == '__main__':

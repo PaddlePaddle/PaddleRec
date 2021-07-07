@@ -168,7 +168,8 @@ def infer(res_dict, filelist, process_idx, init_model_path, id_code_map,
 
     print("begin to load parameters")
     #fluid.io.load_persistables(exe, dirname=init_model_path)
-    paddle.static.load(paddle.static.default_main_program(), init_model_path + '/rec_static')
+    paddle.static.load(paddle.static.default_main_program(),
+                       init_model_path + '/rec_static')
     print("end load parameters")
     reader_instance = Reader(item_nums)
     reader = reader_instance.dataloader(filelist)

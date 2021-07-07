@@ -142,7 +142,8 @@ def dnn_model_define(user_input,
                      with_att=False):
     fea_groups = [int(s) for s in fea_groups.split(',')]
     total_group_length = np.sum(np.array(fea_groups))
-    print("fea_groups", fea_groups, "total_group_length", total_group_length, "eb_dim", node_emb_size)
+    print("fea_groups", fea_groups, "total_group_length", total_group_length,
+          "eb_dim", node_emb_size)
 
     layer_data = []
     # start att
