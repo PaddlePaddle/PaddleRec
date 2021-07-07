@@ -70,7 +70,7 @@ class DygraphModel():
         loss3 = paddle.sum(out4)
 
         avg_cost = paddle.mean(x=cost)
-        
+
         batch_size = pred.shape[0]
         avg_cost += ((loss1 + loss2 + loss3) / batch_size)
         return avg_cost
@@ -109,7 +109,7 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        pred, _, __ = dy_model(sparse_tensor, dense_tensor)
+        pred, _1, _2, _3 = dy_model(sparse_tensor, dense_tensor)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
