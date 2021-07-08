@@ -45,10 +45,12 @@ class WideDeepLayer(nn.Layer):
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.Uniform()))
 
-        self.z = paddle.create_parameter( 
-            shape=[1, self.sparse_feature_dim],
+        self.v = self.embedding.weight
+
+        self.delta = paddle.create_parameter( 
+            shape=[1, self.sparse_feature_number],
             dtype='float32',
-            default_initializer=paddle.nn.initializer.Constant(value=1.0))
+            default_initializer=paddle.nn.initializer.Constant(value = 0.1))
 
         sizes = [sparse_feature_dim * num_field + dense_feature_dim
                  ] + self.layer_sizes + [1]
@@ -72,23 +74,31 @@ class WideDeepLayer(nn.Layer):
         # wide part
         wide_output = self.wide_part(dense_inputs)
 
+        t = 0.1
+        u = paddle.uniform(min = 0, max = 1, shape = self.delta.shape)
+        out = (paddle.log(self.delta) - paddle.log(1 - self.delta) + paddle.log(u) - paddle.log(1 - u)) / t
+        z = paddle.nn.functional.sigmoid(out)
+        print("z: {}".format(z))
+        theta = 0.4 * paddle.ones(paddle.shape(z), dtype='float32') # assume that each feature is selected with prob. 0.4
+        alpha = paddle.log(1 - theta) - paddle.log(theta)
+        print("alpha: {}".format(alpha))
+        factors = paddle.multiply(z, alpha)
+
         # deep part
         sparse_embs = []
-        emb_matrix = []
-        for s_input in sparse_inputs:  # s_input: 50,1,1
+        for s_input in sparse_inputs:  # s_input: 50,1(tensor)
             emb = self.embedding(s_input)  # emb: 50,1,9
-            emb = paddle.multiply(emb, self.z)  # emb: 50,1,9   self.z: 1,9
+            batch_size = len(sparse_inputs)
+            for i in range(batch_size):
+                select_factor = factors[0][s_input[i, 0]]
+                emb = emb * select_factor
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
-            sparse_embs.append(emb)  # emb: 50,9   sparse_embs: 26(size)
-            emb = paddle.mean(emb, axis = 0)
-            emb_matrix.append(emb)  # emb, 9
- 
-        emb_matrix = paddle.to_tensor(emb_matrix)  # emb_matrix: 26,9
-
-        deep_output = paddle.concat(x=sparse_embs + [dense_inputs], axis=1)
+            sparse_embs.append(emb)  # emb: 50,9   sparse_embs: 13
+        # 不同样本中的13个特征id是不同的
+        deep_output = paddle.concat(x = sparse_embs + [dense_inputs], axis=1)
         for n_layer in self._mlp_layers:
             deep_output = n_layer(deep_output)
 
-        prediction = paddle.add(x=wide_output, y=deep_output)
+        prediction = paddle.add(x = wide_output, y = deep_output)
         pred = F.sigmoid(prediction)
-        return pred, self.w, self.z, emb_matrix 
+        return pred, self.w, z, self.v, alpha 

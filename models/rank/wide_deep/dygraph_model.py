@@ -41,37 +41,35 @@ class DygraphModel():
     def create_feeds(self, batch_data, config):
         dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
         sparse_tensor = []
-        for b in batch_data[:-1]:
+        for b in batch_data[:-1]:  # 从位置0到位置-1之前的数
             sparse_tensor.append(
                 paddle.to_tensor(b.numpy().astype('int64').reshape(-1, 1)))
-        dense_tensor = paddle.to_tensor(batch_data[-1].numpy().astype(
+        dense_tensor = paddle.to_tensor(batch_data[-1].numpy().astype(  # 倒数第一个数
             'float32').reshape(-1, dense_feature_dim))
 
         label = sparse_tensor[0]
         return label, sparse_tensor[1:], dense_tensor
 
     # define loss function by predicts and label
-    def create_loss(self, pred, label, w, z, emb_matrix):
+    def create_loss(self, pred, label, w, z, v, alpha):
         cost = paddle.nn.functional.log_loss(
             input=pred, label=paddle.cast(
-                label, dtype="float32"))
+                label, dtype="float32"))  # cost: 50,1
 
         lamb = 1.0
-        theta = 0.5 * paddle.ones(paddle.shape(z), dtype='float32') # assume that each feature is selected with prob. 0.5
-        alpha = paddle.log(1 - theta) - paddle.log(theta)
-        loss1 = lamb * paddle.matmul(w, w, transpose_x = False, transpose_y = True)
 
-        out1 = paddle.matmul(emb_matrix, emb_matrix, transpose_x = False, transpose_y = True)
-        out2 = paddle.reshape(out1, [-1])
-        out3 = paddle.sum(out2)
-        loss2 = lamb * out3
+        loss1 = lamb * paddle.square(paddle.norm(w, 2))
+        print("loss1: {}".format(loss1))
 
-        out4 = paddle.multiply(alpha, z)
-        loss3 = paddle.sum(out4)
+        loss2 = lamb * paddle.square(paddle.norm(v, 2))
+        print("loss2: {}".format(loss2))
+
+        loss3 = paddle.matmul(alpha, z, transpose_x = False, transpose_y = True)
+        print("loss3: {}".format(loss3))
 
         avg_cost = paddle.mean(x=cost)
 
-        batch_size = pred.shape[0]
+        batch_size = pred.shape[0]  # batch_size = 50
         avg_cost += ((loss1 + loss2 + loss3) / batch_size)
         return avg_cost
 
@@ -95,8 +93,8 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        pred, w, z, emb_matrix = dy_model(sparse_tensor, dense_tensor)
-        loss = self.create_loss(pred, label, w, z, emb_matrix)
+        pred, w, z, v, alpha = dy_model(sparse_tensor, dense_tensor)
+        loss = self.create_loss(pred, label, w, z, v, alpha)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
