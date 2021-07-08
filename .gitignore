@@ -5,3 +5,6 @@ paddlerec.egg-info/
 *~
 *.pyc
 *.DS_Store
+*.pdopt
+*.pdparams
+datasets

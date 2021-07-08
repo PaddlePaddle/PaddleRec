@@ -56,8 +56,9 @@ class TextCNNLayer(nn.Layer):
             in_features=self.hidden_size, out_features=self.class_dim)
 
     def forward(self, inputs):
-        emb = self.embedding(inputs)
-        emb = emb.unsqueeze(1)
+        # batch_size=2
+        emb = self.embedding(inputs)  #inputs: 2,100  emb: 2,100,128
+        emb = emb.unsqueeze(1)  #emb: 2,1,100,123
         # convolution layer
         convs_out = [
             self.conv_layer_activation(conv(emb)).squeeze(3)
