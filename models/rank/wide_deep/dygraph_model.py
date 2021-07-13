@@ -19,7 +19,6 @@ import math
 
 import net
 
-
 class DygraphModel():
     # define model
     def create_model(self, config):
@@ -68,6 +67,7 @@ class DygraphModel():
         print("loss3: {}".format(loss3))
 
         avg_cost = paddle.mean(x=cost)
+        print("prob: {}".format(avg_cost))
 
         batch_size = pred.shape[0]  # batch_size = 50
         avg_cost += ((loss1 + loss2 + loss3) / batch_size)
@@ -107,7 +107,7 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        pred, _1, _2, _3 = dy_model(sparse_tensor, dense_tensor)
+        pred, _1, _2, _3, _4 = dy_model(sparse_tensor, dense_tensor)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
