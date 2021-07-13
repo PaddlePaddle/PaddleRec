@@ -129,6 +129,7 @@ class Main(object):
             if sync_mode == "heter":
                 self.heter_train_loop(epoch)
             elif sync_mode == "gpubox":
+                self.reader._set_use_ps_gpu(1)
                 self.dataset_train_loop(epoch)
             elif reader_type == "QueueDataset":
                 self.dataset_train_loop(epoch)
@@ -177,10 +178,7 @@ class Main(object):
         self.reader.load_into_memory()
         print("self.reader.load_into_memory cost :{} seconds".format(time.time(
         ) - start_time))
-        self.PSGPU.set_dataset(self.reader.dataset)
-        start_time = time.time()
-        self.PSGPU.build_gpu_ps(1, 8)
-        print("build psgpu cost :{} seconds".format(time.time() - start_time))
+        self.PSGPU.begin_pass()
 
         logger.info("Epoch: {}, Running Dataset Begin.".format(epoch))
         fetch_info = [
