@@ -33,17 +33,8 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-`CTR(Click Through Rate)`，即点击率，是“推荐系统/计算广告”等领域的重要指标，对其进行预估是商品推送/广告投放等决策的基础。简单来说，CTR预估对每次广告的点击情况做出预测，预测用户是点击还是不点击。CTR预估模型综合考虑各种因素、特征，在大量历史数据上训练，最终对商业决策提供帮助。本模型实现了下述论文中的logistic_regression模型：
+`CTR(Click Through Rate)`，即点击率，是“推荐系统/计算广告”等领域的重要指标，对其进行预估是商品推送/广告投放等决策的基础。简单来说，CTR预估对每次广告的点击情况做出预测，预测用户是点击还是不点击。CTR预估模型综合考虑各种因素、特征，在大量历史数据上训练，最终对商业决策提供帮助。本模型实现了logistic_regression模型：
 
-```text
-@inproceedings{guo2017deepfm,
-  title={DeepFM: A Factorization-Machine based Neural Network for CTR Prediction},
-  author={Huifeng Guo, Ruiming Tang, Yunming Ye, Zhenguo Li and Xiuqiang He},
-  booktitle={the Twenty-Sixth International Joint Conference on Artificial Intelligence (IJCAI)},
-  pages={1725--1731},
-  year={2017}
-}
-```
 
 ## 数据准备
 训练及测试数据集选用[Display Advertising Challenge](https://www.kaggle.com/c/criteo-display-ad-challenge/)所用的Criteo数据集。该数据集包括两部分：训练集和测试集。训练集包含一段时间内Criteo的部分流量，测试集则对应训练数据后一天的广告点击流量。

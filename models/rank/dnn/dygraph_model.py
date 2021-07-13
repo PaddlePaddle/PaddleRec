@@ -81,8 +81,8 @@ class DygraphModel():
         predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
 
-        # print_dict format :{'loss': loss}
-        print_dict = None
+        print_dict = {'loss': loss}
+        # print_dict = None
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
