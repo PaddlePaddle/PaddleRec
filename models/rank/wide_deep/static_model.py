@@ -84,6 +84,7 @@ class StaticModel():
                                               label=self.label_input,
                                               num_thresholds=2**12,
                                               slide_steps=20)
+        auc = paddle.cast(auc, "float32")
         self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}

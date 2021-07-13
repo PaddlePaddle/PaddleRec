@@ -32,7 +32,7 @@
 ## 运行环境
 linux 终端
 Paddle 版本：1.8+  
-Python 版本：2.7/3.6  
+Python 版本：3.6  
 
 ## 设计方案
 
@@ -120,17 +120,26 @@ https://github.com/PaddlePaddle/Serving/blob/develop/doc/LATEST_PACKAGES.md
 wget http://download.redis.io/releases/redis-stable.tar.gz --no-check-certificate
 tar -xf redis-stable.tar.gz && cd redis-stable/src && make && ./redis-server &
 ```
-目前milvus需要用docker远端启动，在宿主机上启动
+目前milvus需要用docker远端启动，在宿主机上启动。
 
 ```
-sudo docker run -d --name milvus_cpu_0.11.0 \
+# 下载配置文件
+mkdir -p /home/$USER/milvus/conf
+cd /home/$USER/milvus/conf
+wget https://raw.githubusercontent.com/milvus-io/milvus/v1.0.0/core/conf/demo/server_config.yaml
+
+# 启动 Milvus 服务
+sudo docker run -d --name milvus_cpu_1.0.0 \
 -p 19530:19530 \
 -p 19121:19121 \
 -v /home/$USER/milvus/db:/var/lib/milvus/db \
 -v /home/$USER/milvus/conf:/var/lib/milvus/conf \
 -v /home/$USER/milvus/logs:/var/lib/milvus/logs \
 -v /home/$USER/milvus/wal:/var/lib/milvus/wal \
-milvusdb/milvus:0.11.0-cpu-d101620-4c44c0
+milvusdb/milvus:1.0.0-cpu-d030521-1ea92e
+
+# 安装 Milvus Python SDK
+pip install pymilvus==1.0.1
 ```
 
 3. 运行相关命令
@@ -258,23 +267,23 @@ score_pairs {
 1. 获得Recall所需模型
 在`models/demo/movie_recommand`下分别执行
 ```
-python3 -m paddlerec.run -m recall/user.yaml
-python3 -m paddlerec.run -m recall/movie.yaml
+python3 -u ../../../tools/static_trainer.py -m recall/movie.yaml
+python3 -u ../../../tools/static_trainer.py -m recall/user.yaml
 ```
-训练好的user/movie模型首先需要参照[Paddle保存的预测模型转为Paddle Serving格式可部署的模型](https://github.com/PaddlePaddle/Serving/blob/develop/doc/INFERENCE_TO_SERVING_CN.md)
+训练好的user/movie模型首先需要参照[Paddle保存的预测模型转为Paddle Serving格式可部署的模型](https://github.com/PaddlePaddle/Serving/blob/develop/doc/SAVE_CN.md)
 
 2. 获得用于milvus建库的电影向量文件
-`movie.yaml`训练所保存的模型可以用于生成全库的电影向量，运行
+`movie.yaml`训练所保存的模型可以用于生成全库的电影向量。需要将数据 movie.dat 复制一份到 get_movie_vector.py 同一目录下，在运行的时候需要直接读取数据集。此外 serving_service 也需要和 get_movie_vector.py 放在同一级目录。运行
 ```
 python3 get_movie_vectors.py
 ```
 获得movie端embedding配送文件，该文件用于milvus建库。
 
-注：user端的模型，直接用于`recall.py`的用户向量预测。
+注：user端的模型，直接用于`recall.py`的用户向量预测。 
 
 3. 获得rank模型
 在`models/demo/movie_recommand`下执行
 ```
-python3 -m paddlerec.run -m rank/config.yaml
+python3 -u ../../../tools/static_trainer.py -m rank/config.yaml
 ```
 可以得到排序模型。转换成Serving格式可部署模型后，可以用于`rank.py`的排序模型。

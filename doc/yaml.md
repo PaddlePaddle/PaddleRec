@@ -20,6 +20,11 @@
 |             epochs            |    int    |                           >= 1                           |    是    |                       指定train阶段需要训练几个epoch                        |
 |             print_interval            |    int    |                           >= 1                           |    是    |                       训练指标打印batch间隔                        |
 |             use_auc            |    bool    |                           True/False                           |    否    |                       在每个epoch开始时重置auc指标的值                        |
+|             use_visual            |    bool    |                           True/False                           |    否    |                       开启模型训练的可视化功能，开启时需要安装visualDL                        |
+|             use_inference            |    bool    |                           True/False                           |    否    |                     是否使用save_inference_model接口保存                      |
+|             save_inference_feed_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的入口变量name                     |
+|             save_inference_fetch_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的出口变量name                     |
+|             use_fleet         |    bool    |                      True/False                      |    否    |                     指定是否使用分布式运行单机多卡或多机多卡                     |
 
 
 ## hyper_parameters变量
