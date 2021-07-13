@@ -50,7 +50,8 @@ def create_data_loader(args):
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
     sys.path.append(reader_path)
     reader_class = import_module(reader_file)
-    dataset = reader_class.RecDataset(file_list, config=None)
+    config = {"inference": True}
+    dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batchsize, places=place, drop_last=True)
     return loader

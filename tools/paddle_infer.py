@@ -24,6 +24,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from utils.save_load import save_model, load_model
+from utils.benchmark_utils import PaddleInferBenchmark
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 from paddle.inference import Config
@@ -42,7 +43,7 @@ def parse_args():
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
-    parser.add_argument("--model_name", type=str, default="not specified")
+    parser.add_argument("--model_name", type=str, default="rec_model")
     parser.add_argument("--cpu_threads", type=int, default=1)
     parser.add_argument("--enable_mkldnn", type=str, default="False")
     parser.add_argument("--enable_tensorRT", type=str, default="False")
@@ -70,12 +71,12 @@ def init_predictor(args):
                 precision_mode=paddle.inference.PrecisionType.Float32)
     else:
         config.disable_gpu()
-        # config.delete_pass("repeated_fc_relu_fuse_pass")
+        config.delete_pass("repeated_fc_relu_fuse_pass")
         config.set_cpu_math_library_num_threads(args.cpu_threads)
         if args.enable_mkldnn:
             config.enable_mkldnn()
     predictor = create_predictor(config)
-    return predictor
+    return predictor, config
 
 
 def create_data_loader(args):
@@ -88,38 +89,11 @@ def create_data_loader(args):
     sys.path.append(reader_path)
     #sys.path.append(os.path.abspath("."))
     reader_class = import_module(reader_file)
-    dataset = reader_class.RecDataset(file_list, config=None)
+    config = {"inference": True}
+    dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batchsize, places=place, drop_last=True)
     return loader
-
-
-def log_print(args, results_type, num_test_data, average_preprocess_time,
-              average_inference_time, average_postprocess_time, cpu_rss,
-              gpu_rss, gpu_util):
-    print("----------------------- Model info ----------------------")
-    print("model_name: {}\ntype: {}\nmodel_sorce: {}".format(
-        args.model_name, "static", "PaddleRec"))
-    print("----------------------- Data info -----------------------")
-    print("batch_size: {}".format(args.batchsize))
-    print("----------------------- Conf info -----------------------")
-    print("runtime_device: {}".format("gpu" if args.use_gpu else "cpu"))
-    print("ir_optim: {}\nenable_memory_optim: {}\nenable_tensorrt: {}".format(
-        "False", "False", args.enable_tensorRT))
-    print("precision: {}".format([str(x).split(".")[1] for x in results_type]))
-    print("enable_mkldnn: {}\ncpu_math_library_num_threads: {}".format(
-        args.enable_mkldnn, args.cpu_threads))
-    print("----------------------- Perf info -----------------------")
-    print(
-        "preprocess_time(ms): {}\ninference_time(ms): {}\npostprocess_time(ms): {}".
-        format(average_preprocess_time * 1000, average_inference_time * 1000,
-               average_postprocess_time * 1000))
-    print("The number of predicted data: {}".format(num_test_data))
-    print("total time spend(s): {:.5f}".format(
-        (average_preprocess_time + average_inference_time +
-         average_postprocess_time) * num_test_data))
-    print("cpu_rss(MB): {}, gpu_rss(MB): {}".format(cpu_rss, gpu_rss))
-    print("gpu_util: {}%".format(str(gpu_util * 100)[:4]))
 
 
 class Times(object):
@@ -166,7 +140,7 @@ def get_current_memory_mb(gpu_id=None):
 
 
 def main(args):
-    predictor = init_predictor(args)
+    predictor, pred_config = init_predictor(args)
     place = paddle.set_device('gpu' if args.use_gpu else 'cpu')
     args.place = place
     input_names = predictor.get_input_names()
@@ -187,14 +161,15 @@ def main(args):
         preprocess_time.end(accumulative=True)
         inference_time.start()
         predictor.run()
+        for name in output_names:
+            output_tensor = predictor.get_output_handle(name)
+            output_data = output_tensor.copy_to_cpu()
         inference_time.end(accumulative=True)
         results = []
         results_type = []
         postprocess_time.start()
         for name in output_names:
-            output_tensor = predictor.get_output_handle(name)
             results_type.append(output_tensor.type())
-            output_data = output_tensor.copy_to_cpu()
             results.append(output_data[0])
         postprocess_time.end(accumulative=True)
         cm, gm, gu = get_current_memory_mb(gpu_id)
@@ -204,15 +179,32 @@ def main(args):
         print(results)
 
     num_test_data = args.batchsize * (batch_id + 1)
-    average_preprocess_time = preprocess_time.value() / num_test_data
-    average_inference_time = inference_time.value() / num_test_data
-    average_postprocess_time = postprocess_time.value() / num_test_data
+    average_preprocess_time = preprocess_time.value() / (batch_id + 1)
+    average_inference_time = inference_time.value() / (batch_id + 1)
+    average_postprocess_time = postprocess_time.value() / (batch_id + 1)
     cpu_rss = cpu_mem / (batch_id + 1)
     gpu_rss = gpu_mem / (batch_id + 1)
     gpu_util = gpu_util / (batch_id + 1)
-    log_print(args, results_type, num_test_data, average_preprocess_time,
-              average_inference_time, average_postprocess_time, cpu_rss,
-              gpu_rss, gpu_util)
+
+    perf_info = {
+        'inference_time_s': average_inference_time,
+        'preprocess_time_s': average_preprocess_time,
+        'postprocess_time_s': average_postprocess_time
+    }
+    model_info = {'model_name': args.model_name, 'precision': "fp32"}
+    data_info = {
+        'batch_size': args.batchsize,
+        'shape': "dynamic_shape",
+        'data_num': num_test_data
+    }
+    resource_info = {
+        'cpu_rss_mb': cpu_rss,
+        'gpu_rss_mb': gpu_rss,
+        'gpu_util': gpu_util
+    }
+    rec_log = PaddleInferBenchmark(pred_config, model_info, data_info,
+                                   perf_info, resource_info)
+    rec_log('Rec')
 
 
 if __name__ == '__main__':
