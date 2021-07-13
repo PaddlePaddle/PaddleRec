@@ -46,6 +46,7 @@ class DMRLayer(nn.Layer):
         self.pid_size = pid_size
         self.main_embedding_size = main_embedding_size
         self.other_embedding_size = other_embedding_size
+        self.history_length = 50
 
         self.uid_embeddings_var = paddle.nn.Embedding(
             self.user_size,
@@ -183,38 +184,48 @@ class DMRLayer(nn.Layer):
                 name="PidSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
 
-        self.position_his = paddle.arange(0, 50)
+        self.position_his = paddle.arange(0, self.history_length)
         self.position_embeddings_var = paddle.nn.Embedding(
-            50,
+            self.history_length,
             self.other_embedding_size,
             # sparse=True,
             weight_attr=paddle.ParamAttr(
                 name="PosSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
 
-        self.dm_position_his = paddle.arange(0, 50)
+        self.dm_position_his = paddle.arange(0, self.history_length)
         self.dm_position_embeddings_var = paddle.nn.Embedding(
-            50,
+            self.history_length,
             self.other_embedding_size,
             # sparse=True,
             weight_attr=paddle.ParamAttr(
                 name="DmPosSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
-        self.query_layer = paddle.nn.Linear(16, 64, name='dm_align')
+        self.query_layer = paddle.nn.Linear(
+            self.other_embedding_size * 2,
+            self.main_embedding_size * 2,
+            name='dm_align')
         self.query_prelu = paddle.nn.PReLU(
-            num_parameters=50, init=0.1, name='dm_prelu')
-        self.att_layer1_layer = paddle.nn.Linear(256, 80, name='dm_att_1')
+            num_parameters=self.history_length, init=0.1, name='dm_prelu')
+        self.att_layer1_layer = paddle.nn.Linear(
+            self.main_embedding_size * 8, 80, name='dm_att_1')
         self.att_layer2_layer = paddle.nn.Linear(80, 40, name='dm_att_2')
         self.att_layer3_layer = paddle.nn.Linear(40, 1, name='dm_att_3')
         self.dnn_layer1_layer = paddle.nn.Linear(
-            64, self.main_embedding_size, name='dm_fcn_1')
+            self.main_embedding_size * 2,
+            self.main_embedding_size,
+            name='dm_fcn_1')
         self.dnn_layer1_prelu = paddle.nn.PReLU(
-            num_parameters=50, init=0.1, name='dm_fcn_1')
+            num_parameters=self.history_length, init=0.1, name='dm_fcn_1')
 
-        self.query_layer2 = paddle.nn.Linear(80, 64, name='dmr_align')
+        self.query_layer2 = paddle.nn.Linear(
+            (self.other_embedding_size + self.main_embedding_size) * 2,
+            self.main_embedding_size * 2,
+            name='dmr_align')
         self.query_prelu2 = paddle.nn.PReLU(
-            num_parameters=50, init=0.1, name='dmr_prelu')
-        self.att_layer1_layer2 = paddle.nn.Linear(256, 80, name='tg_att_1')
+            num_parameters=self.history_length, init=0.1, name='dmr_prelu')
+        self.att_layer1_layer2 = paddle.nn.Linear(
+            self.main_embedding_size * 8, 80, name='tg_att_1')
         self.att_layer2_layer2 = paddle.nn.Linear(80, 40, name='tg_att_2')
         self.att_layer3_layer2 = paddle.nn.Linear(40, 1, name='tg_att_3')
 
@@ -224,7 +235,8 @@ class DMRLayer(nn.Layer):
         def deep_match(item_his_eb, context_his_eb, mask, match_mask,
                        mid_his_batch, item_vectors, item_biases, n_mid):
             query = context_his_eb
-            query = self.query_layer(query)  # [-1, 50, 64]
+            query = self.query_layer(
+                query)  # [-1, self.history_length, self.main_embedding_size*2]
             query = self.query_prelu(query)
 
             inputs = paddle.concat(
@@ -264,7 +276,8 @@ class DMRLayer(nn.Layer):
             att_dm_item_his_eb = paddle.matmul(scores_tile,
                                                item_his_eb)  # B, T, E
             dnn_layer1 = self.dnn_layer1_layer(att_dm_item_his_eb)
-            dnn_layer1 = dnn_layer1.reshape([-1, 50, 32])  ##
+            dnn_layer1 = dnn_layer1.reshape(
+                [-1, self.history_length, self.main_embedding_size])  ##
             dnn_layer1 = self.dnn_layer1_prelu(dnn_layer1)
 
             # target mask
@@ -316,7 +329,7 @@ class DMRLayer(nn.Layer):
             att_layer_3 = paddle.reshape(
                 att_layer_3, [-1, 1, paddle.shape(item_his_eb)[1]])  # B,1,T
             scores = att_layer_3
-            scores = scores.reshape([-1, 1, 50])  ##
+            scores = scores.reshape([-1, 1, self.history_length])  ##
 
             # Mask
             key_masks = paddle.unsqueeze(mask, 1)  # B,1,T
@@ -353,8 +366,14 @@ class DMRLayer(nn.Layer):
         self.dm_item_biases = paddle.zeros(
             shape=[self.cate_size], dtype='float32')
 
-        self.inp_layer = paddle.nn.BatchNorm(459, momentum=0.99, epsilon=1e-03)
-        self.dnn0_layer = paddle.nn.Linear(459, 512, name='f0')
+        self.inp_length = self.main_embedding_size + (
+            self.other_embedding_size * 8 + self.main_embedding_size * 5 + 1 +
+            self.other_embedding_size + self.main_embedding_size * 2 +
+            self.main_embedding_size * 2 + 1 + 1 + self.main_embedding_size * 2
+        )
+        self.inp_layer = paddle.nn.BatchNorm(
+            self.inp_length, momentum=0.99, epsilon=1e-03)
+        self.dnn0_layer = paddle.nn.Linear(self.inp_length, 512, name='f0')
         self.dnn0_prelu = paddle.nn.PReLU(
             num_parameters=512, init=0.1, name='prelu0')
         self.dnn1_layer = paddle.nn.Linear(512, 256, name='f1')
@@ -371,33 +390,35 @@ class DMRLayer(nn.Layer):
         # input
         inputs = inputs_tensor[0]  # sparse_tensor
         dense_tensor = inputs_tensor[1]
-        self.btag_his = inputs[:, 0:50]
-        self.cate_his = inputs[:, 50:100]
-        self.brand_his = inputs[:, 100:150]
-        self.mask = inputs[:, 150:200]
-        self.match_mask = inputs[:, 200:250]
+        self.btag_his = inputs[:, 0:self.history_length]
+        self.cate_his = inputs[:, self.history_length:self.history_length * 2]
+        self.brand_his = inputs[:, self.history_length * 2:self.history_length
+                                * 3]
+        self.mask = inputs[:, self.history_length * 3:self.history_length * 4]
+        self.match_mask = inputs[:, self.history_length * 4:self.history_length
+                                 * 5]
 
-        self.uid = inputs[:, 250]
-        self.cms_segid = inputs[:, 251]
-        self.cms_group_id = inputs[:, 252]
-        self.final_gender_code = inputs[:, 253]
-        self.age_level = inputs[:, 254]
-        self.pvalue_level = inputs[:, 255]
-        self.shopping_level = inputs[:, 256]
-        self.occupation = inputs[:, 257]
-        self.new_user_class_level = inputs[:, 258]
+        self.uid = inputs[:, self.history_length * 5]
+        self.cms_segid = inputs[:, self.history_length * 5 + 1]
+        self.cms_group_id = inputs[:, self.history_length * 5 + 2]
+        self.final_gender_code = inputs[:, self.history_length * 5 + 3]
+        self.age_level = inputs[:, self.history_length * 5 + 4]
+        self.pvalue_level = inputs[:, self.history_length * 5 + 5]
+        self.shopping_level = inputs[:, self.history_length * 5 + 6]
+        self.occupation = inputs[:, self.history_length * 5 + 7]
+        self.new_user_class_level = inputs[:, self.history_length * 5 + 8]
 
-        self.mid = inputs[:, 259]
-        self.cate_id = inputs[:, 260]
-        self.campaign_id = inputs[:, 261]
-        self.customer = inputs[:, 262]
-        self.brand = inputs[:, 263]
+        self.mid = inputs[:, self.history_length * 5 + 9]
+        self.cate_id = inputs[:, self.history_length * 5 + 10]
+        self.campaign_id = inputs[:, self.history_length * 5 + 11]
+        self.customer = inputs[:, self.history_length * 5 + 12]
+        self.brand = inputs[:, self.history_length * 5 + 13]
         self.price = dense_tensor.astype('float32')
 
-        self.pid = inputs[:, 265]
+        self.pid = inputs[:, self.history_length * 5 + 15]
 
         if is_infer == 0:
-            self.labels = inputs[:, 266]
+            self.labels = inputs[:, self.history_length * 5 + 16]
 
         # embedding layer
         self.uid_batch_embedded = self.uid_embeddings_var(self.uid)
