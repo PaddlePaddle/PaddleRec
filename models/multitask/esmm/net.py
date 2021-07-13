@@ -68,7 +68,8 @@ class ESMMLayer(nn.Layer):
                 weight_attr=paddle.ParamAttr(
                     initializer=paddle.nn.initializer.Normal(
                         std=1.0 / math.sqrt(cvr_sizes[i]))))
-            self.add_sublayer('linear_%d' % i, linear)
+            self.add_sublayer('linear_%d' % (len(ctr_layer_sizes) + 1 + i),
+                              linear)
             self._cvr_mlp_layers.append(linear)
             if acts[i] == 'relu':
                 act = paddle.nn.ReLU()
