@@ -31,6 +31,7 @@ runner:
   infer_end_epoch: 10
 
 
+
 # hyper parameters of user-defined network
 hyper_parameters:
   # optimizer config
