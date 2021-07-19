@@ -21,7 +21,7 @@ runner:
   train_batch_size: 2
   epochs: 3
   print_interval: 2
-  model_init_path: "output_model_deepfm/2" # init model
+  # model_init_path: "output_model_deepfm/2" # init model
   model_save_path: "output_model_deepfm"
   test_data_dir: "data/sample_data/train"
   infer_reader_path: "criteo_reader" # importlib format
