@@ -26,6 +26,7 @@ class StaticModel(object):
         self.metrics = {}
         self.config = config
         self.init_hyper_parameters()
+        self.optimizer = None
 
     def init_hyper_parameters(self):
         self.sparse_feature_number = self.config.get(
@@ -155,7 +156,7 @@ class StaticModel(object):
 
         return self.metrics
 
-    def create_optimizer(self, strategy=None):
+    def create_optimizer(self, strategy=None, pure_bf16=False):
         lr = float(self.config.get("hyper_parameters.optimizer.learning_rate"))
         decay_rate = float(
             self.config.get("hyper_parameters.optimizer.decay_rate"))
@@ -193,4 +194,11 @@ class StaticModel(object):
 
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
 
-        optimizer.minimize(self.cost)
+        if pure_bf16:
+            optimizer = paddle.static.amp.bf16.decorate_bf16(
+                optimizer,
+                use_bf16_guard=False,
+                use_pure_bf16=pure_bf16)
+
+        self.optimizer = optimizer
+        self.optimizer.minimize(self.cost)

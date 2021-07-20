@@ -25,6 +25,7 @@ import paddle
 import os
 import warnings
 import logging
+import ast
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -42,12 +43,14 @@ def parse_args():
         type=str,
         required=True,
         help='config file path')
+    parser.add_argument('-bf16', '--pure_bf16', type=ast.literal_eval, default=False, help="whether use bf16")
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
     config = yaml_helper.load_yaml(args.config_yaml)
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
+    config["pure_bf16"] = args.pure_bf16
     yaml_helper.print_yaml(config)
     return config
 
@@ -61,6 +64,8 @@ class Main(object):
         self.exe = None
         self.train_result_dict = {}
         self.train_result_dict["speed"] = []
+        self.model = None
+        self.pure_bf16 = self.config['pure_bf16']
 
     def run(self):
         fleet.init()
@@ -74,13 +79,13 @@ class Main(object):
         logger.info("Run Success, Exit.")
 
     def network(self):
-        model = get_model(self.config)
-        self.input_data = model.create_feeds()
+        self.model = get_model(self.config)
+        self.input_data = self.model.create_feeds()
         self.init_reader()
-        self.metrics = model.net(self.input_data)
-        self.inference_target_var = model.inference_target_var
+        self.metrics = self.model.net(self.input_data)
+        self.inference_target_var = self.model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-        model.create_optimizer(get_strategy(self.config))
+        self.model.create_optimizer(get_strategy(self.config), pure_bf16=self.pure_bf16)
 
     def run_server(self):
         logger.info("Run Server Begin")
@@ -101,6 +106,8 @@ class Main(object):
             f.write(str(paddle.static.default_startup_program()))
 
         self.exe.run(paddle.static.default_startup_program())
+        if self.pure_bf16:
+            self.model.optimizer.amp_init(self.exe.place)
         fleet.init_worker()
 
         save_model_path = self.config.get("runner.model_save_path")
@@ -131,12 +138,16 @@ class Main(object):
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
-            if fleet.is_first_worker(
-            ) and save_model_path and is_distributed_env():
-                fleet.save_inference_model(
-                    self.exe, model_dir,
-                    [feed.name for feed in self.input_data],
-                    self.inference_target_var)
+            if fleet.is_first_worker() and save_model_path:
+                if is_distributed_env():
+                    fleet.save_inference_model(
+                        self.exe, model_dir,
+                        [feed.name for feed in self.input_data],
+                        self.inference_target_var)
+                else:
+                    paddle.fluid.io.save_inference_model(model_dir,
+                                                         [feed.name for feed in self.input_data],
+                                                         [self.inference_target_var], self.exe)
 
     def init_reader(self):
         if fleet.is_server():
@@ -175,6 +186,7 @@ class Main(object):
         batch_id = 0
         train_run_cost = 0.0
         total_examples = 0
+        from paddle.fluid.tests.unittests.op_test import convert_uint16_to_float
         self.reader.start()
         while True:
             try:
@@ -192,7 +204,8 @@ class Main(object):
                     metrics_string = ""
                     for var_idx, var_name in enumerate(self.metrics):
                         metrics_string += "{}: {}, ".format(var_name,
-                                                            fetch_var[var_idx])
+                                                            fetch_var[var_idx] if var_name != "LOSS" or not config['pure_bf16'] else
+                                                            convert_uint16_to_float(fetch_var[var_idx]))
                     profiler_string = ""
                     profiler_string += "avg_batch_cost: {} sec, ".format(
                         format((train_run_cost) / print_step, '.5f'))
@@ -220,6 +233,7 @@ class Main(object):
         train_run_cost = 0.0
         train_reader_cost = 0.0
         total_samples = 0
+        from paddle.fluid.tests.unittests.op_test import convert_uint16_to_float
         reader_start = time.time()
         for batch_id, batch_data in enumerate(self.reader()):
             train_reader_cost += time.time() - reader_start
@@ -236,7 +250,8 @@ class Main(object):
                 metric_str = ""
                 for var_idx, var_name in enumerate(self.metrics):
                     metric_str += "{}: {}, ".format(var_name,
-                                                    fetch_batch_var[var_idx])
+                                                    fetch_batch_var[var_idx] if var_name != "LOSS" or config['pure_bf16'] is False else
+                                                    convert_uint16_to_float(fetch_batch_var[var_idx]))
                 logger.info(
                     "Epoch: {}, Batch_id: {}, ".format(epoch,
                                                        batch_id) + metric_str +
