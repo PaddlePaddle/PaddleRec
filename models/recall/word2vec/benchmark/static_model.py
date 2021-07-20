@@ -45,25 +45,32 @@ class StaticModel(object):
 
     def create_feeds(self, is_infer=False, **kwargs):
         if is_infer:
-            analogy_a = paddle.static.data(
-                name="analogy_a", shape=[None], dtype='int64')
-            analogy_b = paddle.static.data(
-                name="analogy_b", shape=[None], dtype='int64')
-            analogy_c = paddle.static.data(
-                name="analogy_c", shape=[None], dtype='int64')
-            analogy_d = paddle.static.data(
-                name="analogy_d", shape=[None], dtype='int64')
+            analogy_a = paddle.static.data(name="analogy_a",
+                                           shape=[None],
+                                           dtype='int64')
+            analogy_b = paddle.static.data(name="analogy_b",
+                                           shape=[None],
+                                           dtype='int64')
+            analogy_c = paddle.static.data(name="analogy_c",
+                                           shape=[None],
+                                           dtype='int64')
+            analogy_d = paddle.static.data(name="analogy_d",
+                                           shape=[None],
+                                           dtype='int64')
             return [analogy_a, analogy_b, analogy_c, analogy_d]
 
-        input_word = paddle.static.data(
-            name="input_word", shape=[None, 1], dtype='int64')
-        true_word = paddle.static.data(
-            name='true_label', shape=[None, 1], dtype='int64')
+        input_word = paddle.static.data(name="input_word",
+                                        shape=[None, 1],
+                                        dtype='int64')
+        true_word = paddle.static.data(name='true_label',
+                                       shape=[None, 1],
+                                       dtype='int64')
         if self.with_shuffle_batch:
             return [input_word, true_word]
 
-        neg_word = paddle.static.data(
-            name="neg_label", shape=[None, self.neg_num], dtype='int64')
+        neg_word = paddle.static.data(name="neg_label",
+                                      shape=[None, self.neg_num],
+                                      dtype='int64')
         return [input_word, true_word, neg_word]
 
     def net(self, inputs, is_infer=False):
@@ -73,10 +80,9 @@ class StaticModel(object):
             input=inputs[0],
             is_sparse=True,
             size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name='emb',
-                initializer=fluid.initializer.Uniform(-init_width,
-                                                      init_width)))
+            param_attr=fluid.ParamAttr(name='emb',
+                                       initializer=fluid.initializer.Uniform(
+                                           -init_width, init_width)))
 
         true_emb_w = fluid.layers.embedding(
             input=inputs[1],
@@ -101,53 +107,51 @@ class StaticModel(object):
             input=neg_word_reshape,
             is_sparse=True,
             size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
-                name='emb_w', learning_rate=1.0))
+            param_attr=fluid.ParamAttr(name='emb_w', learning_rate=1.0))
 
         neg_emb_w_re = fluid.layers.reshape(
             neg_emb_w, shape=[-1, self.neg_num, self.sparse_feature_dim])
 
-        neg_emb_b = fluid.layers.embedding(
-            input=neg_word_reshape,
-            is_sparse=True,
-            size=[self.sparse_feature_number, 1],
-            param_attr=fluid.ParamAttr(
-                name='emb_b', learning_rate=1.0))
+        neg_emb_b = fluid.layers.embedding(input=neg_word_reshape,
+                                           is_sparse=True,
+                                           size=[self.sparse_feature_number, 1],
+                                           param_attr=fluid.ParamAttr(
+                                               name='emb_b', learning_rate=1.0))
 
-        neg_emb_b_vec = fluid.layers.reshape(
-            neg_emb_b, shape=[-1, self.neg_num])
+        neg_emb_b_vec = fluid.layers.reshape(neg_emb_b,
+                                             shape=[-1, self.neg_num])
 
         true_logits = fluid.layers.elementwise_add(
-            fluid.layers.reduce_sum(
-                fluid.layers.elementwise_mul(input_emb, true_emb_w),
-                dim=1,
-                keep_dim=True),
-            true_emb_b)
+            fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
+                input_emb, true_emb_w),
+                                    dim=1,
+                                    keep_dim=True), true_emb_b)
 
         input_emb_re = fluid.layers.reshape(
             input_emb, shape=[-1, 1, self.sparse_feature_dim])
 
-        neg_matmul = fluid.layers.matmul(
-            input_emb_re, neg_emb_w_re, transpose_y=True)
-        neg_matmul_re = fluid.layers.reshape(
-            neg_matmul, shape=[-1, self.neg_num])
+        neg_matmul = fluid.layers.matmul(input_emb_re,
+                                         neg_emb_w_re,
+                                         transpose_y=True)
+        neg_matmul_re = fluid.layers.reshape(neg_matmul,
+                                             shape=[-1, self.neg_num])
         neg_logits = fluid.layers.elementwise_add(neg_matmul_re, neg_emb_b_vec)
         # nce loss
 
-        label_ones = fluid.layers.fill_constant_batch_size_like(
-            true_logits, shape=[-1, 1], value=1.0, dtype='float32')
+        label_ones = fluid.layers.fill_constant_batch_size_like(true_logits,
+                                                                shape=[-1, 1],
+                                                                value=1.0,
+                                                                dtype='float32')
         label_zeros = fluid.layers.fill_constant_batch_size_like(
             true_logits, shape=[-1, self.neg_num], value=0.0, dtype='float32')
 
-        true_xent = fluid.layers.sigmoid_cross_entropy_with_logits(true_logits,
-                                                                   label_ones)
-        neg_xent = fluid.layers.sigmoid_cross_entropy_with_logits(neg_logits,
-                                                                  label_zeros)
+        true_xent = fluid.layers.sigmoid_cross_entropy_with_logits(
+            true_logits, label_ones)
+        neg_xent = fluid.layers.sigmoid_cross_entropy_with_logits(
+            neg_logits, label_zeros)
         cost = fluid.layers.elementwise_add(
-            fluid.layers.reduce_sum(
-                true_xent, dim=1),
-            fluid.layers.reduce_sum(
-                neg_xent, dim=1))
+            fluid.layers.reduce_sum(true_xent, dim=1),
+            fluid.layers.reduce_sum(neg_xent, dim=1))
         avg_cost = fluid.layers.reduce_mean(cost)
 
         self.inference_target_var = avg_cost
@@ -196,9 +200,7 @@ class StaticModel(object):
 
         if pure_bf16:
             optimizer = paddle.static.amp.bf16.decorate_bf16(
-                optimizer,
-                use_bf16_guard=False,
-                use_pure_bf16=pure_bf16)
+                optimizer, use_bf16_guard=False, use_pure_bf16=pure_bf16)
 
         self.optimizer = optimizer
         self.optimizer.minimize(self.cost)
