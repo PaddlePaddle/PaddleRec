@@ -126,7 +126,7 @@ for i in range(len(layer_sizes) + 1):
 在全量数据下模型的指标如下：
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| dnn | 0.7748 | 512 | 4 | 约3小时 |
+| dnn | 0.795+ | 512 | 4 | 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/dnn 
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。
