@@ -30,23 +30,25 @@ import ast
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train script")
-    parser.add_argument('-m',
-                        '--config_yaml',
-                        type=str,
-                        required=True,
-                        help='config file path')
-    parser.add_argument('-bf16',
-                        '--pure_bf16',
-                        type=ast.literal_eval,
-                        default=False,
-                        help="whether use bf16")
+    parser.add_argument(
+        '-m',
+        '--config_yaml',
+        type=str,
+        required=True,
+        help='config file path')
+    parser.add_argument(
+        '-bf16',
+        '--pure_bf16',
+        type=ast.literal_eval,
+        default=False,
+        help="whether use bf16")
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
@@ -88,8 +90,8 @@ class Main(object):
         self.metrics = self.model.net(self.input_data)
         self.inference_target_var = self.model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-        self.model.create_optimizer(get_strategy(self.config),
-                                    pure_bf16=self.pure_bf16)
+        self.model.create_optimizer(
+            get_strategy(self.config), pure_bf16=self.pure_bf16)
 
     def run_server(self):
         logger.info("Run Server Begin")
@@ -102,13 +104,11 @@ class Main(object):
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
 
-        with open(
-                "./{}_worker_main_program.prototxt".format(
-                    fleet.worker_index()), 'w+') as f:
+        with open("./{}_worker_main_program.prototxt".format(
+                fleet.worker_index()), 'w+') as f:
             f.write(str(paddle.static.default_main_program()))
-        with open(
-                "./{}_worker_startup_program.prototxt".format(
-                    fleet.worker_index()), 'w+') as f:
+        with open("./{}_worker_startup_program.prototxt".format(
+                fleet.worker_index()), 'w+') as f:
             f.write(str(paddle.static.default_startup_program()))
 
         self.exe.run(paddle.static.default_startup_program())
@@ -261,16 +261,14 @@ class Main(object):
                         if var_name != "LOSS" or config['pure_bf16'] is False
                         else convert_uint16_to_float(fetch_batch_var[var_idx]))
                 logger.info(
-                    "Epoch: {}, Batch_id: {}, ".format(epoch, batch_id) +
-                    metric_str +
+                    "Epoch: {}, Batch_id: {}, ".format(epoch,
+                                                       batch_id) + metric_str +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec"
-                    .format(
-                        train_reader_cost /
-                        print_interval, (train_reader_cost + train_run_cost) /
-                        print_interval, total_samples /
-                        print_interval, total_samples /
-                        (train_reader_cost + train_run_cost), self.count_method)
-                )
+                    .format(train_reader_cost / print_interval, (
+                        train_reader_cost + train_run_cost) / print_interval,
+                            total_samples / print_interval, total_samples / (
+                                train_reader_cost + train_run_cost),
+                            self.count_method))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0
