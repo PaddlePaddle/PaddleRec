@@ -20,6 +20,7 @@ import time
 import math
 import numpy as np
 import six
+import ast
 import paddle.fluid as fluid
 import paddle
 import collections
@@ -51,27 +52,54 @@ def parse_args():
     parser.add_argument(
         '--batch_size', type=int, default='5', help='batch_size')
     parser.add_argument(
-        '--emb_size', type=int, default='64', help='batch_size')
+        '--emb_size', type=int, default='300', help='batch_size')
+    parser.add_argument(
+        '-bf16',
+        '--pure_bf16',
+        type=ast.literal_eval,
+        default=False,
+        help="whether use bf16")
     args = parser.parse_args()
     return args
 
 
-def infer_network(vocab_size, emb_size):
+def infer_network(vocab_size, emb_size, pure_bf16=False):
     analogy_a = fluid.data(name="analogy_a", shape=[None], dtype='int64')
     analogy_b = fluid.data(name="analogy_b", shape=[None], dtype='int64')
     analogy_c = fluid.data(name="analogy_c", shape=[None], dtype='int64')
     all_label = fluid.data(name="all_label", shape=[vocab_size], dtype='int64')
+    dtype = 'uint16' if pure_bf16 else 'float32'
     emb_all_label = fluid.embedding(
-        input=all_label, size=[vocab_size, emb_size], param_attr="emb")
+        input=all_label,
+        size=[vocab_size, emb_size],
+        param_attr="emb",
+        dtype=dtype)
 
     emb_a = fluid.embedding(
-        input=analogy_a, size=[vocab_size, emb_size], param_attr="emb")
+        input=analogy_a,
+        size=[vocab_size, emb_size],
+        param_attr="emb",
+        dtype=dtype)
     emb_b = fluid.embedding(
-        input=analogy_b, size=[vocab_size, emb_size], param_attr="emb")
+        input=analogy_b,
+        size=[vocab_size, emb_size],
+        param_attr="emb",
+        dtype=dtype)
     emb_c = fluid.embedding(
-        input=analogy_c, size=[vocab_size, emb_size], param_attr="emb")
+        input=analogy_c,
+        size=[vocab_size, emb_size],
+        param_attr="emb",
+        dtype=dtype)
+
+    if pure_bf16:
+        emb_all_label = fluid.layers.cast(emb_all_label, "float32")
+        emb_a = fluid.layers.cast(emb_a, "float32")
+        emb_b = fluid.layers.cast(emb_b, "float32")
+        emb_c = fluid.layers.cast(emb_c, "float32")
+
     target = fluid.layers.elementwise_add(
         fluid.layers.elementwise_sub(emb_b, emb_a), emb_c)
+
     emb_all_label_l2 = fluid.layers.l2_normalize(x=emb_all_label, axis=1)
     dist = fluid.layers.matmul(x=target, y=emb_all_label_l2, transpose_y=True)
     values, pred_idx = fluid.layers.topk(input=dist, k=4)
@@ -102,6 +130,7 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     exe = fluid.Executor(place)
     emb_size = args.emb_size
     batch_size = args.batch_size
+    pure_bf16 = args.pure_bf16
 
     result_dict = {}
     result_dict["result"] = {}
@@ -109,7 +138,7 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     with fluid.scope_guard(fluid.Scope()):
         main_program = fluid.Program()
         with fluid.program_guard(main_program):
-            values, pred = infer_network(vocab_size, emb_size)
+            values, pred = infer_network(vocab_size, emb_size, pure_bf16)
             for epoch, model_path in enumerate(epoch_model_path_list):
                 print("Begin infer model: {}".format(model_path))
                 copy_program = main_program.clone()
