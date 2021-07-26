@@ -16,7 +16,7 @@
 runner:
   train_data_dir: "./data/train_data"
   train_reader_path: "amazon_reader" # importlib format
-  use_gpu: True
+  use_gpu: False
   use_auc: True
   train_batch_size: 5
   epochs: 10
@@ -31,13 +31,14 @@ runner:
   infer_end_epoch: 10
 
 
+
 # hyper parameters of user-defined network
 hyper_parameters:
   # optimizer config
   optimizer:
     class: SGD
     learning_rate: 0.0001
-  # user-defined <key, value> pairs
+  # user-defined <key, value> pair
   distributed_embedding: 0
   use_DataLoader: True
   item_emb_size: 96
