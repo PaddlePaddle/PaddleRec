@@ -75,7 +75,9 @@ class RecDataset(IterableDataset):
                 for i in range(0, group_size, batch_size):
                     b = sortb[i:i + batch_size]
                     max_len = max(len(x[0]) for x in b)
-                    print("--------max_len--------",max_len)
+                    if max_len<2:
+                        continue
+                    # print("--------max_len--------",max_len)
 
                     itemInput = [x[0] for x in b]
                     itemRes0 = np.array(
@@ -124,10 +126,10 @@ class RecDataset(IterableDataset):
                             start_idx = random.randint(0, self.max_neg_cat - len_seq - 1)
                             self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
                                 i][1]
-                        for _ in range(len(item)):
+                        for _ in range(max_len):
                             neg_item[i].append(self.neg_candidate_item[random.randint(
                                 0, len(self.neg_candidate_item) - 1)])
-                        for _ in range(len(cat)):
+                        for _ in range(max_len):
                             neg_cat[i].append(self.neg_candidate_cat[random.randint(
                                 0, len(self.neg_candidate_cat) - 1)])
 
@@ -158,7 +160,8 @@ class RecDataset(IterableDataset):
                 b = sortb[i:i + batch_size]
 
                 max_len = max(len(x[0]) for x in b)
-
+                if max_len < 2: continue
+                # print("----max_len----", max_len)
                 itemInput = [x[0] for x in b]
                 itemRes0 = np.array(
                     [x + [0] * (max_len - len(x)) for x in itemInput])

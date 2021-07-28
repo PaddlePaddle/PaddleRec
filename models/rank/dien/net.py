@@ -312,6 +312,12 @@ class StaticDIENLayer(nn.Layer):
         slice_gru = paddle.slice(gru_out_pad,axes=[0,1,2],starts=[0,0,0],ends=[INT_MAX,-1,INT_MAX])
         slice_pos = paddle.slice(pos_seq_pad,axes=[0,1,2],starts=[0,1,0],ends=[INT_MAX,INT_MAX,INT_MAX])
         slice_neg = paddle.slice(neg_seq_pad,axes=[0,1,2],starts=[0,1,0],ends=[INT_MAX,INT_MAX,INT_MAX])
+        # print("----slice_neg----",slice_neg)
+        # paddle.static.Print(slice_neg, message = "----slice_neg----")
+        # print("----slice_pos----",slice_pos)
+        # paddle.static.Print(slice_pos, message = "----slice_pos----")
+        # print("----slice_gru----",slice_gru)
+        # paddle.static.Print(slice_gru, message = "----slice_gru----")
         # slice_gru = paddle.slice(gru_out_pad, [:,-1,:])
         # slice_pos = paddle.slice(gru_out_pad, [:,1:,:])
         test_pos = paddle.sum(
