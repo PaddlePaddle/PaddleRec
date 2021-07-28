@@ -1,12 +1,13 @@
 # 分布式模式介绍
 
-当模型、数据的规模达到单机训练的瓶颈之后，分布式训练是必然选择。目前PaddleRec可提供两种分布式训练的模式。  
-参数服务器：推荐系统领域常用的并行训练方式，ParameterServer模式提供了基于参数服务器的分布式训练功能 。  
-GPU多机训练：如果您希望使用GPU进行多机多卡训练，Collective模式提供了使用飞桨进行单机多卡，多机多卡训练的功能。  
-本教程讲解如何使用以上两种模式，如果您希望深入学习paddle的分布式训练功能，建议您访问[分布式深度学习介绍](ps_background.md)进行深入了解
+当模型、数据的规模达到单机训练的瓶颈之后，分布式训练是必然选择。目前PaddleRec可提供三种分布式训练的模式。  
+参数服务器：推荐系统领域常用的并行训练方式，ParameterServer模式提供了基于参数服务器的分布式训练功能。
+GPU多机训练：如果您希望使用GPU进行多机多卡训练，Collective模式提供了使用飞桨进行单机多卡，多机多卡训练的功能。 
+GPU参数服务器（GPUBox）：如果您的推荐任务中稀疏参数较大，使用GPU Collective模式在性能和显存上无法满足要求时，推荐使用最新的GPU参数服务器训练方式，通过使用GPU以及CPU多级存储实现基于参数服务器的分布式训练。
+本教程讲解如何使用以上三种模式，如果您希望深入学习paddle的分布式训练功能，建议您访问[分布式深度学习介绍](ps_background.md)进行深入了解
 
 ## 版本要求
-在编写分布式训练程序之前，用户需要确保已经安装paddlepaddle-2.0.0-rc-cpu或paddlepaddle-2.0.0-rc-gpu及以上版本的飞桨开源框架。  
+在编写分布式训练程序之前，用户需要确保已经安装paddlepaddle-2.0.0-rc-cpu或paddlepaddle-2.0.0-rc-gpu及以上版本的飞桨开源框架。
 
 ## ParameterServer模式
 为了提高模型的训练效率，分布式训练应运而生，其中基于参数服务器的分布式训练为一种常见的中心化共享参数的同步方式。与单机训练不同的是在参数服务器分布式训练中，各个节点充当着不同的角色：  
@@ -113,4 +114,78 @@ def create_optimizer(self, strategy=None):
 python -m paddle.distributed.launch --ips="xx.xx.xx.xx,yy.yy.yy.yy" --gpus 0,1,2,3,4,5,6,7 ../../../tools/trainer.py -m config.yaml
 # 静态图执行训练
 python -m paddle.distributed.launch --ips="xx.xx.xx.xx,yy.yy.yy.yy" --gpus 0,1,2,3,4,5,6,7 ../../../tools/static_trainer.py -m config.yaml
+```
+
+## GPU参数服务器(GPUBox)模式
+如果您的推荐任务中稀疏参数较大，使用GPU Collective模式在性能和显存上无法满足要求时，推荐使用最新的GPU参数服务器训练方式。原理和使用可参考：[GPUBOX原理与使用](https://fleet-x.readthedocs.io/en/latest/paddle_fleet_rst/parameter_server/performance/heterps.html) 
+
+在PaddleRec上使用GPUBox模式启动分布式训练需要三步：
+1. 在yaml配置中添加分布式相关的参数
+2. 修改reader类型
+3. 修改网络使用的embedding
+3. 在启动命令中输入相关配置，启动训练
+
+### 添加yaml配置
+使用GPUBox模式相较单机模式需要添加一些相关配置，首先需要在模型的yaml配置中，加入use_fleet参数，并把值设置成True。  
+同时设置use_gpu为True，sync_mode模式设置为gpubox
+```yaml
+runner:
+  # 通用配置不再赘述
+  ...
+  # use fleet
+  use_fleet: True
+  use_gpu: True
+  sync_mode: "gpubox"
+```
+### 修改reader
+目前GPUBox模式下只支持InmemoryDataset模式，您可以在yaml配置中修改reader_type
+```yaml
+runner:
+  # 通用配置不再赘述
+  ...
+  reader_type: "InmemoryDataset"
+  
+```
+
+### 修改网络使用的embedding
+目前GPUBox模式使用的embedding接口与其他模式暂不兼容，因此可以在models/底下的net.py里修改embedding接口：
+```python
+def forward(self, sparse_inputs, dense_inputs):
+
+  sparse_embs = []
+  for s_input in sparse_inputs:
+      if self.sync_mode == "gpubox":
+          emb = paddle.fluid.contrib.sparse_embedding(
+              input=s_input,
+              size=[
+                  self.sparse_feature_number, self.sparse_feature_dim
+              ],
+              param_attr=paddle.ParamAttr(name="embedding"))
+      else:
+          emb = self.embedding(s_input)
+      emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
+      sparse_embs.append(emb)
+
+  # 其余部分省略 ....
+```
+
+### GPU单机启动命令
+下面以dnn模型为例，展示如何启动训练,支持在任意目录下运行，以下命令默认在根目录下运行：
+```bash
+sh tools/run_gpubox.sh
+
+```
+
+其中run_gpubox.sh中需要关注并设置的参数有：
+```bash
+
+# set free port if 29011 is occupied
+export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"
+export PADDLE_PSERVER_PORT_ARRAY=(29011)
+
+# set gpu numbers according to your device
+export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
+
+# set your model yaml
+SC="tools/static_gpubox_trainer.py -m models/rank/dnn/config_gpubox.yaml"
 ```
