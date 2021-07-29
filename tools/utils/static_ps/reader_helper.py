@@ -199,6 +199,8 @@ class QueueDatset(object):
         self.config = config
         self.input_var = input_var
         self.file_list = file_list
+        self.parse_ins_id = self.config.get("runner.parse_ins_id")
+        print("parse ins id:", self.parse_ins_id)
         self.pipe_command = self.config.get("runner.pipe_command")
         self.train_reader = self.config.get("runner.train_reader_path")
         assert self.pipe_command != None
@@ -214,6 +216,7 @@ class QueueDatset(object):
         self.batch_size = int(self.config.get("runner.train_batch_size"))
         assert self.batch_size >= 1
         self.thread_num = int(self.config.get("runner.thread_num"))
+        print("dataset init thread_num:", self.thread_num)
         assert self.thread_num >= 1
 
     def get_reader(self):
@@ -224,6 +227,7 @@ class QueueDatset(object):
             pipe_command=self.pipe_command,
             batch_size=self.batch_size,
             thread_num=self.thread_num)
+        print("dataset get_reader thread_num:", self.thread_num)
         dataset.set_filelist(self.file_list)
         return dataset
 
@@ -251,6 +255,10 @@ class InmemoryDatset(object):
         assert self.batch_size >= 1
         self.thread_num = int(self.config.get("runner.thread_num"))
         assert self.thread_num >= 1
+        self.parse_ins_id = self.config.get("runner.parse_ins_id", False)
+        self.fs_name = self.config.get("runner.fs_name", "")
+        self.fs_ugi = self.config.get("runner.fs_ugi", "")
+        print("hdfs config:", self.fs_name, self.fs_ugi)
 
     def get_reader(self):
         logger.info("Get InmemoryDataset")
@@ -259,6 +267,9 @@ class InmemoryDatset(object):
             use_var=self.input_var,
             pipe_command=self.pipe_command,
             batch_size=self.batch_size,
-            thread_num=self.thread_num)
+            thread_num=self.thread_num,
+            fs_name=self.fs_name,
+            fs_ugi=self.fs_ugi)
         dataset.set_filelist(self.file_list)
+        dataset.update_settings(parse_ins_id=self.parse_ins_id)
         return dataset
