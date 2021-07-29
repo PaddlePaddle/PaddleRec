@@ -90,8 +90,7 @@ class Main(object):
         self.metrics = self.model.net(self.input_data)
         self.inference_target_var = self.model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-        self.model.create_optimizer(
-            get_strategy(self.config), pure_bf16=self.pure_bf16)
+        self.model.create_optimizer(get_strategy(self.config))
 
     def run_server(self):
         logger.info("Run Server Begin")
@@ -124,12 +123,17 @@ class Main(object):
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
 
+        if reader_type == "InmemoryDataset":
+            self.reader.load_into_memory()
+
         for epoch in range(epochs):
             epoch_start_time = time.time()
 
             if sync_mode == "heter":
                 self.heter_train_loop(epoch)
             elif reader_type == "QueueDataset":
+                self.dataset_train_loop(epoch)
+            elif reader_type == "InmemoryDataset":
                 self.dataset_train_loop(epoch)
             elif reader_type == "DataLoader":
                 self.dataloader_train_loop(epoch)
@@ -154,6 +158,9 @@ class Main(object):
                     paddle.fluid.io.save_inference_model(
                         model_dir, [feed.name for feed in self.input_data],
                         [self.inference_target_var], self.exe)
+
+        if reader_type == "InmemoryDataset":
+            self.reader.release_memory()
 
     def init_reader(self):
         if fleet.is_server():
