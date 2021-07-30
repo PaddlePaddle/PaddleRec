@@ -11,30 +11,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# global settings
+
 runner:
-  train_data_dir: "../../../datasets/amazonElec_Din/train"
-  train_reader_path: "dinReader" # importlib format
+  train_data_dir: "data/train_data"
+  train_reader_path: "reader"
+# train_reader_path: "dienReader" # importlib format
   use_gpu: False
   train_batch_size: 32
-  epochs: 100
-  print_interval: 10
+  epochs: 10
+  print_interval: 2
   #model_init_path: "output_model/0" # init model
+  save_checkpoint_interval: 1
+  save_inference_interval: 1
+  save_checkpoint_path: "increment"
+  save_inference_path: "inference"
   model_save_path: "output_model_all"
   infer_batch_size: 32
   infer_reader_path: "dinReader" # importlib format
-  test_data_dir:  "../../../datasets/amazonElec_Din/test"
+  test_data_dir: "data/train_data"
   infer_load_path: "output_model_all"
   infer_start_epoch: 0
   infer_end_epoch: 10
 
 # hyper parameters of user-defined network
 hyper_parameters:
-  # optimizer config
   optimizer:
     class: SGD
-    learning_rate_base_lr: 0.85
+    learning_rate_base_lr: 0.85 
     strategy: async
-  # user-defined <key, value> pairs
   use_DataLoader: True
   item_emb_size: 64
   cat_emb_size: 64
@@ -42,3 +47,4 @@ hyper_parameters:
   item_count: 63001
   cat_count: 801
   act: "sigmoid"
+  distributed_embedding: 0
