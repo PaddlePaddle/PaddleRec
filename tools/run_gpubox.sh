@@ -19,7 +19,7 @@ export PADDLE_PSERVER_PORT_ARRAY=(29011)
 export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
 
 # set your model yaml
-SC="tools/static_gpubox_trainer.py -m models/rank/dnn/benchmark_gpubox.yaml"
+SC="tools/static_gpubox_trainer.py -m models/rank/dnn/config_gpubox.yaml"
 
 # run pserver
 export TRAINING_ROLE=PSERVER
