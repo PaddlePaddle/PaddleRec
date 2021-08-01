@@ -18,12 +18,15 @@ import paddle.nn.functional as F
 import math
 import net
 
+
 class DygraphModel():
 
     # define model
     def create_model(self, config):
-        sparse_feature_number = config.get("hyper_parameters.sparse_feature_number")
+        sparse_feature_number = config.get(
+            "hyper_parameters.sparse_feature_number")
         sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
+
         fc_sizes = config.get("hyper_parameters.fc_sizes")
         dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
         sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
@@ -32,9 +35,11 @@ class DygraphModel():
         clip_by_norm = config.get("hyper_parameters.clip_by_norm", None)
         is_sparse = config.get("hyper_parameters.is_sparse", None)
         dnn_use_bn = config.get("hyper_parameters.dnn_use_bn", None)
-        deepcro_model = net.DeepCroLayer(sparse_feature_number,
-                                       sparse_feature_dim, dense_feature_dim,
-                                       sparse_input_slot - 1, fc_sizes, cross_num, clip_by_norm, l2_reg_cross, is_sparse)        # print("----dygraphModel---deepcro_model--", deepcro_model)
+        deepcro_model = net.DeepCroLayer(
+            sparse_feature_number, sparse_feature_dim, dense_feature_dim,
+            sparse_input_slot - 1, fc_sizes, cross_num, clip_by_norm,
+            l2_reg_cross, is_sparse
+        )  # print("----dygraphModel---deepcro_model--", deepcro_model)
         return deepcro_model
 
     # define feeds which convert numpy of batch data to paddle.tensor 
@@ -100,7 +105,7 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
         # print("----label, sparse_tensor, dense_tensor",label, sparse_tensor, dense_tensor)
-        pred = dy_model.forward(sparse_tensor, dense_tensor)
+        pred, l2_loss = dy_model.forward(sparse_tensor, dense_tensor)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         # print("---pred,predict_2d---",pred,predict_2d)

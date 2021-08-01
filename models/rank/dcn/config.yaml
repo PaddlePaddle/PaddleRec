@@ -25,10 +25,10 @@ runner:
   model_save_path: "output_model_deepCross"
   test_data_dir: "data/sample_data"
   infer_reader_path: "reader" # importlib format
-  infer_batch_size: 5
+  infer_batch_size: 32
   infer_load_path: "output_model_deepCross"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 10
 
 
 # hyper parameters of user-defined network
@@ -53,4 +53,4 @@ hyper_parameters:
   dnn_use_bn: False
   clip_by_norm: 100.0
   is_sparse: False
-  cat_feat_num: "{workspace}/data/sample_data/cat_feature_num.txt"
+  # cat_feat_num: "{workspace}/data/sample_data/cat_feature_num.txt"
