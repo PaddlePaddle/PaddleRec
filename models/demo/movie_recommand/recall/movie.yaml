@@ -1,0 +1,49 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runner:
+  train_data_dir: "../data/train"
+  train_reader_path: "reader"  # importlib format
+  train_batch_size: 1
+  model_save_path: "movie_model"
+
+  use_gpu: True
+  epochs: 5
+  print_interval: 20
+  
+  test_data_dir: "../data/test"
+  infer_reader_path: "reader"  # importlib format
+  infer_batch_size: 1
+  infer_load_path: "movie_model"
+  infer_start_epoch: 4
+  infer_end_epoch: 5
+
+  runner_result_dump_path: "recall_infer_result"
+
+  #use inference save model
+  use_inference: True
+  save_inference_feed_varnames: ["movieid", "title", "genres"]
+  save_inference_fetch_varnames: ["linear_15.tmp_1"]
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+  # user-defined <key, value> pairs
+  sparse_feature_number: 600000
+  sparse_feature_dim: 9
+  dense_input_dim: 13
+  fc_sizes: [512, 256, 128, 32]

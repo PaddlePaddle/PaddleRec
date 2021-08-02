@@ -88,7 +88,7 @@ wide&deep设计了一种融合浅层（wide）模型和深层（deep）模型进
 
 | 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
 | :------| :------ | :------| :------ | :------| :------ | 
-| wide_deep | 0.82 | 512 | 1 | 4 | 约2小时 |
+| wide_deep | 0.79 | 512 | 1 | 4 | 约2小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/wide_deep
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。
