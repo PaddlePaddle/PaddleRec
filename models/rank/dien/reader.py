@@ -25,7 +25,6 @@ class RecDataset(IterableDataset):
         self.file_list = file_list
         self.config = config
         self.init()
- #       self.use_multi_task_learning = config.get("hyper_parameters.use_multi_task_learning")
         self.item_count = config.get("hyper_parameters.item_count")
 
     def init(self):
@@ -55,7 +54,7 @@ class RecDataset(IterableDataset):
             with open(train_file, "r") as fin:
                 for line in fin:
                     line = line.strip().split(';')
-                    if len(line)<5:
+                    if len(line) < 5:
                         continue
                     hist = line[0].split()
                     cate = line[1].split()
@@ -68,16 +67,15 @@ class RecDataset(IterableDataset):
         bg = []
         for line in reader:
             bg.append(line)
-            if len(bg) == group_size:  # #
+            if len(bg) == group_size:
                 sortb = sorted(bg, key=lambda x: len(x[0]), reverse=False)
 
                 bg = []
                 for i in range(0, group_size, batch_size):
                     b = sortb[i:i + batch_size]
                     max_len = max(len(x[0]) for x in b)
-                    if max_len<2:
+                    if max_len < 2:
                         continue
-                    # print("--------max_len--------",max_len)
 
                     itemInput = [x[0] for x in b]
                     itemRes0 = np.array(
@@ -98,7 +96,7 @@ class RecDataset(IterableDataset):
                     target_cat_seq = np.array(
                         [[x[3]] * max_len for x in b]).astype("int64").reshape(
                             [-1, max_len])
-                    
+
                     neg_item = [None] * len(item)
                     neg_cat = [None] * len(cat)
 
@@ -107,14 +105,16 @@ class RecDataset(IterableDataset):
                         neg_cat[i] = []
                         if len(self.neg_candidate_item) < self.max_neg_item:
                             self.neg_candidate_item.extend(b[i][0])
-                            if len(self.neg_candidate_item) > self.max_neg_item:
+                            if len(self.
+                                   neg_candidate_item) > self.max_neg_item:
                                 self.neg_candidate_item = self.neg_candidate_item[
                                     0:self.max_neg_item]
                         else:
                             len_seq = len(b[i][0])
-                            start_idx = random.randint(0, self.max_neg_item - len_seq - 1)
-                            self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
-                                i][0]
+                            start_idx = random.randint(
+                                0, self.max_neg_item - len_seq - 1)
+                            self.neg_candidate_item[start_idx:start_idx +
+                                                    len_seq + 1] = b[i][0]
 
                         if len(self.neg_candidate_cat) < self.max_neg_cat:
                             self.neg_candidate_cat.extend(b[i][1])
@@ -123,15 +123,18 @@ class RecDataset(IterableDataset):
                                     0:self.max_neg_cat]
                         else:
                             len_seq = len(b[i][1])
-                            start_idx = random.randint(0, self.max_neg_cat - len_seq - 1)
-                            self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
-                                i][1]
+                            start_idx = random.randint(
+                                0, self.max_neg_cat - len_seq - 1)
+                            self.neg_candidate_item[start_idx:start_idx +
+                                                    len_seq + 1] = b[i][1]
                         for _ in range(max_len):
-                            neg_item[i].append(self.neg_candidate_item[random.randint(
-                                0, len(self.neg_candidate_item) - 1)])
+                            neg_item[i].append(self.neg_candidate_item[
+                                random.randint(
+                                    0, len(self.neg_candidate_item) - 1)])
                         for _ in range(max_len):
-                            neg_cat[i].append(self.neg_candidate_cat[random.randint(
-                                0, len(self.neg_candidate_cat) - 1)])
+                            neg_cat[i].append(self.neg_candidate_cat[
+                                random.randint(
+                                    0, len(self.neg_candidate_cat) - 1)])
 
                     for i in range(len(b)):
                         res = []
@@ -146,9 +149,7 @@ class RecDataset(IterableDataset):
                         res.append(np.array(target_cat_seq[i]).astype('int64'))
                         res.append(np.array(neg_item[i]).astype('int64'))
                         res.append(np.array(neg_cat[i]).astype('int64'))
-                        
-                    #    res.append(np.array(len(item[i])+len(cat[i])))
-                        # print("----max---",res)
+
                         yield res
 
         len_bg = len(bg)
@@ -161,7 +162,6 @@ class RecDataset(IterableDataset):
 
                 max_len = max(len(x[0]) for x in b)
                 if max_len < 2: continue
-                # print("----max_len----", max_len)
                 itemInput = [x[0] for x in b]
                 itemRes0 = np.array(
                     [x + [0] * (max_len - len(x)) for x in itemInput])
@@ -194,9 +194,10 @@ class RecDataset(IterableDataset):
                                 0:self.max_neg_item]
                     else:
                         len_seq = len(b[i][0])
-                        start_idx = random.randint(0, self.max_neg_item - len_seq - 1)
-                        self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
-                            i][0]
+                        start_idx = random.randint(
+                            0, self.max_neg_item - len_seq - 1)
+                        self.neg_candidate_item[start_idx:start_idx + len_seq +
+                                                1] = b[i][0]
 
                     if len(self.neg_candidate_cat) < self.max_neg_cat:
                         self.neg_candidate_cat.extend(b[i][1])
@@ -205,15 +206,18 @@ class RecDataset(IterableDataset):
                                 0:self.max_neg_cat]
                     else:
                         len_seq = len(b[i][1])
-                        start_idx = random.randint(0, self.max_neg_cat - len_seq - 1)
-                        self.neg_candidate_item[start_idx:start_idx + len_seq + 1] = b[
-                            i][1]
+                        start_idx = random.randint(
+                            0, self.max_neg_cat - len_seq - 1)
+                        self.neg_candidate_item[start_idx:start_idx + len_seq +
+                                                1] = b[i][1]
                     for _ in range(max_len):
-                        neg_item[i].append(self.neg_candidate_item[random.randint(
-                            0, len(self.neg_candidate_item) - 1)])
+                        neg_item[i].append(self.neg_candidate_item[
+                            random.randint(0, len(self.neg_candidate_item) -
+                                           1)])
                     for _ in range(max_len):
-                        neg_cat[i].append(self.neg_candidate_cat[random.randint(
-                            0, len(self.neg_candidate_cat) - 1)])                        
+                        neg_cat[i].append(self.neg_candidate_cat[
+                            random.randint(0, len(self.neg_candidate_cat) -
+                                           1)])
 
                 for i in range(len(b)):
                     res = []
@@ -227,6 +231,4 @@ class RecDataset(IterableDataset):
                     res.append(np.array(target_cat_seq[i]))
                     res.append(np.array(neg_item[i]).astype('int64'))
                     res.append(np.array(neg_cat[i]).astype('int64'))
-                   # res.append(np.array(len(item[i])+len(cat[i])))                    
-                    # print("----rest----reader---res---",res)
                     yield res

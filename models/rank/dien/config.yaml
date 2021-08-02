@@ -27,8 +27,8 @@ runner:
   save_checkpoint_path: "increment"
   save_inference_path: "inference"
   model_save_path: "output_model_all"
-  infer_batch_size: 32
-  infer_reader_path: "dinReader" # importlib format
+  infer_batch_size: 32 #100
+  infer_reader_path: "reader" # importlib format
   test_data_dir: "data/train_data"
   infer_load_path: "output_model_all"
   infer_start_epoch: 0
