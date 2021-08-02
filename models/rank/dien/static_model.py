@@ -15,6 +15,7 @@ import paddle.fluid as fluid
 #from net import DIENLayer, StaticDIENLayer
 from net import StaticDIENLayer
 
+
 class StaticModel():
     def __init__(self, config):
         self.cost = None
@@ -28,7 +29,8 @@ class StaticModel():
         if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
             self.distributed_embedding = True
 
-        self.item_emb_size = self.config.get("hyper_parameters.item_emb_size", 64)
+        self.item_emb_size = self.config.get("hyper_parameters.item_emb_size",
+                                             64)
         self.cat_emb_size = self.config.get("hyper_parameters.cat_emb_size",
                                             64)
         self.act = self.config.get("hyper_parameters.act", "sigmoid")
@@ -76,20 +78,18 @@ class StaticModel():
         self.data_var.append(target_cat_seq)
 
         neg_hist_item_seq = paddle.static.data(
-            name="neg_hist_item_seq",
-            shape=[None, seq_len],
-            dtype="int64")
+            name="neg_hist_item_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(neg_hist_item_seq)
 
         neg_hist_cat_seq = paddle.static.data(
-            name="neg_hist_cat_seq",
-            shape=[None, seq_len],
-            dtype="int64")
+            name="neg_hist_cat_seq", shape=[None, seq_len], dtype="int64")
         self.data_var.append(neg_hist_cat_seq)
 
         train_inputs = [hist_item_seq] + [hist_cat_seq] + [target_item] + [
             target_cat
-        ] + [label] + [mask] + [target_item_seq] + [target_cat_seq] + [neg_hist_item_seq] + [neg_hist_cat_seq]
+        ] + [label] + [mask] + [target_item_seq] + [target_cat_seq] + [
+            neg_hist_item_seq
+        ] + [neg_hist_cat_seq]
         return train_inputs
 
     def net(self, inputs, is_infer=False):
@@ -104,18 +104,19 @@ class StaticModel():
         self.neg_hist_item_seq = inputs[8]  # neg item sampling for aux loss
         self.neg_hist_cat_seq = inputs[9]  # neg cat sampling for aux loss
 
-        dien_model = StaticDIENLayer(self.item_emb_size, self.cat_emb_size, self.act,
-                             self.is_sparse, self.use_DataLoader,
-                             self.item_count, self.cat_count)
+        dien_model = StaticDIENLayer(
+            self.item_emb_size, self.cat_emb_size, self.act, self.is_sparse,
+            self.use_DataLoader, self.item_count, self.cat_count)
 
-        logit, aux_loss = dien_model(self.hist_item_seq, self.hist_cat_seq,
-                                self.target_item, self.target_cat, self.label,
-                                self.mask, self.target_item_seq,
-                                self.target_cat_seq, self.neg_hist_item_seq, self.neg_hist_cat_seq)
+        logit, aux_loss = dien_model(
+            self.hist_item_seq, self.hist_cat_seq, self.target_item,
+            self.target_cat, self.label, self.mask, self.target_item_seq,
+            self.target_cat_seq, self.neg_hist_item_seq, self.neg_hist_cat_seq)
 
         avg_loss = paddle.nn.functional.binary_cross_entropy_with_logits(
             logit, self.label, reduction='mean')
-        self._cost = avg_loss
+
+        self._cost = aux_loss + avg_loss
 
         self.predict = paddle.nn.functional.sigmoid(logit)
         predict_2d = paddle.concat([1 - self.predict, self.predict], 1)
@@ -129,7 +130,7 @@ class StaticModel():
             fetch_dict = {'auc': auc}
             return fetch_dict
 
-        fetch_dict = {'cost': avg_loss, 'auc': auc}
+        fetch_dict = {'cost': self._cost, 'auc': auc}
         return fetch_dict
 
     def create_optimizer(self, strategy=None):

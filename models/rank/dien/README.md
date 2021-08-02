@@ -1,4 +1,4 @@
-# 基于DIN模型的点击率预估模型
+# 基于DEIN模型的点击率预估模型
 以下是本例的简要目录结构及说明： 
 
 ```
@@ -9,10 +9,11 @@
 ├── __init__.py
 ├── README.md #文档
 ├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据配置
+├── config_big.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
-├── dinReader.py #数据读取程序
+├── reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
+|── static_model.py # 构建静态图
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -34,13 +35,13 @@
 
 ```text
 @inproceedings{
-  title={Deep Interest Network for Click-Through Rate Prediction},
-  author={Guorui Zhou, Chengru Song, Xiaoqiang Zhu, Ying Fan, Han Zhu, Xiao Ma, Yanghui Yan, Junqi Jin, Han Li, Kun Gai},
+  title={Deep Interest Evolution Network for Click-Through Rate Prediction},
+  author={Guorui Zhou, Na Mou, Ying Fan, Qi Pi, Weijie Bian, Chang Zhou, Xiaoqiang Zhou, Kun Gai},
   year={2019}
 }
 ```
 
-DIN模型引入Attention注意力机制，设计局部激活单元，刻画用户兴趣。
+DIEN模型引入GRU-Attention兴趣学习机制，设计局部激活单元，刻画用户兴趣。
 从用户关于某个物品的历史行为数据中，学习用户的兴趣表达。
 不同的商品/广告兴趣向量不同，从而提高模型的表达能力。
 
@@ -73,7 +74,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在din模型目录的快速执行命令如下： 
 ```
 # 进入模型目录
-cd models/rank/din 
+cd models/rank/dien 
 
 # 动态图训练
 python3 -u ../../../tools/trainer.py -m config.yaml 
@@ -99,9 +100,9 @@ cat_count:  品类的种类数目
 ```
 
 #### Loss及Acc计算
-- 本文Attention及模型组网，采用sigmoid激活函数
+- 本文采用AUGRU及模型组网，采用sigmoid激活函数
 - 预测的结果为一个sigmoid向量，表示推荐的商品广告被用户点击的概率
-- 样本的损失函数值由交叉熵给出，同时计算预测的auc
+- 样本的损失函数值由CTR_loss和Auxiliary_loss叠加组成，同时计算预测的auc
 
 ## 效果复现
 
@@ -115,14 +116,14 @@ cat_count:  品类的种类数目
 - 处理好的原始数据集下载执行方法：
 
 ```
-cd ./PaddleRec/datasets/amazonElec_Din
+cd ./PaddleRec/datasets/dien_data
 
 sh run.sh
 ```
 
 - 或自行进行原始数据下载预处理，执行方法如下：
 ```
-cd ./PaddleRec/datasets/amazonElec_Din
+cd ./PaddleRec/datasets/dien_data
 
 sh data_process.sh
 
@@ -131,12 +132,12 @@ python build_dataset.py
 
 - 脚本运行完成后，打开config.txt，
 将其中的商品的种类数目（第二行数值）、品类的种类数目信息（第三行数值），
-copy到config_bigdata.yaml里，替换超参数item_count cat_count  
+copy到config_big.yaml里，替换超参数item_count cat_count  
 
 ### 模型训练及效果复现
 - 动态图训练，运行：
 ```
-python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
+python3 -u ../../../tools/trainer.py -m config_big.yaml
 
 ```
 
@@ -144,7 +145,7 @@ python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.826 | 10 | 3 | 约7.5小时 | 
+| DIEN |      | 32 | 50 |   | 
 
 - 动态图训练日志
 ```
@@ -164,7 +165,7 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 | 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.899 | 10 | 13 | 约21小时 | 
+| DIEN |         |      32 |       50 |       | 
 
 - 静态图训练日志
 ```
@@ -179,9 +180,9 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ### 模型预测及效果复现
 ```
 # 动态图预测
-python3 -u ../../../tools/infer.py -m config_bigdata.yaml
+python3 -u ../../../tools/infer.py -m config_big.yaml
 
 # 静态图预测
-python3 -u ../../../tools/static_infer.py -m config_bigdata.yaml
+python3 -u ../../../tools/static_infer.py -m config_big.yaml
 ```
-- 对标预测AUC：0.86
+- 对标预测AUC：0.7792+/-0.00243
