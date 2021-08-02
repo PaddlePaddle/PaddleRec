@@ -14,18 +14,18 @@
 
 
 runner:
-  train_data_dir: "data/sample_data"
+  train_data_dir: "./data/sample_data"
   train_reader_path: "reader" # importlib format
   use_gpu: True
   use_auc: True
-  train_batch_size: 32
+  train_batch_size: 8
   epochs: 10
   print_interval: 1
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_deepCross"
-  test_data_dir: "data/sample_data"
+  test_data_dir: "./data/sample_data"
   infer_reader_path: "reader" # importlib format
-  infer_batch_size: 32
+  infer_batch_size: 8
   infer_load_path: "output_model_deepCross"
   infer_start_epoch: 0
   infer_end_epoch: 10
