@@ -83,10 +83,10 @@ python3 -u ../../../tools/trainer.py -m config.yaml
 python3 -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml 
+python3 -u ../../../tools/static_trainer.py -m config.yaml 
 
 # 静态图预测
-python -u ../../../tools/static_infer.py -m config.yaml 
+python3 -u ../../../tools/static_infer.py -m config.yaml 
 ```
 
 
@@ -116,18 +116,19 @@ cat_count:  品类的种类数目
 - 处理好的原始数据集下载执行方法：
 
 ```
-cd ./PaddleRec/datasets/dien_data
+cd ./PaddleRec/datasets/amazonElec_Din
 
 sh run.sh
 ```
 
 - 或自行进行原始数据下载预处理，执行方法如下：
 ```
-cd ./PaddleRec/datasets/dien_data
+cd ./PaddleRec/datasets/amazonElec_Din
 
 sh data_process.sh
 
 python build_dataset.py
+
 ```
 
 - 脚本运行完成后，打开config.txt，
@@ -180,9 +181,9 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ### 模型预测及效果复现
 ```
 # 动态图预测
-python3 -u ../../../tools/infer.py -m config_big.yaml
+python -u ../../../tools/infer.py -m config_big.yaml
 
 # 静态图预测
-python3 -u ../../../tools/static_infer.py -m config_big.yaml
+python -u ../../../tools/static_infer.py -m config_big.yaml
 ```
 - 对标预测AUC：0.7792+/-0.00243

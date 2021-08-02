@@ -14,7 +14,7 @@
 # global settings
 
 runner:
-  train_data_dir: "../../../../../../din_compare/paddleRecV2/PaddleRec/datasets/amazonElec_Din/train" # "data/train_data"
+  train_data_dir: "../../../datasets/amazonElec_Din/train" 
   train_reader_path: "reader"
 # train_reader_path: "dienReader" # importlib format
   use_gpu: False
@@ -29,7 +29,7 @@ runner:
   model_save_path: "output_model_big"
   infer_batch_size: 32
   infer_reader_path: "reader" # importlib format
-  test_data_dir: "../../../../../../din_compare/paddleRecV2/PaddleRec/datasets/amazonElec_Din/test"
+  test_data_dir: "../../../datasets/amazonElec_Din/test"
   infer_load_path: "output_model_big"
   infer_start_epoch: 0
   infer_end_epoch: 10
