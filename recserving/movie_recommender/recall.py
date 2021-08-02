@@ -23,9 +23,13 @@ from proto import recall_pb2
 from proto import recall_pb2_grpc 
 from proto import user_info_pb2 as user_info_pb2
 import redis
-from milvus import Milvus, DataType
+# from milvus import Milvus, DataType
 from paddle_serving_app.local_predict import LocalPredictor
 import numpy as np
+
+import sys
+sys.path.append("..")
+from milvus_tool.milvus_recall import RecallByMilvus
 
 def hash2(a):
     return hash(a) % 60000000
@@ -34,9 +38,9 @@ class RecallServerServicer(object):
     def __init__(self):
         self.uv_client = LocalPredictor()
         self.uv_client.load_model_config("user_vector_model/serving_server_dir") 
-        milvus_host = '127.0.0.1'
-        milvus_port = '19530'
-        self.milvus_client = Milvus(milvus_host, milvus_port)
+        # milvus_host = '127.0.0.1'
+        # milvus_port = '19530'
+        self.milvus_client = RecallByMilvus()
         self.collection_name = 'demo_films'
 
     def get_user_vector(self, user_info):
@@ -83,26 +87,14 @@ class RecallServerServicer(object):
         recall_res = recall_pb2.RecallResponse()
         user_vector = self.get_user_vector(request.user_info)
 
-        query_hybrid = {
-             "bool": {
-               "must": [
-                    {
-                       "vector": {
-                          "embedding": {"topk": 100, "query": [user_vector], "metric_type": "L2"}
-                        }
-                    }
-                ]
-              }
-        }
-
-        results = self.milvus_client.search(self.collection_name, query_hybrid, fields=["embedding"])
+        status, results = self.milvus_client.search(collection_name=self.collection_name, vectors=[user_vector], partition_tag="Movie")
         for entities in results:
             if len(entities) == 0:
                 recall_res.error.code = 500
                 recall_res.error.text = "Recall server get milvus fail. ({})".format(str(request))
                 return recall_res
             for topk_film in entities:
-                current_entity = topk_film.entity
+                # current_entity = topk_film.entity
                 score_pair = recall_res.score_pairs.add()
                 score_pair.nid = str(topk_film.id)
                 score_pair.score = float(topk_film.distance)

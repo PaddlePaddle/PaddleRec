@@ -144,7 +144,7 @@ class NAMLLayer(nn.Layer):
         self.content_attention = self.make_attention_layer(
             "content_attention",
             [self.conv_out_channel_size, self.attention_projection_size])
-        print(self.word2vec_embedding)
+        #print(self.word2vec_embedding)
 
     def make_attention_layer(self, name_base, size):
         row = size[0]
@@ -182,7 +182,7 @@ class NAMLLayer(nn.Layer):
 
         return func
 
-    def forward(self, sparse_inputs, dense_inputs):
+    def forward(self, sparse_inputs):
         cate_sample, cate_visit, sub_cate_sample, sub_cate_visit, title_sample, title_visit, content_sample, content_visit = sparse_inputs[:]
         cate = paddle.concat([cate_sample, cate_visit], axis=-1)
         sub_cate = paddle.concat([sub_cate_sample, sub_cate_visit], axis=-1)

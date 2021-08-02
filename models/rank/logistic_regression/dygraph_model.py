@@ -38,9 +38,9 @@ class DygraphModel():
         label = paddle.to_tensor(batch_data[0].numpy().astype('int64').reshape(
             -1, 1))
         feat_idx = paddle.to_tensor(batch_data[1].numpy().astype('int64')
-                                    .reshape(-1, 1))
+                                    .reshape(-1, num_field))
         raw_feat_value = paddle.to_tensor(batch_data[2].numpy().astype(
-            'float32').reshape(-1, 1))
+            'float32').reshape(-1, num_field))
         feat_value = paddle.reshape(raw_feat_value,
                                     [-1, num_field])  # None * num_field * 1
         return label, feat_idx, feat_value
@@ -50,7 +50,7 @@ class DygraphModel():
         cost = paddle.nn.functional.log_loss(
             input=pred, label=paddle.cast(
                 label, dtype="float32"))
-        avg_cost = paddle.mean(x=cost)
+        avg_cost = paddle.sum(x=cost)
         return avg_cost
 
     # define optimizer 

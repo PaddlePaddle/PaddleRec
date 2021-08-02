@@ -92,5 +92,5 @@ if neg_num > 0:
     print("query_num:{}".format(query_num))
     print("pair_num:{} , {}".format(pos_num + neg_num + equal_num, pair_num))
     print("equal_num:{}".format(equal_num))
-    print("正序率: {}".format(1.0 * pos_num / (pos_num + neg_num)))
+    print("PNR: {}".format(1.0 * pos_num / (pos_num + neg_num)))
 print("pos_num: {} , neg_num: {}".format(pos_num, neg_num))
