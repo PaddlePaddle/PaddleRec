@@ -16,6 +16,7 @@ from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy
 from utils.static_ps.common import YamlHelper, is_distributed_env
+from utils.utils_single import auc
 import argparse
 import time
 import sys
@@ -25,6 +26,8 @@ import paddle
 import os
 import warnings
 import logging
+from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+fleet_util = FleetUtil()
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -63,6 +66,7 @@ class Main(object):
         self.PSGPU = None
         self.train_result_dict = {}
         self.train_result_dict["speed"] = []
+        self.train_result_dict["auc"] = []
 
     def run(self):
         fleet.init()
@@ -94,6 +98,7 @@ class Main(object):
     def run_worker(self):
         logger.info("Run Worker Begin")
         use_cuda = int(config.get("runner.use_gpu"))
+        use_auc = config.get("runner.use_auc", False)
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
 
@@ -118,11 +123,16 @@ class Main(object):
         gpus_env = os.getenv("FLAGS_selected_gpus")
         self.PSGPU = paddle.fluid.core.PSGPU()
         gpuslot = [int(i) for i in range(1, self.model.sparse_inputs_slots)]
-        print("gpuslot: {}".format(gpuslot))
         self.PSGPU.set_slot_vector(gpuslot)
         self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
         opt_info = paddle.fluid.default_main_program()._fleet_opt
-        opt_info['stat_var_names'] = []
+        if use_auc is True:
+            opt_info['stat_var_names'] = [
+                self.model.stat_pos.name, self.model.stat_neg.name
+            ]
+        else:
+            opt_info['stat_var_names'] = []
+
         for epoch in range(epochs):
             epoch_start_time = time.time()
 
@@ -140,9 +150,26 @@ class Main(object):
 
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
-            logger.info(
-                "Epoch: {}, using time {} second, ips {} {}/sec.".format(
-                    epoch, epoch_time, epoch_speed, self.count_method))
+            if use_auc is True:
+                global_auc = auc(self.model.stat_pos, self.model.stat_neg,
+                                 paddle.fluid.global_scope(), fleet.util)
+                self.train_result_dict["auc"].append(global_auc)
+                fleet_util.set_zero(self.model.stat_pos.name,
+                                    paddle.fluid.global_scope())
+                fleet_util.set_zero(self.model.stat_neg.name,
+                                    paddle.fluid.global_scope())
+                fleet_util.set_zero(self.model.batch_stat_pos.name,
+                                    paddle.fluid.global_scope())
+                fleet_util.set_zero(self.model.batch_stat_neg.name,
+                                    paddle.fluid.global_scope())
+                logger.info(
+                    "Epoch: {}, using time {} second, ips {} {}/sec. auc: {}".
+                    format(epoch, epoch_time, epoch_speed, self.count_method,
+                           global_auc))
+            else:
+                logger.info(
+                    "Epoch: {}, using time {} second, ips {} {}/sec.".format(
+                        epoch, epoch_time, epoch_speed, self.count_method))
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
@@ -178,7 +205,11 @@ class Main(object):
         self.reader.load_into_memory()
         print("self.reader.load_into_memory cost :{} seconds".format(time.time(
         ) - start_time))
+
+        begin_pass_time = time.time()
         self.PSGPU.begin_pass()
+        print("begin_pass cost:{} seconds".format(time.time() -
+                                                  begin_pass_time))
 
         logger.info("Epoch: {}, Running Dataset Begin.".format(epoch))
         fetch_info = [
@@ -190,9 +221,6 @@ class Main(object):
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=self.reader,
-            #fetch_list=fetch_vars,
-            #fetch_info=fetch_info,
-            #print_period=print_step,
             debug=config.get("runner.dataset_debug"))
 
     def dataloader_train_loop(self, epoch):
