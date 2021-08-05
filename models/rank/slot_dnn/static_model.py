@@ -15,7 +15,7 @@
 import math
 import paddle
 
-from net import DNNLayer, StaticDNNLayer
+from net import BenchmarkDNNLayer
 
 
 class StaticModel():
@@ -33,73 +33,53 @@ class StaticModel():
         if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
             self.distributed_embedding = True
 
-        self.sparse_feature_number = self.config.get(
-            "hyper_parameters.sparse_feature_number")
-        self.sparse_feature_dim = self.config.get(
-            "hyper_parameters.sparse_feature_dim")
-        self.sparse_inputs_slots = self.config.get(
-            "hyper_parameters.sparse_inputs_slots")
-        self.dense_input_dim = self.config.get(
-            "hyper_parameters.dense_input_dim")
+        self.dict_dim = self.config.get("hyper_parameters.dict_dim")
+        self.emb_dim = self.config.get("hyper_parameters.emb_dim")
+        self.slot_num = self.config.get("hyper_parameters.slot_num")
         self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
-        self.fc_sizes = self.config.get("hyper_parameters.fc_sizes")
+        self.layer_sizes = self.config.get("hyper_parameters.layer_sizes")
 
     def create_feeds(self, is_infer=False):
-        dense_input = paddle.static.data(
-            name="dense_input",
-            shape=[None, self.dense_input_dim],
-            dtype="float32")
 
-        sparse_input_ids = [
+        slot_ids = [
             paddle.static.data(
-                name="C" + str(i), shape=[None, 1], dtype="int64")
-            for i in range(1, self.sparse_inputs_slots)
+                name=str(i), shape=[None, 1], dtype="int64", lod_level=1)
+            for i in range(2, self.slot_num + 2)
         ]
 
         label = paddle.static.data(
-            name="label", shape=[None, 1], dtype="int64")
+            name="1", shape=[None, 1], dtype="int64", lod_level=1)
 
-        feeds_list = [label] + sparse_input_ids + [dense_input]
+        feeds_list = [label] + slot_ids
         return feeds_list
 
     def net(self, input, is_infer=False):
         self.label_input = input[0]
-        self.sparse_inputs = input[1:self.sparse_inputs_slots]
-        self.dense_input = input[-1]
-        sparse_number = self.sparse_inputs_slots - 1
+        self.slot_inputs = input[1:]
 
-        dnn_model = DNNLayer(
-            self.sparse_feature_number,
-            self.sparse_feature_dim,
-            self.dense_input_dim,
-            sparse_number,
-            self.fc_sizes,
+        dnn_model = BenchmarkDNNLayer(
+            self.dict_dim,
+            self.emb_dim,
+            self.slot_num,
+            self.layer_sizes,
             sync_mode=self.sync_mode)
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+        self.predict = dnn_model(self.slot_inputs)
 
-        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
-
-        self.predict = predict_2d
-
-        auc, batch_auc, [
-            self.batch_stat_pos, self.batch_stat_neg, self.stat_pos,
-            self.stat_neg
-        ] = paddle.static.auc(input=self.predict,
-                              label=self.label_input,
-                              num_thresholds=2**12,
-                              slide_steps=20)
+        predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
+        #label_int = paddle.cast(self.label, 'int64')
+        auc, batch_auc_var, _ = paddle.static.auc(input=predict_2d,
+                                                  label=self.label_input,
+                                                  slide_steps=0)
         self.inference_target_var = auc
         if is_infer:
             fetch_dict = {'auc': auc}
             return fetch_dict
-
-        cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict_2d, label=self.label_input)
-        avg_cost = paddle.mean(x=cost)
+        cost = paddle.nn.functional.log_loss(
+            input=self.predict, label=paddle.cast(self.label_input, "float32"))
+        avg_cost = paddle.sum(x=cost)
         self._cost = avg_cost
-
         fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict
 

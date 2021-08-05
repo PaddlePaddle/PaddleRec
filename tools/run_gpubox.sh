@@ -1,5 +1,4 @@
 # !/bin/bash
-
 if [ ! -d "./log" ]; then
   mkdir ./log
   echo "Create log floder for store running log"
@@ -29,7 +28,7 @@ do
     cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
     echo "PADDLE WILL START PSERVER "$cur_port
     export PADDLE_PORT=${cur_port}
-    python -u $SC &> ./log/pserver.$i.log &
+    python3.7 -u $SC &> ./log/pserver.$i.log &
 done
 
 # run trainer
@@ -38,7 +37,7 @@ for((i=0;i<$PADDLE_TRAINERS;i++))
 do
     echo "PADDLE WILL START Trainer "$i
     export PADDLE_TRAINER_ID=$i
-    python -u $SC &> ./log/worker.$i.log
+    python3.7 -u $SC &> ./log/worker.$i.log
 done
 
 echo "Training log stored in ./log/"
