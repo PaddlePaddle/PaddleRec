@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
-from utils.static_ps.program_helper import get_model, get_strategy
+from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
@@ -86,6 +86,7 @@ class Main(object):
     def network(self):
         self.model = get_model(self.config)
         self.input_data = self.model.create_feeds()
+        self.inference_feed_var = self.model.create_feeds(is_infer=True)
         self.init_reader()
         self.metrics = self.model.net(self.input_data)
         self.inference_target_var = self.model.inference_target_var
@@ -152,11 +153,12 @@ class Main(object):
                 if is_distributed_env():
                     fleet.save_inference_model(
                         self.exe, model_dir,
-                        [feed.name for feed in self.input_data],
+                        [feed.name for feed in self.inference_feed_var],
                         self.inference_target_var)
                 else:
                     paddle.fluid.io.save_inference_model(
-                        model_dir, [feed.name for feed in self.input_data],
+                        model_dir,
+                        [feed.name for feed in self.inference_feed_var],
                         [self.inference_target_var], self.exe)
 
         if reader_type == "InmemoryDataset":
@@ -186,13 +188,24 @@ class Main(object):
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
+
+        debug = config.get("runner.dataset_debug", False)
+        if config.get("runner.need_dump"):
+            debug = True
+            dump_fields_path = "{}/{}".format(
+                config.get("runner.dump_fields_path"), epoch)
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": dump_fields_path,
+                "dump_fields": config.get("runner.dump_fields")
+            })
+        print(paddle.static.default_main_program()._fleet_opt)
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=self.reader,
             fetch_list=fetch_vars,
             fetch_info=fetch_info,
             print_period=print_step,
-            debug=config.get("runner.dataset_debug"))
+            debug=debug)
 
     def dataloader_train_loop(self, epoch):
         logger.info("Epoch: {}, Running DataLoader Begin.".format(epoch))
