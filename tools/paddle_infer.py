@@ -73,6 +73,9 @@ def init_predictor(args):
             config = Config(args.model_dir)
         elif pdmodel_name and pdiparams_name:
             config = Config(pdmodel_name, pdiparams_name)
+        else:
+            raise ValueError(
+                "config setting error, please check your model path")
     else:
         config = Config(args.model_file, args.params_file)
 
