@@ -16,6 +16,7 @@ from __future__ import print_function
 import numpy as np
 from paddle.io import IterableDataset
 
+
 class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
@@ -51,8 +52,13 @@ class RecDataset(IterableDataset):
                         if slot not in self.slots:
                             continue
                         if slot in self.sparse_slots:
+                            if slot_feasign[1] == None or slot_feasign[
+                                    1] == "":
+                                continue
                             feasign = int(slot_feasign[1])
                         else:
+                            if slot_feasign[1] == None:
+                                continue
                             feasign = float(slot_feasign[1])
                         output[self.slot2index[slot]][1].append(feasign)
                         self.visit[slot] = True
