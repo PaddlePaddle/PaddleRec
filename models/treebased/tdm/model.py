@@ -31,7 +31,7 @@ class FullyConnected3D(object):
         self.output_dim = output_dim
 
     def call(self, bottom_data):
-        print "call FullyConnected3D"
+        print("call FullyConnected3D")
 
         net_out = paddle.static.nn.fc(
             bottom_data,
@@ -59,7 +59,7 @@ class FullyConnected3D(object):
         #         initializer=fluid.initializer.Constant(0.1)))
 
         if self.active_op == 'prelu':
-            print "in FullyConnected3D use prelu"
+            print("in FullyConnected3D use prelu")
             net_out = paddle.static.nn.prelu(
                 net_out,
                 'channel',
@@ -84,7 +84,7 @@ class paddle_dnn_layer(object):
         self.output_dim = output_dim
 
     def call(self, bottom_data):
-        print "if mx.symbol.FullyConnected"
+        print("if mx.symbol.FullyConnected")
         out = paddle.static.nn.fc(
             bottom_data,
             size=self.output_dim,
@@ -109,7 +109,7 @@ class paddle_dnn_layer(object):
         #         initializer=fluid.initializer.Constant(0.1)))
 
         if self.use_batch_norm:
-            print "if self.use_batch_norm:"
+            print("if self.use_batch_norm:")
             batch_norm = paddle.nn.BatchNorm(
                 self.output_dim,
                 epsilon=1e-03,
@@ -122,7 +122,7 @@ class paddle_dnn_layer(object):
             out = batch_norm(out)
 
         if self.active_op == 'prelu':
-            print "if self.active_op == 'prelu':"
+            print("if self.active_op == 'prelu':")
             out = paddle.static.nn.prelu(
                 out,
                 'channel',
@@ -142,7 +142,8 @@ def dnn_model_define(user_input,
                      with_att=False):
     fea_groups = [int(s) for s in fea_groups.split(',')]
     total_group_length = np.sum(np.array(fea_groups))
-    print "fea_groups", fea_groups, "total_group_length", total_group_length, "eb_dim", node_emb_size
+    print("fea_groups", fea_groups, "total_group_length", total_group_length,
+          "eb_dim", node_emb_size)
 
     layer_data = []
     # start att
@@ -184,7 +185,9 @@ def dnn_model_define(user_input,
     for group_length in fea_groups:
         block_before_sum = paddle.slice(
             user_input, axes=[1], starts=[idx], ends=[idx + group_length])
-        block = paddle.sum(block_before_sum, axis=1) / group_length
+        #block = paddle.sum(block_before_sum, axis=1) / group_length
+        norm = 1.0 / group_length
+        block = paddle.sum(block_before_sum, axis=1) * norm
         grouped_user_input.append(block)
         idx += group_length
     grouped_user_input = paddle.concat(

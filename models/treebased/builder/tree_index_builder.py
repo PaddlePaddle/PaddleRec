@@ -220,7 +220,7 @@ class TreeIndexBuilder:
         return left_index, right_index
 
     def _rebalance(self, lindex, rindex, distances):
-        sorted_index = rindex[np.argsort(distances)]
+        sorted_index = rindex[np.argsort(distances)[::-1]]
         idx = np.concatenate((lindex, sorted_index))
         mid = int(len(idx) / 2)
         return idx[mid:], idx[:mid]
@@ -285,7 +285,8 @@ class TreeIndexBuilder:
             tree_meta.branch = self.branch
             tree_meta.height = max_level
             kv_item = index_dataset_pb2.KVItem()
-            kv_item.key = '.tree_meta'
+            kv_item.key = '.tree_meta'.encode('utf-8')
+
             kv_item.value = tree_meta.SerializeToString()
             self._write_kv(f, kv_item.SerializeToString())
 
@@ -297,7 +298,7 @@ class TreeIndexBuilder:
         return ancs
 
     def _make_key(self, code):
-        return str(code)
+        return str(code).encode('utf-8')
 
     def _write_kv(self, fwr, message):
         fwr.write(struct.pack('i', len(message)))
