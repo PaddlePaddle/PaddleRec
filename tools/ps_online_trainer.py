@@ -1,9 +1,13 @@
 from __future__ import print_function
 
 import random
+from pathlib import Path
+from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
+import time
+import sys
 import paddle.distributed.fleet as fleet
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle
@@ -14,6 +18,7 @@ import logging
 import os
 import sys
 import time
+import common
 import paddle.fluid as fluid
 from paddle.fluid import core
 from paddle.fluid.log_helper import get_logger
@@ -33,10 +38,11 @@ class Training(object):
         self.exe = None
         self.hadoop_fs_name = config.get("hadoop_fs_name")
         self.hadoop_fs_ugi = config.get("hadoop_fs_ugi")
+        self.reader_type = "QueueDataset"
 
     def run(self):
-        role = role_maker.PaddleCloudRoleMaker()
-        fleet.init(role)
+        #role = role_maker.PaddleCloudRoleMaker()
+        fleet.init()
         self.init_network()
         if fleet.is_server():
             self.run_server()
@@ -53,7 +59,7 @@ class Training(object):
         # for path in train_data_dir:
         #     file_list += [path + "/%s" % x for x in os.listdir(path)]
         file_list = [train_data_dir + "/%s" % x for x in os.listdir(train_data_dir)]
-        pass_num = int(self.config.get("runner.pass_num",10))
+        pass_num = int(self.config.get("runner.pass_num",3))
         if pass_num >= len(file_list):
             split_file_index = [i for i in range(len(file_list))]
         else:
@@ -76,11 +82,11 @@ class Training(object):
 
     def save_xbox_model(self, output_path,day,pass_id):
         if pass_id != "-1":
-            mode = "patch"
+            mode = 1
             suffix_name = "/%s/delta-%s/" % (day, pass_id)
             model_path = output_path.rstrip("/") + suffix_name
         else:
-            mode = "base"
+            mode = 2
             suffix_name = "/%s/base/" % day
             model_path = output_path.rstrip("/") + suffix_name
         fleet.save_persistables(executor=self.exe,dirname=model_path,mode=mode)
@@ -95,6 +101,7 @@ class Training(object):
                             hadoop_fs_ugi,
                             hadoop_home="$HADOOP_HOME",
                             donefile_name=None):
+        print("in write_xbox_donefile day = ",day, " pass-id = ",pass_id)
         day = str(day)
         pass_id = str(pass_id)
         xbox_base_key = int(model_base_key)
@@ -117,6 +124,7 @@ class Training(object):
             donefile_path = output_path + "/" + donefile_name
             xbox_str = self._get_xbox_str(model_path=model_path, xbox_base_key=xbox_base_key,
                                           mode=mode)
+            print("xbox str",xbox_str)
             if hadoop_fs_name is not None and hadoop_fs_ugi is not None:
                 configs = {
                     "fs.default.name": hadoop_fs_name,
@@ -125,7 +133,10 @@ class Training(object):
                 client = HDFSClient(hadoop_home, configs)
                 if client.is_file(donefile_path):
                     pre_content = client.cat(donefile_path)
-                    last_dict = json.loads(pre_content.split("\n")[-1])
+                    last_line = pre_content.split("\n")[-1]
+                    if last_line == '':
+                        last_line = pre_content.split("\n")[-2]
+                    last_dict = json.loads(last_line)
                     last_day = last_dict["input"].split("/")[-3]
                     last_pass = last_dict["input"].split("/")[-2].split("-")[-1]
                     exist = False
@@ -159,18 +170,26 @@ class Training(object):
                     logger.info("write %s/%s %s success" % \
                                      (day, pass_id, donefile_name))
             else:
-                with open(donefile_path) as f:
+                file = Path(donefile_path)
+                if not file.is_file():
+                    with open(donefile_path, "w") as f:
+                        f.write(xbox_str + "\n")
+                    return
+                with open(donefile_path,encoding='utf-8') as f:
                     pre_content = f.read()
-                last_dict = json.loads(pre_content.split("\n")[-1])
+                exist = False
+                last_line = pre_content.split("\n")[-1]
+                if last_line == '':
+                    last_line = pre_content.split("\n")[-2]
+                last_dict = json.loads(last_line,strict=False)
                 last_day = last_dict["input"].split("/")[-3]
                 last_pass = last_dict["input"].split("/")[-2].split("-")[-1]
-                exist = False
                 if int(day) < int(last_day) or \
                         int(day) == int(last_day) and \
                         int(pass_id) <= int(last_pass):
                     exist = True
                 if not exist:
-                    with open(donefile_name, "w") as f:
+                    with open(donefile_path, "w") as f:
                         f.write(pre_content + "\n")
                         f.write(xbox_str + "\n")
 
@@ -186,7 +205,7 @@ class Training(object):
         elif mode == "patch":
             xbox_dict["id"] = str(int(time.time()))
         else:
-            print("warning: unknown mode %s, set it to patch" % mode)
+            logger.info("warning: unknown mode %s, set it to patch" % mode)
             mode = "patch"
             xbox_dict["id"] = str(int(time.time()))
         xbox_dict["key"] = str(xbox_base_key)
@@ -196,20 +215,24 @@ class Training(object):
         return json.dumps(xbox_dict)
 
     def init_network(self):
-        model = get_model(self.config)
-        self.input_data = model.create_feeds()
-        self.metrics = model.net(self.input_data)
-        self.inference_target_var = model.inference_target_var
-        self.predict = model.predict
+        self.model = get_model(self.config)
+        self.input_data = self.model.create_feeds()
+        self.inference_feed_var = self.model.create_feeds(is_infer=True)
+        self.metrics = self.model.net(self.input_data)
+        self.inference_target_var = self.model.inference_target_var
+        self.predict = self.model.predict
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-        model.create_optimizer(get_strategy(self.config))
+        self.model.create_optimizer(get_strategy(self.config))
+
 
     def run_server(self):
         logger.info("Run Server Begin")
-        fleet.init_server(config.get("runner.warmup_model_path"))
+        fleet.init_server(config.get("runner.warmup_model_path","./warmup"))
         fleet.run_server()
 
     def prepare_dataset(self, pass_index):
+        #dataset, file_list = get_reader(self.input_data, config)
+
         dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
@@ -219,7 +242,13 @@ class Training(object):
         else:
             next_index = self.split_file_index[pass_index + 1]
         dataset.set_filelist(self.file_list[self.split_file_index[pass_index]:next_index])
+        pipe_command = self.config.get("runner.pipe_command")
         dataset.set_pipe_command(self.config.get("runner.pipe_command"))
+        utils_path = common.get_utils_file_path()
+        print("utils_path: {}".format(utils_path))
+        dataset.set_pipe_command("{} {} {}".format(pipe_command,
+                                              config.get("yaml_path"),
+                                              utils_path))
         dataset.load_into_memory()
         return dataset
 
@@ -229,12 +258,11 @@ class Training(object):
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
         self.exe.run(paddle.static.default_startup_program())
-        #fleet.init_worker()
+        fleet.init_worker()
         self.split_trainfile()
-
         save_model_path = self.config.get("runner.model_save_path")
-        warm_start_model_path = config.get("runner.warm_start_model_path")
-        donefile_path = self.config.get("runner.donefile_path")
+        self.warm_start_model_path = config.get("runner.warm_start_model_path","./warmup")
+        donefile_path = self.config.get("runner.donefile_path","./done")
         if save_model_path and (not os.path.exists(save_model_path)):
             os.makedirs(save_model_path)
 
@@ -270,25 +298,35 @@ class Training(object):
             dataset.release_memory()
             if fleet.is_first_worker() and save_model_path:
                 if not base_model_saved:
+                    logger.info("start to save inference model")
                     fleet.save_inference_model(
                         self.exe, save_model_path,
-                        [feed.name for feed in self.input_data],
-                        self.predict)
+                        [feed.name for feed in self.inference_feed_var],
+                        self.inference_target_var)
                     base_model_saved = True
+                    logger.info("model saved")
                     self.save_xbox_model(save_model_path,0,-1) #2 base
-                    self.write_xbox_donefile(donefile_path,-1,model_base_key,self.hadoop_fs_name,self.hadoop_fs_ugi)
+                    logger.info("donefile_path = ",donefile_path) #
+                    self.write_xbox_donefile(output_path=save_model_path,day=0,pass_id="-1",model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
                 else:
                     self.save_xbox_model(save_model_path,0,index)  #1 delta
-                    self.write_xbox_donefile(donefile_path, index, model_base_key,self.hadoop_fs_name,self.hadoop_fs_ugi)
-                if index == len(self.pass_num) -1:
+                    self.write_xbox_donefile(output_path=save_model_path,day=0, pass_id=str(index), model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
+                if index == self.file_pass_num -1:
                     fleet.save_inference_model(
-                        self.exe, warm_start_model_path,
-                        [feed.name for feed in self.input_data],
-                        self.predict,
+                        self.exe, self.warm_start_model_path,
+                        [feed.name for feed in self.inference_feed_var],
+                        self.inference_target_var,
                         mode=0) #0 save checkpoints
 
 
 if __name__ == "__main__":
+    # with open("./xbox_patch_done.txt") as o:
+    #     pre_content = o.read()
+    #     pp = pre_content.split("\n")[-2]
+    #     print("pp ",pp)
+    #     # for i in range(len(pp)):
+    #     #     print(i," ",pp[i],int(pp[i]))
+    #     last_dict = json.loads(pp,strict=False)
     paddle.enable_static()
     parser = argparse.ArgumentParser("PaddleRec train script")
     parser.add_argument(
