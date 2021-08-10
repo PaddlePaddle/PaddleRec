@@ -117,9 +117,10 @@ cd ../builder && python tree_index_builder.py --mode by_kmeans --input ../tdm/ep
 ```
 ./data_prepare.sh user_behavior
 ```
-2. 剩余步骤参考[快速开始](#快速开始)Step1-6（注意替换：config.yaml->config_ub.yaml、output_model_tdm_demo->output_model_tdm_ub、demo_data->ub_data_new）
-3. 如需分布式训练，[详细教程请戳这里](https://fleet-x.readthedocs.io/en/latest/paddle_fleet_rst/paddle_on_k8s.html#)
-
+2. 剩余步骤参考[快速开始](#快速开始)Step1-6
+```
+注意替换：config.yaml->config_ub.yaml、output_model_tdm_demo->output_model_tdm_ub、demo_data->ub_data_new
+```
 ## 进阶使用
   
 ## FAQ
