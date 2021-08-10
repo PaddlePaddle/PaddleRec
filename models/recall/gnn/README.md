@@ -140,9 +140,10 @@ max_uniq_len: 11
 
 ### 结果展示
 基于动态图样例数据训练结果展示：
-![train_demo.png]
+![train_demo.png](train_demo.png)
+
 基于动态图样例数据测试结果展示：
-![test_demo.png]
+![test_demo.png](test_demo.png)
 
 ### 论文复现
 用原论文的完整数据复现论文效果需要在static_config.yaml修改超参：
