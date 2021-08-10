@@ -35,7 +35,7 @@ def get_emb_numpy(tree_node_num, node_emb_size, init_model_path=""):
         is_sparse=True,
         size=[tree_node_num, node_emb_size],
         param_attr=fluid.ParamAttr(
-            name="TDM_Tree_Emb",
+            name="tdm.bw_emb.weight",
             initializer=paddle.fluid.initializer.UniformInitializer()))
 
     place = fluid.CPUPlace()
@@ -43,9 +43,12 @@ def get_emb_numpy(tree_node_num, node_emb_size, init_model_path=""):
 
     exe.run(fluid.default_startup_program())
     if init_model_path != "":
-        fluid.io.load_persistables(exe, init_model_path)
+        #fluid.io.load_persistables(exe, init_model_path)
+        paddle.static.load(paddle.static.default_main_program(),
+                           init_model_path + '/rec_static')
 
-    return np.array(fluid.global_scope().find_var("TDM_Tree_Emb").get_tensor())
+    return np.array(fluid.global_scope().find_var("tdm.bw_emb.weight")
+                    .get_tensor())
 
 
 if __name__ == '__main__':
@@ -71,7 +74,7 @@ if __name__ == '__main__':
     with open(sys.argv[3], 'w') as fout:
         for node in all_leafs:
             node_id = node.id()
-            emb_vec = map(str, tensor[node_id].tolist())
+            emb_vec = list(map(str, tensor[node_id].tolist()))
             emb_vec = [str(node_id)] + emb_vec
             fout.write(",".join(emb_vec))
             fout.write("\n")

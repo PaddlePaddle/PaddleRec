@@ -30,19 +30,15 @@ class Reader():
         self.item_nums = item_nums
 
     def line_process(self, line):
-        #378254_6|378254_6|train_unit_id@1045081:1.0;item_59@4856095;item_65@1821603;item_64@3598037;item_67@3423855;item_66@3598037;item_61@596274;item_60@3885113;item_63@3338392;item_62@643355;item_69@4951278;item_68@3308390||1.0|
-        features = line.strip().split("|")[2].split(";")
-        groudtruth = []
-        output_list = [0] * self.item_nums
-        for item in features:
-            f = item.split("@")
-            if f[0] == "test_unit_id":
-                groudtruth = f[1].split(",")
-                groudtruth = [int(g.split(":")[0]) for g in groudtruth]
-            else:
-                output_list[int(f[0].split('_')[1]) - 1] = int(f[1])
+        history_ids = [0] * (self.item_nums)
+        features = line.strip().split("\t")
+        groundtruth = [int(ff) for ff in features[1].split(',')]
+        for item in features[2:]:
+            slot, feasign = item.split(":")
+            slot_id = int(slot.split("_")[1])
+            history_ids[slot_id - 1] = int(feasign)
 
-        return groudtruth, output_list
+        return groundtruth, history_ids
 
     def dataloader(self, file_list):
         "DataLoader Pyreader Generator"
@@ -73,7 +69,7 @@ def mp_run(data, process_num, func, *args):
     """ run func with multi process
     """
     level_start = time.time()
-    partn = max(len(data) / process_num, 1)
+    partn = int(max(len(data) / process_num, 1))
     start = 0
     p_idx = 0
     ps = []
@@ -148,7 +144,7 @@ def infer(res_dict, filelist, process_idx, init_model_path, id_code_map,
         node_emb_size,
         sparse=True,
         weight_attr=paddle.framework.ParamAttr(
-            name="TDM_Tree_Emb",
+            name="tdm.bw_emb.weight",
             initializer=paddle.nn.initializer.Normal(std=0.001)))
 
     user_feature = input[0:item_nums]
@@ -171,7 +167,9 @@ def infer(res_dict, filelist, process_idx, init_model_path, id_code_map,
     exe.run(paddle.static.default_startup_program())
 
     print("begin to load parameters")
-    fluid.io.load_persistables(exe, dirname=init_model_path)
+    #fluid.io.load_persistables(exe, dirname=init_model_path)
+    paddle.static.load(paddle.static.default_main_program(),
+                       init_model_path + '/rec_static')
     print("end load parameters")
     reader_instance = Reader(item_nums)
     reader = reader_instance.dataloader(filelist)
@@ -251,7 +249,7 @@ if __name__ == '__main__':
     yaml_helper = common.YamlHelper()
     config = yaml_helper.load_yaml(sys.argv[1])
 
-    test_files_path = "./test_data"
+    test_files_path = "../demo_data/test_data"
     filelist = [
         "{}/{}".format(test_files_path, x) for x in os.listdir(test_files_path)
     ]
