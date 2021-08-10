@@ -36,13 +36,22 @@ class Training(object):
         self.metrics = {}
         self.config = config
         self.exe = None
-        self.hadoop_fs_name = config.get("hadoop_fs_name")
-        self.hadoop_fs_ugi = config.get("hadoop_fs_ugi")
+        self.hadoop_fs_name = config.get("runner.hadoop_fs_name")
+        self.hadoop_fs_ugi = config.get("runner.hadoop_fs_ugi")
         self.reader_type = "QueueDataset"
+        self.train_local = self.hadoop_fs_name is None or self.hadoop_fs_ugi is None
+        self.split_interval = config.get("runner.split_interval")
+        self.split_per_pass = config.get("runner.split_per_pass")
+        self.days = config.get("runner.days")
+        self.hours = config.get("runner.hours")
+        print("self.days ",self.days)
+        print("self.hours ",self.hours)
+        print("self.data = ",config.get("runner.train_data_dir"))
 
     def run(self):
-        #role = role_maker.PaddleCloudRoleMaker()
-        fleet.init()
+        os.environ["PADDLE_WITH_GLOO"] = "1"
+        role = role_maker.PaddleCloudRoleMaker(init_gloo = True)
+        fleet.init(role)
         self.init_network()
         if fleet.is_server():
             self.run_server()
@@ -56,8 +65,6 @@ class Training(object):
     def split_trainfile(self):
         train_data_dir = self.config.get("runner.train_data_dir", [])
         split_file_list, split_file_index = [],[]
-        # for path in train_data_dir:
-        #     file_list += [path + "/%s" % x for x in os.listdir(path)]
         file_list = [train_data_dir + "/%s" % x for x in os.listdir(train_data_dir)]
         pass_num = int(self.config.get("runner.pass_num",3))
         if pass_num >= len(file_list):
@@ -74,12 +81,6 @@ class Training(object):
         self.file_pass_num = len(self.split_file_index)
         self.file_list = file_list
 
-    def save_xbox_base_model(self, output_path, day):
-        day = str(day)
-        suffix_name = "/%s/base/" % day
-        model_path = output_path + suffix_name
-        fleet.save_persistables(None, model_path, mode=2)
-
     def save_xbox_model(self, output_path,day,pass_id):
         if pass_id != "-1":
             mode = 1
@@ -91,6 +92,67 @@ class Training(object):
             model_path = output_path.rstrip("/") + suffix_name
         fleet.save_persistables(executor=self.exe,dirname=model_path,mode=mode)
         logger.info("save_persistables in %s" % model_path)
+
+    def get_online_pass_interval(self, days, hours, split_interval,
+                                 split_per_pass, is_data_hourly_placed):
+        """
+        get online pass interval
+
+        Args:
+            days(str): days to train
+            hours(str): hours to train
+            split_interval(int|str): split interval
+            split_per_pass(int}str): split per pass
+            is_data_hourly_placed(bool): is data hourly placed
+
+        Returns:
+            online_pass_interval(list)
+
+        Examples:
+            .. code-block:: python
+
+              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+              fleet_util = FleetUtil()
+              online_pass_interval = fleet_util.get_online_pass_interval(
+                  days="{20190720..20190729}",
+                  hours="{0..23}",
+                  split_interval=5,
+                  split_per_pass=2,
+                  is_data_hourly_placed=False)
+
+        """
+        days = os.popen("echo -n " + days).read().split(" ")
+        hours = os.popen("echo -n " + hours).read().split(" ")
+        split_interval = int(split_interval)
+        split_per_pass = int(split_per_pass)
+        splits_per_day = 24 * 60 // split_interval
+        pass_per_day = splits_per_day // split_per_pass
+        left_train_hour = int(hours[0])
+        right_train_hour = int(hours[-1])
+
+        start = 0
+        split_path = []
+        for i in range(splits_per_day):
+            h = start // 60
+            m = start % 60
+            if h < left_train_hour or h > right_train_hour:
+                start += split_interval
+                continue
+            if is_data_hourly_placed:
+                split_path.append("%02d" % h)
+            else:
+                split_path.append("%02d%02d" % (h, m))
+            start += split_interval
+
+        start = 0
+        online_pass_interval = []
+        for i in range(pass_per_day):
+            online_pass_interval.append([])
+            for j in range(start, start + split_per_pass):
+                online_pass_interval[i].append(split_path[j])
+            start += split_per_pass
+
+        return days, hours, online_pass_interval
 
     def write_xbox_donefile(self,
                             output_path,
@@ -125,7 +187,7 @@ class Training(object):
             xbox_str = self._get_xbox_str(model_path=model_path, xbox_base_key=xbox_base_key,
                                           mode=mode)
             print("xbox str",xbox_str)
-            if hadoop_fs_name is not None and hadoop_fs_ugi is not None:
+            if not self.train_local:
                 configs = {
                     "fs.default.name": hadoop_fs_name,
                     "hadoop.job.ugi": hadoop_fs_ugi
@@ -230,18 +292,47 @@ class Training(object):
         fleet.init_server(config.get("runner.warmup_model_path","./warmup"))
         fleet.run_server()
 
-    def prepare_dataset(self, pass_index):
+    def file_ls(self, path_array):
+        result = []
+        if self.train_local:
+            for path in path_array:
+                for root, ds, fs in os.walk(path):
+                    for f in fs:
+                        fullname = os.path.join(root, f)
+                        result.append(fullname)
+        else:
+            configs = {
+                "fs.default.name": self.hadoop_fs_name,
+                "hadoop.job.ugi": self.hadoop_fs_ugi
+            }
+            hdfs_client = HDFSClient("$HADOOP_HOME", configs)
+            for i in path_array:
+                cur_path = hdfs_client.ls(i)
+                if self.hadoop_fs_name.startswith("hdfs:"):
+                    cur_path = ["hdfs:" + j for j in cur_path]
+                elif self.hadoop_fs_name.startswith("afs:"):
+                    cur_path = ["hdfs:" + j for j in cur_path]
+                result += cur_path
+        return result
+
+    def prepare_dataset(self, day, pass_index):
         #dataset, file_list = get_reader(self.input_data, config)
 
         dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
         dataset.set_thread(self.config.get('runner.train_thread_num',1))
-        if pass_index == self.file_pass_num - 1:
-            next_index = len(self.file_list)
-        else:
-            next_index = self.split_file_index[pass_index + 1]
-        dataset.set_filelist(self.file_list[self.split_file_index[pass_index]:next_index])
+        data_path = self.config.get("runner.train_data_dir")
+        if not self.train_local:
+            dataset.set_hdfs_config(self.hadoop_fs_name,self.hadoop_fs_ugi)
+        cur_path = []
+        for i in self.online_intervals[pass_index-1]:
+            cur_path.append(data_path.rstrip("/") + "/" + day + "/" + i)
+        global_file_list = self.file_ls(cur_path)
+        print("global_file_list",global_file_list)
+        my_file_list = fleet.util.get_file_shard(global_file_list)
+        print("my_file_list",my_file_list)
+        dataset.set_filelist(my_file_list)
         pipe_command = self.config.get("runner.pipe_command")
         dataset.set_pipe_command(self.config.get("runner.pipe_command"))
         utils_path = common.get_utils_file_path()
@@ -259,74 +350,76 @@ class Training(object):
         self.exe = paddle.static.Executor(place)
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
-        self.split_trainfile()
-        save_model_path = self.config.get("runner.model_save_path")
+        #self.split_trainfile()
+        print("self.days ",self.days)
+        print("self.hours ",self.hours)
+        days, hours, self.online_intervals = self.get_online_pass_interval(self.days,self.hours,self.split_interval,self.split_per_pass,False)
+        self.save_model_path = self.config.get("runner.model_save_path")
         self.warm_start_model_path = config.get("runner.warm_start_model_path","./warmup")
         donefile_path = self.config.get("runner.donefile_path","./done")
-        if save_model_path and (not os.path.exists(save_model_path)):
-            os.makedirs(save_model_path)
+        if self.save_model_path and (not os.path.exists(self.save_model_path)):
+            os.makedirs(self.save_model_path)
 
-        base_model_saved = False
-        model_base_key = int(time.time())
-        for index in range(self.file_pass_num):
-            prepare_data_start_time = time.time()
-            dataset = self.prepare_dataset(index)
-            prepare_data_end_time = time.time()
-            logger.info(
-                "Prepare Dataset Done, using time {} second.".format(
-                    prepare_data_end_time - prepare_data_start_time))
+        for day in days:
+            model_base_key = int(time.time())
+            base_model_saved = False
+            save_model_path = self.save_model_path
+            for pass_id in range(len(self.online_intervals)):
+                print("new day ",day," new pass ",pass_id)
+                index = pass_id + 1
+                prepare_data_start_time = time.time()
+                dataset = self.prepare_dataset(day, index)
+                prepare_data_end_time = time.time()
+                logger.info(
+                    "Prepare Dataset Done, using time {} second.".format(
+                        prepare_data_end_time - prepare_data_start_time))
 
-            train_start_time = time.time()
-            train_end_time = time.time()
-            logger.info(
-                    "Train Dataset Done, using time {} second.".format(train_end_time - train_start_time))
+                train_start_time = time.time()
+                train_end_time = time.time()
+                logger.info(
+                        "Train Dataset Done, using time {} second.".format(train_end_time - train_start_time))
 
-            logger.info("Pass: {}, Running Dataset Begin.".format(index))
-            fetch_info = [
-                "Pass: {} Var {}".format(index, var_name)
-                for var_name in self.metrics
-            ]
-            fetch_vars = [var for _, var in self.metrics.items()]
-            print_step = int(config.get("runner.print_interval"))
-            self.exe.train_from_dataset(
-                program=paddle.static.default_main_program(),
-                dataset=dataset,
-                fetch_list=fetch_vars,
-                fetch_info=fetch_info,
-                print_period=print_step,
-                debug=config.get("runner.dataset_debug"))
-            dataset.release_memory()
-            if fleet.is_first_worker() and save_model_path:
-                if not base_model_saved:
-                    logger.info("start to save inference model")
-                    fleet.save_inference_model(
-                        self.exe, save_model_path,
-                        [feed.name for feed in self.inference_feed_var],
-                        self.inference_target_var)
-                    base_model_saved = True
-                    logger.info("model saved")
-                    self.save_xbox_model(save_model_path,0,-1) #2 base
-                    logger.info("donefile_path = ",donefile_path) #
-                    self.write_xbox_donefile(output_path=save_model_path,day=0,pass_id="-1",model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
-                else:
-                    self.save_xbox_model(save_model_path,0,index)  #1 delta
-                    self.write_xbox_donefile(output_path=save_model_path,day=0, pass_id=str(index), model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
-                if index == self.file_pass_num -1:
-                    fleet.save_inference_model(
-                        self.exe, self.warm_start_model_path,
-                        [feed.name for feed in self.inference_feed_var],
-                        self.inference_target_var,
-                        mode=0) #0 save checkpoints
+                logger.info("Pass: {}, Running Dataset Begin.".format(index))
+                fetch_info = [
+                    "Pass: {} Var {}".format(index, var_name)
+                    for var_name in self.metrics
+                ]
+                fetch_vars = [var for _, var in self.metrics.items()]
+                print_step = int(config.get("runner.print_interval"))
+                self.exe.train_from_dataset(
+                    program=paddle.static.default_main_program(),
+                    dataset=dataset,
+                    fetch_list=fetch_vars,
+                    fetch_info=fetch_info,
+                    print_period=print_step,
+                    debug=config.get("runner.dataset_debug"))
+                dataset.release_memory()
+                if fleet.is_first_worker() and save_model_path:
+                    if not base_model_saved:
+                        logger.info("start to save inference model")
+                        fleet.save_inference_model(
+                            self.exe, save_model_path,
+                            [feed.name for feed in self.inference_feed_var],
+                            self.inference_target_var)
+                        base_model_saved = True
+                        logger.info("model saved")
+                        self.save_xbox_model(save_model_path,0,-1) #2 base
+                        logger.info("donefile_path = ",donefile_path) #
+                        self.write_xbox_donefile(output_path=save_model_path,day=0,pass_id="-1",model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
+                    else:
+                        self.save_xbox_model(save_model_path,0,index)  #1 delta
+                        self.write_xbox_donefile(output_path=save_model_path,day=0, pass_id=str(index), model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
+
+        fleet.barrier_worker()
+        fleet.save_inference_model(
+                            self.exe, self.warm_start_model_path,
+                            [feed.name for feed in self.inference_feed_var],
+                            self.inference_target_var,
+                            mode=0) #0 save checkpoints
 
 
 if __name__ == "__main__":
-    # with open("./xbox_patch_done.txt") as o:
-    #     pre_content = o.read()
-    #     pp = pre_content.split("\n")[-2]
-    #     print("pp ",pp)
-    #     # for i in range(len(pp)):
-    #     #     print(i," ",pp[i],int(pp[i]))
-    #     last_dict = json.loads(pp,strict=False)
+
     paddle.enable_static()
     parser = argparse.ArgumentParser("PaddleRec train script")
     parser.add_argument(
