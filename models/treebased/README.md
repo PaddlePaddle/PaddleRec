@@ -107,22 +107,18 @@ cd ../builder && python tree_index_builder.py --mode by_kmeans --input ../tdm/ep
 
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。由于数据量较大，如果需要复现readme中的效果，需要多节点训练。
-在全量数据下模型的指标如下（节点数：25）：  
+在全量数据下模型的指标如下：  
 | 模型 | 建树 | recall_rate | precision_rate | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | :------ | :------ | 
 | TDM | 首次建树 | 0.48% | 0.11% | 3000 | 1 | 约5.5小时 |
 | TDM | 基于首轮模型重新建树 | 1.0% | 0.25% | 3000 | 1 | 约5.5小时 |
 
-1. 参考[快速开始]Step1，下载全量数据并生成样本
+1. 参考[快速开始](#快速开始)Step1，下载全量数据并生成样本
 ```
 ./data_prepare.sh user_behavior
 ```
-2. 将生成的样本上传至hdfs
-3. 修改ub_config.yaml配置，启动多节点训练任务
-```
-cd tdm
-python -u ../../../tools/static_ps_trainer.py -m ub_config.yaml
-```
+2. 剩余步骤参考[快速开始](#快速开始)Step1-6（需要将config.yaml文件替换成config_ub.yaml）
+3. 如需分布式训练，[详情请戳这里](https://www.paddlepaddle.org.cn/documentation/docs/zh/user_guides/tools/elastic_ctr/deploy_ctr_on_baidu_cloud_cn.html) 
 
 ## 进阶使用
   
