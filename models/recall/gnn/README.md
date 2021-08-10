@@ -1,16 +1,15 @@
-# 基于DNN模型的点击率预估模型
-
+# 基于SRGNN模型的商品推荐
 以下是本例的简要目录结构及说明： 
 
 ```
 ├── data #样例数据
-	├── train
-		├── train.txt
+    ├── train
+        ├── train.txt
     ├── test
-		├── test.txt
-	├── download.py
-	├── convert_data.py
-	├── preprocess.py
+        ├── test.txt
+    ├── download.py
+    ├── convert_data.py
+    ├── preprocess.py
 ├── __init__.py
 ├── README.md # 文档
 ├── model.py #模型文件
@@ -116,9 +115,34 @@ python -u ../../../tools/static_trainer.py -m static_config.yaml
 # 静态图预测
 python -u ../../../tools/static_infer.py -m static_config.yaml 
 ```
+### yaml文件说明
+dygraph_config.yaml需要配置的参数如下
+```
+train_data_dir #数据集的位置
+use_gpu #是否使用GPU
+use_fleet #表示使用单机或者多机多卡
+train_batch_size #batch size
+epochs #轮数
+print_interval #间隔batch size输出
+#infer的参数类似
+```
+static_config.yaml需要注意的是由于需要实现指导input的sequence len的大小，预先定义如下参数(可以尽量设置较大的值)
+```
+max_seq_len: 15
+max_uniq_len: 11
+```
+### dig_reader说明
+数据导入的格式，继承Dataset，对于类函数`def __getitem__(self, idx)`需要实现对数据读入的单条样本返回结果
+
+### model说明
+对于动态图和静态图略有区别，实现了两个不同的model文件，其中静态图由于acc的计算每轮不会累积，需要修改tools/static_trainer和infer_trainer中的部分代码，修改后的代码保存在当前目录下，见`# ******************`标记处；推荐使用动态图模型
+
 
 ### 结果展示
-样例数据训练结果展示：
+基于动态图样例数据训练结果展示：
+![train_demo.png]
+基于动态图样例数据测试结果展示：
+![test_demo.png]
 
 ### 论文复现
 用原论文的完整数据复现论文效果需要在static_config.yaml修改超参：
