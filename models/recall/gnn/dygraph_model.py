@@ -95,7 +95,7 @@ class DygraphModel():
         # update metrics
         correct=metrics_list[0].compute(probs, inputs[6])
         metrics_list[0].update(correct)
-        print(metrics_list[0].total,metrics_list[0].count)
+        # print(metrics_list[0].total,metrics_list[0].count)
 
         # print_dict format :{'loss': loss}
         print_dict = None

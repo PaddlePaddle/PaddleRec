@@ -26,7 +26,7 @@ class RecDataset(Dataset):
         self.global_max_seq_len=global_max_seq_len
         #[0]这个pad数据下标不存在
         self.global_max_uniq_len=global_max_uniq_len+1
-        print(global_max_seq_len,global_max_uniq_len)
+        # print(global_max_seq_len,global_max_uniq_len)
 
     def __len__(self):
         return len(self.input)
