@@ -82,7 +82,7 @@ class Training(object):
         self.file_list = file_list
 
     def save_xbox_model(self, output_path,day,pass_id):
-        if pass_id != "-1":
+        if pass_id != -1:
             mode = 1
             suffix_name = "/%s/delta-%s/" % (day, pass_id)
             model_path = output_path.rstrip("/") + suffix_name
@@ -405,10 +405,11 @@ class Training(object):
                         logger.info("model saved")
                         self.save_xbox_model(save_model_path,0,-1) #2 base
                         logger.info("donefile_path = ",donefile_path) #
-                        self.write_xbox_donefile(output_path=save_model_path,day=0,pass_id="-1",model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
+                        self.write_xbox_donefile(output_path=save_model_path,day=0,pass_id=-1,model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
                     else:
                         self.save_xbox_model(save_model_path,0,index)  #1 delta
-                        self.write_xbox_donefile(output_path=save_model_path,day=0, pass_id=str(index), model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
+                        print("save delta ",index)
+                        self.write_xbox_donefile(output_path=save_model_path,day=0, pass_id=index, model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
 
         fleet.barrier_worker()
         fleet.save_inference_model(
