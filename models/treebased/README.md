@@ -12,6 +12,7 @@
 |   ├── jtm                          JTM算法目录
 |   ├── tdm                          TDM算法目录
 |   |   ├── config.yaml              模型配置
+|   |   ├── config_ub.yaml           全量数据模型配置
 |   |   ├── get_leaf_embedding.py    从已训好模型中抽取Item对应的embedding
 |   |   ├── infer.py                 预测脚本
 |   |   ├── model.py                 模型核心组网
@@ -117,7 +118,7 @@ cd ../builder && python tree_index_builder.py --mode by_kmeans --input ../tdm/ep
 ```
 ./data_prepare.sh user_behavior
 ```
-2. 剩余步骤参考[快速开始](#快速开始)Step1-6
+2. 剩余步骤参考[快速开始](#快速开始)Step2-6
 ```
 注意替换：config.yaml->config_ub.yaml、output_model_tdm_demo->output_model_tdm_ub、demo_data->ub_data_new
 ```
