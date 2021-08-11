@@ -77,10 +77,11 @@ class Main(object):
     def network(self):
         model = get_model(self.config)
         self.input_data = model.create_feeds()
-        self.inference_feed_vars = self.input_data[:2]
+        self.inference_feed_vars = model.create_feeds(is_infer=True)
         self.metrics = model.net(self.input_data)
         self.inference_target_var = model.inference_target_var
         if config.get("runner.need_prune", False):
+            # DSSM prune net
             self.inference_feed_vars = [self.input_data[0]]
             self.inference_target_var = model.prune_target_var
         print(self.inference_feed_vars)
