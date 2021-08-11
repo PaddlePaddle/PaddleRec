@@ -47,7 +47,9 @@
 ## 运行环境
 
 PaddlePaddle>=2.0
+
 python 3.7
+
 os : linux
 
 ## 快速开始
