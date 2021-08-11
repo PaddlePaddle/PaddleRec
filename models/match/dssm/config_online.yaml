@@ -40,10 +40,16 @@ runner:
 
   input_type: 1
   need_prune: True
-  need_dump: True
-  dump_fields: ["relu_5.tmp_0"]
-  # dump_fields_dir: "afs:/xxx"
-  dump_fields_dir: "./infer_dump_data"
+  need_train_dump: True
+  train_dump_fields: ["linear_11.tmp_1", "relu_5.tmp_0"]
+  # train_dump_param: []
+  # train_dump_fields_dir: "afs:/xxx"
+  train_dump_fields_dir: "./train_dump_data"
+
+  need_infer_dump: True
+  infer_dump_fields: ["relu_5.tmp_0"]
+  # infer_dump_fields_dir: "afs:/xxx"
+  infer_dump_fields_dir: "./infer_dump_data"
 
   fs_name: "afs://xxx"
   fs_ugi: "xxx,xxx"

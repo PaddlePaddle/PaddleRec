@@ -101,6 +101,10 @@ class Main(object):
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
         dataset.set_thread(self.config.get('runner.train_thread_num'))
+        dataset.set_input_type(self.config.get('runner.input_type', 0))
+        dataset.set_hdfs_config(
+            self.config.get('runner.fs_name'),
+            self.config.get('runner.fs_ugi'))
         dataset.set_parse_ins_id(self.config.get("runner.parse_ins_id", False))
         dataset.set_parse_content(
             self.config.get("runner.parse_content", False))
@@ -195,22 +199,24 @@ class Main(object):
                 logger.info("Train Dataset Done, using time {} second.".format(
                     train_end_time - train_start_time))
 
-                need_dump = self.config.get("runner.need_dump")
-                if need_dump:
+                need_infer_dump = self.config.get("runner.need_infer_dump",
+                                                  False)
+                if need_infer_dump:
                     prepare_data_start_time = time.time()
                     dump_dataset = self.wait_and_prepare_infer_dataset(
                         day, pass_index)
                     prepare_data_end_time = time.time()
                     logger.info(
-                        "Prepare Dump Dataset Done, using time {} second.".
+                        "Prepare Infer Dump Dataset Done, using time {} second.".
                         format(prepare_data_end_time -
                                prepare_data_start_time))
 
                     dump_start_time = time.time()
                     self.dataset_dump_loop(dump_dataset, day, pass_index)
                     dump_end_time = time.time()
-                    logger.info("Dump Dataset Done, using time {} second.".
-                                format(dump_end_time - dump_start_time))
+                    logger.info(
+                        "Infer Dump Dataset Done, using time {} second.".
+                        format(dump_end_time - dump_start_time))
 
                 model_dir = "{}/{}/{}".format(save_model_path, day, pass_index)
 
@@ -241,13 +247,35 @@ class Main(object):
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
+
+        debug = config.get("runner.dataset_debug", False)
+        need_dump = config.get("runner.need_train_dump", False)
+        if need_dump:
+            debug = True
+            dump_fields_dir = self.config.get("runner.train_dump_fields_dir")
+            dump_fields_path = "{}/{}/{}".format(dump_fields_dir, day,
+                                                 pass_index)
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": dump_fields_path,
+                "dump_fields": config.get("runner.train_dump_fields", []),
+                "dump_param": config.get("runner.train_dump_param", [])
+            })
+        print(paddle.static.default_main_program()._fleet_opt)
+
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=cur_dataset,
             fetch_list=fetch_vars,
             fetch_info=fetch_info,
             print_period=print_step,
-            debug=config.get("runner.dataset_debug"))
+            debug=debug)
+
+        if need_dump:
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": "",
+                "dump_fields": [],
+                "dump_param": []
+            })
         cur_dataset.release_memory()
 
     def dataset_dump_loop(self, cur_dataset, day, pass_index):
@@ -259,14 +287,15 @@ class Main(object):
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
-        dump_fields_dir = self.config.get("runner.dump_fields_dir")
+        dump_fields_dir = self.config.get("runner.infer_dump_fields_dir")
         dump_fields_path = "{}/{}/{}".format(dump_fields_dir, day, pass_index)
-        dump_fields = self.config.get("runner.dump_fields", [])
+        dump_fields = self.config.get("runner.infer_dump_fields", [])
         set_dump_config(paddle.static.default_main_program(), {
             "dump_fields_path": dump_fields_path,
             "dump_fields": dump_fields
         })
         print(paddle.static.default_main_program()._fleet_opt)
+
         self.exe.infer_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=cur_dataset,
@@ -278,7 +307,6 @@ class Main(object):
         set_dump_config(paddle.static.default_main_program(), {
             "dump_fields_path": "",
             "dump_fields": [],
-            "dump_param": []
         })
         cur_dataset.release_memory()
 
