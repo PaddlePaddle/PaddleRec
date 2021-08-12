@@ -71,10 +71,12 @@ class DSSMLayer(nn.Layer):
         query_fc = input_data[0]
         for n_layer in self._query_layers:
             query_fc = n_layer(query_fc)
+        self.query_fc = query_fc
 
         doc_pos_fc = input_data[1]
         for n_layer in self._doc_layers:
             doc_pos_fc = n_layer(doc_pos_fc)
+        self.doc_pos_fc = doc_pos_fc
 
         R_Q_D_p = F.cosine_similarity(
             query_fc, doc_pos_fc, axis=1).reshape([-1, 1])
