@@ -58,6 +58,7 @@ class StaticModel():
         R_Q_D_p, hit_prob = dssm_model(input, is_infer)
 
         self.inference_target_var = R_Q_D_p
+        self.prune_target_var = dssm_model.query_fc
         if is_infer:
             fetch_dict = {'query_doc_sim': R_Q_D_p}
             return fetch_dict

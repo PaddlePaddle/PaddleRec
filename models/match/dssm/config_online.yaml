@@ -1,0 +1,66 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runner:
+  train_data_dir: "data/train_with_insid"
+  test_data_dir: "data/test_with_insid"
+  # train_reader_path: "bq_reader_train"  # importlib format
+  days: "{20210803..20210804}"
+  pass_per_day: 1
+  train_batch_size: 8
+  test_batch_size: 8
+  model_save_path: "output_model_dssm"
+
+  reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
+  pipe_command: "python3 bq_reader_train_insid.py"
+
+  sync_mode: "async"
+  # thread_num: 1
+  train_thread_num: 1
+  test_thread_num: 1
+
+  use_gpu: False
+  epochs: 1
+  print_interval: 1
+
+  dataset_debug: False
+  parse_ins_id: True
+  parse_content: True
+
+  input_type: 1
+  need_prune: True
+  need_train_dump: True
+  train_dump_fields: ["linear_11.tmp_1", "relu_5.tmp_0"]
+  # train_dump_param: []
+  # train_dump_fields_dir: "afs:/xxx"
+  train_dump_fields_dir: "./train_dump_data"
+
+  need_infer_dump: True
+  infer_dump_fields: ["relu_5.tmp_0"]
+  # infer_dump_fields_dir: "afs:/xxx"
+  infer_dump_fields_dir: "./infer_dump_data"
+
+  fs_name: "afs://xxx"
+  fs_ugi: "xxx,xxx"
+  
+hyper_parameters:
+  optimizer:
+    class: adam
+    learning_rate: 0.001
+    strategy: sync
+  trigram_d: 2900
+  neg_num: 1
+  slice_end: 8
+  fc_sizes: [300, 300, 128]
+  fc_acts: ['relu', 'relu', 'relu']
