@@ -78,6 +78,8 @@ class DSSMLayer(nn.Layer):
             doc_pos_fc = n_layer(doc_pos_fc)
         self.doc_pos_fc = doc_pos_fc
 
+        self.params = [self._query_layers[-2].bias]
+
         R_Q_D_p = F.cosine_similarity(
             query_fc, doc_pos_fc, axis=1).reshape([-1, 1])
 
