@@ -9,7 +9,7 @@ runner:
   use_fleet: False
   use_auc: True
   train_batch_size: 10
-  epochs: 5
+  epochs: 10
   print_interval: 1
   model_save_path: "output_model_gnn"
   infer_batch_size: 50
@@ -17,7 +17,7 @@ runner:
   test_data_dir: "data/test"
   infer_load_path: "output_model_gnn"
   infer_start_epoch: 0
-  infer_end_epoch: 5 #与训练的epoch对应，每一个epoch保存和加载模型验证
+  infer_end_epoch: 10 #与训练的epoch对应，每一个epoch保存和加载模型验证
 
 
 # hyper parameters of user-defined network
