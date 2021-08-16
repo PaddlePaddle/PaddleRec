@@ -76,6 +76,8 @@ class WideDeepDatasetReader(fleet.MultiSlotDataGenerator):
     def generate_sample(self, line):
         def wd_reader():
             for line in kfkc:
+                if line is None:
+                    continue
                 input_data = self.line_process(line)
                 feature_name = ["dense_input"]
                 for idx in categorical_range_:

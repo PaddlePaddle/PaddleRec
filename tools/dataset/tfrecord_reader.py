@@ -104,3 +104,6 @@ if __name__ == "__main__":
     tf_dataset = raw_dataset.map(_parse_function)
 
     my_data_generator.run_from_memory()
+
+    # tf will not exit
+    exit()
