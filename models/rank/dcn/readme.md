@@ -72,7 +72,7 @@ python 2.7/3.5/3.6/3.7
 os : windows/linux/macos 
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在paddlerec目录下执行下面的命令即可快速启动训练： 
+本文提供了样例数据可以供您快速体验，在paddlerec模型目录"PaddleRec/models/rank/dcn"目录下执行下面的命令即可快速启动训练： 
 
 动态图训练：
 ```
