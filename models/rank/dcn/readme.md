@@ -57,7 +57,7 @@
 ### 一键下载训练及测试数据
 全量数据集解析过程:
 1. 确认您当前所在目录为PaddleRec/models/rank/dcn
-2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。自动处理数据转化为可直接进行训练的格式。解压后全量训练数据放置于`./train_datal`，全量测试数据放置于`./test_data`，可以直接输入的训练数据放置于`./slot_train_datal`，可直接输入的测试数据放置于`./slot_test_datal`
+2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。自动处理数据转化为可直接进行训练的格式。解压后全量训练数据放置于`./slot_train_data_full`，全量测试数据放置于`./slot_test_data_full`
 
 ``` bash
 cd ../../../datasets/criteo
