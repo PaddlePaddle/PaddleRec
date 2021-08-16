@@ -9,7 +9,7 @@
 ├── __init__.py
 ├── README.md #文档
 ├── config.yaml # sample数据配置
-├── config_big.yaml # 全量数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
@@ -133,12 +133,12 @@ python build_dataset.py
 
 - 脚本运行完成后，打开config.txt，
 将其中的商品的种类数目（第二行数值）、品类的种类数目信息（第三行数值），
-copy到config_big.yaml里，替换超参数item_count cat_count  
+copy到config_bigdata.yaml里，替换超参数item_count cat_count  
 
 ### 模型训练及效果复现
 - 动态图训练，运行：
 ```
-python3 -u ../../../tools/trainer.py -m config_big.yaml
+python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 
 ```
 
@@ -181,9 +181,9 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ### 模型预测及效果复现
 ```
 # 动态图预测
-python -u ../../../tools/infer.py -m config_big.yaml
+python -u ../../../tools/infer.py -m config_bigdata.yaml
 
 # 静态图预测
-python -u ../../../tools/static_infer.py -m config_big.yaml
+python -u ../../../tools/static_infer.py -m config_bigdata.yaml
 ```
 - 对标预测AUC：0.7792+/-0.00243
