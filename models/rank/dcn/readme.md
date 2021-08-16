@@ -76,21 +76,21 @@ os : windows/linux/macos
 
 动态图训练：
 ```
-python ../../../tools/trainer -m ./config.yaml
+python ../../../tools/trainer.py -m ./config.yaml
 ```
 
 静态图训练：
 ```
-python ../../../tools/static_trainer -m ./config.yaml
+python ../../../tools/static_trainer.py -m ./config.yaml
 ```
 
 动态图推理
 ```
-python ../../../tools/infer -m ./config.yaml
+python ../../../tools/infer.py -m ./config.yaml
 ```
 静态图推理
 ```
-python ../../../tools/static_infer -m ./config.yaml
+python ../../../tools/static_infer.py -m ./config.yaml
 ```
 注意训练-预测，模型存储文件位置的一致性；动态图模型与静态图模型存储位置要分开；
 
@@ -125,22 +125,22 @@ sh run.sh
 4. 运行命令，模型会进行两个epoch的训练，然后预测第二个epoch，并获得相应auc指标  
 动态图训练：
 ```
-python ../../../tools/trainer -m ./config_big.yaml
+python ../../../tools/trainer.py -m ./config_big.yaml
 ```
 
 静态图训练：
 ```
-python ../../../tools/static_trainer -m ./config_big.yaml
+python ../../../tools/static_trainer.py -m ./config_big.yaml
 ```
 
 5. 经过全量数据训练后，执行推理：
 动态图推理
 ```
-python ../../../tools/infer -m ./config_big.yaml
+python ../../../tools/infer.py -m ./config_big.yaml
 ```
 静态图推理
 ```
-python ../../../tools/static_infer -m ./config_big.yaml
+python ../../../tools/static_infer.py -m ./config_big.yaml
 ```
 注意训练-预测，模型存储文件位置的一致性；
 ## 进阶使用
