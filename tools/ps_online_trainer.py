@@ -1,3 +1,17 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from __future__ import print_function
 
 import random
@@ -32,6 +46,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class Training(object):
     def __init__(self, config):
         self.metrics = {}
@@ -43,18 +58,19 @@ class Training(object):
         self.train_local = self.hadoop_fs_name is None or self.hadoop_fs_ugi is None
         self.split_interval = config.get("runner.split_interval")
         self.split_per_pass = config.get("runner.split_per_pass")
-        self.save_delta_frequency = config.get("runner.save_delta_frequency",6)
-        self.checkpoint_per_pass = config.get("runner.checkpoint_per_pass",6)
+        self.save_delta_frequency = config.get("runner.save_delta_frequency",
+                                               6)
+        self.checkpoint_per_pass = config.get("runner.checkpoint_per_pass", 6)
         self.save_first_base = config.get("runner.save_first_base")
         self.days = config.get("runner.days")
         self.hours = config.get("runner.hours")
-        print("self.days ",self.days)
-        print("self.hours ",self.hours)
-        print("self.data = ",config.get("runner.train_data_dir"))
+        print("self.days ", self.days)
+        print("self.hours ", self.hours)
+        print("self.data = ", config.get("runner.train_data_dir"))
 
     def run(self):
         os.environ["PADDLE_WITH_GLOO"] = "1"
-        role = role_maker.PaddleCloudRoleMaker(init_gloo = True)
+        role = role_maker.PaddleCloudRoleMaker(init_gloo=True)
         fleet.init(role)
         self.init_network()
         if fleet.is_server():
@@ -67,12 +83,13 @@ class Training(object):
         # self.run_worker()
 
     def get_next_day(day):
-        return os.popen('date -d"%s' % day + ' +1 days" +"%Y%m%d"').read().strip()
+        return os.popen('date -d"%s' % day + ' +1 days" +"%Y%m%d"').read(
+        ).strip()
 
-    def save_fleet_model(self, path, mode=0):
-        fleet.save_persistables(None, path, mode=mode)
+    # def save_fleet_model(self, path, mode=0):
+    #     fleet.save_persistables(self.exe, path, None, mode=mode)
 
-    def save_model(self, output_path, day, pass_id):
+    def save_model(self, output_path, day, pass_id, mode=0):
         """
 
         Args:
@@ -86,7 +103,7 @@ class Training(object):
         suffix_name = "/%s/%s/" % (day, pass_id)
         model_path = output_path + suffix_name
         logger.info("going to save_model %s" % model_path)
-        self.save_fleet_model(model_path)
+        fleet.save_persistables(self.exe, model_path, None, mode=mode)
 
     def write_model_donefile(self,
                              output_path,
@@ -154,7 +171,7 @@ class Training(object):
                                           (day, pass_id, donefile_name))
                     else:
                         logger.info("not write %s because %s/%s already "
-                                         "exists" % (donefile_name, day, pass_id))
+                                    "exists" % (donefile_name, day, pass_id))
                 else:
                     with open(donefile_name, "w") as f:
                         f.write(content + "\n")
@@ -167,9 +184,8 @@ class Training(object):
                     with open(donefile_path, "w") as f:
                         f.write(content + "\n")
                     return
-                with open(donefile_path,encoding='utf-8') as f:
+                with open(donefile_path, encoding='utf-8') as f:
                     pre_content = f.read()
-                exist = False
                 lines = pre_content.split("\n")
                 if len(lines) > 0 and lines[-1] == "":
                     lines = lines[:-1]
@@ -207,7 +223,8 @@ class Training(object):
             auc_value(float), total_ins_num(int)
 
         """
-        if scope.find_var(stat_pos) is None or scope.find_var(stat_neg) is None:
+        if scope.find_var(stat_pos) is None or scope.find_var(
+                stat_neg) is None:
             self.rank0_print("not found auc bucket")
             return None
         fleet.barrier_worker()
@@ -249,7 +266,6 @@ class Training(object):
             pos = new_pos
             neg = new_neg
 
-        auc_value = None
         if pos * neg == 0 or total_ins_num == 0:
             auc_value = 0.5
         else:
@@ -258,7 +274,13 @@ class Training(object):
         fleet.barrier_worker()
         return auc_value
 
-    def save_xbox_model(self, output_path,day,pass_id,hadoop_fs_name,hadoop_fs_ugi,hadoop_home="$HADOOP_HOME"):
+    def save_xbox_model(self,
+                        output_path,
+                        day,
+                        pass_id,
+                        hadoop_fs_name,
+                        hadoop_fs_ugi,
+                        hadoop_home="$HADOOP_HOME"):
         if pass_id != -1:
             mode = 1
             suffix_name = "/%s/delta-%s/" % (day, pass_id)
@@ -270,9 +292,9 @@ class Training(object):
         infer_program_path = model_path + "dnn_plugin/"
         if self.train_local:
             fleet.save_inference_model(
-                            self.exe, infer_program_path,
-                            [feed.name for feed in self.inference_model_feed_vars],
-                            self.predict) #0 save checkpoints
+                self.exe, infer_program_path,
+                [feed.name for feed in self.inference_model_feed_vars],
+                self.predict)  #0 save checkpoints
         else:
             model_name = "inference_model"
             configs = {
@@ -290,7 +312,8 @@ class Training(object):
                 client.makedirs(dest)
 
             client.upload(model_name, dest, multi_processes=5, overwrite=True)
-        fleet.save_persistables(executor=self.exe,dirname=model_path,mode=mode)
+        fleet.save_persistables(
+            executor=self.exe, dirname=model_path, mode=mode)
         logger.info("save_persistables in %s" % model_path)
 
     def get_last_save_model(self,
@@ -313,14 +336,6 @@ class Training(object):
             last_save_pass(int): pass id of saved
             last_path(str): model path
             xbox_base_key(int): xbox key
-
-        Examples:
-            .. code-block:: python
-
-              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-              fleet_util = FleetUtil()
-              last_save_day, last_save_pass, last_path, xbox_base_key = \
-                  fleet_util.get_last_save_model("hdfs:/my/path", 20190722, 88)
 
         """
         last_save_day = -1
@@ -431,9 +446,7 @@ class Training(object):
         Examples:
             .. code-block:: python
 
-              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-              fleet_util = FleetUtil()
-              online_pass_interval = fleet_util.get_online_pass_interval(
+                get_online_pass_interval(
                   days="{20190720..20190729}",
                   hours="{0..23}",
                   split_interval=5,
@@ -483,7 +496,7 @@ class Training(object):
                             hadoop_fs_ugi,
                             hadoop_home="$HADOOP_HOME",
                             donefile_name=None):
-        print("in write_xbox_donefile day = ",day, " pass-id = ",pass_id)
+        print("in write_xbox_donefile day = ", day, " pass-id = ", pass_id)
         day = str(day)
         pass_id = str(pass_id)
         xbox_base_key = int(model_base_key)
@@ -504,9 +517,9 @@ class Training(object):
 
         if fleet.worker_index() == 0:
             donefile_path = output_path + "/" + donefile_name
-            xbox_str = self._get_xbox_str(model_path=model_path, xbox_base_key=xbox_base_key,
-                                          mode=mode)
-            print("xbox str",xbox_str)
+            xbox_str = self._get_xbox_str(
+                model_path=model_path, xbox_base_key=xbox_base_key, mode=mode)
+            print("xbox str", xbox_str)
             if not self.train_local:
                 configs = {
                     "fs.default.name": hadoop_fs_name,
@@ -520,7 +533,8 @@ class Training(object):
                         last_line = pre_content.split("\n")[-2]
                     last_dict = json.loads(last_line)
                     last_day = last_dict["input"].split("/")[-3]
-                    last_pass = last_dict["input"].split("/")[-2].split("-")[-1]
+                    last_pass = last_dict["input"].split("/")[-2].split("-")[
+                        -1]
                     exist = False
                     if int(day) < int(last_day) or \
                             int(day) == int(last_day) and \
@@ -540,7 +554,7 @@ class Training(object):
                                          (day, pass_id, donefile_name))
                     else:
                         logger.info("do not write %s because %s/%s already "
-                                         "exists" % (donefile_name, day, pass_id))
+                                    "exists" % (donefile_name, day, pass_id))
                 else:
                     with open(donefile_name, "w") as f:
                         f.write(xbox_str + "\n")
@@ -557,13 +571,13 @@ class Training(object):
                     with open(donefile_path, "w") as f:
                         f.write(xbox_str + "\n")
                     return
-                with open(donefile_path,encoding='utf-8') as f:
+                with open(donefile_path, encoding='utf-8') as f:
                     pre_content = f.read()
                 exist = False
                 last_line = pre_content.split("\n")[-1]
                 if last_line == '':
                     last_line = pre_content.split("\n")[-2]
-                last_dict = json.loads(last_line,strict=False)
+                last_dict = json.loads(last_line, strict=False)
                 last_day = last_dict["input"].split("/")[-3]
                 last_pass = last_dict["input"].split("/")[-2].split("-")[-1]
                 if int(day) < int(last_day) or \
@@ -575,11 +589,10 @@ class Training(object):
                         f.write(pre_content + "\n")
                         f.write(xbox_str + "\n")
 
-
     def _get_xbox_str(self,
                       model_path,
                       xbox_base_key,
-                      hadoop_fs_name = None,
+                      hadoop_fs_name=None,
                       mode="patch"):
         xbox_dict = collections.OrderedDict()
         if mode == "base":
@@ -593,7 +606,8 @@ class Training(object):
         xbox_dict["key"] = str(xbox_base_key)
         if model_path.startswith("hdfs:") or model_path.startswith("afs:"):
             model_path = model_path[model_path.find(":") + 1:]
-        xbox_dict["input"] = ("" if hadoop_fs_name is None else hadoop_fs_name) + model_path.rstrip("/") + "/000"
+        xbox_dict["input"] = ("" if hadoop_fs_name is None else hadoop_fs_name
+                              ) + model_path.rstrip("/") + "/000"
         return json.dumps(xbox_dict)
 
     def init_network(self):
@@ -603,13 +617,13 @@ class Training(object):
         self.metrics = self.model.net(self.input_data)
         self.inference_target_var = self.model.inference_target_var
         self.predict = self.model.predict
+        self.inference_model_feed_vars = self.model.inference_model_feed_vars
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
         self.model.create_optimizer(get_strategy(self.config))
 
-
     def run_server(self):
         logger.info("Run Server Begin")
-        fleet.init_server(config.get("runner.warmup_model_path","./warmup"))
+        fleet.init_server(config.get("runner.warmup_model_path", "./warmup"))
         fleet.run_server()
 
     def file_ls(self, path_array):
@@ -641,25 +655,24 @@ class Training(object):
         dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
-        dataset.set_thread(self.config.get('runner.train_thread_num',1))
+        dataset.set_thread(self.config.get('runner.train_thread_num', 1))
         data_path = self.config.get("runner.train_data_dir")
         if not self.train_local:
-            dataset.set_hdfs_config(self.hadoop_fs_name,self.hadoop_fs_ugi)
+            dataset.set_hdfs_config(self.hadoop_fs_name, self.hadoop_fs_ugi)
         cur_path = []
-        for i in self.online_intervals[pass_index-1]:
+        for i in self.online_intervals[pass_index - 1]:
             cur_path.append(data_path.rstrip("/") + "/" + day + "/" + i)
         global_file_list = self.file_ls(cur_path)
-        print("global_file_list",global_file_list)
+        print("global_file_list", global_file_list)
         my_file_list = fleet.util.get_file_shard(global_file_list)
-        print("my_file_list",my_file_list)
+        print("my_file_list", my_file_list)
         dataset.set_filelist(my_file_list)
         pipe_command = self.config.get("runner.pipe_command")
         dataset.set_pipe_command(self.config.get("runner.pipe_command"))
         utils_path = common.get_utils_file_path()
         print("utils_path: {}".format(utils_path))
-        dataset.set_pipe_command("{} {} {}".format(pipe_command,
-                                              config.get("yaml_path"),
-                                              utils_path))
+        dataset.set_pipe_command("{} {} {}".format(
+            pipe_command, config.get("yaml_path"), utils_path))
         dataset.load_into_memory()
         return dataset
 
@@ -671,16 +684,20 @@ class Training(object):
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
         #self.split_trainfile()
-        print("self.days ",self.days)
-        print("self.hours ",self.hours)
-        days, hours, self.online_intervals = self.get_online_pass_interval(self.days,self.hours,self.split_interval,self.split_per_pass,False)
+        print("self.days ", self.days)
+        print("self.hours ", self.hours)
+        days, hours, self.online_intervals = self.get_online_pass_interval(
+            self.days, self.hours, self.split_interval, self.split_per_pass,
+            False)
         self.save_model_path = self.config.get("runner.model_save_path")
-        self.warm_start_model_path = config.get("runner.warm_start_model_path","./warmup")
+        self.warm_start_model_path = config.get("runner.warm_start_model_path",
+                                                "./warmup")
         #donefile_path = self.config.get("runner.donefile_path","./done")
         if self.save_model_path and (not os.path.exists(self.save_model_path)):
             os.makedirs(self.save_model_path)
 
-        last_day, last_pass, last_path, model_base_key = self.get_last_save_model(self.save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+        last_day, last_pass, last_path, model_base_key = self.get_last_save_model(
+            self.save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
         if last_day != -1:
             fleet.init_server(last_path, mode=0)
 
@@ -688,12 +705,13 @@ class Training(object):
         for i in range(len(days)):
             day = days[i]
             if last_day != -1 and int(day) < last_day:
-                i+= 1
+                i += 1
                 continue
             #base_model_saved = False
             save_model_path = self.save_model_path
             for pass_id in range(len(self.online_intervals)):
-                if (last_day != -1 and int(day) == last_day) and (last_pass != -1 and int(index) < last_pass):
+                if (last_day != -1 and int(day) == last_day) and (
+                        last_pass != -1 and int(index) < last_pass):
                     #base_model_saved = True
                     continue
                 if fleet.is_first_worker() and save_first_base:
@@ -702,17 +720,18 @@ class Training(object):
                         self.get_last_save_xbox_base(save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
                     if int(day) > last_base_day:
                         model_base_key = int(time.time())
-                        self.save_xbox_model(save_model_path,day,-1)
-                        self.write_xbox_donefile(output_path=save_model_path,day=day,pass_id=-1,model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
+                        self.save_xbox_model(save_model_path, day, -1)
+                        self.write_xbox_donefile(
+                            output_path=save_model_path,
+                            day=day,
+                            pass_id=-1,
+                            model_base_key=model_base_key,
+                            hadoop_fs_name=self.hadoop_fs_name,
+                            hadoop_fs_ugi=self.hadoop_fs_ugi)
                     elif int(day) == last_base_day:
                         model_base_key = tmp_xbox_base_key
 
-                # if not base_model_saved:
-                #     self.save_xbox_model(save_model_path,day,-1)
-                #     self.write_xbox_donefile(output_path=save_model_path,day=day,pass_id=-1,model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
-                #     base_model_saved = True
-
-                print("new day ",day," new pass ",pass_id)
+                print("new day ", day, " new pass ", pass_id)
                 index = pass_id + 1
                 prepare_data_start_time = time.time()
                 dataset = self.prepare_dataset(day, index)
@@ -723,8 +742,8 @@ class Training(object):
 
                 train_start_time = time.time()
                 train_end_time = time.time()
-                logger.info(
-                        "Train Dataset Done, using time {} second.".format(train_end_time - train_start_time))
+                logger.info("Train Dataset Done, using time {} second.".format(
+                    train_end_time - train_start_time))
 
                 logger.info("Pass: {}, Running Dataset Begin.".format(index))
                 fetch_info = [
@@ -742,54 +761,57 @@ class Training(object):
                     debug=config.get("runner.dataset_debug"))
                 dataset.release_memory()
                 global_auc = self.get_global_auc()
-                logger.info(" global auc ",global_auc)
+                logger.info(" global auc %f" % global_auc)
                 if fleet.is_first_worker():
                     if index % self.checkpoint_per_pass == 0:
-                        self.save_model(save_model_path,day,index)
-                        self.write_model_donefile(output_path=save_model_path,
-                                              day=day,
-                                              pass_id=index,
-                                              xbox_base_key=model_base_key,
-                                              hadoop_fs_name=self.hadoop_fs_name,
-                                            hadoop_fs_ugi=self.hadoop_fs_ugi)
+                        self.save_model(save_model_path, day, index)
+                        self.write_model_donefile(
+                            output_path=save_model_path,
+                            day=day,
+                            pass_id=index,
+                            xbox_base_key=model_base_key,
+                            hadoop_fs_name=self.hadoop_fs_name,
+                            hadoop_fs_ugi=self.hadoop_fs_ugi)
 
                     if index % self.save_delta_frequency == 0:
-                        last_xbox_day, last_xbox_pass, last_xbox_path, _ = self.get_last_save_xbox(save_model_path,self.hadoop_fs_name,self.hadoop_fs_ugi)
-                        if int(day) < last_xbox_day or int(day) == last_xbox_day and int(index) <= last_xbox_pass:
+                        last_xbox_day, last_xbox_pass, last_xbox_path, _ = self.get_last_save_xbox(
+                            save_model_path, self.hadoop_fs_name,
+                            self.hadoop_fs_ugi)
+                        if int(day) < last_xbox_day or int(
+                                day) == last_xbox_day and int(
+                                    index) <= last_xbox_pass:
                             log_str = "delta model exists"
                             logger.info(log_str)
                         else:
-                            self.save_xbox_model(save_model_path, day, index) #1 delta
-                            self.write_xbox_donefile(output_path=save_model_path, day=day, pass_id=index,
-                                                 model_base_key=model_base_key, hadoop_fs_name=self.hadoop_fs_name,
-                                                 hadoop_fs_ugi=self.hadoop_fs_ugi)
+                            self.save_xbox_model(save_model_path, day, index,
+                                                 self.hadoop_fs_name,
+                                                 self.hadoop_fs_ugi)  #1 delta
+                            self.write_xbox_donefile(
+                                output_path=save_model_path,
+                                day=day,
+                                pass_id=index,
+                                model_base_key=model_base_key,
+                                hadoop_fs_name=self.hadoop_fs_name,
+                                hadoop_fs_ugi=self.hadoop_fs_ugi)
                 fleet.barrier_worker()
 
-
             if fleet.is_first_worker():
-                last_base_day, last_base_path, last_base_key = self.get_last_save_xbox_base(save_model_path, self.hadoop_fs_name,self.hadoop_fs_ugi)
+                last_base_day, last_base_path, last_base_key = self.get_last_save_xbox(
+                    save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
                 next_day = int(self.get_next_day(day))
                 if next_day <= last_base_day:
                     model_base_key = last_base_key
                 else:
                     model_base_key = int(time.time())
                     fleet.shrink_sparse_table()
-                    self.save_xbox_model(save_model_path, day, -1)
-                    self.write_xbox_donefile(output_path=save_model_path, day=day, pass_id=-1,
-                                             model_base_key=model_base_key, hadoop_fs_name=self.hadoop_fs_name,
-                                             hadoop_fs_ugi=self.hadoop_fs_ugi)
-                    # else:
-                    #
-                    #     self.save_xbox_model(save_model_path,0,index)  #1 delta
-                    #     print("save delta ",index)
-                    #     self.write_xbox_donefile(output_path=save_model_path,day=0, pass_id=index, model_base_key=model_base_key,hadoop_fs_name=self.hadoop_fs_name,hadoop_fs_ugi=self.hadoop_fs_ugi)
-
-        # fleet.barrier_worker()
-        # fleet.save_inference_model(
-        #                     self.exe, self.warm_start_model_path,
-        #                     [feed.name for feed in self.inference_feed_var],
-        #                     self.inference_target_var,
-        #                     mode=0) #0 save checkpoints
+                    self.save_model(save_model_path, day, -1, 3)
+                    self.write_model_donefile(
+                        output_path=save_model_path,
+                        day=day,
+                        pass_id=-1,
+                        model_base_key=model_base_key,
+                        hadoop_fs_name=self.hadoop_fs_name,
+                        hadoop_fs_ugi=self.hadoop_fs_ugi)
 
 
 if __name__ == "__main__":
