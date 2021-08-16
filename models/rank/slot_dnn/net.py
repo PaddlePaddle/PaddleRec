@@ -65,6 +65,7 @@ class BenchmarkDNNLayer(nn.Layer):
     def forward(self, slot_inputs):
 
         embs = []
+        self.inference_model_feed_vars = []
         for s_input in slot_inputs:
             if self.sync_mode == "gpubox":
                 emb = paddle.static.nn.sparse_embedding(
@@ -80,6 +81,7 @@ class BenchmarkDNNLayer(nn.Layer):
                     is_distributed=True,
                     param_attr=paddle.ParamAttr(name="embedding"))
                 #emb = self.embedding(s_input)
+            self.inference_model_feed_vars.append(emb)
             bow = paddle.fluid.layers.sequence_pool(input=emb, pool_type='sum')
             #paddle.fluid.layers.Print(bow)
             embs.append(bow)
@@ -89,5 +91,5 @@ class BenchmarkDNNLayer(nn.Layer):
         for n_layer in self._mlp_layers:
             y_dnn = n_layer(y_dnn)
 
-        predict = F.sigmoid(paddle.clip(y_dnn, min=-15.0, max=15.0))
-        return predict
+        self.predict = F.sigmoid(paddle.clip(y_dnn, min=-15.0, max=15.0))
+        return self.predict
