@@ -82,8 +82,16 @@ class Main(object):
         self.inference_target_var = model.inference_target_var
         if config.get("runner.need_prune", False):
             # DSSM prune net
-            self.inference_feed_vars = [self.input_data[0]]
+            self.inference_feed_vars = model.prune_feed_vars
             self.inference_target_var = model.prune_target_var
+        if config.get("runner.need_train_dump", False):
+            self.train_dump_fields = model.train_dump_fields if hasattr(
+                model, "train_dump_fields") else []
+            self.train_dump_params = model.train_dump_params if hasattr(
+                model, "train_dump_params") else []
+        if config.get("runner.need_infer_dump", False):
+            self.infer_dump_fields = model.infer_dump_fields if hasattr(
+                model, "infer_dump_fields") else []
         print(self.inference_feed_vars)
         print(self.inference_target_var)
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
@@ -255,10 +263,12 @@ class Main(object):
             dump_fields_dir = self.config.get("runner.train_dump_fields_dir")
             dump_fields_path = "{}/{}/{}".format(dump_fields_dir, day,
                                                  pass_index)
+            dump_fields = [var.name for var in self.train_dump_fields]
+            dump_params = [param.name for param in self.train_dump_params]
             set_dump_config(paddle.static.default_main_program(), {
                 "dump_fields_path": dump_fields_path,
-                "dump_fields": config.get("runner.train_dump_fields", []),
-                "dump_param": config.get("runner.train_dump_param", [])
+                "dump_fields": dump_fields,
+                "dump_param": dump_params
             })
         print(paddle.static.default_main_program()._fleet_opt)
 
@@ -289,7 +299,7 @@ class Main(object):
         print_step = int(config.get("runner.print_interval"))
         dump_fields_dir = self.config.get("runner.infer_dump_fields_dir")
         dump_fields_path = "{}/{}/{}".format(dump_fields_dir, day, pass_index)
-        dump_fields = self.config.get("runner.infer_dump_fields", [])
+        dump_fields = [var.name for var in self.infer_dump_fields]
         set_dump_config(paddle.static.default_main_program(), {
             "dump_fields_path": dump_fields_path,
             "dump_fields": dump_fields
