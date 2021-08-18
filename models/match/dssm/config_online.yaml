@@ -35,19 +35,24 @@ runner:
   print_interval: 1
 
   dataset_debug: False
+
+  # when you need to prune net, please set need_prune to True,
+  # and need to set prune_feed_vars and prune_target_var in static_model.py
+  need_prune: True
+
+  input_type: 1   # data_type will distinguish between sparse and dense feature
   parse_ins_id: True
   parse_content: True
-
-  input_type: 1
-  need_prune: True
+  
+  # when you need to dump fileds and params in training, please set need_train_dump to True,
+  # and need to set train_dump_fields and train_dump_params in static_model.py
   need_train_dump: True
-  train_dump_fields: ["linear_11.tmp_1", "relu_5.tmp_0"]
-  # train_dump_param: []
   # train_dump_fields_dir: "afs:/xxx"
   train_dump_fields_dir: "./train_dump_data"
 
+  # when you need to dump fileds in inference, please set need_infer_dump to True,
+  # and need to set infer_dump_fields in static_model.py
   need_infer_dump: True
-  infer_dump_fields: ["relu_5.tmp_0"]
   # infer_dump_fields_dir: "afs:/xxx"
   infer_dump_fields_dir: "./infer_dump_data"
 
