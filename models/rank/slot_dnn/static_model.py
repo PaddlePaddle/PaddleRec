@@ -73,6 +73,7 @@ class StaticModel():
                                                   label=self.label_input,
                                                   slide_steps=0)
         self.inference_target_var = auc
+        self.inference_model_feed_vars = dnn_model.inference_model_feed_vars
         if is_infer:
             fetch_dict = {'auc': auc}
             return fetch_dict

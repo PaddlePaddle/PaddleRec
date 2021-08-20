@@ -72,7 +72,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate》](  https://arxiv.org/abs/1804.07931  )文章基于 Multi-Task Learning 的思路，提出一种新的CVR预估模型——ESMM，有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题。模型的主要组网结构如下：
 [ESMM](https://arxiv.org/abs/1804.07931):
 <p align="center">
-<img align="center" src="../../doc/imgs/esmm.png">
+<img align="center" src="../../../doc/imgs/esmm.png">
 <p>
 
 ### 效果复现
