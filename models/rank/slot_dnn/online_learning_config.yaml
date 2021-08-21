@@ -35,9 +35,8 @@ runner:
 
   split_interval: 5
   split_per_pass: 2
-  days: "{20190720..20190722}"
-  hours: "{0..23}"
-
+  start_day: "20190720"
+  end_day: "20190722"
   infer_batch_size: 2
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "data/"
