@@ -34,9 +34,9 @@ runner:
   sync_mode: "async"
 
   split_interval: 5
-  split_per_pass: 2
+  split_per_pass: 8
   start_day: "20190720"
-  end_day: "20190722"
+  end_day: "20190721"
   infer_batch_size: 2
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "data/"

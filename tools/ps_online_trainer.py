@@ -300,9 +300,9 @@ class Training(object):
         old_pos_shape = np.array(pos.shape)
         # reshape to one dim
         pos = pos.reshape(-1)
-        global_pos = np.copy(pos) * 0
+        #global_pos = np.copy(pos) * 0
         # mpi allreduce
-        fleet.util.all_reduce(pos)
+        global_pos = fleet.util.all_reduce(pos)
         # reshape to its original shape
         global_pos = global_pos.reshape(old_pos_shape)
 
@@ -310,8 +310,8 @@ class Training(object):
         neg = np.array(scope.find_var(stat_neg).get_tensor())
         old_neg_shape = np.array(neg.shape)
         neg = neg.reshape(-1)
-        global_neg = np.copy(neg) * 0
-        fleet.util.all_reduce(neg)
+        #global_neg = np.copy(neg) * 0
+        global_neg = fleet.util.all_reduce(neg)
         global_neg = global_neg.reshape(old_neg_shape)
 
         # calculate auc
