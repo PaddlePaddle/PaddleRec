@@ -194,10 +194,6 @@ class Training(object):
                     arr = i.split("\t")
                     day_list.append(arr[0])
                     pass_list.append(arr[3])
-                # if len(lines) > 0 and lines[-1] == "":
-                #     lines = lines[:-1]
-                # day_list = [i.split("\t")[0] for i in lines]
-                # pass_list = [i.split("\t")[3] for i in lines]
                 exist = False
                 for i in range(len(day_list)):
                     if int(day) == int(day_list[i]) and \
@@ -696,6 +692,27 @@ class Training(object):
                 result += cur_path
         return result
 
+    def save_batch_model(self, output_path, day):
+        """
+        save batch model
+
+        Args:
+            output_path(str): output path
+            day(str|int): training day
+
+        Examples:
+            .. code-block:: python
+
+              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+              fleet_util = FleetUtil()
+              fleet_util.save_batch_model("hdfs:/my/path", 20190722)
+
+        """
+        day = str(day)
+        suffix_name = "/%s/0/" % day
+        model_path = output_path + suffix_name
+        fleet.save_persistables(None, model_path, mode=3)
+
     def prepare_dataset(self, day, pass_index):
         # dataset, file_list = get_reader(self.input_data, config)
 
@@ -862,10 +879,20 @@ class Training(object):
                 else:
                     model_base_key = int(time.time())
                     fleet.shrink(10)
-                    self.save_model(save_model_path, day, -1, 3)
+                    self.save_xbox_model(save_model_path, next_day, -1,
+                                         self.hadoop_fs_name,
+                                         self.hadoop_fs_ugi)
+                    self.write_xbox_donefile(
+                        output_path=save_model_path,
+                        day=next_day,
+                        pass_id=-1,
+                        model_base_key=model_base_key,
+                        hadoop_fs_name=self.hadoop_fs_name,
+                        hadoop_fs_ugi=self.hadoop_fs_ugi)
+                    self.save_batch_model(save_model_path, next_day)
                     self.write_model_donefile(
                         output_path=save_model_path,
-                        day=day,
+                        day=next_day,
                         pass_id=-1,
                         xbox_base_key=model_base_key,
                         hadoop_fs_name=self.hadoop_fs_name,
