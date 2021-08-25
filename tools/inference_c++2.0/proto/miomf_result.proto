@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package PaddleRec.infer;
+message MioMFResult {
+    optional sint64 show = 2;
+    optional sint64 click = 3;
+    optional sint32 pred = 4;
+    optional sint32 weight_lr_person = 5;
+    repeated sint32 weight_mf = 7 [packed = true];
+};
