@@ -38,6 +38,7 @@ import paddle.fluid as fluid
 from paddle.fluid import core
 from paddle.fluid.log_helper import get_logger
 from paddle.distributed.fleet.utils.fs import LocalFS, HDFSClient
+
 OpRole = core.op_proto_and_checker_maker.OpRole
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -61,12 +62,11 @@ class Training(object):
         self.save_delta_frequency = config.get("runner.save_delta_frequency",
                                                6)
         self.checkpoint_per_pass = config.get("runner.checkpoint_per_pass", 6)
-        self.save_first_base = config.get("runner.save_first_base")
-        self.days = config.get("runner.days")
-        self.hours = config.get("runner.hours")
-        print("self.days ", self.days)
-        print("self.hours ", self.hours)
-        print("self.data = ", config.get("runner.train_data_dir"))
+        self.save_first_base = config.get("runner.save_first_base", True)
+        # self.days = config.get("runner.days")
+        # self.hours = config.get("runner.hours")
+        self.start_day = config.get("runner.start_day")
+        self.end_day = config.get("runner.end_day")
 
     def run(self):
         os.environ["PADDLE_WITH_GLOO"] = "1"
@@ -79,15 +79,10 @@ class Training(object):
             self.run_worker()
             fleet.stop_worker()
         logger.info("successfully completed running, Exit.")
-        # self.init_network()
-        # self.run_worker()
 
-    def get_next_day(day):
+    def get_next_day(self, day):
         return os.popen('date -d"%s' % day + ' +1 days" +"%Y%m%d"').read(
         ).strip()
-
-    # def save_fleet_model(self, path, mode=0):
-    #     fleet.save_persistables(self.exe, path, None, mode=mode)
 
     def save_model(self, output_path, day, pass_id, mode=0):
         """
@@ -142,8 +137,8 @@ class Training(object):
 
         if fleet.worker_index() == 0:
             donefile_path = output_path + "/" + donefile_name
-            content  = "%s\t%lu\t%s\t%s\t%d" % (day, xbox_base_key,\
-                                                model_path, pass_id, 0)
+            content = "%s\t%lu\t%s\t%s\t%d" % (day, xbox_base_key, \
+                                               model_path, pass_id, 0)
             if not self.train_local:
                 configs = {
                     "fs.default.name": hadoop_fs_name,
@@ -168,7 +163,7 @@ class Training(object):
                         client.delete(donefile_path)
                         client.upload(donefile_name, output_path)
                         logger.info("write %s/%s %s succeed" % \
-                                          (day, pass_id, donefile_name))
+                                    (day, pass_id, donefile_name))
                     else:
                         logger.info("not write %s because %s/%s already "
                                     "exists" % (donefile_name, day, pass_id))
@@ -177,20 +172,28 @@ class Training(object):
                         f.write(content + "\n")
                     client.upload(donefile_name, output_path)
                     logger.info("write %s/%s %s succeed" % \
-                                   (day, pass_id, donefile_name))
+                                (day, pass_id, donefile_name))
             else:
                 file = Path(donefile_path)
+                print("model done file path = {}, content = {}".format(
+                    donefile_path, content))
                 if not file.is_file():
+                    logger.info(" {} doesn't exist ".format(donefile_path))
                     with open(donefile_path, "w") as f:
                         f.write(content + "\n")
                     return
                 with open(donefile_path, encoding='utf-8') as f:
                     pre_content = f.read()
+                logger.info("pre_content = {}".format(pre_content))
                 lines = pre_content.split("\n")
-                if len(lines) > 0 and lines[-1] == "":
-                    lines = lines[:-1]
-                day_list = [i.split("\t")[0] for i in lines]
-                pass_list = [i.split("\t")[3] for i in lines]
+                day_list = []
+                pass_list = []
+                for i in lines:
+                    if i == "":
+                        continue
+                    arr = i.split("\t")
+                    day_list.append(arr[0])
+                    pass_list.append(arr[3])
                 exist = False
                 for i in range(len(day_list)):
                     if int(day) == int(day_list[i]) and \
@@ -198,14 +201,77 @@ class Training(object):
                         exist = True
                         break
                 if not exist:
-                    with open(donefile_name, "w") as f:
+                    with open(donefile_path, "w") as f:
                         f.write(pre_content + "\n")
+                        logger.info("write donefile {}".format(pre_content))
                         f.write(content + "\n")
+                        logger.info("write donefile {}".format(content))
                     logger.info("write %s/%s %s succeed" % \
                                 (day, pass_id, donefile_name))
                 else:
                     logger.info("not write %s because %s/%s already "
                                 "exists" % (donefile_name, day, pass_id))
+
+    def get_last_save_xbox_base(self,
+                                output_path,
+                                hadoop_fs_name,
+                                hadoop_fs_ugi,
+                                hadoop_home="$HADOOP_HOME"):
+        r"""
+        get last saved base xbox info from xbox_base_done.txt
+
+        Args:
+            output_path(str): output path
+            hadoop_fs_name(str): hdfs/afs fs_name
+            hadoop_fs_ugi(str): hdfs/afs fs_ugi
+            hadoop_home(str): hadoop home, default is "$HADOOP_HOME"
+
+        Returns:
+            [last_save_day, last_path, xbox_base_key]
+            last_save_day(int): day of saved model
+            last_path(str): model path
+            xbox_base_key(int): xbox key
+
+        Examples:
+            .. code-block:: python
+
+              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+              fleet_util = FleetUtil()
+              last_save_day, last_path, xbox_base_key = \
+                  fleet_util.get_last_save_xbox_base("hdfs:/my/path", 20190722,
+                                                     88)
+
+        """
+
+        donefile_path = output_path + "/xbox_base_done.txt"
+        if not self.train_local:
+            configs = {
+                "fs.default.name": hadoop_fs_name,
+                "hadoop.job.ugi": hadoop_fs_ugi
+            }
+            client = HDFSClient(hadoop_home, configs)
+            if not client.is_file(donefile_path):
+                return [-1, -1, int(time.time())]
+            pre_content = client.cat(donefile_path)
+            last_dict = json.loads(pre_content.split("\n")[-1])
+            last_day = int(last_dict["input"].split("/")[-3])
+            last_path = "/".join(last_dict["input"].split("/")[:-1])
+            xbox_base_key = int(last_dict["key"])
+            return [last_day, last_path, xbox_base_key]
+        else:
+            file = Path(donefile_path)
+            if not file.is_file():
+                return [-1, -1, int(time.time())]
+            with open(donefile_path, encoding='utf-8') as f:
+                pre_content = f.read()
+            last_line = pre_content.split("\n")[-1]
+            if last_line == '':
+                last_line = pre_content.split("\n")[-2]
+            last_dict = json.loads(last_line)
+            last_day = int(last_dict["input"].split("/")[-3])
+            last_path = "/".join(last_dict["input"].split("/")[:-1])
+            xbox_base_key = int(last_dict["key"])
+            return [last_day, last_path, xbox_base_key]
 
     def get_global_auc(self,
                        scope=fluid.global_scope(),
@@ -234,9 +300,9 @@ class Training(object):
         old_pos_shape = np.array(pos.shape)
         # reshape to one dim
         pos = pos.reshape(-1)
-        global_pos = np.copy(pos) * 0
+        #global_pos = np.copy(pos) * 0
         # mpi allreduce
-        fleet.util.all_reduce(pos)
+        global_pos = fleet.util.all_reduce(pos)
         # reshape to its original shape
         global_pos = global_pos.reshape(old_pos_shape)
 
@@ -244,8 +310,8 @@ class Training(object):
         neg = np.array(scope.find_var(stat_neg).get_tensor())
         old_neg_shape = np.array(neg.shape)
         neg = neg.reshape(-1)
-        global_neg = np.copy(neg) * 0
-        fleet.util.all_reduce(neg)
+        #global_neg = np.copy(neg) * 0
+        global_neg = fleet.util.all_reduce(neg)
         global_neg = global_neg.reshape(old_neg_shape)
 
         # calculate auc
@@ -294,7 +360,7 @@ class Training(object):
             fleet.save_inference_model(
                 self.exe, infer_program_path,
                 [feed.name for feed in self.inference_model_feed_vars],
-                self.predict)  #0 save checkpoints
+                self.predict)  # 0 save checkpoints
         else:
             model_name = "inference_model"
             configs = {
@@ -428,40 +494,16 @@ class Training(object):
             xbox_base_key = int(last_dict["key"])
             return [last_day, last_pass, last_path, xbox_base_key]
 
-    def get_online_pass_interval(self, days, hours, split_interval,
+    def get_online_pass_interval(self, start_day, end_day, split_interval,
                                  split_per_pass, is_data_hourly_placed):
-        """
-        get online pass interval
-
-        Args:
-            days(str): days to train
-            hours(str): hours to train
-            split_interval(int|str): split interval
-            split_per_pass(int}str): split per pass
-            is_data_hourly_placed(bool): is data hourly placed
-
-        Returns:
-            online_pass_interval(list)
-
-        Examples:
-            .. code-block:: python
-
-                get_online_pass_interval(
-                  days="{20190720..20190729}",
-                  hours="{0..23}",
-                  split_interval=5,
-                  split_per_pass=2,
-                  is_data_hourly_placed=False)
-
-        """
-        days = os.popen("echo -n " + days).read().split(" ")
-        hours = os.popen("echo -n " + hours).read().split(" ")
+        # days = os.popen("echo -n " + days).read().split(" ")
+        # hours = os.popen("echo -n " + hours).read().split(" ")
         split_interval = int(split_interval)
         split_per_pass = int(split_per_pass)
         splits_per_day = 24 * 60 // split_interval
         pass_per_day = splits_per_day // split_per_pass
-        left_train_hour = int(hours[0])
-        right_train_hour = int(hours[-1])
+        left_train_hour = 0
+        right_train_hour = 23
 
         start = 0
         split_path = []
@@ -485,7 +527,7 @@ class Training(object):
                 online_pass_interval[i].append(split_path[j])
             start += split_per_pass
 
-        return days, hours, online_pass_interval
+        return online_pass_interval
 
     def write_xbox_donefile(self,
                             output_path,
@@ -551,7 +593,7 @@ class Training(object):
                             multi_processes=1,
                             overwrite=False)
                         logger.info("write %s/%s %s success" % \
-                                         (day, pass_id, donefile_name))
+                                    (day, pass_id, donefile_name))
                     else:
                         logger.info("do not write %s because %s/%s already "
                                     "exists" % (donefile_name, day, pass_id))
@@ -564,7 +606,7 @@ class Training(object):
                         multi_processes=1,
                         overwrite=False)
                     logger.info("write %s/%s %s success" % \
-                                     (day, pass_id, donefile_name))
+                                (day, pass_id, donefile_name))
             else:
                 file = Path(donefile_path)
                 if not file.is_file():
@@ -623,7 +665,8 @@ class Training(object):
 
     def run_server(self):
         logger.info("Run Server Begin")
-        fleet.init_server(config.get("runner.warmup_model_path", "./warmup"))
+        # fleet.init_server(config.get("runner.warmup_model_path", "./warmup"))
+        fleet.init_server()
         fleet.run_server()
 
     def file_ls(self, path_array):
@@ -649,8 +692,29 @@ class Training(object):
                 result += cur_path
         return result
 
+    def save_batch_model(self, output_path, day):
+        """
+        save batch model
+
+        Args:
+            output_path(str): output path
+            day(str|int): training day
+
+        Examples:
+            .. code-block:: python
+
+              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+              fleet_util = FleetUtil()
+              fleet_util.save_batch_model("hdfs:/my/path", 20190722)
+
+        """
+        day = str(day)
+        suffix_name = "/%s/0/" % day
+        model_path = output_path + suffix_name
+        fleet.save_persistables(None, model_path, mode=3)
+
     def prepare_dataset(self, day, pass_index):
-        #dataset, file_list = get_reader(self.input_data, config)
+        # dataset, file_list = get_reader(self.input_data, config)
 
         dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
         dataset.set_use_var(self.input_data)
@@ -683,44 +747,53 @@ class Training(object):
         self.exe = paddle.static.Executor(place)
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
-        #self.split_trainfile()
-        print("self.days ", self.days)
-        print("self.hours ", self.hours)
-        days, hours, self.online_intervals = self.get_online_pass_interval(
-            self.days, self.hours, self.split_interval, self.split_per_pass,
-            False)
+        self.online_intervals = self.get_online_pass_interval(
+            self.start_day, self.end_day, self.split_interval,
+            self.split_per_pass, False)
         self.save_model_path = self.config.get("runner.model_save_path")
         self.warm_start_model_path = config.get("runner.warm_start_model_path",
                                                 "./warmup")
-        #donefile_path = self.config.get("runner.donefile_path","./done")
         if self.save_model_path and (not os.path.exists(self.save_model_path)):
             os.makedirs(self.save_model_path)
 
         last_day, last_pass, last_path, model_base_key = self.get_last_save_model(
             self.save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+        logger.info(
+            "get_last_save_model last_day = {}, last_pass = {}, last_path = {}, model_base_key = {}".
+            format(last_day, last_pass, last_path, model_base_key))
         if last_day != -1:
-            fleet.init_server(last_path, mode=0)
+            fleet.load_model(last_path, mode="0")
 
         save_first_base = self.save_first_base
-        for i in range(len(days)):
-            day = days[i]
+        day = self.start_day
+
+        while int(day) <= int(self.end_day):
+            logger.info("training a new day {}, end_day = {}".format(
+                day, self.end_day))
             if last_day != -1 and int(day) < last_day:
-                i += 1
+                day = int(self.get_next_day(day))
                 continue
-            #base_model_saved = False
+            # base_model_saved = False
             save_model_path = self.save_model_path
             for pass_id in range(len(self.online_intervals)):
+                index = pass_id + 1
                 if (last_day != -1 and int(day) == last_day) and (
                         last_pass != -1 and int(index) < last_pass):
-                    #base_model_saved = True
+                    # base_model_saved = True
                     continue
                 if fleet.is_first_worker() and save_first_base:
                     save_first_base = False
                     last_base_day, last_base_path, tmp_xbox_base_key = \
                         self.get_last_save_xbox_base(save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+                    logger.info(
+                        "get_last_save_xbox_base, last_base_day = {}, last_base_path = {}, tmp_xbox_base_key = {}".
+                        format(last_base_day, last_base_path,
+                               tmp_xbox_base_key))
                     if int(day) > last_base_day:
                         model_base_key = int(time.time())
-                        self.save_xbox_model(save_model_path, day, -1)
+                        self.save_xbox_model(save_model_path, day, -1,
+                                             self.hadoop_fs_name,
+                                             self.hadoop_fs_ugi)
                         self.write_xbox_donefile(
                             output_path=save_model_path,
                             day=day,
@@ -732,7 +805,6 @@ class Training(object):
                         model_base_key = tmp_xbox_base_key
 
                 print("new day ", day, " new pass ", pass_id)
-                index = pass_id + 1
                 prepare_data_start_time = time.time()
                 dataset = self.prepare_dataset(day, index)
                 prepare_data_end_time = time.time()
@@ -785,7 +857,7 @@ class Training(object):
                         else:
                             self.save_xbox_model(save_model_path, day, index,
                                                  self.hadoop_fs_name,
-                                                 self.hadoop_fs_ugi)  #1 delta
+                                                 self.hadoop_fs_ugi)  # 1 delta
                             self.write_xbox_donefile(
                                 output_path=save_model_path,
                                 day=day,
@@ -796,26 +868,40 @@ class Training(object):
                 fleet.barrier_worker()
 
             if fleet.is_first_worker():
-                last_base_day, last_base_path, last_base_key = self.get_last_save_xbox(
+                last_base_day, last_base_path, last_base_key = self.get_last_save_xbox_base(
                     save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+                logger.info(
+                    "one epoch finishes, get_last_save_xbox, last_base_day = {}, last_base_path = {}, last_base_key = {}".
+                    format(last_base_day, last_base_path, last_base_key))
                 next_day = int(self.get_next_day(day))
                 if next_day <= last_base_day:
                     model_base_key = last_base_key
                 else:
                     model_base_key = int(time.time())
-                    fleet.shrink_sparse_table()
-                    self.save_model(save_model_path, day, -1, 3)
-                    self.write_model_donefile(
+                    fleet.shrink(10)
+                    self.save_xbox_model(save_model_path, next_day, -1,
+                                         self.hadoop_fs_name,
+                                         self.hadoop_fs_ugi)
+                    self.write_xbox_donefile(
                         output_path=save_model_path,
-                        day=day,
+                        day=next_day,
                         pass_id=-1,
                         model_base_key=model_base_key,
                         hadoop_fs_name=self.hadoop_fs_name,
                         hadoop_fs_ugi=self.hadoop_fs_ugi)
+                    self.save_batch_model(save_model_path, next_day)
+                    self.write_model_donefile(
+                        output_path=save_model_path,
+                        day=next_day,
+                        pass_id=-1,
+                        xbox_base_key=model_base_key,
+                        hadoop_fs_name=self.hadoop_fs_name,
+                        hadoop_fs_ugi=self.hadoop_fs_ugi)
+
+            day = self.get_next_day(day)
 
 
 if __name__ == "__main__":
-
     paddle.enable_static()
     parser = argparse.ArgumentParser("PaddleRec train script")
     parser.add_argument(
