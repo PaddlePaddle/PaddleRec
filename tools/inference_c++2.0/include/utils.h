@@ -48,12 +48,9 @@ public:
 
     int size()
     {
-        if (features.size() == featureCnts.size())
-        {
+        if (features.size() == featureCnts.size()) {
             return features.size();
-        }
-        else
-        {
+        } else {
             return 0;
         }
     }

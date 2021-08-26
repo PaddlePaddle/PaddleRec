@@ -27,14 +27,14 @@ DEFINE_bool(withCube, true, "with cube");
 DEFINE_int32(threadNum, 2, "thread num");
 DEFINE_int32(batchSize, 3, "batch size");
 DEFINE_int32(iterationNum, 100, "iteration num");
-DEFINE_string(performanceFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/performance.txt", "performanceFile");
-DEFINE_string(trainingFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/data/out_test.1", "input data file");
-DEFINE_string(modelFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/data/rec_inference/rec_inference.pdmodel", "model file");
-DEFINE_string(paramFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/data/rec_inference/rec_inference.pdiparams", "param file");
-DEFINE_string(predictorLog, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/predictor.log", "predictor log");
-DEFINE_string(stdLog, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/std.log", "standard log");
-DEFINE_string(varsName, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/all_vars.txt", "all vars name");
-DEFINE_string(keys, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/keys", "keys to seek");
+DEFINE_string(performanceFile, "../performance.txt", "performanceFile");
+DEFINE_string(trainingFile, "../data/out_test.1", "input data file");
+DEFINE_string(modelFile, "../data/rec_inference/rec_inference.pdmodel", "model file");
+DEFINE_string(paramFile, "../data/rec_inference/rec_inference.pdiparams", "param file");
+DEFINE_string(predictorLog, "../predictor.log", "predictor log");
+DEFINE_string(stdLog, "../std.log", "standard log");
+DEFINE_string(varsName, "../all_vars.txt", "all vars name");
+DEFINE_string(keys, "../keys", "keys to seek");
 DEFINE_uint64(cube_batch_size, 1, "cube batch size");
 
 static int currResIdx = 0;
@@ -103,20 +103,20 @@ void InferMain(int tid, std::vector<Metric>& metrics)
    	         LOG(INFO) << "thread id: " << tid << " batch idx: " << batchSample.batchIdx;
        	    }
             tp->tr->FillLodTensorWithEmbdingIdx(batchSample);
-if (FLAGS_testPredictor) {
-                    tPredictor1 = std::chrono::high_resolution_clock::now();
-                }
-                tp->tr->piModel->predictor->Run();
-                if (FLAGS_testPredictor) {
-                    tPredictor2 = std::chrono::high_resolution_clock::now();
-                    tPredictor += (tPredictor2 - tPredictor1);
-                }
-tp->tr->GetInferResult(batchSample);
-                if (FLAGS_debug) {
-                    tp->pd->PrintInferResult(tid, batchSample);
-                    tp->pd->WriteLayersOutput(tid, batchSample.batchIdx);
-                    tp->pd->WriteStdOutput(tid, batchSample);
-                }
+            if (FLAGS_testPredictor) {
+                tPredictor1 = std::chrono::high_resolution_clock::now();
+            }
+            tp->tr->piModel->predictor->Run();
+            if (FLAGS_testPredictor) {
+                tPredictor2 = std::chrono::high_resolution_clock::now();
+                tPredictor += (tPredictor2 - tPredictor1);
+            }
+            tp->tr->GetInferResult(batchSample);
+            if (FLAGS_debug) {
+                tp->pd->PrintInferResult(tid, batchSample);
+                tp->pd->WriteLayersOutput(tid, batchSample.batchIdx);
+                tp->pd->WriteStdOutput(tid, batchSample);
+            }
         } else {
             std::vector<BatchSample<dataType>> batches(1024);
             std::set<uint64_t> s;
@@ -138,15 +138,15 @@ tp->tr->GetInferResult(batchSample);
                 }
             }
 	        //LOG(INFO) << "query cube by batch: " << cubeBatchCnt;
-	    if (FLAGS_testCubeCost) {
-		tCube1 = std::chrono::high_resolution_clock::now();	
-	    }
+            if (FLAGS_testCubeCost) {
+                tCube1 = std::chrono::high_resolution_clock::now();	
+            }
             tp->tr->QueryEmbdingVecs(s, queryResult);
            	if (FLAGS_testCubeCost) {
-                    tCube2 = std::chrono::high_resolution_clock::now();
-                    tCube += (tCube2 - tCube1);
-                }
-	     for (uint i = 0; i < cubeBatchCnt; i++) {
+                tCube2 = std::chrono::high_resolution_clock::now();
+                tCube += (tCube2 - tCube1);
+            }
+	        for (uint i = 0; i < cubeBatchCnt; i++) {
                 //LOG(INFO) << "procssing batch: " << i;
                 tp->tr->FillLodTensorWithEmbdingVec(batches[i], queryResult);
                 if (FLAGS_debug) {
@@ -209,20 +209,20 @@ void InferMain(int tid, std::vector<Metric>& metrics)
    	            LOG(INFO) << "thread id: " << tid << " batch idx: " << batchSample.batchIdx;
        	    }
             tp->tr->FillLodTensorWithEmbdingIdx(batchSample);
-if (FLAGS_testPredictor) {
-                    tPredictor1 = std::chrono::high_resolution_clock::now();
-                }
-                tp->tr->piModel->predictor->Run();
-                if (FLAGS_testPredictor) {
-                    tPredictor2 = std::chrono::high_resolution_clock::now();
-                    tPredictor += (tPredictor2 - tPredictor1);
-                }
-tp->tr->GetInferResult(batchSample);
-                if (FLAGS_debug) {
-                    tp->pd->PrintInferResult(tid, batchSample);
-                    tp->pd->WriteLayersOutput(tid, batchSample.batchIdx);
-                    tp->pd->WriteStdOutput(tid, batchSample);
-                }
+            if (FLAGS_testPredictor) {
+                tPredictor1 = std::chrono::high_resolution_clock::now();
+            }
+            tp->tr->piModel->predictor->Run();
+            if (FLAGS_testPredictor) {
+                tPredictor2 = std::chrono::high_resolution_clock::now();
+                tPredictor += (tPredictor2 - tPredictor1);
+            }
+            tp->tr->GetInferResult(batchSample);
+            if (FLAGS_debug) {
+                tp->pd->PrintInferResult(tid, batchSample);
+                tp->pd->WriteLayersOutput(tid, batchSample.batchIdx);
+                tp->pd->WriteStdOutput(tid, batchSample);
+            }
         } else {
             std::vector<BatchSample<dataType>> batches(1024);
             std::set<uint64_t> s;
@@ -244,16 +244,16 @@ tp->tr->GetInferResult(batchSample);
                     break;
                 }
             }
-                            if (FLAGS_testCubeCost) {
+            if (FLAGS_testCubeCost) {
                 tCube1 = std::chrono::high_resolution_clock::now();
             }
             tp->tr->QueryEmbdingVecs(s, queryResult);
-                if (FLAGS_testCubeCost) {
-                    tCube2 = std::chrono::high_resolution_clock::now();
-                    tCube += (tCube2 - tCube1);
-                }
-		for (int i = 0; i < cubeBatchCnt; i++) {
-		//LOG(INFO) << "procssing batch: " << i;
+            if (FLAGS_testCubeCost) {
+                tCube2 = std::chrono::high_resolution_clock::now();
+                tCube += (tCube2 - tCube1);
+            }
+            for (int i = 0; i < cubeBatchCnt; i++) {
+                //LOG(INFO) << "procssing batch: " << i;
                 tp->tr->FillLodTensorWithEmbdingVec(batches[i], queryResult);
                 if (FLAGS_debug) {
                     tp->pd->PrintLodTensorByBatchIdx(batches[i].batchIdx);
@@ -360,8 +360,8 @@ int main(int argc, char *argv[])
     float tp = 0.0;
     float tc = 0.0;
     for (auto metric : metrics) {
-         tp += metric.predictorTimeCost;
-	 tc += metric.cubeTimeCost;
+        tp += metric.predictorTimeCost;
+        tc += metric.cubeTimeCost;
     }
     globalMetric.predictorTimeCost = tp / metrics.size();
     globalMetric.cubeTimeCost = tc / metrics.size();

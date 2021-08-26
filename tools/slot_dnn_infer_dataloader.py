@@ -68,7 +68,6 @@ class Reader(fleet.MultiSlotDataGenerator):
         return slots
 
 
-
     def batch_process(self, lines):
         output = {}
         lod = {}
@@ -250,9 +249,9 @@ def parse_args():
     parser.add_argument("--thread_num", type=int, default = 2, help="thread num")
     parser.add_argument("--batchsize", type=int, default = 5, help = "batch size")
     parser.add_argument("--iteration_num", type=int, default = 10, help = "iteration num")
-    parser.add_argument("--reader_file", default = "/home/soft/xiaoxiao-PaddleRec/PaddleRec/models/rank/slot_dnn/data/demo_10", type=str)
-    parser.add_argument("--params_file", default = "/home/soft/xiaoxiao-PaddleRec/PaddleRec/models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdiparams", type=str)
-    parser.add_argument("--model_file", default = "/home/soft/xiaoxiao-PaddleRec/PaddleRec/models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdmodel", type=str)
+    parser.add_argument("--reader_file", default = "../models/rank/slot_dnn/data/demo_10", type=str)
+    parser.add_argument("--params_file", default = "../models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdiparams", type=str)
+    parser.add_argument("--model_file", default = "../models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdmodel", type=str)
     parser.add_argument("--log_file", default = "./slot_dnn_infer.log", type=str)
     parser.add_argument("--performance_file", default = "./performance.txt", type=str)
     parser.add_argument("--model_dir", type=str)
