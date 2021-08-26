@@ -1,0 +1,15 @@
+paddle_inference/
+bin/
+build/
+cube_app/data/
+cube_app/cube_model/
+cube_app/keys
+cube_app/tmp
+cube_app/keys-values
+cube_app/log/
+cube_app/monitor/
+paddle_inference.so
+predictor.log
+std.log
+cube.result
+performance.txt
