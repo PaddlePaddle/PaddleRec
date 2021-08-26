@@ -53,7 +53,4 @@ endif()
 set(EXTERNAL_LIB "-lrt -ldl -lpthread")
 set(DEPS ${DEPS} ${PADDLE_LIB}/paddle/lib/libpaddle_inference.so)
 set(DEPS ${DEPS} ${MATH_LIB} ${BRPC_LIB} brpc z leveldb glog gflags protobuf xxhash srcMain proto_file ${EXTERNAL_LIB})
-
 target_link_libraries(${INFER_NAME} ${DEPS})
-
-
