@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 
 q = Queue()
 
+
 class Reader(fleet.MultiSlotDataGenerator):
     def init(self, args):
         self.args = args
@@ -94,7 +95,7 @@ class Reader(fleet.MultiSlotDataGenerator):
                 if not self.visit[slot]:
                     output[slot].extend([self.padding])
                 else:
-                    self.visit[slot] = False 
+                    self.visit[slot] = False
             for slot in self.slots:
                 lod[slot][0].append(len(output[slot]))
 
@@ -181,7 +182,7 @@ def infer_main(predictor_cost_time, i, args):
         results[output_name] = []
 
     global q
-    fin = open(args.log_file, 'w') 
+    fin = open(args.log_file, 'w')
     batchCnt = 0
     t = Times()
     while True:
@@ -213,15 +214,15 @@ def infer_main(predictor_cost_time, i, args):
             output_tensor = predictor.get_output_handle(name)
             output_data = output_tensor.copy_to_cpu()
             results[name].append(output_data)
-        ''' 
+        '''
         #fin.write("thread: " + str(tid.ident) + ", ")
         #fin.write("result: " + "\n")
         #fin.write(str(output_data))
     logger.info("processed batch num: {}".format(batchCnt))
     logger.info("predictor time cost: {}".format(t.value()))
     if args.test_predictor:
-         predictor_cost_time[i]=t.value()
-    fin.close()    
+        predictor_cost_time[i] = t.value()
+    fin.close()
     return results
 
 
@@ -232,7 +233,7 @@ class WrapperThread(Thread):
         self.cost_time = cost_time
         self.thread_id = thread_id
         self.args = args
-    
+
     def run(self):
         self.result = self.func(self.cost_time, self.thread_id, self.args)
 
@@ -253,7 +254,7 @@ def parse_args():
         "--iteration_num", type=int, default=10, help="iteration num")
     parser.add_argument(
         "--reader_file",
-        default = "../models/rank/slot_dnn/data/demo_10",
+        default="../models/rank/slot_dnn/data/demo_10",
         type=str)
     parser.add_argument(
         "--params_file",
@@ -309,14 +310,11 @@ if __name__ == '__main__':
     qps = samplesCnt / cost_time
     ff.write("qps: " + str(qps) + "\n")
     latency = 1 / qps
-    ff.write("latency: " + str(latency) + "\n")    
+    ff.write("latency: " + str(latency) + "\n")
     if args.test_predictor:
         predictor_cost_time_mean = mean(predictor_cost_time)
         predictor_qps = samplesCnt / predictor_cost_time_mean
         ff.write("paddle predictor time cost: " + str(predictor_cost_time_mean)
-                + "\n")
+                 + "\n")
         ff.write("paddle predictor qps: " + str(predictor_qps) + "\n")
     ff.write("++++++++++++++++++++++++++++++++\n")
-    
-
-    
