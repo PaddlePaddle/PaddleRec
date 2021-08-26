@@ -67,7 +67,6 @@ class Reader(fleet.MultiSlotDataGenerator):
                     slots.append(line.strip())
         return slots
 
-
     def batch_process(self, lines):
         output = {}
         lod = {}
@@ -95,8 +94,7 @@ class Reader(fleet.MultiSlotDataGenerator):
                 if not self.visit[slot]:
                     output[slot].extend([self.padding])
                 else:
-                    self.visit[slot] = False
-            
+                    self.visit[slot] = False 
             for slot in self.slots:
                 lod[slot][0].append(len(output[slot]))
 
@@ -169,6 +167,7 @@ class Times(object):
     def value(self):
         return round(self.time, 4)
 
+
 def infer_main(predictor_cost_time, i, args):
     tid = threading.currentThread()
     print('Thread id : %d' % tid.ident)
@@ -182,7 +181,7 @@ def infer_main(predictor_cost_time, i, args):
         results[output_name] = []
 
     global q
-    fin = open(args.log_file,'w') 
+    fin = open(args.log_file, 'w') 
     batchCnt = 0
     t = Times()
     while True:
@@ -208,22 +207,20 @@ def infer_main(predictor_cost_time, i, args):
             t.start()
         predictor.run()
         if args.test_predictor:
-            t.end(accumulative = True)
+            t.end(accumulative=True)
         '''
         for name in output_names:
             output_tensor = predictor.get_output_handle(name)
             output_data = output_tensor.copy_to_cpu()
             results[name].append(output_data)
-        '''
-            
-            #fin.write("thread: " + str(tid.ident) + ", ")
-            #fin.write("result: " + "\n")
-            #fin.write(str(output_data))
-            
+        ''' 
+        #fin.write("thread: " + str(tid.ident) + ", ")
+        #fin.write("result: " + "\n")
+        #fin.write(str(output_data))
     logger.info("processed batch num: {}".format(batchCnt))
     logger.info("predictor time cost: {}".format(t.value()))
     if args.test_predictor:
-         predictor_cost_time[i] = t.value()
+         predictor_cost_time[i]=t.value()
     fin.close()    
     return results
 
@@ -245,17 +242,32 @@ class WrapperThread(Thread):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--test_predictor", type=bool, default = False, help = "test paddle predictor")
-    parser.add_argument("--thread_num", type=int, default = 2, help="thread num")
-    parser.add_argument("--batchsize", type=int, default = 5, help = "batch size")
-    parser.add_argument("--iteration_num", type=int, default = 10, help = "iteration num")
-    parser.add_argument("--reader_file", default = "../models/rank/slot_dnn/data/demo_10", type=str)
-    parser.add_argument("--params_file", default = "../models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdiparams", type=str)
-    parser.add_argument("--model_file", default = "../models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdmodel", type=str)
-    parser.add_argument("--log_file", default = "./slot_dnn_infer.log", type=str)
-    parser.add_argument("--performance_file", default = "./performance.txt", type=str)
+    parser.add_argument(
+        "--test_predictor",
+        type=bool,
+        default=False,
+        help="test paddle predictor")
+    parser.add_argument("--thread_num", type=int, default=2, help="thread num")
+    parser.add_argument("--batchsize", type=int, default=5, help="batch size")
+    parser.add_argument(
+        "--iteration_num", type=int, default=10, help="iteration num")
+    parser.add_argument(
+        "--reader_file",
+        default = "../models/rank/slot_dnn/data/demo_10",
+        type=str)
+    parser.add_argument(
+        "--params_file",
+        default="../models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdiparams",
+        type=str)
+    parser.add_argument(
+        "--model_file",
+        default="../models/rank/slot_dnn/output_model_benchdnn_queue/0/rec_inference.pdmodel",
+        type=str)
+    parser.add_argument("--log_file", default="./slot_dnn_infer.log", type=str)
+    parser.add_argument(
+        "--performance_file", default="./performance.txt", type=str)
     parser.add_argument("--model_dir", type=str)
-    parser.add_argument("--use_gpu", type=str, default = "False")
+    parser.add_argument("--use_gpu", type=str, default="False")
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--model_name", type=str, default="rec_model")
     parser.add_argument("--cpu_threads", type=int, default=1)
@@ -280,11 +292,11 @@ if __name__ == '__main__':
     thread_num = args.thread_num
     predictor_cost_time = list(range(thread_num))
     threads = []
-    ff = open(args.performance_file,'a')
+    ff = open(args.performance_file, 'a')
     inference_time = Times()
     inference_time.start()
     for i in range(thread_num):
-        t = WrapperThread(infer_main, predictor_cost_time, i, args = args)
+        t = WrapperThread(infer_main, predictor_cost_time, i, args=args)
         threads.append(t)
         t.start()
     for i in threads:
@@ -301,7 +313,8 @@ if __name__ == '__main__':
     if args.test_predictor:
         predictor_cost_time_mean = mean(predictor_cost_time)
         predictor_qps = samplesCnt / predictor_cost_time_mean
-        ff.write("paddle predictor time cost: " + str(predictor_cost_time_mean) + "\n")
+        ff.write("paddle predictor time cost: " + str(predictor_cost_time_mean)
+                + "\n")
         ff.write("paddle predictor qps: " + str(predictor_qps) + "\n")
     ff.write("++++++++++++++++++++++++++++++++\n")
     
