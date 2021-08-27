@@ -1,3 +1,0 @@
-# djlstarter
-
-sh run.sh
