@@ -29,7 +29,7 @@ public class ParserInputData {
 
     public ParserInputData() {}
 
-	public static LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
+    public static LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
     public static int BATCH_SIZE = 2;
     public static final int BUFFER_MAX = 20480;
     public static int BATCH_NUM;
@@ -134,5 +134,5 @@ public class ParserInputData {
     	for (String s : feasignMap.keySet()) {
 	        System.out.println(s + ": " + feasignMap.get(s));
         }
-	}
+    }
 }
