@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.0)
+project(Main)
+
+set(PADDLE_LIB ${PROJECT_SOURCE_DIR}/paddle_inference)
+set(WITH_MKL ON)
+set(WITH_GPU OFF)
+set(INFER_NAME main)
+
+# include路径
+include_directories("${PADDLE_LIB}/paddle/include")
+include_directories("${PADDLE_LIB}/third_party/install/protobuf/include")
+include_directories("${PADDLE_LIB}/third_party/install/glog/include")
+include_directories("${PADDLE_LIB}/third_party/install/gflags/include")
+include_directories("${PADDLE_LIB}/third_party/install/xxhash/include")
+include_directories("${PADDLE_LIB}/third_party/install/brpc/include")
+include_directories("${PADDLE_LIB}/third_party/install/zlib/include")
+include_directories("${PADDLE_LIB}/third_party/install/leveldb/include")
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/proto)
+
+link_directories("${PADDLE_LIB}/paddle/lib")
+link_directories("${PADDLE_LIB}/third_party/install/protobuf/lib")
+link_directories("${PADDLE_LIB}/third_party/install/glog/lib")
+link_directories("${PADDLE_LIB}/third_party/install/gflags/lib")
+link_directories("${PADDLE_LIB}/third_party/install/xxhash/lib")
+link_directories("${PADDLE_LIB}/third_party/install/brpc/lib")
+link_directories("${PADDLE_LIB}/third_party/install/zlib/lib")
+link_directories("${PADDLE_LIB}/third_party/install/leveldb/lib")
+add_definitions(-DBRPC_WITH_GLOG)
+#add_definitions(-DCUBE) # 启用 cube 功能
+add_definitions(-DUSE_LOCK) # 使用加锁队列
+
+#SET(CMAKE_BUILD_TYPE "Debug")
+#SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
+SET(CMAKE_BUILD_TYPE "Release")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
+add_subdirectory(src)
+add_subdirectory(proto)
+add_executable(${INFER_NAME} ${INFER_NAME}.cpp)
+
+if(WITH_MKL)
+    include_directories("${PADDLE_LIB}/third_party/install/mklml/include")
+    include_directories("${PADDLE_LIB}/third_party/install/mkldnn/include")
+    set(MATH_LIB ${PADDLE_LIB}/third_party/install/mklml/lib/libmklml_intel.so ${PADDLE_LIB}/third_party/install/mklml/lib/libiomp5.so ${PADDLE_LIB}/third_party/install/mkldnn/lib/libdnnl.so.1)
+endif()
+if(WITH_GPU)
+    set(CUDA_LIB "/usr/local/cuda/lib64/" CACHE STRING "CUDA Library")
+    set(DEPS ${CUDA_LIB}/libcudart.so)
+endif()
+
+set(EXTERNAL_LIB "-lrt -ldl -lpthread")
+set(DEPS ${DEPS} ${PADDLE_LIB}/paddle/lib/libpaddle_inference.so)
+set(DEPS ${DEPS} ${MATH_LIB} ${BRPC_LIB} brpc z leveldb glog gflags protobuf xxhash srcMain proto_file ${EXTERNAL_LIB})
+target_link_libraries(${INFER_NAME} ${DEPS})
