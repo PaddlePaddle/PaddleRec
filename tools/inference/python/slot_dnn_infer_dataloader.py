@@ -252,17 +252,11 @@ def parse_args():
     parser.add_argument(
         "--iteration_num", type=int, default=10, help="iteration num")
     parser.add_argument(
-        "--reader_file",
-        default="../data/out_test.1",
-        type=str)
+        "--reader_file", default="../data/out_test.1", type=str)
     parser.add_argument(
-        "--params_file",
-        default="../model/rec_inference.pdiparams",
-        type=str)
+        "--params_file", default="../model/rec_inference.pdiparams", type=str)
     parser.add_argument(
-        "--model_file",
-        default="../model/rec_inference.pdmodel",
-        type=str)
+        "--model_file", default="../model/rec_inference.pdmodel", type=str)
     parser.add_argument("--log_file", default="./slot_dnn_infer.log", type=str)
     parser.add_argument(
         "--performance_file", default="./performance.txt", type=str)
