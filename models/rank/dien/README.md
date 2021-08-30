@@ -61,7 +61,7 @@ DIEN模型引入GRU-Attention兴趣学习机制，设计局部激活单元，刻
 对于序列数据，我们以最长序列长度为准，将其他序列长度补齐，方便数据对齐过程中做计算；
 同时，采用mask矩阵，对于补齐的网格部分，初始化为-INF，从而在sigmoid后，使之失效为0；
 
-在模型目录的data/train_data/paddle_train.100.txt目录下为您准备了快速运行的示例数据
+在模型目录的data/train_data/sample_data.txt目录下为您准备了快速运行的示例数据
 
 ## 运行环境
 PaddlePaddle>=2.0
