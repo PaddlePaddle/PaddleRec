@@ -51,11 +51,11 @@ n篇用户浏览过的文章的article embedding向量组将再次通过attentio
 每篇文章用一行表示，存放在一个或多个以article{number}.txt为后缀的文件里，如article.txt, article3.txt
 每行的格式为：
 文章id 主类id 子类id 分词后的文章标题id 分词后的文章单词id
-以上5项用分号分割，id均为自然数，分词后的文章标题id 和 分词后的文章单词id 都用空格做分隔符
+以上5项用tab符号分割，id均为自然数，分词后的文章标题id 和 分词后的文章单词id 都用空格做分隔符
 另外还需要收集用户的浏览记录，存放在一个或多个以browse{number}.txt为后缀的文件里，如browse.txt, browse3.txt
 每个用户的单次浏览序列用一行表示，格式为：
 浏览过的文章id序列 接下来浏览过的文章id 接下来没浏览的文章id序列
-以上3项用分号分割，id序列之间用空格分割，接下来没浏览的文章id序列如果没有实际数据，可以采用负采样生成,
+以上3项用tab符号分割，id序列之间用空格分割，接下来没浏览的文章id序列如果没有实际数据，可以采用负采样生成,
 但是没浏览的序列id个数建议大于等于yaml配置文件中的neg_candidate_size
 
 在模型目录的data/sample_data目录下为您准备了快速运行的示例数据
@@ -97,7 +97,7 @@ python3 -u ../../../tools/infer.py -m config.yaml
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
 同时，我们提供了全量数据生成的脚本，将会自动下载microsoft news dataset全量数据集并转换为模型能接受的
 输入格式，执行方法如下：
-PaddleRec/datasets/MIND/data
+进入路径PaddleRec/datasets/MIND/data
 执行 sh run.sh
 脚本运行完成后，打开dict/yaml_info.txt，将其中的词向量大小，类目大小，子类目大小信息copy到config_bigdata.yaml
 里，替换最后3行的超参数
@@ -109,9 +109,9 @@ PaddleRec/datasets/MIND/data
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 ```
 以下为训练2个epoch的结果
-| 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
+| 模型 | auc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| naml | 0.72 | 50 | 3 | 约4小时 | 
+| naml | 0.66 | 50 | 3 | 约4小时 | 
 
 预测
 ```
@@ -119,3 +119,10 @@ python3 -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
 期待预测auc为0.66
+
+
+单机多卡执行方式(以训练为例)
+python3 -m paddle.distributed.launch ../../../tools/trainer.py -m config_bigdata.yaml
+在此情况下将使用单机上所有gpu卡，若需要指定部分gpu卡执行，可以通过设置环境变量CUDA_VISIBLE_DEVICES
+来实现。例如单机上有8张卡，只打算用前4卡张训练，可以设置export CUDA_VISIBLE_DEVICES=0,1,2,3
+再执行训练脚本即可。
