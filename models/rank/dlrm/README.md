@@ -19,7 +19,7 @@
 
 注：在阅读该示例前，建议您先了解以下内容：
 
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+[PaddleRec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
 
 ## 内容
 
@@ -86,6 +86,7 @@ DLRM 模型的组网本质是一个二分类任务，代码参考 `net.py`。模
 <img align="center" src="https://tva1.sinaimg.cn/large/008i3skNly1gt8kwo40g9j30ei0cmjru.jpg">
 
 ### 主要流程
+
 DLRM 模型的特征输入，主要包括 dense 数值型和 sparse 类别型两种特征。dense features 直接连接 MLP（如图中的蓝色三角形），
 sparse features 经由 embedding 层查找得到相应的 embedding 向量。Interactions 层进行特征交叉（包含 dense features 和 sparse features 的交叉及
 sparse features之间的交叉等），与因子分解机 FM 有些类似。
@@ -107,6 +108,7 @@ DLRM 模型中所有的 sparse features 的 embedding 向量长度均是相等�
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现 README 中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：  
+
 
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
