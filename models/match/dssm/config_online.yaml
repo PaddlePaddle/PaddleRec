@@ -40,7 +40,6 @@ runner:
   # and need to set prune_feed_vars and prune_target_var in static_model.py
   need_prune: True
 
-  input_type: 1   # data_type will distinguish between sparse and dense feature
   parse_ins_id: True
   parse_content: True
   
