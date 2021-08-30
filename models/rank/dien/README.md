@@ -148,37 +148,11 @@ python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 | :------| :------ | :------ | :------| :------ | 
 | DIEN |      | 32 | 50 |   | 
 
-- 动态图训练日志
-```
-2021-05-18 14:47:24,504 - INFO - epoch: 0, batch_id: 0, auc:0.516194,  avg_reader_cost: 2.87606 sec, avg_batch_cost: 2.88912 sec      avg_samples: 3.20000, ips: 1.10760 images/sec
-
-.......
-
-16550 2021-05-18 22:15:39,269 - INFO - epoch: 2, batch_id: 2330, auc:0.826235,  avg_reader_cost: 0.00020 sec, avg_batch_cost: 0.05756       sec, avg_samples: 32.00000, ips: 555.93342 images/sec
-```
-
 - 静态图训练，运行：
 ```
 python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 ```
 
-- 静态图训练2个epoch的结果
-
-| 模型 | top1 acc | batch_size | epoch_num| Time of each epoch| 
-| :------| :------ | :------ | :------| :------ | 
-| DIEN |         |      32 |       50 |       | 
-
-- 静态图训练日志
-```
-2021-05-18 15:35:04,723 - INFO - epoch: 0, batch_id: 0, auc: [0.55627706], cost: [1.0343832], avg_reader_cost: 3.14529 sec, avg_      batch_cost: 3.16356 sec, avg_samples: 3.20000, ips: 1.01152 images/sec
-
-.......
-
-2021-05-19 10:54:53,015 - INFO - epoch: 13, batch_id: 1850, auc: [0.89995722], cost: [0.05815201], avg_reader_cost: 0.00012 sec, avg_batch_cost: 0.05322 sec, avg_samples: 32.00000, ips: 601.24394 images/sec
-
-```
-
-### 模型预测及效果复现
 ```
 # 动态图预测
 python -u ../../../tools/infer.py -m config_bigdata.yaml
