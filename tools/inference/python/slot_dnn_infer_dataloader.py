@@ -244,8 +244,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--test_predictor",
-        type=bool,
-        default=False,
+        type=str,
+        default="False",
         help="test paddle predictor")
     parser.add_argument("--thread_num", type=int, default=2, help="thread num")
     parser.add_argument("--batchsize", type=int, default=5, help="batch size")
@@ -273,6 +273,8 @@ def parse_args():
                           if args.enable_mkldnn.lower() == "true" else False)
     args.enable_tensorRT = (True if args.enable_tensorRT.lower() == "true" else
                             False)
+    args.test_predictor = (True
+                           if args.test_predictor.lower() == "true" else False)
     return args
 
 
