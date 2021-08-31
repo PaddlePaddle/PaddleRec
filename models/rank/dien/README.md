@@ -155,9 +155,9 @@ python3 -u ../../../tools/static_trainer.py -m config_bigdata.yaml
 
 ```
 # 动态图预测
-python -u ../../../tools/infer.py -m config_bigdata.yaml
+python3 -u ../../../tools/infer.py -m config_bigdata.yaml
 
 # 静态图预测
-python -u ../../../tools/static_infer.py -m config_bigdata.yaml
+python3 -u ../../../tools/static_infer.py -m config_bigdata.yaml
 ```
 - 对标预测AUC：0.7792+/-0.00243
