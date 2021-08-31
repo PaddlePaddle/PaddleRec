@@ -13,6 +13,7 @@
 ├── net.py # 模型核心组网（动静统一）
 ├── dinReader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
+├── static_model.py # 构建静态图
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -60,7 +61,7 @@ DIN模型引入Attention注意力机制，设计局部激活单元，刻画用�
 对于序列数据，我们以最长序列长度为准，将其他序列长度补齐，方便数据对齐过程中做计算；
 同时，采用mask矩阵，对于补齐的网格部分，初始化为-INF，从而在sigmoid后，使之失效为0；
 
-在模型目录的data/train_data/paddle_train.100.txt目录下为您准备了快速运行的示例数据
+在模型目录的data/train_data/sample_data.txt目录下为您准备了快速运行的示例数据
 
 ## 运行环境
 PaddlePaddle>=2.0
@@ -82,10 +83,10 @@ python3 -u ../../../tools/trainer.py -m config.yaml
 python3 -u ../../../tools/infer.py -m config.yaml 
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml 
+python3 -u ../../../tools/static_trainer.py -m config.yaml 
 
 # 静态图预测
-python -u ../../../tools/static_infer.py -m config.yaml 
+python3 -u ../../../tools/static_infer.py -m config.yaml 
 ```
 
 
@@ -137,7 +138,6 @@ copy到config_bigdata.yaml里，替换超参数item_count cat_count
 - 动态图训练，运行：
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
-
 ```
 
 - 静态图训练，运行：
