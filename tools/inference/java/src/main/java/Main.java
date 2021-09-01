@@ -131,16 +131,18 @@ public class Main {
 		
 		public NDList call() {
 			long t1 = 0, t2 = 0, t = 0;
+			long sampleCnts = 0;
 			try {
 				while (ParserInputData.queue.size() > 0) {
 					int batchIdx = ParserInputData.queue.take();
 					NDList batchListIn = GetNDListIn(batchIdx);
 					t1 = System.currentTimeMillis();
+					sampleCnts += 1;
 					batchResult = predictor.predict(batchListIn);
 					t2 = System.currentTimeMillis();
 					t += (t2 - t1);
 				}
-System.out.println("paddle predictor time cost: " + t);
+				System.out.println("paddle predictor qps: " + 1000.0 * sampleCnts / t);
 				return batchResult;
 			} catch(Exception e) {
 				e.printStackTrace();
