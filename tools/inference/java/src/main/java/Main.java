@@ -142,7 +142,7 @@ public class Main {
 					t2 = System.currentTimeMillis();
 					t += (t2 - t1);
 				}
-				System.out.println("paddle predictor qps: " + 1000.0 * sampleCnts / t);
+				System.out.println("paddle predictor qps: " + 1000.0 * sampleCnts * ParserInputData.BATCH_SIZE / t);
 				return batchResult;
 			} catch(Exception e) {
 				e.printStackTrace();
