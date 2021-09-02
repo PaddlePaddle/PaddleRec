@@ -185,7 +185,7 @@ class Training(object):
                                 (day, pass_id, donefile_name))
             else:
                 file = Path(donefile_path)
-                print("model done file path = {}, content = {}".format(
+                logger.info("model done file path = {}, content = {}".format(
                     donefile_path, content))
                 if not file.is_file():
                     logger.info(" {} doesn't exist ".format(donefile_path))
@@ -430,10 +430,7 @@ class Training(object):
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
                 return [-1, -1, "", int(time.time())]
-            print("begin to get donefile_path:{} by client.cat".format(
-                donefile_path))
             content = client.cat(donefile_path)
-            print("content = ", content)
             content = content.split("\n")[-1].split("\t")
             last_save_day = int(content[0])
             last_save_pass = int(content[3])
@@ -488,10 +485,10 @@ class Training(object):
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
                 return [-1, -1, "", int(time.time())]
-            print("get_last_save_xbox donefile_path {} is file".format(
+            logger.info("get_last_save_xbox donefile_path {} is file".format(
                 donefile_path))
             pre_content = client.cat(donefile_path)
-            print("get_last_save_xbox get a pre_content = ", pre_content)
+            logger.info("get_last_save_xbox get a pre_content = ", pre_content)
             last_dict = json.loads(pre_content.split("\n")[-1])
             last_day = int(last_dict["input"].split("/")[-3])
             last_pass = int(last_dict["input"].split("/")[-2].split("-")[-1])
@@ -558,7 +555,6 @@ class Training(object):
                             hadoop_fs_ugi,
                             hadoop_home="$HADOOP_HOME",
                             donefile_name=None):
-        print("in write_xbox_donefile day = ", day, " pass-id = ", pass_id)
         day = str(day)
         pass_id = str(pass_id)
         xbox_base_key = int(model_base_key)
@@ -581,16 +577,13 @@ class Training(object):
             donefile_path = output_path + "/" + donefile_name
             xbox_str = self._get_xbox_str(
                 model_path=model_path, xbox_base_key=xbox_base_key, mode=mode)
-            print("xbox str", xbox_str)
             if not self.train_local:
                 configs = {
                     "fs.default.name": hadoop_fs_name,
                     "hadoop.job.ugi": hadoop_fs_ugi
                 }
-                print("donefile_path=", donefile_path)
                 client = HDFSClient(hadoop_home, configs)
                 if client.is_file(donefile_path):
-                    print("is file---> ", donefile_path)
                     pre_content = client.cat(donefile_path)
                     last_line = pre_content.split("\n")[-1]
                     if last_line == '':
@@ -620,11 +613,9 @@ class Training(object):
                         logger.info("do not write %s because %s/%s already "
                                     "exists" % (donefile_name, day, pass_id))
                 else:
-                    print("donefile_path {} is not a file".format(
-                        donefile_path))
                     with open(donefile_name, "w") as f:
                         f.write(xbox_str + "\n")
-                    client.upload(
+                    client.upad(
                         donefile_name,
                         output_path,
                         multi_processes=1,
@@ -694,7 +685,6 @@ class Training(object):
         fleet.run_server()
 
     def file_ls(self, path_array):
-        print("in file ls path_array = ", path_array)
         result = []
         if self.train_local:
             for path in path_array:
@@ -718,7 +708,7 @@ class Training(object):
                         prefix + i.rstrip("/") + "/" + j for j in cur_path
                     ]
                     result += cur_path
-        print("result = ", result)
+        logger.info("file ls result = {}".format(result))
         return result
 
     def save_batch_model(self, output_path, day):
@@ -753,23 +743,21 @@ class Training(object):
         data_path = self.config.get("runner.train_data_dir")
         if not self.train_local:
             dataset.set_hdfs_config(self.hadoop_fs_name, self.hadoop_fs_ugi)
-            print("set hadoop_fs_name = {}, fs_ugi={}".format(
+            logger.info("set hadoop_fs_name = {}, fs_ugi={}".format(
                 self.hadoop_fs_name, self.hadoop_fs_ugi))
         cur_path = []
         for i in self.online_intervals[pass_index - 1]:
             cur_path.append(data_path.rstrip("/") + "/" + day + "/" + i)
         global_file_list = self.file_ls(cur_path)
-        print("global_file_list", global_file_list)
         my_file_list = fleet.util.get_file_shard(global_file_list)
-        print("my_file_list", my_file_list)
+        logger.info("my_file_list = {}".format(my_file_list))
         dataset.set_filelist(my_file_list)
         pipe_command = self.config.get("runner.pipe_command")
         #dataset.set_pipe_command(self.config.get("runner.pipe_command"))
         utils_path = common.get_utils_file_path()
-        print("utils_path: {}".format(utils_path))
         dataset.set_pipe_command("{} {} {}".format(
             pipe_command, config.get("yaml_path"), utils_path))
-        print("pipe_command = " + "{} {} {}".format(
+        logger.info("pipe_command = " + "{} {} {}".format(
             pipe_command, config.get("yaml_path"), utils_path))
         dataset.load_into_memory()
         return dataset
@@ -842,7 +830,8 @@ class Training(object):
                     elif int(day) == last_base_day:
                         model_base_key = tmp_xbox_base_key
 
-                print("new day ", day, " new pass ", pass_id)
+                logger.info("training a new day = {} new pass = {}".format(
+                    day, pass_id))
                 prepare_data_start_time = time.time()
                 dataset = self.prepare_dataset(day, index)
                 prepare_data_end_time = time.time()
