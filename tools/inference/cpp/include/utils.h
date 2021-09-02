@@ -41,8 +41,9 @@ public:
     void clear()
     {
         slotIds.clear();
-
+        feasignIds.clear();
         features.erase(features.begin(), features.end());
+        feasigns.erase(feasigns.begin(), feasigns.end());
         featureCnts.erase(featureCnts.begin(), featureCnts.end());
     }
 
@@ -147,10 +148,13 @@ template <typename T>
 T SharedQueue<T>::pop()
 {
     std::unique_lock<std::mutex> mlock(mutex_);
+    /*
     while (queue_.empty())
     {
         cond_.wait(mlock);
     }
+    */
+    cond_.wait(mlock, [this](){ return !this->queue_.empty();});
     T rc(std::move(queue_.front()));
     queue_.pop_front();
     return rc;
