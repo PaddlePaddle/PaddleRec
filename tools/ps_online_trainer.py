@@ -18,7 +18,7 @@ import random
 import numpy as np
 from pathlib import Path
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
-from utils.static_ps.program_helper import get_model, get_strategy
+from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
@@ -53,20 +53,30 @@ class Training(object):
         self.metrics = {}
         self.config = config
         self.exe = None
-        self.hadoop_fs_name = config.get("runner.hadoop_fs_name")
-        self.hadoop_fs_ugi = config.get("runner.hadoop_fs_ugi")
         self.reader_type = "QueueDataset"
-        self.train_local = self.hadoop_fs_name is None or self.hadoop_fs_ugi is None
         self.split_interval = config.get("runner.split_interval")
         self.split_per_pass = config.get("runner.split_per_pass")
         self.save_delta_frequency = config.get("runner.save_delta_frequency",
                                                6)
         self.checkpoint_per_pass = config.get("runner.checkpoint_per_pass", 6)
         self.save_first_base = config.get("runner.save_first_base", True)
-        # self.days = config.get("runner.days")
-        # self.hours = config.get("runner.hours")
         self.start_day = config.get("runner.start_day")
         self.end_day = config.get("runner.end_day")
+        self.save_model_path = self.config.get("runner.model_save_path")
+        if config.get("runner.fs_client.uri") is not None:
+            self.hadoop_config = {}
+            for key in ["uri", "user", "passwd", "hadoop_bin"]:
+                self.hadoop_config[key] = config.get("runner.fs_client." + key,
+                                                     "")
+            self.hadoop_fs_name = self.hadoop_config.get("uri")
+            self.hadoop_fs_ugi = self.hadoop_config.get(
+                "user") + "," + self.hadoop_config.get("passwd")
+            prefix = "hdfs:/user/paddle/" if self.hadoop_fs_name.startswith(
+                "hdfs:") else "afs:/user/paddle/"
+            self.save_model_path = prefix + self.save_model_path.strip("/")
+        else:
+            self.hadoop_fs_name, self.hadoop_fs_ugi = None, None
+        self.train_local = self.hadoop_fs_name is None or self.hadoop_fs_ugi is None
 
     def run(self):
         os.environ["PADDLE_WITH_GLOO"] = "1"
@@ -363,6 +373,10 @@ class Training(object):
                 self.predict)  # 0 save checkpoints
         else:
             model_name = "inference_model"
+            fleet.save_inference_model(
+                self.exe, model_name,
+                [feed.name for feed in self.inference_model_feed_vars],
+                self.predict)
             configs = {
                 "fs.default.name": hadoop_fs_name,
                 "hadoop.job.ugi": hadoop_fs_ugi
@@ -375,7 +389,7 @@ class Training(object):
                 dest = "%s/%s/delta-%s/dnn_plugin/" % (output_path, day,
                                                        pass_id)
             if not client.is_exist(dest):
-                client.makedirs(dest)
+                client.mkdirs(dest)
 
             client.upload(model_name, dest, multi_processes=5, overwrite=True)
         fleet.save_persistables(
@@ -416,7 +430,10 @@ class Training(object):
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
                 return [-1, -1, "", int(time.time())]
+            print("begin to get donefile_path:{} by client.cat".format(
+                donefile_path))
             content = client.cat(donefile_path)
+            print("content = ", content)
             content = content.split("\n")[-1].split("\t")
             last_save_day = int(content[0])
             last_save_pass = int(content[3])
@@ -471,7 +488,10 @@ class Training(object):
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
                 return [-1, -1, "", int(time.time())]
+            print("get_last_save_xbox donefile_path {} is file".format(
+                donefile_path))
             pre_content = client.cat(donefile_path)
+            print("get_last_save_xbox get a pre_content = ", pre_content)
             last_dict = json.loads(pre_content.split("\n")[-1])
             last_day = int(last_dict["input"].split("/")[-3])
             last_pass = int(last_dict["input"].split("/")[-2].split("-")[-1])
@@ -567,8 +587,10 @@ class Training(object):
                     "fs.default.name": hadoop_fs_name,
                     "hadoop.job.ugi": hadoop_fs_ugi
                 }
+                print("donefile_path=", donefile_path)
                 client = HDFSClient(hadoop_home, configs)
                 if client.is_file(donefile_path):
+                    print("is file---> ", donefile_path)
                     pre_content = client.cat(donefile_path)
                     last_line = pre_content.split("\n")[-1]
                     if last_line == '':
@@ -588,8 +610,8 @@ class Training(object):
                             f.write(xbox_str + "\n")
                         client.delete(donefile_path)
                         client.upload(
-                            output_path,
                             donefile_name,
+                            output_path,
                             multi_processes=1,
                             overwrite=False)
                         logger.info("write %s/%s %s success" % \
@@ -598,11 +620,13 @@ class Training(object):
                         logger.info("do not write %s because %s/%s already "
                                     "exists" % (donefile_name, day, pass_id))
                 else:
+                    print("donefile_path {} is not a file".format(
+                        donefile_path))
                     with open(donefile_name, "w") as f:
                         f.write(xbox_str + "\n")
                     client.upload(
-                        output_path,
                         donefile_name,
+                        output_path,
                         multi_processes=1,
                         overwrite=False)
                     logger.info("write %s/%s %s success" % \
@@ -666,10 +690,11 @@ class Training(object):
     def run_server(self):
         logger.info("Run Server Begin")
         # fleet.init_server(config.get("runner.warmup_model_path", "./warmup"))
-        fleet.init_server()
+        fleet.init_server(fs_client=self.hadoop_config)
         fleet.run_server()
 
     def file_ls(self, path_array):
+        print("in file ls path_array = ", path_array)
         result = []
         if self.train_local:
             for path in path_array:
@@ -684,12 +709,16 @@ class Training(object):
             }
             hdfs_client = HDFSClient("$HADOOP_HOME", configs)
             for i in path_array:
-                cur_path = hdfs_client.ls(i)
-                if self.hadoop_fs_name.startswith("hdfs:"):
-                    cur_path = ["hdfs:" + j for j in cur_path]
-                elif self.hadoop_fs_name.startswith("afs:"):
-                    cur_path = ["hdfs:" + j for j in cur_path]
-                result += cur_path
+                cur_path = hdfs_client.ls_dir(i)[1]
+                prefix = "hdfs:/user/paddle/" if self.hadoop_fs_name.startswith(
+                    "hdfs:") else "afs:/user/paddle/"
+                if len(cur_path) > 0:
+                    i = i.strip("/")
+                    result += [
+                        prefix + i.rstrip("/") + "/" + j for j in cur_path
+                    ]
+                    result += cur_path
+        print("result = ", result)
         return result
 
     def save_batch_model(self, output_path, day):
@@ -717,12 +746,15 @@ class Training(object):
         # dataset, file_list = get_reader(self.input_data, config)
 
         dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
+        #dataset = fluid.DatasetFactory().create_dataset("QueueDataset")
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
         dataset.set_thread(self.config.get('runner.train_thread_num', 1))
         data_path = self.config.get("runner.train_data_dir")
         if not self.train_local:
             dataset.set_hdfs_config(self.hadoop_fs_name, self.hadoop_fs_ugi)
+            print("set hadoop_fs_name = {}, fs_ugi={}".format(
+                self.hadoop_fs_name, self.hadoop_fs_ugi))
         cur_path = []
         for i in self.online_intervals[pass_index - 1]:
             cur_path.append(data_path.rstrip("/") + "/" + day + "/" + i)
@@ -732,10 +764,12 @@ class Training(object):
         print("my_file_list", my_file_list)
         dataset.set_filelist(my_file_list)
         pipe_command = self.config.get("runner.pipe_command")
-        dataset.set_pipe_command(self.config.get("runner.pipe_command"))
+        #dataset.set_pipe_command(self.config.get("runner.pipe_command"))
         utils_path = common.get_utils_file_path()
         print("utils_path: {}".format(utils_path))
         dataset.set_pipe_command("{} {} {}".format(
+            pipe_command, config.get("yaml_path"), utils_path))
+        print("pipe_command = " + "{} {} {}".format(
             pipe_command, config.get("yaml_path"), utils_path))
         dataset.load_into_memory()
         return dataset
@@ -750,10 +784,8 @@ class Training(object):
         self.online_intervals = self.get_online_pass_interval(
             self.start_day, self.end_day, self.split_interval,
             self.split_per_pass, False)
-        self.save_model_path = self.config.get("runner.model_save_path")
-        self.warm_start_model_path = config.get("runner.warm_start_model_path",
-                                                "./warmup")
-        if self.save_model_path and (not os.path.exists(self.save_model_path)):
+        if self.train_local and self.save_model_path and (
+                not os.path.exists(self.save_model_path)):
             os.makedirs(self.save_model_path)
 
         last_day, last_pass, last_path, model_base_key = self.get_last_save_model(
@@ -767,6 +799,12 @@ class Training(object):
         save_first_base = self.save_first_base
         day = self.start_day
 
+        # set_dump_config(paddle.static.default_main_program(), {
+        #         "dump_fields_path": "./dump",
+        #         "dump_fields": ["embedding_343.tmp_0"],
+        #         "dump_param": []
+        #     })
+        # print("&&&&&&&&",paddle.static.default_main_program()._fleet_opt)
         while int(day) <= int(self.end_day):
             logger.info("training a new day {}, end_day = {}".format(
                 day, self.end_day))
