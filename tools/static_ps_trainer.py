@@ -26,6 +26,8 @@ import os
 import warnings
 import logging
 import ast
+import numpy as np
+import struct
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -58,6 +60,10 @@ def parse_args():
     config["pure_bf16"] = args.pure_bf16
     yaml_helper.print_yaml(config)
     return config
+
+
+def bf16_to_fp32(val):
+    return np.float32(struct.unpack('<f', struct.pack('<I', val << 16))[0])
 
 
 class Main(object):
@@ -212,7 +218,6 @@ class Main(object):
         batch_id = 0
         train_run_cost = 0.0
         total_examples = 0
-        from paddle.fluid.tests.unittests.op_test import convert_uint16_to_float
         self.reader.start()
         while True:
             try:
@@ -232,7 +237,7 @@ class Main(object):
                         metrics_string += "{}: {}, ".format(
                             var_name, fetch_var[var_idx]
                             if var_name != "LOSS" or not config['pure_bf16']
-                            else convert_uint16_to_float(fetch_var[var_idx]))
+                            else bf16_to_fp32(fetch_var[var_idx][0]))
                     profiler_string = ""
                     profiler_string += "avg_batch_cost: {} sec, ".format(
                         format((train_run_cost) / print_step, '.5f'))
