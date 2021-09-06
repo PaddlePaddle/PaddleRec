@@ -54,6 +54,13 @@ def get_strategy(config):
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
         strategy.a_sync_configs = {"use_ps_gpu": 1}
+
+    # strategy.trainer_desc_configs = {
+    #     "dump_fields_path": config.get("runner.dump_fields_path", ""),
+    #     "dump_fields": config.get("runner.dump_fields", []),
+    #     "dump_param": config.get("runner.dump_param", [])
+    # }
+    # print("strategy:", strategy.trainer_desc_configs)
     return strategy
 
 
@@ -63,3 +70,13 @@ def get_model(config):
     from static_model import StaticModel
     static_model = StaticModel(config)
     return static_model
+
+
+def set_dump_config(program, dump_config):
+    if dump_config.get("dump_fields_path") is not None:
+        program._fleet_opt["dump_fields_path"] = dump_config.get(
+            "dump_fields_path")
+    if dump_config.get("dump_fields") is not None:
+        program._fleet_opt["dump_fields"] = dump_config.get("dump_fields")
+    if dump_config.get("dump_param") is not None:
+        program._fleet_opt["dump_param"] = dump_config.get("dump_param")

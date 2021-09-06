@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
-from utils.static_ps.program_helper import get_model, get_strategy
+from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
@@ -25,6 +25,9 @@ import paddle
 import os
 import warnings
 import logging
+import ast
+import numpy as np
+import struct
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -42,14 +45,25 @@ def parse_args():
         type=str,
         required=True,
         help='config file path')
+    parser.add_argument(
+        '-bf16',
+        '--pure_bf16',
+        type=ast.literal_eval,
+        default=False,
+        help="whether use bf16")
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
     config = yaml_helper.load_yaml(args.config_yaml)
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
+    config["pure_bf16"] = args.pure_bf16
     yaml_helper.print_yaml(config)
     return config
+
+
+def bf16_to_fp32(val):
+    return np.float32(struct.unpack('<f', struct.pack('<I', val << 16))[0])
 
 
 class Main(object):
@@ -61,6 +75,8 @@ class Main(object):
         self.exe = None
         self.train_result_dict = {}
         self.train_result_dict["speed"] = []
+        self.model = None
+        self.pure_bf16 = self.config['pure_bf16']
 
     def run(self):
         fleet.init()
@@ -74,13 +90,14 @@ class Main(object):
         logger.info("Run Success, Exit.")
 
     def network(self):
-        model = get_model(self.config)
-        self.input_data = model.create_feeds()
+        self.model = get_model(self.config)
+        self.input_data = self.model.create_feeds()
+        self.inference_feed_var = self.model.create_feeds(is_infer=True)
         self.init_reader()
-        self.metrics = model.net(self.input_data)
-        self.inference_target_var = model.inference_target_var
+        self.metrics = self.model.net(self.input_data)
+        self.inference_target_var = self.model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
-        model.create_optimizer(get_strategy(self.config))
+        self.model.create_optimizer(get_strategy(self.config))
 
     def run_server(self):
         logger.info("Run Server Begin")
@@ -101,6 +118,8 @@ class Main(object):
             f.write(str(paddle.static.default_startup_program()))
 
         self.exe.run(paddle.static.default_startup_program())
+        if self.pure_bf16:
+            self.model.optimizer.amp_init(self.exe.place)
         fleet.init_worker()
 
         save_model_path = self.config.get("runner.model_save_path")
@@ -111,12 +130,17 @@ class Main(object):
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
 
+        if reader_type == "InmemoryDataset":
+            self.reader.load_into_memory()
+
         for epoch in range(epochs):
             epoch_start_time = time.time()
 
             if sync_mode == "heter":
                 self.heter_train_loop(epoch)
             elif reader_type == "QueueDataset":
+                self.dataset_train_loop(epoch)
+            elif reader_type == "InmemoryDataset":
                 self.dataset_train_loop(epoch)
             elif reader_type == "DataLoader":
                 self.dataloader_train_loop(epoch)
@@ -131,20 +155,28 @@ class Main(object):
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
-            if fleet.is_first_worker(
-            ) and save_model_path and is_distributed_env():
-                fleet.save_inference_model(
-                    self.exe, model_dir,
-                    [feed.name for feed in self.input_data],
-                    self.inference_target_var)
+            if fleet.is_first_worker() and save_model_path:
+                if is_distributed_env():
+                    fleet.save_inference_model(
+                        self.exe, model_dir,
+                        [feed.name for feed in self.inference_feed_var],
+                        self.inference_target_var)
+                else:
+                    paddle.fluid.io.save_inference_model(
+                        model_dir,
+                        [feed.name for feed in self.inference_feed_var],
+                        [self.inference_target_var], self.exe)
+
+        if reader_type == "InmemoryDataset":
+            self.reader.release_memory()
 
     def init_reader(self):
         if fleet.is_server():
             return
         self.reader, self.file_list = get_reader(self.input_data, config)
         self.example_nums = 0
-        self.count_method = self.config.get(
-            "runner.example_count_method", "example")
+        self.count_method = self.config.get("runner.example_count_method",
+                                            "example")
         if self.count_method == "example":
             self.example_nums = get_example_num(self.file_list)
         elif self.count_method == "word":
@@ -162,13 +194,24 @@ class Main(object):
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
+
+        debug = config.get("runner.dataset_debug", False)
+        if config.get("runner.need_dump"):
+            debug = True
+            dump_fields_path = "{}/{}".format(
+                config.get("runner.dump_fields_path"), epoch)
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": dump_fields_path,
+                "dump_fields": config.get("runner.dump_fields")
+            })
+        print(paddle.static.default_main_program()._fleet_opt)
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=self.reader,
             fetch_list=fetch_vars,
             fetch_info=fetch_info,
             print_period=print_step,
-            debug=config.get("runner.dataset_debug"))
+            debug=debug)
 
     def dataloader_train_loop(self, epoch):
         logger.info("Epoch: {}, Running DataLoader Begin.".format(epoch))
@@ -191,8 +234,10 @@ class Main(object):
                 if batch_id % print_step == 0:
                     metrics_string = ""
                     for var_idx, var_name in enumerate(self.metrics):
-                        metrics_string += "{}: {}, ".format(var_name,
-                                                            fetch_var[var_idx])
+                        metrics_string += "{}: {}, ".format(
+                            var_name, fetch_var[var_idx]
+                            if var_name != "LOSS" or not config['pure_bf16']
+                            else bf16_to_fp32(fetch_var[var_idx][0]))
                     profiler_string = ""
                     profiler_string += "avg_batch_cost: {} sec, ".format(
                         format((train_run_cost) / print_step, '.5f'))
@@ -220,6 +265,7 @@ class Main(object):
         train_run_cost = 0.0
         train_reader_cost = 0.0
         total_samples = 0
+        from paddle.fluid.tests.unittests.op_test import convert_uint16_to_float
         reader_start = time.time()
         for batch_id, batch_data in enumerate(self.reader()):
             train_reader_cost += time.time() - reader_start
@@ -235,17 +281,19 @@ class Main(object):
             if batch_id % print_interval == 0:
                 metric_str = ""
                 for var_idx, var_name in enumerate(self.metrics):
-                    metric_str += "{}: {}, ".format(var_name,
-                                                    fetch_batch_var[var_idx])
+                    metric_str += "{}: {}, ".format(
+                        var_name, fetch_batch_var[var_idx]
+                        if var_name != "LOSS" or config['pure_bf16'] is False
+                        else convert_uint16_to_float(fetch_batch_var[var_idx]))
                 logger.info(
                     "Epoch: {}, Batch_id: {}, ".format(epoch,
                                                        batch_id) + metric_str +
-                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec".
-                    format(train_reader_cost / print_interval, (
+                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec"
+                    .format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,
-                        total_samples / print_interval, total_samples / (
-                        train_reader_cost + train_run_cost),
-                        self.count_method))
+                            total_samples / print_interval, total_samples / (
+                                train_reader_cost + train_run_cost),
+                            self.count_method))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0

@@ -69,7 +69,7 @@ python -u ../../../tools/infer.py -m config.yaml
 
 | 模型 | acc | batch_size | thread_num| epoch_num| Time of each epoch |
 | :------| :------ | :------| :------ | :------| :------ | 
-| maml | 0.987 | 32 | 1 | 100 | 约4分钟 |
+| maml | 0.98 | 32 | 1 | 100 | 约4分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/multitask/maml
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Omniglot全量数据集，并解压到指定文件夹。
@@ -80,6 +80,7 @@ sh run.sh
 3. 切回模型目录,执行命令运行全量数据
 ```bash
 cd - # 切回模型目录
+export FLAGS_cudnn_deterministic=True # 固定确定性算法
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 

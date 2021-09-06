@@ -1,0 +1,61 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+hyper_parameters:
+  optimizer:
+    learning_rate: 0.0001
+    adam_lazy_mode: True
+  dense_input_dim: 13
+  sparse_inputs_slots: 27
+  sparse_feature_number: 1000001
+  sparse_feature_dim: 10
+  fc_sizes: [400, 400, 400]
+
+runner:
+  epochs: 3
+  print_interval: 1
+
+  sync_mode: "async"  # sync / async /geo / heter
+  thread_num: 2
+  use_gpu: 0
+  
+  model_path: "static_model.py"
+  reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
+  pipe_command: "python3 benchmark_reader_lineid.py"
+  parse_ins_id: True
+  dataset_debug: True
+  split_file_list: False
+
+  train_batch_size: 2
+  train_data_dir: "data/train_data_with_lineid"
+  train_reader_path: "benchmark_reader"
+  model_save_path: "output_model"
+
+  infer_batch_size: 1024
+  test_data_dir: "data/test_data"
+  infer_reader_path: "benchmark_reader"
+  infer_load_path: "output_model"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
+  
+  need_dump: True
+  dump_fields: ["C24", "reshape2_24.tmp_0"]
+  # dump_param: ["linear_0.w_0", "linear_0.b_0"]
+  dump_fields_path: "./dump_data"
+  # dump_fields_path: "afs:/xxx"
+
+  fs_name: "afs://xxx"
+  fs_ugi: "xxx,xxx"
+
+  

@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser(description='paddle-rec run')
     parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     args.config_yaml = get_abs_model(args.config_yaml)
@@ -49,6 +50,17 @@ def main(args):
     config = load_yaml(args.config_yaml)
     dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            if type(config.get(key)) is int:
+                value = int(value)
+            if type(config.get(key)) is bool:
+                value = (True if value.lower() == "true" else False)
+            config[key] = value
+
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
     train_data_dir = config.get("runner.train_data_dir", None)
@@ -57,7 +69,7 @@ def main(args):
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
     end_epoch = config.get("runner.infer_end_epoch", 0)
-
+    CE = config.get("runner.CE", False)
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
@@ -68,7 +80,8 @@ def main(args):
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
     dy_model = dy_model_class.create_model(config)
-    model_save_path = os.path.join(model_save_path, str(end_epoch - 1))
+    if not CE:
+        model_save_path = os.path.join(model_save_path, str(end_epoch - 1))
 
     load_model(model_init_path, dy_model)
     # example dnn model forward
