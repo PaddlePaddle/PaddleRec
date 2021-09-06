@@ -285,5 +285,13 @@ export KAFKA_GID=xxx
 export KAFKA_TOPICS=wide-and-deep-data
 
 python kafka_reader.py
+
+# test odps reader 
+#
+# create config.py 
+#
+
+python odps_reader.py
+
 ```
 
