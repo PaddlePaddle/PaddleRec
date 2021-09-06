@@ -17,7 +17,7 @@
 runner:
   sync_mode: "async"  # sync / async /geo / heter
   thread_num: 16
-  use_gpu: 0
+  use_gpu: False
   
   model_path: "static_model.py"
   reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset

@@ -27,7 +27,7 @@ def mp_run(data, process_num, func, *args):
     """ run func with multi process
     """
     level_start = time.time()
-    partn = max(len(data) / process_num, 1)
+    partn = int(max(len(data) / process_num, 1))
     start = 0
     p_idx = 0
     ps = []
@@ -59,7 +59,7 @@ def read(train_data_file, test_data_file):
     start = time.time()
     itobj = zip([train_data_file, test_data_file], [train_sample, test_sample])
     for filename, sample in itobj:
-        with open(filename, 'rb') as f:
+        with open(filename, 'r') as f:
             for line in f:
                 arr = line.strip().split(',')
                 if len(arr) != 5:
@@ -112,9 +112,9 @@ def split_train_sample(train_dir, train_sample_seg_cnt):
     for i in range(train_sample_seg_cnt):
         filename = "{}/part_{}".format(train_dir, i)
         segment_filenames.append(filename)
-        segment_files.append(open(filename, 'wb'))
+        segment_files.append(open(filename, 'w'))
 
-    with open("train_tmp", 'rb') as fi:
+    with open("train_tmp", 'r') as fi:
         for line in fi:
             i = random.randint(0, train_sample_seg_cnt - 1)
             segment_files[i].write(line)
@@ -127,11 +127,11 @@ def split_train_sample(train_dir, train_sample_seg_cnt):
     # Shuffle
     for fn in segment_filenames:
         lines = []
-        with open(fn, 'rb') as f:
+        with open(fn, 'r') as f:
             for line in f:
                 lines.append(line)
         random.shuffle(lines)
-        with open(fn, 'wb') as f:
+        with open(fn, 'w') as f:
             for line in lines:
                 f.write(line)
 
@@ -139,7 +139,7 @@ def split_train_sample(train_dir, train_sample_seg_cnt):
 def partial_gen_train_sample(users, user_his_behav, filename, pipe, seq_len,
                              min_len):
     stat = dict()
-    with open(filename, 'wb') as f:
+    with open(filename, 'w') as f:
         for user in users:
             value = user_his_behav[user]
             count = len(value)
@@ -165,7 +165,7 @@ def gen_train_sample(train_sample, args):
     user_his_behav = gen_user_his_behave(train_sample)
     print("user_his_behav len: {}".format(len(user_his_behav)))
 
-    users = user_his_behav.keys()
+    users = list(user_his_behav.keys())
     process = []
     pipes = []
     parall = args.parall
@@ -187,6 +187,7 @@ def gen_train_sample(train_sample, args):
     for pipe in pipes:
         st = pipe.recv()
         for k, v in st.items():
+            k = int(k)
             if k not in stat:
                 stat[k] = 0
             stat[k] += v
@@ -195,10 +196,10 @@ def gen_train_sample(train_sample, args):
         p.join()
 
     # Merge partial files
-    with open("train_tmp", 'wb') as f:
+    with open("train_tmp", 'w') as f:
         for i in range(parall):
             filename = 'train_tmp.part_{}'.format(i)
-            with open(filename, 'rb') as f1:
+            with open(filename, 'r') as f1:
                 f.write(f1.read())
 
             os.remove(filename)
@@ -210,7 +211,7 @@ def gen_train_sample(train_sample, args):
 
 def gen_test_sample(test_dir, test_sample, seq_len, min_seq_len):
     user_his_behav = gen_user_his_behave(test_sample)
-    with open("{}/part-0".format(test_dir), 'wb') as f:
+    with open("{}/part-0".format(test_dir), 'w') as f:
         for user, value in user_his_behav.items():
             if len(value) / 2 + 1 < min_seq_len:
                 continue
@@ -241,6 +242,7 @@ def prepare_sample_set(train_dir, sample_dir, process_num=12, feature_num=69):
             with open(filename) as f:
                 print("Begin to handle {}.".format(filename))
                 for line in f:
+                    history_ids = [0] * feature_num
                     features = line.strip().split("\t")
                     item_id = int(features[1])
                     for item in features[2:]:

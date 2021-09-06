@@ -36,6 +36,7 @@ class StaticModel():
     def create_feeds(self, is_infer=False):
         query = paddle.static.data(
             name="query", shape=[-1, self.trigram_d], dtype='float32')
+        self.prune_feed_vars = [query]
 
         doc_pos = paddle.static.data(
             name="doc_pos", shape=[-1, self.trigram_d], dtype='float32')
@@ -58,6 +59,10 @@ class StaticModel():
         R_Q_D_p, hit_prob = dssm_model(input, is_infer)
 
         self.inference_target_var = R_Q_D_p
+        self.prune_target_var = dssm_model.query_fc
+        self.train_dump_fields = [dssm_model.query_fc, R_Q_D_p]
+        self.train_dump_params = dssm_model.params
+        self.infer_dump_fields = [dssm_model.doc_pos_fc]
         if is_infer:
             fetch_dict = {'query_doc_sim': R_Q_D_p}
             return fetch_dict

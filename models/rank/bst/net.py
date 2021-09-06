@@ -112,7 +112,7 @@ class BST(paddle.nn.Layer):
         self.hist_item_emb_attr = paddle.nn.Embedding(
             self.item_count,
             self.item_emb_size,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -121,7 +121,7 @@ class BST(paddle.nn.Layer):
         self.hist_cat_emb_attr = paddle.nn.Embedding(
             self.cat_count,
             self.cat_emb_size,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -130,7 +130,7 @@ class BST(paddle.nn.Layer):
         self.hist_position_emb_attr = paddle.nn.Embedding(
             self.position_count,
             self.position_emb_size,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -140,7 +140,7 @@ class BST(paddle.nn.Layer):
         self.target_item_emb_attr = paddle.nn.Embedding(
             self.item_count,
             self.item_emb_size,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -149,7 +149,7 @@ class BST(paddle.nn.Layer):
         self.target_cat_emb_attr = paddle.nn.Embedding(
             self.cat_count,
             self.cat_emb_size,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -158,7 +158,7 @@ class BST(paddle.nn.Layer):
         self.target_position_emb_attr = paddle.nn.Embedding(
             self.position_count,
             self.position_emb_size,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -168,7 +168,7 @@ class BST(paddle.nn.Layer):
         self.userid_attr = paddle.nn.Embedding(
             self.user_count,
             self.d_model,
-            sparse=True,
+            sparse=False,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
