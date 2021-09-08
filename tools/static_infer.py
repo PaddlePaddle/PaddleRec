@@ -78,6 +78,7 @@ def main(args):
     start_epoch = config.get("runner.infer_start_epoch", 0)
     end_epoch = config.get("runner.infer_end_epoch", 10)
     batch_size = config.get("runner.infer_batch_size", None)
+    use_fleet = config.get("runner.use_fleet", False)
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
@@ -119,7 +120,7 @@ def main(args):
         reader_start = time.time()
 
         if use_auc:
-            reset_auc(auc_num)
+            reset_auc(use_fleet, auc_num)
         for batch_id, batch_data in enumerate(test_dataloader()):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
