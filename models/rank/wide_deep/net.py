@@ -35,10 +35,13 @@ class WideDeepLayer(nn.Layer):
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0, std=1.0 / math.sqrt(self.dense_feature_dim))))
 
+        use_sparse = True
+        if paddle.is_compiled_with_npu():
+            use_sparse = False
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.Uniform()))
