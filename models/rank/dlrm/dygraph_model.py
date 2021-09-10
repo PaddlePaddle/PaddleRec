@@ -25,18 +25,20 @@ class DygraphModel():
     def create_model(self, config):
         dense_feature_dim = config.get("hyper_parameters.dense_input_dim")
         bot_layer_sizes = config.get("hyper_parameters.bot_layer_sizes")
-        sparse_feature_number = config.get("hyper_parameters.sparse_feature_number")
+        sparse_feature_number = config.get(
+            "hyper_parameters.sparse_feature_number")
         sparse_feature_dim = config.get("hyper_parameters.sparse_feature_dim")
         top_layer_sizes = config.get("hyper_parameters.top_layer_sizes")
         num_field = config.get("hyper_parameters.num_field")
 
-        dlrm_model = net.DLRMLayer(dense_feature_dim=dense_feature_dim,
-                                   bot_layer_sizes=bot_layer_sizes,
-                                   sparse_feature_number=sparse_feature_number,
-                                   sparse_feature_dim=sparse_feature_dim,
-                                   top_layer_sizes=top_layer_sizes,
-                                   num_field=num_field,
-                                   self_interaction=False)
+        dlrm_model = net.DLRMLayer(
+            dense_feature_dim=dense_feature_dim,
+            bot_layer_sizes=bot_layer_sizes,
+            sparse_feature_number=sparse_feature_number,
+            sparse_feature_dim=sparse_feature_dim,
+            top_layer_sizes=top_layer_sizes,
+            num_field=num_field,
+            self_interaction=False)
 
         return dlrm_model
 
@@ -85,7 +87,8 @@ class DygraphModel():
         # update metrics
         predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
-        metrics_list[1].update(metrics_list[1].compute(pred=predict_2d, label=label).numpy())
+        metrics_list[1].update(metrics_list[1].compute(
+            pred=predict_2d, label=label).numpy())
 
         # print_dict format :{'loss': loss}
         print_dict = {"loss": loss}
@@ -99,5 +102,6 @@ class DygraphModel():
         # update metrics
         predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
-        metrics_list[1].update(metrics_list[1].compute(pred=predict_2d, label=label).numpy())
+        metrics_list[1].update(metrics_list[1].compute(
+            pred=predict_2d, label=label).numpy())
         return metrics_list, None

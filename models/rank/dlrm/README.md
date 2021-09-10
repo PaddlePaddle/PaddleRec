@@ -109,7 +109,6 @@ DLRM 模型中所有的 sparse features 的 embedding 向量长度均是相等�
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现 README 中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：  
 
-
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
 | DLRM | 0.79+ | 2048 | 1 | 约 1.5 小时 |
@@ -131,4 +130,3 @@ python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行con
 ## 进阶使用
   
 ## FAQ
-

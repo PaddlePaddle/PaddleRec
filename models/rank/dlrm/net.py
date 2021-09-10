@@ -49,22 +49,25 @@ class DLRMLayer(nn.Layer):
         self.num_field = num_field
         self.self_interaction = self_interaction
 
-        self.bot_mlp = MLPLayer(input_shape=dense_feature_dim,
-                                units_list=bot_layer_sizes,
-                                activation="relu")
+        self.bot_mlp = MLPLayer(
+            input_shape=dense_feature_dim,
+            units_list=bot_layer_sizes,
+            activation="relu")
         # `num_features * (num_features + 1) / 2` if self_interaction is True and
         # `num_features * (num_features - 1) / 2` if self_interaction is False.
         self.concat_size = int((num_field + 1) * (num_field + 2) / 2) if self.self_interaction \
             else int(num_field * (num_field + 1) / 2)
-        self.top_mlp = MLPLayer(input_shape=self.concat_size + sparse_feature_dim,
-                                units_list=top_layer_sizes)
+        self.top_mlp = MLPLayer(
+            input_shape=self.concat_size + sparse_feature_dim,
+            units_list=top_layer_sizes)
 
-        self.embedding = paddle.nn.Embedding(num_embeddings=self.sparse_feature_number,
-                                             embedding_dim=self.sparse_feature_dim,
-                                             sparse=True,
-                                             weight_attr=paddle.ParamAttr(
-                                                 name="SparseFeatFactors",
-                                                 initializer=paddle.nn.initializer.TruncatedNormal()))
+        self.embedding = paddle.nn.Embedding(
+            num_embeddings=self.sparse_feature_number,
+            embedding_dim=self.sparse_feature_dim,
+            sparse=True,
+            weight_attr=paddle.ParamAttr(
+                name="SparseFeatFactors",
+                initializer=paddle.nn.initializer.TruncatedNormal()))
 
     def forward(self, sparse_inputs, dense_inputs):
         """Performs the interaction operation on the tensors in the list.
@@ -82,20 +85,28 @@ class DLRMLayer(nn.Layer):
         sparse_embs = []
         for s_input in sparse_inputs:
             emb = self.embedding(s_input)
-            emb = paddle.reshape(emb, shape=[batch_size, self.sparse_feature_dim])
+            emb = paddle.reshape(
+                emb, shape=[batch_size, self.sparse_feature_dim])
             sparse_embs.append(emb)
 
         # concat dense embedding and sparse embeddings, (batch_size, (sparse_num_field + 1), embedding_size)
-        T = paddle.reshape(paddle.concat(x=sparse_embs + [x], axis=1), (batch_size, self.num_field + 1, d))
+        T = paddle.reshape(
+            paddle.concat(
+                x=sparse_embs + [x], axis=1),
+            (batch_size, self.num_field + 1, d))
 
         # interact features, select upper-triangular portion
         Z = paddle.bmm(T, paddle.transpose(T, perm=[0, 2, 1]))
 
-        Zflat = paddle.triu(Z, 1) + paddle.tril(x=paddle.ones_like(Z) * MIN_FLOAT,
-                                                diagonal=-1 if self.self_interaction else 0)
-        Zflat = paddle.reshape(x=paddle.masked_select(Zflat,
-                                                      paddle.greater_than(Zflat, paddle.ones_like(Zflat) * MIN_FLOAT)),
-                               shape=(batch_size, self.concat_size))
+        Zflat = paddle.triu(Z, 1) + paddle.tril(
+            x=paddle.ones_like(Z) * MIN_FLOAT,
+            diagonal=-1 if self.self_interaction else 0)
+        Zflat = paddle.reshape(
+            x=paddle.masked_select(Zflat,
+                                   paddle.greater_than(
+                                       Zflat,
+                                       paddle.ones_like(Zflat) * MIN_FLOAT)),
+            shape=(batch_size, self.concat_size))
 
         R = paddle.concat([x] + [Zflat], axis=1)
 
@@ -104,7 +115,8 @@ class DLRMLayer(nn.Layer):
 
 
 class MLPLayer(nn.Layer):
-    def __init__(self, input_shape, units_list=None, activation=None, **kwargs):
+    def __init__(self, input_shape, units_list=None, activation=None,
+                 **kwargs):
         super(MLPLayer, self).__init__(**kwargs)
 
         if units_list is None:
@@ -117,11 +129,12 @@ class MLPLayer(nn.Layer):
 
         for i, unit in enumerate(units_list[:-1]):
             if i != len(units_list) - 1:
-                dense = paddle.nn.Linear(in_features=unit,
-                                         out_features=units_list[i + 1],
-                                         weight_attr=paddle.ParamAttr(
-                                             initializer=paddle.nn.initializer.TruncatedNormal(
-                                                 std=1.0 / math.sqrt(unit))))
+                dense = paddle.nn.Linear(
+                    in_features=unit,
+                    out_features=units_list[i + 1],
+                    weight_attr=paddle.ParamAttr(
+                        initializer=paddle.nn.initializer.TruncatedNormal(
+                            std=1.0 / math.sqrt(unit))))
                 self.mlp.append(dense)
 
                 relu = paddle.nn.ReLU()
@@ -130,11 +143,12 @@ class MLPLayer(nn.Layer):
                 norm = paddle.nn.BatchNorm1D(units_list[i + 1])
                 self.mlp.append(norm)
             else:
-                dense = paddle.nn.Linear(in_features=unit,
-                                         out_features=units_list[i + 1],
-                                         weight_attr=paddle.ParamAttr(
-                                             initializer=paddle.nn.initializer.TruncatedNormal(
-                                                 std=1.0 / math.sqrt(unit))))
+                dense = paddle.nn.Linear(
+                    in_features=unit,
+                    out_features=units_list[i + 1],
+                    weight_attr=paddle.ParamAttr(
+                        initializer=paddle.nn.initializer.TruncatedNormal(
+                            std=1.0 / math.sqrt(unit))))
                 self.mlp.append(dense)
 
                 if self.activation is not None:
