@@ -125,7 +125,7 @@ def main(args):
         reader_start = time.time()
 
         if use_auc:
-            reset_auc(auc_num)
+            reset_auc(use_fleet, auc_num)
         for batch_id, batch_data in enumerate(test_dataloader()):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()

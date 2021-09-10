@@ -1,8 +1,7 @@
 # 匹配模型库
 
 ## 简介
-我们提供了常见的匹配任务中使用的模型算法的PaddleRec实现, 包括动态图和静态图的单机训练&预测效果指标。实现的模型包括 [DSSM](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/match/dssm)、[MultiView-Simnet](http://gitlab.baidu.com/tangwei12/paddlerec/tree/develop/models/match/multiview-simnet)、[match-pyramid](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/match/match-pyramid)。
-
+我们提供了常见的匹配任务中使用的模型算法的PaddleRec实现, 包括动态图和静态图的单机训练&预测效果指标。实现的模型包括 [DSSM](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/match/dssm)、[MultiView-Simnet](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/match/multiview-simnet)、[match-pyramid](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/match/match-pyramid)。  
 模型算法库在持续添加中，欢迎关注。
 
 ## 目录

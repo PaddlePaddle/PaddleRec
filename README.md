@@ -84,6 +84,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 * [分布式训练](doc/fleet_mode.md)
 
 ### 进阶教程
+* [提交规范](doc/contribute.md)
 * [自定义Reader](doc/custom_reader.md)
 * [自定义模型](doc/model_develop.md)
 * [yaml配置说明](doc/yaml.md)
@@ -138,6 +139,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
   |  多任务  |                  [ESMM](models/multitask/esmm/)                   |    ✓    |    ✓    |     ✓     |     ✓     | 2.1.0 | [SIGIR 2018][Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate](https://arxiv.org/abs/1804.07931)                                                              |
   |  多任务  |                  [MMOE](models/multitask/mmoe/)                   |    ✓    |    ✓    |     ✓     |     ✓     | 2.1.0 | [KDD 2018][Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://dl.acm.org/doi/abs/10.1145/3219819.3220007)                                                       |
   |  多任务  |           [ShareBottom](models/multitask/share_bottom/)           |    ✓    |    ✓    |     ✓     |     ✓     | 2.1.0 | [1998][Multitask learning](http://reports-archive.adm.cs.cmu.edu/anon/1997/CMU-CS-97-203.pdf)                                                                                                               |
+  |  多任务  |           [Maml](models/multitask/maml/)           |    ✓    |    ✓    |    x      |     x     | 2.1.0 | [PMLR 2017][Model-agnostic meta-learning for fast adaptation of deep networks](https://arxiv.org/pdf/1703.03400.pdf)                                                                                                               |
   |  重排序  |                [Listwise](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/rerank/listwise/)                |    ✓    |    ✓    |     ✓     |     x     | [1.8.5](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5) | [2019][Sequential Evaluation and Generation Framework for Combinatorial Recommender System](https://arxiv.org/pdf/1902.00245.pdf)                                                                           |
 
 

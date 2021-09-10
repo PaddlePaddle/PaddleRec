@@ -87,15 +87,24 @@ class StaticModel():
             logits=dout, label=input[-1], return_softmax=True, ignore_index=-1)
 
         ignore_label = paddle.full_like(input[-1], fill_value=-1)
-        avg_cost = paddle.sum(cost) / paddle.sum(
-            paddle.cast(
-                paddle.not_equal(input[-1], ignore_label), dtype='int32'))
+        #        avg_cost = paddle.sum(cost) / paddle.sum(
+        #            paddle.cast(
+        #                paddle.not_equal(input[-1], ignore_label), dtype='int32'))
+        avg_cost = paddle.divide(
+            paddle.sum(cost),
+            paddle.sum(
+                paddle.cast(
+                    paddle.not_equal(input[-1], ignore_label),
+                    dtype='float32')))
 
         self._cost = avg_cost
 
+        auc, _, _ = paddle.static.auc(input=softmax_prob,
+                                      label=input[-1],
+                                      slide_steps=0)
         self.inference_target_var = softmax_prob
 
-        fetch_dict = {'cost': avg_cost}
+        fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict
 
     def create_optimizer(self, strategy=None):

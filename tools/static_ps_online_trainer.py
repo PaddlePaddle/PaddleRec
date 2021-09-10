@@ -14,8 +14,8 @@
 
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
-from utils.static_ps.program_helper import get_model, get_strategy
-from utils.static_ps.common import YamlHelper, is_distributed_env
+from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
+from utils.static_ps.common import YamlHelper, is_distributed_env, get_utils_file_path
 import argparse
 import time
 import sys
@@ -71,14 +71,29 @@ class Main(object):
         elif fleet.is_worker():
             self.run_online_worker()
             fleet.stop_worker()
-            self.record_result()
+            # self.record_result()
         logger.info("Run Success, Exit.")
 
     def network(self):
         model = get_model(self.config)
         self.input_data = model.create_feeds()
+        self.inference_feed_vars = model.create_feeds(is_infer=True)
         self.metrics = model.net(self.input_data)
         self.inference_target_var = model.inference_target_var
+        if config.get("runner.need_prune", False):
+            # DSSM prune net
+            self.inference_feed_vars = model.prune_feed_vars
+            self.inference_target_var = model.prune_target_var
+        if config.get("runner.need_train_dump", False):
+            self.train_dump_fields = model.train_dump_fields if hasattr(
+                model, "train_dump_fields") else []
+            self.train_dump_params = model.train_dump_params if hasattr(
+                model, "train_dump_params") else []
+        if config.get("runner.need_infer_dump", False):
+            self.infer_dump_fields = model.infer_dump_fields if hasattr(
+                model, "infer_dump_fields") else []
+        print(self.inference_feed_vars)
+        print(self.inference_target_var)
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
         model.create_optimizer(get_strategy(self.config))
 
@@ -94,14 +109,59 @@ class Main(object):
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
         dataset.set_thread(self.config.get('runner.train_thread_num'))
-        
+        dataset.set_input_type(self.config.get('runner.input_type', 0))
+        dataset.set_hdfs_config(
+            self.config.get('runner.fs_name'),
+            self.config.get('runner.fs_ugi'))
+        dataset.set_parse_ins_id(self.config.get("runner.parse_ins_id", False))
+        dataset.set_parse_content(
+            self.config.get("runner.parse_content", False))
+
         # may you need define your dataset_filelist for day/pass_index
+        train_data_dir = "{}/{}/{}".format(train_data_dir, day, pass_index)
         filelist = []
-        for path in train_data_dir:
-            filelist += [path + "/%s" % x for x in os.listdir(path)]
+        # for path in train_data_dir:
+        #     filelist += [path + "/%s" % x for x in os.listdir(path)]
+        for f in os.listdir(train_data_dir):
+            filelist.append("{}/{}".format(train_data_dir, f))
+        print("filelist:", filelist)
 
         dataset.set_filelist(filelist)
-        dataset.set_pipe_command(self.config.get("runner.pipe_command"))
+        self.pipe_command = "{} {} {}".format(
+            self.config.get("runner.pipe_command"),
+            config.get("yaml_path"), get_utils_file_path())
+        dataset.set_pipe_command(self.pipe_command)
+        dataset.load_into_memory()
+        return dataset
+
+    def wait_and_prepare_infer_dataset(self, day, pass_index):
+        test_data_dir = self.config.get("runner.test_data_dir", [])
+        dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
+        dataset.set_use_var(self.input_data)
+        dataset.set_batch_size(self.config.get('runner.test_batch_size'))
+        dataset.set_thread(self.config.get('runner.test_thread_num'))
+        dataset.set_input_type(self.config.get('runner.input_type', 0))
+        dataset.set_hdfs_config(
+            self.config.get('runner.fs_name'),
+            self.config.get('runner.fs_ugi'))
+        dataset.set_parse_ins_id(self.config.get("runner.parse_ins_id", False))
+        dataset.set_parse_content(
+            self.config.get("runner.parse_content", False))
+
+        # may you need define your dataset_filelist for day/pass_index
+        test_data_dir = "{}/{}/{}".format(test_data_dir, day, pass_index)
+        filelist = []
+        # for path in test_data_dir:
+        #     filelist += [path + "/%s" % x for x in os.listdir(path)]
+        for f in os.listdir(test_data_dir):
+            filelist.append("{}/{}".format(test_data_dir, f))
+        print("filelist:", filelist)
+
+        dataset.set_filelist(filelist)
+        self.pipe_command = "{} {} {}".format(
+            self.config.get("runner.pipe_command"),
+            config.get("yaml_path"), get_utils_file_path())
+        dataset.set_pipe_command(self.pipe_command)
         dataset.load_into_memory()
         return dataset
 
@@ -125,62 +185,145 @@ class Main(object):
         if save_model_path and (not os.path.exists(save_model_path)):
             os.makedirs(save_model_path)
 
-        days = os.popen("echo -n " + self.config.get("runner.days")).read().split(" ")
+        days = os.popen("echo -n " + self.config.get("runner.days")).read(
+        ).split(" ")
         pass_per_day = int(self.config.get("runner.pass_per_day"))
 
         for day_index in range(len(days)):
             day = days[day_index]
             for pass_index in range(1, pass_per_day + 1):
                 logger.info("Day: {} Pass: {} Begin.".format(day, pass_index))
-                
+
                 prepare_data_start_time = time.time()
                 dataset = self.wait_and_prepare_dataset(day, pass_index)
                 prepare_data_end_time = time.time()
                 logger.info(
-                    "Prepare Dataset Done, using time {} second.".format(prepare_data_end_time - prepare_data_start_time))
-                
+                    "Prepare Dataset Done, using time {} second.".format(
+                        prepare_data_end_time - prepare_data_start_time))
+
                 train_start_time = time.time()
                 self.dataset_train_loop(dataset, day, pass_index)
                 train_end_time = time.time()
-                logger.info(
-                    "Train Dataset Done, using time {} second.".format(train_end_time - train_start_time))
-            
+                logger.info("Train Dataset Done, using time {} second.".format(
+                    train_end_time - train_start_time))
+
+                need_infer_dump = self.config.get("runner.need_infer_dump",
+                                                  False)
+                if need_infer_dump:
+                    prepare_data_start_time = time.time()
+                    dump_dataset = self.wait_and_prepare_infer_dataset(
+                        day, pass_index)
+                    prepare_data_end_time = time.time()
+                    logger.info(
+                        "Prepare Infer Dump Dataset Done, using time {} second.".
+                        format(prepare_data_end_time -
+                               prepare_data_start_time))
+
+                    dump_start_time = time.time()
+                    self.dataset_dump_loop(dump_dataset, day, pass_index)
+                    dump_end_time = time.time()
+                    logger.info(
+                        "Infer Dump Dataset Done, using time {} second.".
+                        format(dump_end_time - dump_start_time))
+
                 model_dir = "{}/{}/{}".format(save_model_path, day, pass_index)
 
-                if fleet.is_first_worker() and save_model_path and is_distributed_env():
+                if fleet.is_first_worker(
+                ) and save_model_path and is_distributed_env():
                     fleet.save_inference_model(
-                        self.exe, model_dir,
-                        [feed.name for feed in self.input_data],
+                        self.exe,
+                        model_dir,
+                        [feed.name for feed in self.inference_feed_vars],
                         self.inference_target_var,
                         mode=2)
 
-            if fleet.is_first_worker() and save_model_path and is_distributed_env():
+            if fleet.is_first_worker(
+            ) and save_model_path and is_distributed_env():
                 fleet.save_inference_model(
-                    self.exe, model_dir,
-                    [feed.name for feed in self.input_data],
+                    self.exe,
+                    model_dir,
+                    [feed.name for feed in self.inference_feed_vars],
                     self.inference_target_var,
                     mode=0)
 
     def dataset_train_loop(self, cur_dataset, day, pass_index):
-        logger.info("Day: {} Pass: {}, Running Dataset Begin.".format(day, pass_index))
+        logger.info("Day: {} Pass: {}, Running Dataset Begin.".format(
+            day, pass_index))
         fetch_info = [
             "Day: {} Pass: {} Var {}".format(day, pass_index, var_name)
             for var_name in self.metrics
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
+
+        debug = config.get("runner.dataset_debug", False)
+        need_dump = config.get("runner.need_train_dump", False)
+        if need_dump:
+            debug = True
+            dump_fields_dir = self.config.get("runner.train_dump_fields_dir")
+            dump_fields_path = "{}/{}/{}".format(dump_fields_dir, day,
+                                                 pass_index)
+            dump_fields = [var.name for var in self.train_dump_fields]
+            dump_params = [param.name for param in self.train_dump_params]
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": dump_fields_path,
+                "dump_fields": dump_fields,
+                "dump_param": dump_params
+            })
+        print(paddle.static.default_main_program()._fleet_opt)
+
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=cur_dataset,
             fetch_list=fetch_vars,
             fetch_info=fetch_info,
             print_period=print_step,
-            debug=config.get("runner.dataset_debug"))
+            debug=debug)
+
+        if need_dump:
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": "",
+                "dump_fields": [],
+                "dump_param": []
+            })
         cur_dataset.release_memory()
-        
+
+    def dataset_dump_loop(self, cur_dataset, day, pass_index):
+        logger.info("Day: {} Pass: {}, Dump Dataset Begin.".format(day,
+                                                                   pass_index))
+        fetch_info = [
+            "Day: {} Pass: {} Var {}".format(day, pass_index, var_name)
+            for var_name in self.metrics
+        ]
+        fetch_vars = [var for _, var in self.metrics.items()]
+        print_step = int(config.get("runner.print_interval"))
+        dump_fields_dir = self.config.get("runner.infer_dump_fields_dir")
+        dump_fields_path = "{}/{}/{}".format(dump_fields_dir, day, pass_index)
+        dump_fields = [var.name for var in self.infer_dump_fields]
+        set_dump_config(paddle.static.default_main_program(), {
+            "dump_fields_path": dump_fields_path,
+            "dump_fields": dump_fields
+        })
+        print(paddle.static.default_main_program()._fleet_opt)
+
+        self.exe.infer_from_dataset(
+            program=paddle.static.default_main_program(),
+            dataset=cur_dataset,
+            fetch_list=fetch_vars,
+            fetch_info=fetch_info,
+            print_period=print_step,
+            debug=True)
+
+        set_dump_config(paddle.static.default_main_program(), {
+            "dump_fields_path": "",
+            "dump_fields": [],
+        })
+        cur_dataset.release_memory()
+
+
 if __name__ == "__main__":
     paddle.enable_static()
     config = parse_args()
-   # os.environ["CPU_NUM"] = str(config.get("runner.thread_num"))
+    # os.environ["CPU_NUM"] = str(config.get("runner.thread_num"))
     benchmark_main = Main(config)
     benchmark_main.run()

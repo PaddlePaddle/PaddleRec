@@ -71,7 +71,7 @@ class Reader(fleet.MultiSlotDataGenerator):
         return output
         #return [label] + sparse_feature + [dense_feature]
     def generate_sample(self, line):
-        "Dataset Generator"
+        r"Dataset Generator"
 
         def reader():
             output_dict = self.line_process(line)
