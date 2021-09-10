@@ -80,6 +80,7 @@ def main(args):
     batch_size = config.get("runner.infer_batch_size", None)
     use_save_data = config.get("runner.use_save_data", False)
     reader_type = config.get("runner.reader_type", "DataLoader")
+    use_fleet = config.get("runner.use_fleet", False)
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
