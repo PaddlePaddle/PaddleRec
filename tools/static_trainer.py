@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 from utils.static_ps.reader_helper import get_reader
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
-from utils.save_load import save_static_model, save_inference_model
+from utils.save_load import save_static_model, save_inference_model, load_static_parameter, save_data
 
 import time
 import argparse
@@ -62,7 +62,6 @@ def main(args):
             config[key] = value
     # load static model class
     static_model_class = load_static_model_class(config)
-
     input_data = static_model_class.create_feeds()
     input_data_names = [data.name for data in input_data]
 
@@ -85,6 +84,7 @@ def main(args):
     batch_size = config.get("runner.train_batch_size", None)
     reader_type = config.get("runner.reader_type", "DataLoader")
     use_fleet = config.get("runner.use_fleet", False)
+    use_save_data = config.get("runner.use_save_data", False)
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
     logger.info(
@@ -112,6 +112,12 @@ def main(args):
     # initialize
     exe.run(paddle.static.default_startup_program())
 
+    if model_init_path is not None:
+        load_static_parameter(
+            paddle.static.default_main_program(),
+            model_init_path,
+            prefix='rec_static')
+
     last_epoch_id = config.get("last_epoch", -1)
 
     # Create a log_visual object and store the data in the path
@@ -126,6 +132,9 @@ def main(args):
         dataset, file_list = get_reader(input_data, config)
     elif reader_type == 'DataLoader':
         train_dataloader = create_data_loader(config=config, place=place)
+    elif reader_type == "CustomizeDataLoader":
+        train_dataloader = static_model_class.create_data_loader()
+        reader_type = 'DataLoader'
 
     for epoch_id in range(last_epoch_id + 1, epochs):
 
@@ -166,6 +175,8 @@ def main(args):
                 model_save_path,
                 epoch_id,
                 prefix='rec_static')
+        if use_save_data:
+            save_data(fetch_batch_var, model_save_path)
 
         if use_inference:
             feed_var_names = config.get("runner.save_inference_feed_varnames",
@@ -234,7 +245,7 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
             program=paddle.static.default_main_program(),
             feed=dict(zip(input_data_names, batch_data)),
             fetch_list=[var for _, var in fetch_vars.items()])
-        # print(paddle.fluid.global_scope().find_var("_generated_var_2").get_tensor())
+
         train_run_cost += time.time() - train_start
         total_samples += batch_size
         if batch_id % print_interval == 0:
