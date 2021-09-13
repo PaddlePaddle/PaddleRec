@@ -72,11 +72,10 @@ class Training(object):
             self.hadoop_fs_name = self.hadoop_config.get("uri")
             self.hadoop_fs_ugi = self.hadoop_config.get(
                 "user") + "," + self.hadoop_config.get("passwd")
-            # prefix = "hdfs:/" if self.hadoop_fs_name.startswith("hdfs:") else "afs:/"
-            # self.save_model_path = prefix + self.save_model_path.strip("/")
         else:
             self.hadoop_fs_name, self.hadoop_fs_ugi = None, None
-        self.train_local = self.hadoop_fs_name is None or self.hadoop_fs_ugi is None
+        self.save_remote = self.save_model_path.startswith(
+            "afs") or self.save_model_path.startswith("hdfs")
 
     def run(self):
         os.environ["PADDLE_WITH_GLOO"] = "1"
@@ -115,8 +114,6 @@ class Training(object):
                              day,
                              pass_id,
                              xbox_base_key,
-                             hadoop_fs_name,
-                             hadoop_fs_ugi,
                              hadoop_home="$HADOOP_HOME",
                              donefile_name="donefile.txt"):
         """
@@ -127,8 +124,6 @@ class Training(object):
             day(str|int): training day
             pass_id(str|int): training pass id
             xbox_base_key(str|int): xbox base key
-            hadoop_fs_name(str): hdfs/afs fs name
-            hadoop_fs_ugi(str): hdfs/afs fs ugi
             hadoop_home(str): hadoop home, default is "$HADOOP_HOME"
             donefile_name(str): donefile name, default is "donefile.txt"
 
@@ -149,10 +144,10 @@ class Training(object):
             donefile_path = output_path + "/" + donefile_name
             content = "%s\t%lu\t%s\t%s\t%d" % (day, xbox_base_key, \
                                                model_path, pass_id, 0)
-            if not self.train_local:
+            if self.save_remote:
                 configs = {
-                    "fs.default.name": hadoop_fs_name,
-                    "hadoop.job.ugi": hadoop_fs_ugi
+                    "fs.default.name": self.hadoop_fs_name,
+                    "hadoop.job.ugi": self.hadoop_fs_ugi
                 }
                 client = HDFSClient(hadoop_home, configs)
                 if client.is_file(donefile_path):
@@ -222,18 +217,12 @@ class Training(object):
                     logger.info("not write %s because %s/%s already "
                                 "exists" % (donefile_name, day, pass_id))
 
-    def get_last_save_xbox_base(self,
-                                output_path,
-                                hadoop_fs_name,
-                                hadoop_fs_ugi,
-                                hadoop_home="$HADOOP_HOME"):
+    def get_last_save_xbox_base(self, output_path, hadoop_home="$HADOOP_HOME"):
         r"""
         get last saved base xbox info from xbox_base_done.txt
 
         Args:
             output_path(str): output path
-            hadoop_fs_name(str): hdfs/afs fs_name
-            hadoop_fs_ugi(str): hdfs/afs fs_ugi
             hadoop_home(str): hadoop home, default is "$HADOOP_HOME"
 
         Returns:
@@ -242,22 +231,13 @@ class Training(object):
             last_path(str): model path
             xbox_base_key(int): xbox key
 
-        Examples:
-            .. code-block:: python
-
-              from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-              fleet_util = FleetUtil()
-              last_save_day, last_path, xbox_base_key = \
-                  fleet_util.get_last_save_xbox_base("hdfs:/my/path", 20190722,
-                                                     88)
-
         """
 
         donefile_path = output_path + "/xbox_base_done.txt"
-        if not self.train_local:
+        if self.save_remote:
             configs = {
-                "fs.default.name": hadoop_fs_name,
-                "hadoop.job.ugi": hadoop_fs_ugi
+                "fs.default.name": self.hadoop_fs_name,
+                "hadoop.job.ugi": self.hadoop_fs_ugi
             }
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
@@ -359,12 +339,20 @@ class Training(object):
         fleet.barrier_worker()
         return auc_value
 
+    def load_xbox_delta_model(self, output_path, day, pass_id):
+        suffix_name = "/%s/base/" % day
+        model_path = output_path.rstrip("/") + suffix_name
+        fleet.load_model(model_path, 2)
+        if pass_id != -1:
+            for i in range(pass_id):
+                suffix_name = "/%s/delta-%s/" % (day, i)
+                model_path = output_path.rstrip("/") + suffix_name
+                fleet.load_model(model_path, 1)
+
     def save_xbox_model(self,
                         output_path,
                         day,
                         pass_id,
-                        hadoop_fs_name,
-                        hadoop_fs_ugi,
                         hadoop_home="$HADOOP_HOME"):
         if pass_id != -1:
             mode = 1
@@ -375,7 +363,7 @@ class Training(object):
             suffix_name = "/%s/base/" % day
             model_path = output_path.rstrip("/") + suffix_name
         infer_program_path = model_path + "dnn_plugin/"
-        if self.train_local:
+        if not self.save_remote:
             fleet.save_inference_model(
                 self.exe, infer_program_path,
                 [feed.name for feed in self.inference_model_feed_vars],
@@ -387,8 +375,8 @@ class Training(object):
                 [feed.name for feed in self.inference_model_feed_vars],
                 self.predict)
             configs = {
-                "fs.default.name": hadoop_fs_name,
-                "hadoop.job.ugi": hadoop_fs_ugi
+                "fs.default.name": self.hadoop_fs_name,
+                "hadoop.job.ugi": self.hadoop_fs_ugi
             }
             client = HDFSClient(hadoop_home, configs)
 
@@ -405,18 +393,12 @@ class Training(object):
             executor=self.exe, dirname=model_path, mode=mode)
         logger.info("save_persistables in %s" % model_path)
 
-    def get_last_save_model(self,
-                            output_path,
-                            hadoop_fs_name,
-                            hadoop_fs_ugi,
-                            hadoop_home="$HADOOP_HOME"):
+    def get_last_save_model(self, output_path, hadoop_home="$HADOOP_HOME"):
         r"""
         get last saved model info from donefile.txt
 
         Args:
             output_path(str): output path
-            hadoop_fs_name(str): hdfs/afs fs_name
-            hadoop_fs_ugi(str): hdfs/afs fs_ugi
             hadoop_home(str): hadoop home, default is "$HADOOP_HOME"
 
         Returns:
@@ -431,10 +413,10 @@ class Training(object):
         last_save_pass = -1
         last_path = ""
         donefile_path = output_path + "/donefile.txt"
-        if not self.train_local:
+        if self.save_remote:
             configs = {
-                "fs.default.name": hadoop_fs_name,
-                "hadoop.job.ugi": hadoop_fs_ugi
+                "fs.default.name": self.hadoop_fs_name,
+                "hadoop.job.ugi": self.hadoop_fs_ugi
             }
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
@@ -463,18 +445,12 @@ class Training(object):
             xbox_base_key = int(content[1])
             return [last_save_day, last_save_pass, last_path, xbox_base_key]
 
-    def get_last_save_xbox(self,
-                           output_path,
-                           hadoop_fs_name,
-                           hadoop_fs_ugi,
-                           hadoop_home="$HADOOP_HOME"):
+    def get_last_save_xbox(self, output_path, hadoop_home="$HADOOP_HOME"):
         r"""
         get last saved xbox info from xbox_patch_done.txt
 
         Args:
             output_path(str): output path
-            hadoop_fs_name(str): hdfs/afs fs_name
-            hadoop_fs_ugi(str): hdfs/afs fs_ugi
             hadoop_home(str): hadoop home, default is "$HADOOP_HOME"
 
         Returns:
@@ -486,10 +462,10 @@ class Training(object):
 
         """
         donefile_path = output_path + "/xbox_patch_done.txt"
-        if not self.train_local:
+        if self.save_remote:
             configs = {
-                "fs.default.name": hadoop_fs_name,
-                "hadoop.job.ugi": hadoop_fs_ugi
+                "fs.default.name": self.hadoop_fs_name,
+                "hadoop.job.ugi": self.hadoop_fs_ugi
             }
             client = HDFSClient(hadoop_home, configs)
             if not client.is_file(donefile_path):
@@ -560,8 +536,6 @@ class Training(object):
                             day,
                             pass_id,
                             model_base_key,
-                            hadoop_fs_name,
-                            hadoop_fs_ugi,
                             hadoop_home="$HADOOP_HOME",
                             donefile_name=None):
         day = str(day)
@@ -586,10 +560,10 @@ class Training(object):
             donefile_path = output_path + "/" + donefile_name
             xbox_str = self._get_xbox_str(
                 model_path=model_path, xbox_base_key=xbox_base_key, mode=mode)
-            if not self.train_local:
+            if self.save_remote:
                 configs = {
-                    "fs.default.name": hadoop_fs_name,
-                    "hadoop.job.ugi": hadoop_fs_ugi
+                    "fs.default.name": self.hadoop_fs_name,
+                    "hadoop.job.ugi": self.hadoop_fs_ugi
                 }
                 client = HDFSClient(hadoop_home, configs)
                 if client.is_file(donefile_path):
@@ -864,7 +838,7 @@ class Training(object):
 
     def file_ls(self, path_array):
         result = []
-        if self.train_local:
+        if not self.save_remote:
             for path in path_array:
                 for root, ds, fs in os.walk(path):
                     for f in fs:
@@ -919,7 +893,7 @@ class Training(object):
         dataset.set_batch_size(self.config.get('runner.train_batch_size'))
         dataset.set_thread(self.config.get('runner.train_thread_num', 1))
         data_path = self.config.get("runner.train_data_dir")
-        if not self.train_local:
+        if self.save_remote:
             dataset.set_hdfs_config(self.hadoop_fs_name, self.hadoop_fs_ugi)
             logger.info("set hadoop_fs_name = {}, fs_ugi={}".format(
                 self.hadoop_fs_name, self.hadoop_fs_ugi))
@@ -950,12 +924,11 @@ class Training(object):
         self.online_intervals = self.get_online_pass_interval(
             self.start_day, self.end_day, self.split_interval,
             self.split_per_pass, False)
-        if self.train_local and self.save_model_path and (
-                not os.path.exists(self.save_model_path)):
+        if not self.save_remote and (not os.path.exists(self.save_model_path)):
             os.makedirs(self.save_model_path)
 
         last_day, last_pass, last_path, model_base_key = self.get_last_save_model(
-            self.save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+            self.save_model_path)
         logger.info(
             "get_last_save_model last_day = {}, last_pass = {}, last_path = {}, model_base_key = {}".
             format(last_day, last_pass, last_path, model_base_key))
@@ -988,23 +961,19 @@ class Training(object):
                 if fleet.is_first_worker() and save_first_base:
                     save_first_base = False
                     last_base_day, last_base_path, tmp_xbox_base_key = \
-                        self.get_last_save_xbox_base(save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+                        self.get_last_save_xbox_base(save_model_path)
                     logger.info(
                         "get_last_save_xbox_base, last_base_day = {}, last_base_path = {}, tmp_xbox_base_key = {}".
                         format(last_base_day, last_base_path,
                                tmp_xbox_base_key))
                     if int(day) > last_base_day:
                         model_base_key = int(time.time())
-                        self.save_xbox_model(save_model_path, day, -1,
-                                             self.hadoop_fs_name,
-                                             self.hadoop_fs_ugi)
+                        self.save_xbox_model(save_model_path, day, -1)
                         self.write_xbox_donefile(
                             output_path=save_model_path,
                             day=day,
                             pass_id=-1,
-                            model_base_key=model_base_key,
-                            hadoop_fs_name=self.hadoop_fs_name,
-                            hadoop_fs_ugi=self.hadoop_fs_ugi)
+                            model_base_key=model_base_key)
                     elif int(day) == last_base_day:
                         model_base_key = tmp_xbox_base_key
 
@@ -1077,35 +1046,29 @@ class Training(object):
                             output_path=save_model_path,
                             day=day,
                             pass_id=index,
-                            xbox_base_key=model_base_key,
-                            hadoop_fs_name=self.hadoop_fs_name,
-                            hadoop_fs_ugi=self.hadoop_fs_ugi)
+                            xbox_base_key=model_base_key)
 
                     if index % self.save_delta_frequency == 0:
                         last_xbox_day, last_xbox_pass, last_xbox_path, _ = self.get_last_save_xbox(
-                            save_model_path, self.hadoop_fs_name,
-                            self.hadoop_fs_ugi)
+                            save_model_path)
                         if int(day) < last_xbox_day or int(
                                 day) == last_xbox_day and int(
                                     index) <= last_xbox_pass:
                             log_str = "delta model exists"
                             logger.info(log_str)
                         else:
-                            self.save_xbox_model(save_model_path, day, index,
-                                                 self.hadoop_fs_name,
-                                                 self.hadoop_fs_ugi)  # 1 delta
+                            self.save_xbox_model(save_model_path, day,
+                                                 index)  # 1 delta
                             self.write_xbox_donefile(
                                 output_path=save_model_path,
                                 day=day,
                                 pass_id=index,
-                                model_base_key=model_base_key,
-                                hadoop_fs_name=self.hadoop_fs_name,
-                                hadoop_fs_ugi=self.hadoop_fs_ugi)
+                                model_base_key=model_base_key)
                 fleet.barrier_worker()
 
             if fleet.is_first_worker():
                 last_base_day, last_base_path, last_base_key = self.get_last_save_xbox_base(
-                    save_model_path, self.hadoop_fs_name, self.hadoop_fs_ugi)
+                    save_model_path)
                 logger.info(
                     "one epoch finishes, get_last_save_xbox, last_base_day = {}, last_base_path = {}, last_base_key = {}".
                     format(last_base_day, last_base_path, last_base_key))
@@ -1115,24 +1078,18 @@ class Training(object):
                 else:
                     model_base_key = int(time.time())
                     fleet.shrink(10)
-                    self.save_xbox_model(save_model_path, next_day, -1,
-                                         self.hadoop_fs_name,
-                                         self.hadoop_fs_ugi)
+                    self.save_xbox_model(save_model_path, next_day, -1)
                     self.write_xbox_donefile(
                         output_path=save_model_path,
                         day=next_day,
                         pass_id=-1,
-                        model_base_key=model_base_key,
-                        hadoop_fs_name=self.hadoop_fs_name,
-                        hadoop_fs_ugi=self.hadoop_fs_ugi)
+                        model_base_key=model_base_key)
                     self.save_batch_model(save_model_path, next_day)
                     self.write_model_donefile(
                         output_path=save_model_path,
                         day=next_day,
                         pass_id=-1,
-                        xbox_base_key=model_base_key,
-                        hadoop_fs_name=self.hadoop_fs_name,
-                        hadoop_fs_ugi=self.hadoop_fs_ugi)
+                        xbox_base_key=model_base_key)
 
             day = self.get_next_day(day)
 
