@@ -20,6 +20,7 @@ from pathlib import Path
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.common import YamlHelper, is_distributed_env
+from utils.static_ps.metric_helper import get_global_auc, get_global_metrics_str, clear_metrics
 import argparse
 import time
 import sys
@@ -282,82 +283,6 @@ class Training(object):
             last_path = "/".join(last_dict["input"].split("/")[:-1])
             xbox_base_key = int(last_dict["key"])
             return [last_day, last_path, xbox_base_key]
-
-    def clear_metrics(self, scope, var_list, var_types):
-        from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-        fleet_util = FleetUtil()
-        for i in range(len(var_list)):
-            fleet_util.set_zero(
-                var_list[i].name, scope, param_type=var_types[i])
-
-    def get_global_auc(self,
-                       scope=fluid.global_scope(),
-                       stat_pos="_generated_var_2",
-                       stat_neg="_generated_var_3"):
-        """
-        Get global auc of all distributed workers.
-
-        Args:
-            scope(Scope): Scope object, default is fluid.global_scope()
-            stat_pos(str): name of auc pos bucket Variable
-            stat_neg(str): name of auc neg bucket Variable
-
-        Returns:
-            auc_value(float), total_ins_num(int)
-
-        """
-        if scope.find_var(stat_pos) is None or scope.find_var(
-                stat_neg) is None:
-            self.rank0_print("not found auc bucket")
-            return None
-        fleet.barrier_worker()
-        # auc pos bucket
-        pos = np.array(scope.find_var(stat_pos).get_tensor())
-        # auc pos bucket shape
-        old_pos_shape = np.array(pos.shape)
-        # reshape to one dim
-        pos = pos.reshape(-1)
-        #global_pos = np.copy(pos) * 0
-        # mpi allreduce
-        global_pos = fleet.util.all_reduce(pos)
-        # reshape to its original shape
-        global_pos = global_pos.reshape(old_pos_shape)
-        print('debug global auc global_pos: ', global_pos)
-
-        # auc neg bucket
-        neg = np.array(scope.find_var(stat_neg).get_tensor())
-        old_neg_shape = np.array(neg.shape)
-        neg = neg.reshape(-1)
-        #global_neg = np.copy(neg) * 0
-        global_neg = fleet.util.all_reduce(neg)
-        global_neg = global_neg.reshape(old_neg_shape)
-        print('debug global auc global_neg: ', global_neg)
-
-        # calculate auc
-        num_bucket = len(global_pos[0])
-        area = 0.0
-        pos = 0.0
-        neg = 0.0
-        new_pos = 0.0
-        new_neg = 0.0
-        total_ins_num = 0
-        for i in range(num_bucket):
-            index = num_bucket - 1 - i
-            new_pos = pos + global_pos[0][index]
-            total_ins_num += global_pos[0][index]
-            new_neg = neg + global_neg[0][index]
-            total_ins_num += global_neg[0][index]
-            area += (new_neg - neg) * (pos + new_pos) / 2
-            pos = new_pos
-            neg = new_neg
-
-        if pos * neg == 0 or total_ins_num == 0:
-            auc_value = 0.5
-        else:
-            auc_value = area / (pos * neg)
-
-        fleet.barrier_worker()
-        return auc_value
 
     def save_xbox_model(self,
                         output_path,
@@ -676,166 +601,6 @@ class Training(object):
                               ) + model_path.rstrip("/") + "/000"
         return json.dumps(xbox_dict)
 
-    def get_global_metrics(self,
-                           scope=fluid.global_scope(),
-                           stat_pos_name="_generated_var_2",
-                           stat_neg_name="_generated_var_3",
-                           sqrerr_name="sqrerr",
-                           abserr_name="abserr",
-                           prob_name="prob",
-                           q_name="q",
-                           pos_ins_num_name="pos",
-                           total_ins_num_name="total"):
-        from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-        fleet_util = FleetUtil()
-        if scope.find_var(stat_pos_name) is None or \
-                scope.find_var(stat_neg_name) is None:
-            fleet_util.rank0_print("not found auc bucket")
-            return [None] * 9
-        elif scope.find_var(sqrerr_name) is None:
-            fleet_util.rank0_print("not found sqrerr_name=%s" % sqrerr_name)
-            return [None] * 9
-        elif scope.find_var(abserr_name) is None:
-            fleet_util.rank0_print("not found abserr_name=%s" % abserr_name)
-            return [None] * 9
-        elif scope.find_var(prob_name) is None:
-            fleet_util.rank0_print("not found prob_name=%s" % prob_name)
-            return [None] * 9
-        elif scope.find_var(q_name) is None:
-            fleet_util.rank0_print("not found q_name=%s" % q_name)
-            return [None] * 9
-        elif scope.find_var(pos_ins_num_name) is None:
-            fleet_util.rank0_print("not found pos_ins_num_name=%s" %
-                                   pos_ins_num_name)
-            return [None] * 9
-        elif scope.find_var(total_ins_num_name) is None:
-            fleet_util.rank0_print("not found total_ins_num_name=%s" % \
-                                   total_ins_num_name)
-            return [None] * 9
-
-        # barrier worker to ensure all workers finished training
-        fleet.barrier_worker()
-
-        # get auc
-        auc = self.get_global_auc(scope, stat_pos_name, stat_neg_name)
-        pos = np.array(scope.find_var(stat_pos_name).get_tensor())
-        # auc pos bucket shape
-        old_pos_shape = np.array(pos.shape)
-        # reshape to one dim
-        pos = pos.reshape(-1)
-        global_pos = np.copy(pos) * 0
-        # mpi allreduce
-        # fleet._role_maker._all_reduce(pos, global_pos)
-        global_pos = fleet.util.all_reduce(pos)
-        # reshape to its original shape
-        global_pos = global_pos.reshape(old_pos_shape)
-        # auc neg bucket
-        neg = np.array(scope.find_var(stat_neg_name).get_tensor())
-        old_neg_shape = np.array(neg.shape)
-        neg = neg.reshape(-1)
-        global_neg = np.copy(neg) * 0
-        # fleet._role_maker._all_reduce(neg, global_neg)
-        global_neg = fleet.util.all_reduce(neg)
-        global_neg = global_neg.reshape(old_neg_shape)
-
-        num_bucket = len(global_pos[0])
-
-        def get_metric(name):
-            metric = np.array(scope.find_var(name).get_tensor())
-            old_metric_shape = np.array(metric.shape)
-            metric = metric.reshape(-1)
-            print(name, 'ori value:', metric)
-            global_metric = np.copy(metric) * 0
-            # fleet._role_maker._all_reduce(metric, global_metric)
-            global_metric = fleet.util.all_reduce(metric)
-            global_metric = global_metric.reshape(old_metric_shape)
-            print(name, global_metric)
-            return global_metric[0]
-
-        global_sqrerr = get_metric(sqrerr_name)
-        global_abserr = get_metric(abserr_name)
-        global_prob = get_metric(prob_name)
-        global_q_value = get_metric(q_name)
-        # note: get ins_num from auc bucket is not actual value,
-        # so get it from metric op
-        pos_ins_num = get_metric(pos_ins_num_name)
-        total_ins_num = get_metric(total_ins_num_name)
-        neg_ins_num = total_ins_num - pos_ins_num
-
-        mae = global_abserr / total_ins_num
-        rmse = math.sqrt(global_sqrerr / total_ins_num)
-        return_actual_ctr = pos_ins_num / total_ins_num
-        predicted_ctr = global_prob / total_ins_num
-        mean_predict_qvalue = global_q_value / total_ins_num
-        copc = 0.0
-        if abs(predicted_ctr > 1e-6):
-            copc = return_actual_ctr / predicted_ctr
-
-        # calculate bucket error
-        last_ctr = -1.0
-        impression_sum = 0.0
-        ctr_sum = 0.0
-        click_sum = 0.0
-        error_sum = 0.0
-        error_count = 0.0
-        click = 0.0
-        show = 0.0
-        ctr = 0.0
-        adjust_ctr = 0.0
-        relative_error = 0.0
-        actual_ctr = 0.0
-        relative_ctr_error = 0.0
-        k_max_span = 0.01
-        k_relative_error_bound = 0.05
-        for i in range(num_bucket):
-            click = global_pos[0][i]
-            show = global_pos[0][i] + global_neg[0][i]
-            ctr = float(i) / num_bucket
-            if abs(ctr - last_ctr) > k_max_span:
-                last_ctr = ctr
-                impression_sum = 0.0
-                ctr_sum = 0.0
-                click_sum = 0.0
-            impression_sum += show
-            ctr_sum += ctr * show
-            click_sum += click
-            if impression_sum == 0:
-                continue
-            adjust_ctr = ctr_sum / impression_sum
-            if adjust_ctr == 0:
-                continue
-            relative_error = \
-                math.sqrt((1 - adjust_ctr) / (adjust_ctr * impression_sum))
-            if relative_error < k_relative_error_bound:
-                actual_ctr = click_sum / impression_sum
-                relative_ctr_error = abs(actual_ctr / adjust_ctr - 1)
-                error_sum += relative_ctr_error * impression_sum
-                error_count += impression_sum
-                last_ctr = -1
-
-        bucket_error = error_sum / error_count if error_count > 0 else 0.0
-
-        return [
-            auc, bucket_error, mae, rmse, return_actual_ctr, predicted_ctr,
-            copc, mean_predict_qvalue, int(total_ins_num)
-        ]
-
-    def get_global_metrics_str(self, scope, metric_list, prefix):
-        if len(metric_list) != 10:
-            raise ValueError("len(metric_list) != 10, %s" % len(metric_list))
-
-        auc, bucket_error, mae, rmse, actual_ctr, predicted_ctr, copc, \
-        mean_predict_qvalue, total_ins_num = self.get_global_metrics( \
-            scope, metric_list[2].name, metric_list[3].name, metric_list[4].name, metric_list[5].name, \
-            metric_list[6].name, metric_list[7].name, metric_list[8].name, metric_list[9].name)
-        metrics_str = "%s global AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f " \
-                      "RMSE=%.6f Actural_CTR=%.6f Predicted_CTR=%.6f " \
-                      "COPC=%.6f MEAN Q_VALUE=%.6f Ins number=%s" % \
-                      (prefix, auc, bucket_error, mae, rmse, \
-                       actual_ctr, predicted_ctr, copc, mean_predict_qvalue, \
-                       total_ins_num)
-        return metrics_str
-
     def init_network(self):
         self.model = get_model(self.config)
         self.input_data = self.model.create_feeds()
@@ -848,12 +613,16 @@ class Training(object):
         thread_stat_var_names = [
             self.model.auc_stat_list[2].name, self.model.auc_stat_list[3].name
         ]
-
         thread_stat_var_names += [i.name for i in self.model.metric_list]
-
         thread_stat_var_names = list(set(thread_stat_var_names))
-
         self.config['stat_var_names'] = thread_stat_var_names
+
+        self.metric_list = list(self.model.auc_stat_list) + list(
+            self.model.metric_list)
+        self.metric_types = ["int64"] * len(self.model.auc_stat_list) + [
+            "float32"
+        ] * len(self.model.metric_list)
+
         self.model.create_optimizer(get_strategy(self.config))
 
     def run_server(self):
@@ -1053,23 +822,14 @@ class Training(object):
                     print_period=print_step,
                     debug=config.get("runner.dataset_debug"))
                 dataset.release_memory()
-                global_auc = self.get_global_auc()
-                logger.info(" global auc %f" % global_auc)
 
-                metric_list = list(self.model.auc_stat_list) + list(
-                    self.model.metric_list)
-
-                metric_types = ["int64"] * len(self.model.auc_stat_list) + [
-                    "float32"
-                ] * len(self.model.metric_list)
-
-                metric_str = self.get_global_metrics_str(
-                    fluid.global_scope(), metric_list, "update pass:")
+                metric_str = get_global_metrics_str(
+                    fluid.global_scope(), self.metric_list, "update pass:")
 
                 logger.info(" global metric %s" % metric_str)
 
-                self.clear_metrics(fluid.global_scope(), metric_list,
-                                   metric_types)
+                clear_metrics(fluid.global_scope(), self.metric_list,
+                              self.metric_types)
                 if fleet.is_first_worker():
                     if index % self.checkpoint_per_pass == 0:
                         self.save_model(save_model_path, day, index)
