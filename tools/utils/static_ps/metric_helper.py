@@ -18,6 +18,7 @@ import sys
 import warnings
 import logging
 import numpy as np
+import math
 import paddle
 import paddle.fluid as fluid
 import paddle.distributed.fleet.base.role_maker as role_maker
@@ -166,12 +167,12 @@ def get_global_metrics(scope=fluid.global_scope(),
         metric = np.array(scope.find_var(name).get_tensor())
         old_metric_shape = np.array(metric.shape)
         metric = metric.reshape(-1)
-        print(name, 'ori value:', metric)
+        # print(name, 'ori value:', metric)
         global_metric = np.copy(metric) * 0
         # fleet._role_maker._all_reduce(metric, global_metric)
         global_metric = fleet.util.all_reduce(metric)
         global_metric = global_metric.reshape(old_metric_shape)
-        print(name, global_metric)
+        # print(name, global_metric)
         return global_metric[0]
 
     global_sqrerr = get_metric(sqrerr_name)
@@ -248,7 +249,7 @@ def get_global_metrics_str(scope, metric_list, prefix):
         raise ValueError("len(metric_list) != 10, %s" % len(metric_list))
 
     auc, bucket_error, mae, rmse, actual_ctr, predicted_ctr, copc, \
-    mean_predict_qvalue, total_ins_num = self.get_global_metrics( \
+    mean_predict_qvalue, total_ins_num = get_global_metrics( \
         scope, metric_list[2].name, metric_list[3].name, metric_list[4].name, metric_list[5].name, \
         metric_list[6].name, metric_list[7].name, metric_list[8].name, metric_list[9].name)
     metrics_str = "%s global AUC=%.6f BUCKET_ERROR=%.6f MAE=%.6f " \
