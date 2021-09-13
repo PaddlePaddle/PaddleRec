@@ -339,15 +339,18 @@ class Training(object):
         fleet.barrier_worker()
         return auc_value
 
-    def load_xbox_delta_model(self, output_path, day, pass_id):
+    def load_xbox_delta_model(self, output_path, day, last_pass_id,
+                              split_per_pass):
         suffix_name = "/%s/base/" % day
         model_path = output_path.rstrip("/") + suffix_name
         fleet.load_model(model_path, 2)
-        if pass_id != -1:
-            for i in range(pass_id):
+        if last_pass_id != -1:
+            i = split_per_pass
+            while i <= last_pass_id:
                 suffix_name = "/%s/delta-%s/" % (day, i)
                 model_path = output_path.rstrip("/") + suffix_name
                 fleet.load_model(model_path, 1)
+                i = i + split_per_pass
 
     def save_xbox_model(self,
                         output_path,
