@@ -15,6 +15,7 @@
 import paddle
 import os
 import logging
+import numpy as np
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -84,3 +85,17 @@ def load_static_model(program, model_path, prefix='rec_static'):
     logger.info("start load model from {}".format(model_path))
     model_prefix = os.path.join(model_path, prefix)
     param_state_dict = paddle.static.load(program, model_prefix)
+
+
+def load_static_parameter(program, model_path, prefix='rec_static'):
+    logger.info("start load model from {}".format(model_path))
+    model_prefix = os.path.join(model_path, prefix)
+    program_state = paddle.static.load_program_state(model_prefix)
+    paddle.static.set_program_state(program, program_state)
+
+
+def save_data(fetch_batch_var, save_path, prefix='result'):
+    logger.info("start save batch data")
+    save_data = np.array(fetch_batch_var, dtype=object)
+    model_prefix = os.path.join(save_path, prefix)
+    np.save(model_prefix, save_data)

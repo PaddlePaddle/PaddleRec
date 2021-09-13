@@ -23,7 +23,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 from utils.utils_single import load_yaml, load_static_model_class, get_abs_model, create_data_loader, reset_auc
-from utils.save_load import save_static_model, load_static_model
+from utils.save_load import save_static_model, load_static_model, save_data
 import time
 import argparse
 
@@ -78,6 +78,8 @@ def main(args):
     start_epoch = config.get("runner.infer_start_epoch", 0)
     end_epoch = config.get("runner.infer_end_epoch", 10)
     batch_size = config.get("runner.infer_batch_size", None)
+    use_save_data = config.get("runner.use_save_data", False)
+    reader_type = config.get("runner.reader_type", "DataLoader")
     use_fleet = config.get("runner.use_fleet", False)
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")
@@ -96,8 +98,11 @@ def main(args):
     # initialize
     exe.run(paddle.static.default_startup_program())
 
-    test_dataloader = create_data_loader(
-        config=config, place=place, mode="test")
+    if reader_type == 'DataLoader':
+        test_dataloader = create_data_loader(
+            config=config, place=place, mode="test")
+    elif reader_type == "CustomizeDataLoader":
+        test_dataloader = static_model_class.create_data_loader()
 
     # Create a log_visual object and store the data in the path
     if use_visual:
@@ -159,6 +164,8 @@ def main(args):
                                             fetch_batch_var[var_idx][0])
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     "epoch time: {:.2f} s".format(time.time() - epoch_begin))
+        if use_save_data:
+            save_data(fetch_batch_var, model_load_path)
 
 
 if __name__ == "__main__":
