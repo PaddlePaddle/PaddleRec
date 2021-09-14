@@ -3,7 +3,7 @@
 <h2>代码目录</h2>
 
 ```
-cpp         
+tools/inference/cpp         
 |-- main.cpp # 工程 main 文件    
 |-- src   # cpp 文件  
 |-- include   # h 文件  
@@ -20,7 +20,7 @@ cpp
 <h2>准备工作</h2>
 
 1. 下载 PaddlePaddle C++ 预测库：[C++ 预测库下载地址](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)，下载后解压到 tools/inference/cpp 目录下  
-2. 引入百度 brpc 库 [brpc 源码地址](https://github.com/apache/incubator-brpc)，下载后编译，编译输出文件放入 paddle_inference 目录下
+2. 引入百度 brpc 库 [brpc 源码地址](https://github.com/apache/incubator-brpc)，下载后编译，编译输出文件放入 ./paddle_inference 目录下
 3. 训练保存好的模型和参数文件、推理样本文件
 <h2>paddlerec 中引入 cube 的背景</h2>
 
