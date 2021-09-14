@@ -62,7 +62,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 ``` 
 
 ## 模型组网
-论文[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR)中的网络结构如图所示:  
+论文[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR/blob/master/%5BDMR%5D%20Deep%20Match%20to%20Rank%20Model%20for%20Personalized%20Click-Through%20Rate%20Prediction-AAAI20.pdf)中的网络结构如图所示:  
 <p align="center">
 <img align="center" src="../../../doc/imgs/dmr.png">
 <p>
