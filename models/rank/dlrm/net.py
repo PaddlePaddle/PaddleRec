@@ -136,12 +136,15 @@ class MLPLayer(nn.Layer):
                         initializer=paddle.nn.initializer.TruncatedNormal(
                             std=1.0 / math.sqrt(unit))))
                 self.mlp.append(dense)
+                self.add_sublayer('dense_%d' % i, dense)
 
                 relu = paddle.nn.ReLU()
                 self.mlp.append(relu)
+                self.add_sublayer('relu_%d' % i, relu)
 
                 norm = paddle.nn.BatchNorm1D(units_list[i + 1])
                 self.mlp.append(norm)
+                self.add_sublayer('norm_%d' % i, norm)
             else:
                 dense = paddle.nn.Linear(
                     in_features=unit,
@@ -150,10 +153,12 @@ class MLPLayer(nn.Layer):
                         initializer=paddle.nn.initializer.TruncatedNormal(
                             std=1.0 / math.sqrt(unit))))
                 self.mlp.append(dense)
+                self.add_sublayer('dense_%d' % i, dense)
 
                 if self.activation is not None:
                     relu = paddle.nn.ReLU()
                     self.mlp.append(relu)
+                    self.add_sublayer('relu_%d' % i, relu)
 
     def forward(self, inputs):
         outputs = inputs
