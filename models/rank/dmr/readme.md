@@ -32,8 +32,8 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-两个deep子网络获取user的两种抽象表达，得到U和target item的score，结合其他特征送入MLP计算ctr score。[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR)文章通过 User-to-Item 子网络和 Item-to-Item 子网络来表征 U2I 相关性，再结合传统的rec model features，提升模型的表达能力。  
-本模型来自飞桨论文复现挑战赛（第三期）bnujli大神贡献的[DMR的第一名方案](https://aistudio.baidu.com/aistudio/projectdetail/1770964?channelType=0&channel=0)。
+两个deep子网络获取user的两种抽象表达，得到U和target item的score，结合其他特征送入MLP计算ctr score。[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR/blob/master/%5BDMR%5D%20Deep%20Match%20to%20Rank%20Model%20for%20Personalized%20Click-Through%20Rate%20Prediction-AAAI20.pdf)文章通过 User-to-Item 子网络和 Item-to-Item 子网络来表征 U2I 相关性，再结合传统的rec model features，提升模型的表达能力。  
+本模型来自飞桨论文复现挑战赛（第三期）bnujli大神贡献的[DMR的第一名方案](https://aistudio.baidu.com/aistudio/projectdetail/1770964?channelType=0&channel=0)达到了原作者github[DMR](https://github.com/lvze92/DMR)的精度。
 
 ## 数据准备
 本模型使用论文中的数据集Alimama Dataset，在模型目录的data目录下为您准备了快速运行的示例数据，若需要使用全量数据可以参考下方[效果复现](#效果复现)部分。
