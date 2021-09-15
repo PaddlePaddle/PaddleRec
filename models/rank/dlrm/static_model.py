@@ -31,11 +31,16 @@ class StaticModel():
         if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
             self.distributed_embedding = True
 
-        self.dense_feature_dim = self.config.get("hyper_parameters.dense_input_dim")
-        self.bot_layer_sizes = self.config.get("hyper_parameters.bot_layer_sizes")
-        self.sparse_feature_number = self.config.get("hyper_parameters.sparse_feature_number")
-        self.sparse_feature_dim = self.config.get("hyper_parameters.sparse_feature_dim")
-        self.top_layer_sizes = self.config.get("hyper_parameters.top_layer_sizes")
+        self.dense_feature_dim = self.config.get(
+            "hyper_parameters.dense_input_dim")
+        self.bot_layer_sizes = self.config.get(
+            "hyper_parameters.bot_layer_sizes")
+        self.sparse_feature_number = self.config.get(
+            "hyper_parameters.sparse_feature_number")
+        self.sparse_feature_dim = self.config.get(
+            "hyper_parameters.sparse_feature_dim")
+        self.top_layer_sizes = self.config.get(
+            "hyper_parameters.top_layer_sizes")
         self.num_field = self.config.get("hyper_parameters.num_field")
 
         self.sparse_inputs_slot = self.config.get(
@@ -73,13 +78,14 @@ class StaticModel():
         sparse_number = self.sparse_inputs_slot - 1
         assert sparse_number == len(self.sparse_inputs)
 
-        dlrm_model = DLRMLayer(dense_feature_dim=self.dense_feature_dim,
-                               bot_layer_sizes=self.bot_layer_sizes,
-                               sparse_feature_number=self.sparse_feature_number,
-                               sparse_feature_dim=self.sparse_feature_dim,
-                               top_layer_sizes=self.top_layer_sizes,
-                               num_field=self.num_field,
-                               self_interaction=False)
+        dlrm_model = DLRMLayer(
+            dense_feature_dim=self.dense_feature_dim,
+            bot_layer_sizes=self.bot_layer_sizes,
+            sparse_feature_number=self.sparse_feature_number,
+            sparse_feature_dim=self.sparse_feature_dim,
+            top_layer_sizes=self.top_layer_sizes,
+            num_field=self.num_field,
+            self_interaction=False)
 
         raw_predict_2d = dlrm_model(self.sparse_inputs, self.dense_input)
 
