@@ -3,7 +3,7 @@
 <h2>代码目录</h2>
 
 ```
-inference_c++2.0         
+tools/inference/cpp         
 |-- main.cpp # 工程 main 文件    
 |-- src   # cpp 文件  
 |-- include   # h 文件  
@@ -19,9 +19,12 @@ inference_c++2.0
 ```
 <h2>准备工作</h2>
 
-1. 下载 PaddlePaddle C++ 预测库：[C++ 预测库下载地址](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)，下载后解压到 tools/inference_c++2.0/ 目录下  
-2. 引入百度 brpc 库 [brpc 源码地址](https://github.com/apache/incubator-brpc)，下载后编译，编译输出文件放入 paddle_inference 目录下
+1. 下载 PaddlePaddle C++ 预测库：[C++ 预测库下载地址](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)，下载后解压到 tools/inference/cpp 目录下  
+2. 引入百度 brpc 库 [brpc 源码地址](https://github.com/apache/incubator-brpc)，下载后编译，编译输出文件放入 ./paddle_inference 目录下
 3. 训练保存好的模型和参数文件、推理样本文件
+<h2>paddlerec 中引入 cube 的背景</h2>
+
+成熟的推荐系统的排序算法通常都有规模相当大的 embedding 表，这些 embedding 表通常无法在单台机器上存放，因此通常的做法是 embedding 拆解存放在外部 KV 服务上。预测时，大规模稀疏参数不需要存放在本地，而是直接去远端查询，避免了本地 lookup_table 操作。
 <h2>cube kv 功能流程</h2>
 
 1. 准备 Sequence File [样例seqfile](https://paddle-serving.bj.bcebos.com/others/part-000-00000 )  
