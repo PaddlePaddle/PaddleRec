@@ -23,7 +23,7 @@ hyper_parameters:
   fc_sizes: [400, 400, 400]
 
 runner:
-  epochs: 1
+  epochs: 3
   print_interval: 1
 
   sync_mode: "async"  # sync / async /geo / heter
@@ -49,8 +49,9 @@ runner:
   infer_start_epoch: 0
   infer_end_epoch: 1
   
+  need_dump: True
   dump_fields: ["C24", "reshape2_24.tmp_0"]
-  dump_param: ["linear_0.w_0", "linear_0.b_0"]
+  # dump_param: ["linear_0.w_0", "linear_0.b_0"]
   dump_fields_path: "./dump_data"
   # dump_fields_path: "afs:/xxx"
 

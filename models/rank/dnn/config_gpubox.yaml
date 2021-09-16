@@ -21,15 +21,15 @@ runner:
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
   use_auc: True
-  train_batch_size: 2
+  train_batch_size: 32
   epochs: 3
   print_interval: 10
   model_save_path: "output_model_dnn_queue"
 
   sync_mode: "gpubox"
-  thread_num: 12
+  thread_num: 16
   reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
-  pipe_command: "python models/rank/dnn/queuedataset_reader.py"
+  pipe_command: "python3.7 models/rank/dnn/queuedataset_reader.py"
   dataset_debug: False
   split_file_list: False
 

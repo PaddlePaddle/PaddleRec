@@ -1,0 +1,21 @@
+
+model=/path/to/inference.pdmodel
+params=/path/to/inference.pdiparams
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/paddle_inference_c_install_dir/paddle/lib/
+
+# simple test
+./benchmark --model=$model --params=$params
+
+#./benchmark --model=$model --params=$params --thread=$th --batch_size=$bs --input_file=input-0.txt,input-1.txt --total=20000 --feed_buffer=2000 --ret_buffer=2000 >> ret.txt  
+
+
+exit
+
+# test all
+for th in 4 8 16 24; do
+  for bs in 8 24 32; do
+    ./benchmark --model=$model --params=$params --thread=$th --batch_size=$bs --input_file=input-0.txt,input-1.txt --total=20000 --feed_buffer=2000 --ret_buffer=2000 >> ret.txt  
+done
+done
+
