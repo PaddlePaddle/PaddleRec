@@ -19,7 +19,7 @@ runner:
   train_batch_size: 32
   epochs: 45
   print_interval: 10
-  model_init_path: "output_model_all_din/10" # init model
+  # model_init_path: "output_model_all_din/10" # init model
   model_save_path: "output_model_all_din"
   infer_batch_size: 32
   infer_reader_path: "dinReader" # importlib format
