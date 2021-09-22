@@ -84,7 +84,7 @@ Bryan Perozzi在论文[DeepWalk: Online Learning of Social Representations](http
 
 | 模型 | MacroF1 | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| Deepwalk | 0.235 | 512 | 1 | 约1小时 |
+| Deepwalk | 0.295 | 512 | 1 | 约2小时 |
 
 1. 确认您当前所在目录为models/recall/deepwalk  
 2. 进入deepwalk_train训练图嵌入
