@@ -13,7 +13,6 @@
     ├── static_model.py
     ├── macrof1.py
 ├── README.md #文档
-├── static_model.py # 构建静态图
 ├── net.py # 模型核心组网（动静统一）
 ├── randwalk_reader.py #数据读取程序
 ```
