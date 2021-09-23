@@ -23,7 +23,7 @@ runner:
   use_auc: True
   train_batch_size: 2048
   epochs: 1
-  print_interval: 256
+  print_interval: 100
   model_save_path: "output_model_dlrm"
   infer_batch_size: 2048
   infer_reader_path: "criteo_reader" # importlib format
