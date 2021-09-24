@@ -15,7 +15,7 @@
 runner:
   train_data_dir: "data/train_data"
   train_reader_path: "dinReader" # importlib format
-  use_gpu: True
+  use_gpu: False
   use_auc: True
   train_batch_size: 32
   epochs: 1
