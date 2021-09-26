@@ -120,7 +120,7 @@ python build_dataset.py
 在全量数据下模型的指标如下： 
 | 模型 | auc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
-| DIN | 0.83 | 32 | 10 | 约30分钟 | 
+| DIN | 0.83 | 32 | 7 | 约30分钟 | 
 
 ```bash
 # 动态图训练
