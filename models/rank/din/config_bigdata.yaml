@@ -17,7 +17,7 @@ runner:
   use_gpu: True
   use_auc: True
   train_batch_size: 32
-  epochs: 10
+  epochs: 8
   print_interval: 1000
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all_din"
@@ -26,7 +26,7 @@ runner:
   test_data_dir:  "../../../datasets/amazonElec_Din/test"
   infer_load_path: "output_model_all_din"
   infer_start_epoch: 6
-  infer_end_epoch: 10
+  infer_end_epoch: 8
 
 # hyper parameters of user-defined network
 hyper_parameters:
