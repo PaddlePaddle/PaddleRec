@@ -1,0 +1,45 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runner:
+  train_data_dir: "../../../datasets/amazonElec_Din/train"
+  train_reader_path: "dinReader" # importlib format
+  use_gpu: True
+  use_auc: True
+  train_batch_size: 32
+  epochs: 8
+  print_interval: 1000
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_all_din"
+  infer_batch_size: 32
+  infer_reader_path: "dinReader" # importlib format
+  test_data_dir:  "../../../datasets/amazonElec_Din/test"
+  infer_load_path: "output_model_all_din"
+  infer_start_epoch: 6
+  infer_end_epoch: 8
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: SGD
+    learning_rate_base_lr: 0.85
+    strategy: async
+  # user-defined <key, value> pairs
+  use_DataLoader: True
+  item_emb_size: 64
+  cat_emb_size: 64
+  is_sparse: False
+  item_count: 63001
+  cat_count: 801
+  act: "sigmoid"
