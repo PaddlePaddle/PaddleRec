@@ -115,7 +115,7 @@ embedding 向量层次交叉。把 vector-wise FEN 模块去掉，DIFM 就退化
 
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| DIFM | 0.7999+ | 2000 | 1 | 约 1.5 小时 |
+| DIFM | 0.7999+ | 2000 | 2 | 约 7.5 小时 |
 
 1. 确认您当前所在目录为 `PaddleRec/models/rank/difm`
 2. 进入 `PaddleRec/datasets/criteo` 目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的 criteo 全量数据集，并解压到指定文件夹。
