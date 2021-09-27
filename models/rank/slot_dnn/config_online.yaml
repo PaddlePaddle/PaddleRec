@@ -1,0 +1,59 @@
+runner:
+  use_gloo: True
+  # train_data_dir: "afs:/xxx"
+  train_data_dir: "./data2"
+  train_reader_path: "criteo_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 32
+  epochs: 3
+  print_interval: 1
+  model_save_path: "output_model"
+  checkpoint_per_pass: 6
+  save_delta_frequency: 6
+
+  train_thread_num: 3
+  reader_type: "InMemoryDataset"  # DataLoader / QueueDataset / RecDataset
+  pipe_command: "python3.7 queuedataset_reader.py"
+  dataset_debug: False
+  split_file_list: False
+  # data_donefile: "data.done"
+  data_sleep_second: 1
+  sync_mode: "async"
+
+  split_interval: 5
+  split_per_pass: 2
+  start_day: "20190720"
+  end_day: "20190722"
+  infer_batch_size: 32
+  infer_thread_num: 1
+  infer_reader_path: "criteo_reader" # importlib format
+  infer_data_dir: "data/"
+  infer_load_path: "output_model"
+  infer_start_epoch: 0
+  infer_end_epoch: 3
+  use_inference: True
+  
+  # need_train_dump: True
+  # need_infer_dump: True
+  train_dump_fields_dir: "./train_dump_data"
+  infer_dump_fields_dir: "./infer_dump_data"
+  # fs_client:
+  #   uri: "afs://xxx"
+  #   user: "xxx"
+  #   passwd: "xxx"
+  #   hadoop_bin: "hadoop"    
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 5e-6
+    strategy: async
+  # user-defined <key, value> pairs
+  dict_dim : 1000000
+  emb_dim : 9
+  sparse_feature_dim: 9
+  slot_num: 408
+  layer_sizes: [512, 256, 128, 128, 128]
+  distributed_embedding: 0
