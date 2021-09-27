@@ -37,8 +37,8 @@ class StaticModel():
         self.dict_dim = self.config.get("hyper_parameters.dict_dim")
         self.emb_dim = self.config.get("hyper_parameters.emb_dim")
         self.slot_num = self.config.get("hyper_parameters.slot_num")
-        self.learning_rate = self.config.get(
-            "hyper_parameters.optimizer.learning_rate")
+        self.learning_rate = float(
+            self.config.get("hyper_parameters.optimizer.learning_rate"))
         self.layer_sizes = self.config.get("hyper_parameters.layer_sizes")
 
     def create_feeds(self, is_infer=False):
@@ -80,7 +80,7 @@ class StaticModel():
             self.predict,
             fluid.layers.cast(
                 x=self.label_input, dtype='float32'))
-        self.inference_model_feed_vars = dnn_model.inference_model_feed_vars
+        self.inference_feed_vars = dnn_model.inference_feed_vars
         self.inference_target_var = self.predict
 
         if is_infer:
