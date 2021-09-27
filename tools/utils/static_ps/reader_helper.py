@@ -239,7 +239,6 @@ class InmemoryDatset(object):
         self.config = config
         self.input_var = input_var
         self.file_list = file_list
-        self.input_type = int(self.config.get("runner.input_type", 0))
         self.pipe_command = self.config.get("runner.pipe_command")
         self.train_reader = self.config.get("runner.train_reader_path")
         assert self.pipe_command != None
@@ -271,7 +270,6 @@ class InmemoryDatset(object):
             pipe_command=self.pipe_command,
             batch_size=self.batch_size,
             thread_num=self.thread_num,
-            input_type=self.input_type,
             fs_name=self.fs_name,
             fs_ugi=self.fs_ugi)
         dataset.set_filelist(self.file_list)
