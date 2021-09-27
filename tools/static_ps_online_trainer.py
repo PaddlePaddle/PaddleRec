@@ -39,6 +39,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser("PaddleRec train script")
+    parser.add_argument(
+        '-m',
+        '--config_yaml',
+        type=str,
+        required=True,
+        help='config file path')
+    args = parser.parse_args()
+    args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
+    yaml_helper = YamlHelper()
+    config = yaml_helper.load_yaml(args.config_yaml)
+    config["yaml_path"] = args.config_yaml
+    config["config_abs_dir"] = args.abs_dir
+    yaml_helper.print_yaml(config)
+    return config
+
+
 class Main(object):
     def __init__(self, config):
         self.metrics = {}
@@ -461,19 +479,7 @@ class Main(object):
 
 if __name__ == "__main__":
     paddle.enable_static()
-    parser = argparse.ArgumentParser("PaddleRec train script")
-    parser.add_argument(
-        '-m',
-        '--config_yaml',
-        type=str,
-        required=True,
-        help='config file path')
-    args = parser.parse_args()
-    args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
-    yaml_helper = YamlHelper()
-    config = yaml_helper.load_yaml(args.config_yaml)
-    config["yaml_path"] = args.config_yaml
-    config["config_abs_dir"] = args.abs_dir
+    config = parse_args()
     # os.environ["CPU_NUM"] = str(config.get("runner.thread_num"))
     benchmark_main = Main(config)
     benchmark_main.run()
