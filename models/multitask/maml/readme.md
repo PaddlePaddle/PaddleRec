@@ -72,7 +72,7 @@ python -u ../../../tools/infer.py -m config.yaml
 | maml | 0.98 | 32 | 1 | 100 | 约4分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/multitask/maml
-2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Omniglot全量数据集，并解压到指定文件夹。
+2. 进入paddlerec/datasets/omniglot目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Omniglot全量数据集，并解压到指定文件夹。
 ``` bash
 cd ../../../datasets/omniglot
 sh run.sh
