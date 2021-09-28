@@ -19,12 +19,28 @@
 |       模型        |       简介        |       论文        |
 | :------------------: | :--------------------: | :--------- |
 | Word2Vec | word2vector | [NIPS 2013][Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf) |
+| Deepwalk | Deepwalk | [KDD 2014][DeepWalk: Online Learning of Social Representations](https://arxiv.org/pdf/1403.6652.pdf) |
+| MIND | Multi-Interest Network with Dynamic Routing | [ACM 2019][Multi-Interest Network with Dynamic Routing for Recommendation at Tmall](http://cn.arxiv.org/abs/1904.08030) |
+| NCF | Neural Collaborative Filtering | [WWW 2017][Neural Collaborative Filtering](https://arxiv.org/pdf/1708.05031.pdf) |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
 [Word2Vec](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf):
 <p align="center">
 <img align="center" src="../../doc/imgs/word2vec.png">
+<p>
+
+[Neural Collaborative Filtering ](https://arxiv.org/pdf/1708.05031.pdf)中的neumf网络结构如图所示:  
+<p align="center">
+<img align="center" src="../../doc/imgs/ncf.png">
+<p>
+
+[DeepWalk: Online Learning of Social Representations](https://arxiv.org/pdf/1403.6652.pdf):
+<p align="center">
+<img align="center" src="../../doc/imgs/deepwalk_1.png">
+<p>
+<p align="center">
+<img align="center" src="../../doc/imgs/deepwalk_2.png">
 <p>
 
 ## 使用教程
@@ -49,6 +65,9 @@ python -u ../../../tools/static_infer.py -m config.yaml
 |       数据集        |       模型       |       acc        |
 | :------------------: | :--------------------: | :---------: |
 |       1 Billion Word Language Model Benchmark     |       Word2Vec       |       0.579         |
+|       BlogCatalog     |       deepwalk       |       MacroF1: 0.295         |
+|       AmazonBook     |       mind       |       Recall@50: 8.43%        |
+|       MovieLens     |       ncf       |       HR@10: 0.58         |
 
 ### 效果复现
 您需要进入PaddleRec/datasets目录下的对应数据集中运行脚本获取全量数据集，然后在模型目录下使用全量数据的参数运行。  
