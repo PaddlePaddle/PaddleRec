@@ -42,7 +42,6 @@ Docker: 19.03 或以上
 Milvus 1.0.0
 
 
-
 ## 安装启动 Milvus
 
 这里将安装 [Milvus1.0.0 的 CPU 版本](https://milvus.io/cn/docs/v1.0.0/milvus_docker-cpu.md)，也可以选择安装 GPU 版本的 Milvus，安装方式请参考： [Milvus1.0.0 GPU 安装](https://milvus.io/cn/docs/v1.0.0/milvus_docker-gpu.md)。
