@@ -6,7 +6,7 @@ Milvus 教程请参考官网：https://milvus.io/cn/
 
 Milvus 源码详情参考：https://github.com/milvus-io/milvus
 
-## 目录结
+## 目录
 
 以下是本工具的简要目录结构及说明：
 
@@ -40,7 +40,6 @@ Python 版本： 3.6 及以上
 Docker: 19.03 或以上
 
 Milvus 1.0.0
-
 
 
 ## 安装启动 Milvus
