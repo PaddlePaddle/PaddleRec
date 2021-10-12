@@ -9,11 +9,12 @@
             ├── sample_train.txt #训练数据样例
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── NAMLDataReader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
+├── static_model.py #构建静态图
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
