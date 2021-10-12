@@ -81,7 +81,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 ### 数据输入声明
 正如数据准备章节所介绍，Criteo数据集中，分为连续数据与离散（稀疏）数据，所以整体而言，GATE-DNN模型的数据输入层包括三个，分别是：`dense_input`用于输入连续数据，维度由超参数`dense_input_dim`指定，数据类型是归一化后的浮点型数据。`sparse_inputs`用于记录离散数据，在Criteo数据集中，共有26个slot，所以我们创建了名为`1~26`的26个稀疏参数输入，数据类型为整数；最后是每条样本的`label`，代表了是否被点击，数据类型是整数，0代表负样例，1代表正样例。
 
-### CTR-DNN模型组网
+### GATE-DNN模型组网
 
 GATE-DNN模型主要组成是一个`Embedding`层,三个`FC`层，以及相应的分类任务的loss计算和auc计算。
 
