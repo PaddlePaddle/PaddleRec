@@ -48,12 +48,12 @@ class DataCutter(object):
         train_user_ids = user_ids[self._number:]
 
         # write train data set
-        with open(self._train, 'wb') as f:
+        with open(self._train, 'w') as f:
             for uid in train_user_ids:
                 for line in user_behav[uid]:
                     f.write(line)
 
-        with open(self._test, 'wb') as f:
+        with open(self._test, 'w') as f:
             for uid in test_user_ids:
                 for line in user_behav[uid]:
                     f.write(line)

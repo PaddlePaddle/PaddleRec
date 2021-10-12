@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    jcenter()
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
+
+dependencies {
+  implementation "ai.djl:api:0.13.0-SNAPSHOT"
+  implementation "ai.djl.paddlepaddle:paddlepaddle-engine:0.13.0-SNAPSHOT"
+  implementation "ai.djl.paddlepaddle:paddlepaddle-native-auto:2.0.2"
+  implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
+  implementation "commons-cli:commons-cli:1.4"
+}
+
+task(infer, dependsOn: 'classes', type: JavaExec) {
+    main = 'Main'
+    classpath = sourceSets.main.runtimeClasspath
+    //args '-t', '2', '-bsz', '2', '-cr', '0.5', '-it', '1', '-op','performance.txt'
+}
+
+test {
+    useJUnitPlatform()
+}

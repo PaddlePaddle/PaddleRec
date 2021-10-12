@@ -133,11 +133,11 @@ def load_yaml(yaml_file, other_part=None):
 def reset_auc(use_fleet=False, auc_num=1):
     # for static clear auc
     auc_var_name = []
-    for i in range(auc_num * 4):
+    for i in range(auc_num * 5):
         auc_var_name.append("_generated_var_{}".format(i))
 
     for name in auc_var_name:
-        param = paddle.fluid.global_scope().var(name)
+        param = paddle.static.global_scope().find_var(name)
         if param == None:
             continue
         tensor = param.get_tensor()

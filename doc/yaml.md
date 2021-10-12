@@ -25,6 +25,8 @@
 |             save_inference_feed_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的入口变量name                     |
 |             save_inference_fetch_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的出口变量name                     |
 |             use_fleet         |    bool    |                      True/False                      |    否    |                     指定是否使用分布式运行单机多卡或多机多卡                     |
+|             reader_type         |    string    |                      QueueDataset/DataLoader/CustomizeDataLoader                    |    否    |                     指定使用的reader类型                     |
+|             model_init_path         |    string    |                      任意                      |    否    |                     指定是否使用热启动，在训练初期加载初始化模型                     |
 
 
 ## hyper_parameters变量

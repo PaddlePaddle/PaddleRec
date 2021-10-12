@@ -63,7 +63,7 @@ class BenchmarkDNNLayer(nn.Layer):
                 self._mlp_layers.append(act)
 
     def forward(self, slot_inputs):
-
+        self.all_vars = []
         embs = []
         self.inference_model_feed_vars = []
         for s_input in slot_inputs:
@@ -82,14 +82,19 @@ class BenchmarkDNNLayer(nn.Layer):
                     param_attr=paddle.ParamAttr(name="embedding"))
                 #emb = self.embedding(s_input)
             self.inference_model_feed_vars.append(emb)
+
             bow = paddle.fluid.layers.sequence_pool(input=emb, pool_type='sum')
+            self.all_vars.append(bow)
             #paddle.fluid.layers.Print(bow)
             embs.append(bow)
 
         y_dnn = paddle.concat(x=embs, axis=1)
+        self.all_vars.append(y_dnn)
 
         for n_layer in self._mlp_layers:
             y_dnn = n_layer(y_dnn)
+            self.all_vars.append(y_dnn)
 
         self.predict = F.sigmoid(paddle.clip(y_dnn, min=-15.0, max=15.0))
+        self.all_vars.append(self.predict)
         return self.predict
