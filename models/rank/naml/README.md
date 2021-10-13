@@ -9,11 +9,12 @@
             ├── sample_train.txt #训练数据样例
 ├── __init__.py
 ├── README.md #文档
-├── config.py # sample数据配置
-├── config_bigdata.py # 全量数据配置
+├── config.yaml # sample数据配置
+├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── NAMLDataReader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
+├── static_model.py #构建静态图
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -97,14 +98,18 @@ python3 -u ../../../tools/infer.py -m config.yaml
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。
 同时，我们提供了全量数据生成的脚本，将会自动下载microsoft news dataset全量数据集并转换为模型能接受的
 输入格式，执行方法如下：
-进入路径PaddleRec/datasets/MIND/data
-执行 sh run.sh
-脚本运行完成后，打开dict/yaml_info.txt，将其中的词向量大小，类目大小，子类目大小信息copy到config_bigdata.yaml
+
+1.进入路径PaddleRec/datasets/MIND/data
+
+2.执行 sh run.sh
+
+3.脚本运行完成后，打开dict/yaml_info.txt，将其中的词向量大小，类目大小，子类目大小信息copy到config_bigdata.yaml
 里，替换最后3行的超参数
   category_size
   sub_category_size  
   word_dict_size
-完成后运行：
+
+4.运行：
 ```
 python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 ```
