@@ -156,8 +156,7 @@ class StaticModel(object):
 
         return self.metrics
 
-    def create_optimizer(self, strategy=None):
-        pure_bf16 = self.config.get("pure_bf16")
+    def create_optimizer(self, strategy=None, pure_bf16=False):
         lr = float(self.config.get("hyper_parameters.optimizer.learning_rate"))
         decay_rate = float(
             self.config.get("hyper_parameters.optimizer.decay_rate"))
