@@ -16,14 +16,12 @@ do
             a=`print $i`
             b=`print $j`
             echo $y/$a$b
-            mkdir -p data2/$y/$a$b
+            mkdir -p data/$y/$a$b
             for ((k=0;k<1;k++));
             do
-                cp ./data/demo_10 data2/$y/$a$b/demo_$k
-                # touch data2/$y/$a$b/data.done
-               # hadoop fs -Dhadoop.job.ugi=paddle,dltp_paddle@123 -fs afs://yinglong.afs.baidu.com:9902 -put ./data/demo_10 /user/paddle/wangxianming/feed/$y/$a$b/demo_$k
+                cp ./data/demo_10 data/$y/$a$b/demo_$k
+                # touch data/$y/$a$b/data.done
             done
-            #hadoop fs -Dhadoop.job.ugi=paddle,dltp_paddle@123 -fs afs://yinglong.afs.baidu.com:9902 -mkdir /user/paddle/wangxianming/feed/$y/$a$b
         done
     done
 done
