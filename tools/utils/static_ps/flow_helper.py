@@ -139,7 +139,7 @@ def save_inference_model(exe,
     """
     day = str(day)
     pass_id = str(pass_id)
-    suffix_name = "/%s/%s/inference_model/" % (day, pass_id)
+    suffix_name = "/%s/inference_model_%s/" % (day, pass_id)
     model_path = output_path + suffix_name
     logger.info("going to save_inference_model %s" % model_path)
     fleet.save_inference_model(
