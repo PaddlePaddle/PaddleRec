@@ -66,9 +66,10 @@ class Reader(fleet.MultiSlotDataGenerator):
             if slot not in self.slots:
                 continue
             feasign = int(slot_feasign[0])
-            if feasign not in fea_dict:
-                fea_dict[feasign] = len(fea_dict)
-            output[self.slot2index[slot]][1].append(fea_dict[feasign])
+            # if feasign not in fea_dict:
+            #     fea_dict[feasign] = len(fea_dict)
+            # output[self.slot2index[slot]][1].append(fea_dict[feasign])
+            output[self.slot2index[slot]][1].append(feasign)
             self.visit[slot] = True
         for i in self.visit:
             slot = i
