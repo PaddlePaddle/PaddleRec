@@ -1,20 +1,21 @@
 # README
 
-Milvus 是一款开源的特征向量相似度搜索引擎。本工具是基于 Milvus 实现的提供向量存储与召回的服务。你可以将本工具用在推荐系统中的召回这一过程。
+Milvus 是一款开源的特征向量相似度搜索引擎。本工具是基于 Milvus1.1.1 实现的提供向量存储与召回的服务。你可以将本工具用在推荐系统中的召回这一过程。
 
 Milvus 教程请参考官网：https://milvus.io/cn/
 
 Milvus 源码详情参考：https://github.com/milvus-io/milvus
 
-## 目录
+## 目录结构
 
 以下是本工具的简要目录结构及说明：
 
-```
+```text
 ├── readme.md #介绍文档
 ├── config.py #参数配置
-├── milvus_insert.py  #向量插入脚本
-├── milvus_recall.py #向量召回脚本
+├── milvus_insert.py  # 向量插入脚本
+├── milvus_recall.py  # 向量召回脚本
+├── milvus_helper.py  # Milvus 常用操作
 ```
 
 ## 环境要求
@@ -42,14 +43,15 @@ Docker: 19.03 或以上
 Milvus 1.0.0
 
 
+
 ## 安装启动 Milvus
 
-这里将安装 [Milvus1.0.0 的 CPU 版本](https://milvus.io/cn/docs/v1.0.0/milvus_docker-cpu.md)，也可以选择安装 GPU 版本的 Milvus，安装方式请参考： [Milvus1.0.0 GPU 安装](https://milvus.io/cn/docs/v1.0.0/milvus_docker-gpu.md)。
+这里将安装 [Milvus1.1.1 的 CPU 版本](https://milvus.io/cn/docs/v1.1.1/milvus_docker-cpu.md)，也可以选择安装 GPU 版本的 Milvus，安装方式请参考： [Milvus1.1.1 GPU 安装](https://milvus.io/cn/docs/v1.1.1/milvus_docker-gpu.md)。
 
 **拉取 CPU 版本的 Milvus 镜像：**
 
 ```shell
-$ sudo docker pull milvusdb/milvus:1.0.0-cpu-d030521-1ea92e
+$ sudo docker pull milvusdb/milvus:1.1.1-cpu-d061621-330cc6
 ```
 
 **下载配置文件**
@@ -57,7 +59,7 @@ $ sudo docker pull milvusdb/milvus:1.0.0-cpu-d030521-1ea92e
 ```shell
 $ mkdir -p /home/$USER/milvus/conf
 $ cd /home/$USER/milvus/conf
-$ wget https://raw.githubusercontent.com/milvus-io/milvus/v1.0.0/core/conf/demo/server_config.yaml
+$ wget https://raw.githubusercontent.com/milvus-io/milvus/v1.1.1/core/conf/demo/server_config.yaml
 ```
 
 > Milvus 相关的配置可以通过该配置文件指定。
@@ -65,20 +67,20 @@ $ wget https://raw.githubusercontent.com/milvus-io/milvus/v1.0.0/core/conf/demo/
 **启动 Milvus Docker 容器**
 
 ```shell
-$ sudo docker run -d --name milvus_cpu_1.0.0 \
+$ sudo docker run -d --name milvus_cpu_1.1.1 \
 -p 19530:19530 \
 -p 19121:19121 \
 -v /home/$USER/milvus/db:/var/lib/milvus/db \
 -v /home/$USER/milvus/conf:/var/lib/milvus/conf \
 -v /home/$USER/milvus/logs:/var/lib/milvus/logs \
 -v /home/$USER/milvus/wal:/var/lib/milvus/wal \
-milvusdb/milvus:1.0.0-cpu-d030521-1ea92e
+milvusdb/milvus:1.1.1-cpu-d061621-330cc6
 ```
 
 **确认 Milvus 运行状态**
 
 ```shell
-$ sudo docker logs milvus_cpu_1.0.0
+$ sudo docker logs milvus_cpu_1.1.1
 ```
 
 > 用以上命令查看 Milvus 服务是否正常启动。
@@ -86,7 +88,7 @@ $ sudo docker logs milvus_cpu_1.0.0
 **安装 Milvus Python SDK**
 
 ```shell
-$ pip install pymilvus== 1.0.1
+$ pip install pymilvus==1.1.2
 ```
 
 
@@ -107,7 +109,7 @@ $ pip install pymilvus== 1.0.1
 
 ### 向量导入
 
-Milvus_insert.py 脚本提供向量导入功能，在使用该脚本前，需要在config.py 修改对应参数。调用方式如下：
+`milvus_insert.py` 脚本提供向量导入功能，在使用该脚本前，需要在config.py 修改对应参数。调用方式如下：
 
 ```python
 from milvus_tool.milvus_insert import VecToMilvus
@@ -125,6 +127,8 @@ status, ids = client.insert(collection_name=collection_name, vectors=embeddings,
 > **ids**: 和向量一一对应的 ID，这里要求的 ids 是一维列表的形式，示例：[1,2]，这里表示上述两条向量对应的 ID 分别是 1 和 2. 这里的 ids 也可以为空，不传入参数，此时插入的向量将由 Milvus 自动分配 ID。
 >
 > **partition_tag**: 指定向量要插入的分区名称，Milvus 中可以通过标签将一集合分割为若干个分区 。该参数可以为空，为空时向量直接插入集合中。
+>
+> 在像 Milvus 指定的集合 collection 或者分区 partition 中插入参数时，如果 Milvus 中不存在该集合或者分区，该脚本会自动建立对应的集合或者分区。
 
 **返回结果**：向量导入后将返回 `status` 和 `ids` 两个参数。status 返回的是插入的状态，插入成功或者失败。ids 返回的是插入向量对应的 ID，是一个一维列表。
 
@@ -132,7 +136,7 @@ status, ids = client.insert(collection_name=collection_name, vectors=embeddings,
 
 ### 向量召回
 
-milvus_recall.py 提供向量召回功能，在使用该脚本前，需要在config.py 修改对应参数，调用方式如下：
+`milvus_recall.py` 提供向量召回功能，在使用该脚本前，需要在config.py 修改对应参数，调用方式如下：
 
 ```python
 from milvus_tool.milvus_recall import RecallByMilvus
@@ -161,3 +165,52 @@ status, results = self.milvus_client.search(collection_name=collection_name, vec
 ```
 
 具体使用可参考项目 movie_recommender/recall.py
+
+### Milvus 基本操作
+
+`milvus_helper.py` 脚本中提供了以下几个 Milvus 常用操作：
+
+- 在 Milvus 中建立 collection
+- 查看 Milvus 中是否存在指定 collection
+- 查看指定 collection 中导入的向量数
+- 查看 Milvus 中所有的 collection
+- 删除指定 collection
+
+调用方式如下：
+
+```python
+from milvus_tool.milvus_helper import MilvusHelper
+client = MilvusHelper()
+collection_name = 'test'
+```
+
+- 查看 Milvus 中是否存在某 collection
+
+```python
+print(client.has_collection(collection_name))
+```
+
+- 在 Milvus 中建立 collection，建立 collection 的参数可修改 `config.py` 中的 `collection_param`
+
+```python
+client.creat_collection(collection_name)
+```
+
+- 查看指定 collection 中的向量数
+
+```python
+print(client.count(collection_name))
+```
+
+- 查看 Milvus 中所有的 collection
+
+```python
+print(client.list_collection())
+```
+
+- 删除 Milvus 中的指定 collection
+
+```python
+client.delete_collection(collection_name)
+```
+
