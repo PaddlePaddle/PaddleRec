@@ -168,13 +168,13 @@ status, results = self.milvus_client.search(collection_name=collection_name, vec
 
 ### Milvus 基本操作
 
-`milvus_helper.py` 脚本中提供了一下几个 Milvus 常用操作：
+`milvus_helper.py` 脚本中提供了以下几个 Milvus 常用操作：
 
-- 在 Milvus 中建立集合
-- 查看 Milvus 中是否存在指定集合
-- 查看指定集合中导入的向量数
-- 查看 Milvus 中所有的集合
-- 删除指定集合
+- 在 Milvus 中建立 collection
+- 查看 Milvus 中是否存在指定 collection
+- 查看指定 collection 中导入的向量数
+- 查看 Milvus 中所有的 collection
+- 删除指定 collection
 
 调用方式如下：
 
@@ -184,31 +184,31 @@ client = MilvusHelper()
 collection_name = 'test'
 ```
 
-- 查看 Milvus 中是否存在某集合
+- 查看 Milvus 中是否存在某 collection
 
 ```python
 print(client.has_collection(collection_name))
 ```
 
-- 在 Milvus 中建立集合，建立集合的参数可修改 `config.py` 中的 `collection_param`
+- 在 Milvus 中建立 collection，建立 collection 的参数可修改 `config.py` 中的 `collection_param`
 
 ```python
 client.creat_collection(collection_name)
 ```
 
-- 查看指定集合中的向量数
+- 查看指定 collection 中的向量数
 
 ```python
 print(client.count(collection_name))
 ```
 
-- 查看 Milvus 中所有的集合
+- 查看 Milvus 中所有的 collection
 
 ```python
 print(client.list_collection())
 ```
 
-- 删除 Milvus 中的指定集合
+- 删除 Milvus 中的指定 collection
 
 ```python
 client.delete_collection(collection_name)
