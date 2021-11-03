@@ -1,3 +1,17 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from milvus import Milvus, IndexType
 from config import MILVUS_HOST, MILVUS_PORT, collection_param
 import sys
@@ -7,7 +21,8 @@ class MilvusHelper():
     def __init__(self):
         try:
             self.client = Milvus(host=MILVUS_HOST, port=MILVUS_PORT)
-            print("Successfully connect to Milvus with IP:{} and PORT:{}".format(MILVUS_HOST, MILVUS_PORT))
+            print("Successfully connect to Milvus with IP:{} and PORT:{}".
+                  format(MILVUS_HOST, MILVUS_PORT))
         except Exception as e:
             print("Failed to connect Milvus: {}".format(e))
             sys.exit(1)
@@ -34,7 +49,8 @@ class MilvusHelper():
     def delete_collection(self, collection_name):
         try:
             if self.has_collection(collection_name):
-                status = self.client.drop_collection(collection_name=collection_name)
+                status = self.client.drop_collection(
+                    collection_name=collection_name)
                 print(status)
             else:
                 print("collection {} doesn't exist".format(collection_name))
@@ -45,7 +61,8 @@ class MilvusHelper():
     def count(self, collection_name):
         try:
             if self.has_collection(collection_name):
-                status, num = self.client.count_entities(collection_name=collection_name)
+                status, num = self.client.count_entities(
+                    collection_name=collection_name)
                 return num
             else:
                 print("collection {} doesn't exist".format(collection_name))
