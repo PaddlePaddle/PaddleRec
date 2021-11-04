@@ -213,4 +213,3 @@ print(client.list_collection())
 ```python
 client.delete_collection(collection_name)
 ```
-
