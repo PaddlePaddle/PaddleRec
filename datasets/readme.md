@@ -25,7 +25,7 @@ sh data_process.sh
  |[senti_clas](https://baidu-nlp.bj.bcebos.com/sentiment_classification-dataset-1.0.0.tar.gz)|情感倾向分析（Sentiment Classification，简称Senta）针对带有主观描述的中文文本，可自动判断该文本的情感极性类别并给出相应的置信度。情感类型分为积极、消极。情感倾向分析能够帮助企业理解用户消费习惯、分析热点话题和危机舆情监控，为企业提供有利的决策支持|--|
  |[one_billion](http://www.statmt.org/lm-benchmark/)|拥有十亿个单词基准，为语言建模实验提供标准的训练和测试|[One Billion Word Benchmark for Measuring Progress in Statistical Language Modeling](https://arxiv.org/abs/1312.3005)|
  |[MIND](https://paddlerec.bj.bcebos.com/datasets/MIND/bigdata.zip)|MIND即MIcrosoft News Dataset的简写，MIND里的数据来自Microsoft News用户的行为日志。MIND的数据集里包含了1,000,000的用户以及这些用户与160,000的文章的交互行为。|[Microsoft(2020)](https://msnews.github.io)|
- |[movielens_pinterest_NCF](https://paddlerec.bj.bcebos.com/ncf/Data.zip)|论文原作者处理过的movielens数据集和pinterest数据集|[《Neural Collaborative Filtering 》](https://arxiv.org/pdf/1708.05031.pdf)|
+ |[movielens_pinterest_NCF](https://paddlerec.bj.bcebos.com/ncf/Data.zip)|论文原作者处理过的movielens数据集和pinterest数据集，[github](https://github.com/hexiangnan/neural_collaborative_filtering)|[《Neural Collaborative Filtering 》](https://arxiv.org/pdf/1708.05031.pdf)|
  |[Anime](https://paddlerec.bj.bcebos.com/datasets/Anime/archive.zip)|该数据集包含73,516个用户对12,294个动漫的用户偏好数据。每个用户都可以将动漫添加到列表中并给它一个评分，该数据集是这些评分的汇总。|[Kaggle](https://www.kaggle.com/CooperUnion/anime-recommendations-database)|
  |[LFM-1b](https://paddlerec.bj.bcebos.com/datasets/LFM_1b/LFM-1b.zip)|此数据集包含由Last.FM的120,000多个用户创建的十亿多个音乐收听记录。每条收听记录均以艺术家，专辑和曲目名称为特征，并包含一个时间戳。|[ICMR 2016](http://www.cp.jku.at/datasets/LFM-1b/)|
  |[LFM-1b UGP](https://paddlerec.bj.bcebos.com/datasets/LFM_1b_UGP/LFM-1b_UGP.zip)|LFM-1b数据集的用户类型档案,作为LFM-1b的补充扩展|[ISM 2017](http://www.cp.jku.at/datasets/LFM-1b/)|
@@ -36,6 +36,6 @@ sh data_process.sh
  |[Retailrocket](https://paddlerec.bj.bcebos.com/datasets/Retailrocket/Retailrocket.zip)|数据是从真实的电子商务网站中收集的。它是原始数据，即没有任何内容转换，但是，由于保密问题，所有值都被哈希化。|[Kaggle](https://www.kaggle.com/retailrocket/ecommerce-dataset)|
  |[Netflix](https://paddlerec.bj.bcebos.com/datasets/Netflix/Netflix.zip)|这是Netflix竞赛中使用的官方数据集。|[Kaggle](https://www.kaggle.com/netflix-inc/netflix-prize-data)|
  |[FourSquare](https://paddlerec.bj.bcebos.com/datasets/FourSquare/FourSquare.zip)|此数据集包含在纽约和东京进行的大约10个月收集的签到。每个签到都有其时间戳，GPS坐标及其语义相关联。|[Kaggle](https://www.kaggle.com/chetanism/foursquare-nyc-and-tokyo-checkin-dataset)|
- |[AmazonBook](https://paddlerec.bj.bcebos.com/datasets/AmazonBook/AmazonBook.tar.gz)|论文原作者处理过的AmazonBook数据集 |[《Controllable Multi-Interest Framework for Recommendation》](https://arxiv.org/abs/2005.09347)|
+ |[AmazonBook](https://paddlerec.bj.bcebos.com/datasets/AmazonBook/AmazonBook.tar.gz)|论文原作者处理过的AmazonBook数据集,[github](https://github.com/THUDM/ComiRec) |[《Controllable Multi-Interest Framework for Recommendation》](https://arxiv.org/abs/2005.09347)|
  |[Ali_Display_Ad_Click](https://paddlerec.bj.bcebos.com/datasets/dmr/dataset_full.zip)|预处理过的Alimama数据集 |[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR)|
  |[omniglot](https://paddlerec.bj.bcebos.com/datasets/omniglot/omniglot.tar)|预处理过的omniglot数据集 |[Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/pdf/1703.03400.pdf)|
