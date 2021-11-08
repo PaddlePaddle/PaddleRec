@@ -68,7 +68,6 @@ class BenchmarkDNNLayer(nn.Layer):
         self.inference_feed_vars = []
         for s_input in slot_inputs:
             emb = paddle.static.nn.sparse_embedding(
-                #emb = paddle.fluid.contrib.sparse_embedding(
                 input=s_input,
                 size=[self.dict_dim, self.emb_dim],
                 param_attr=paddle.ParamAttr(name="embedding"))
