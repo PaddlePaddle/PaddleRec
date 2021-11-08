@@ -28,13 +28,14 @@ runner:
   reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset
   pipe_command: "python3 inmemorydataset_reader.py"
 
-  init_model_path: "output_model_benchdnn_queue/20190720/6"
+  init_model_path: "output_model/20190720/inference_model_6"
 
   dataset_debug: False
   parse_ins_id: True
   dump_fields_path: "dump_offline_infer"
 
   shots_shuffle_list: [["2"], ["3"]]
+  candidate_size: 10
 
 
 # hyper parameters of user-defined network
@@ -48,6 +49,6 @@ hyper_parameters:
   dict_dim : 1000000
   emb_dim : 9
   sparse_feature_dim: 9
-  slot_num: 408
-  layer_sizes: [512, 256, 128, 128, 128]
+  slot_num: 300
+  layer_sizes: [512, 256, 128]
   distributed_embedding: 0
