@@ -117,6 +117,9 @@ class Main(object):
         self.metrics = model.net(self.input_data)
         self.inference_feed_vars = model.inference_feed_vars
         self.inference_target_var = model.inference_target_var
+        if hasattr(model, "all_vars"):
+            with open("all_vars.txt", 'w+') as f:
+                f.write('\n'.join([var.name for var in model.all_vars]))
         if config.get("runner.need_prune", False):
             # DSSM prune net
             self.inference_feed_vars = model.prune_feed_vars
