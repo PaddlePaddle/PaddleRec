@@ -32,7 +32,7 @@ class Reader(fleet.MultiSlotStringDataGenerator):
         self.config = config
         padding = "0"
         #sparse_slots = "click 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"
-        self.slots = self.slot_reader(slot_num=408)
+        self.slots = self.slot_reader(slot_num=300)
         self.slot2index = {}
         self.visit = {}
         for i in range(len(self.slots)):
@@ -66,7 +66,7 @@ class Reader(fleet.MultiSlotStringDataGenerator):
             slot = slot_feasign[1]
             if slot not in self.slots:
                 continue
-            feasign = int(slot_feasign[0])
+            feasign = slot_feasign[0]
             # if feasign not in fea_dict:
             #     fea_dict[feasign] = str(len(fea_dict))
             # output[self.slot2index[slot]][1].append(fea_dict[feasign])

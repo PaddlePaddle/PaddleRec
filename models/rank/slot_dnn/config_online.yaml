@@ -1,7 +1,7 @@
 runner:
   use_gloo: True
   # train_data_dir: "afs:/xxx"
-  train_data_dir: "./data2"
+  train_data_dir: "./data"
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: False
   use_auc: True
@@ -54,6 +54,6 @@ hyper_parameters:
   dict_dim : 1000000
   emb_dim : 9
   sparse_feature_dim: 9
-  slot_num: 408
-  layer_sizes: [512, 256, 128, 128, 128]
+  slot_num: 300
+  layer_sizes: [512, 256, 128]
   distributed_embedding: 0
