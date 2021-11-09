@@ -143,11 +143,9 @@ class Main(object):
         print_step = int(config.get("runner.print_interval"))
         dump_fields_path = self.config.get("runner.dump_fields_path")
         dump_fields = [var.name for var in self.all_vars]
-        dump_param = ["linear_1.w_0", "linear_3.w_0", "linear_5.w_0", "linear_1.b_0", "linear_3.b_0", "linear_5.b_0"]
         set_dump_config(paddle.static.default_main_program(), {
             "dump_fields_path": dump_fields_path,
-            "dump_fields": dump_fields,
-            "dump_param": dump_param
+            "dump_fields": dump_fields
         })
         print(paddle.static.default_main_program()._fleet_opt)
 
