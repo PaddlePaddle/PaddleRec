@@ -120,11 +120,11 @@ class Main(object):
                 if config.get("runner.reader_type",
                               "DataLoader") == 'InmemoryDataset':
                     tree_path = config.get("hyper_parameters.tree_path", None)
-                    dataset.load_into_memory()
-                    dataset.global_shuffle(thread_num=config.get(
+                    self.reader.load_into_memory()
+                    self.reader.global_shuffle(thread_num=config.get(
                         "runner.thread_num", 1))
                     if tree_path != None:
-                        dataset.tdm_sample(
+                        self.reader.tdm_sample(
                             config.get("hyper_parameters.tree_name"),
                             tree_path,
                             config.get("hyper_parameters.tdm_layer_counts"),
