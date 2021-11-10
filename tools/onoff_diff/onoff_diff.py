@@ -59,7 +59,7 @@ def get_data_from_log(online_log_file, origin_file):
                 res[insid] = {}
             res[insid][var_name] = (length, data)
     # print("online log:", res.keys())
-            
+
     return res
 
 
@@ -146,17 +146,20 @@ def onoff_max_diff(log_data, model_data, ins_id):
             if max_diff < diff:
                 max_diff = diff
         if max_diff > 2e-5:
-            print("ins_id:{}, var_name:{}: {}".format(ins_id, var_name, max_diff))
+            print("ins_id:{}, var_name:{}: {}".format(ins_id, var_name,
+                                                      max_diff))
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', help='线上日志文件', dest='online_log_file', required=True)
+    parser.add_argument(
+        '-l', help='线上日志文件', dest='online_log_file', required=True)
     parser.add_argument(
         '-m', help='模型dump文件', dest='model_dump_file', required=True)
     parser.add_argument('-v', help='所有var文件', dest='var_file', required=True)
-    parser.add_argument('-o', help='offline原始数据文件', dest='origin_file', required=True)
+    parser.add_argument(
+        '-o', help='offline原始数据文件', dest='origin_file', required=True)
     args = parser.parse_args()
     log_data = get_data_from_log(args.online_log_file, args.origin_file)
     model_data = get_data_from_model(args.model_dump_file)

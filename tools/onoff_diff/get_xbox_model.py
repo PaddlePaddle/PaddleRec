@@ -25,6 +25,7 @@ emb_dim = 9
 
 #     fout.close()
 
+
 def get_xbox_model(infile, outfile):
     fout = open(outfile, 'w')
     out_list = ['0', '1', '0', '1']
@@ -50,6 +51,7 @@ def get_xbox_model(infile, outfile):
             out_str2 = ','.join(out_list)
             fout.write('{}\t{}\n'.format(out_str1, out_str2))
     fout.close()
+
 
 if __name__ == '__main__':
     import argparse

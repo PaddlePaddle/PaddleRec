@@ -39,7 +39,7 @@ fleetrun --server_num=1 --worker_num=1 ../../../tools/static_ps_offline_infer.py
 OFFLINE_DUMP_PATH=$MODEL_PATH/dump_offline_infer
 cat $OFFLINE_DUMP_PATH/part* > $TOOL_PATH/data/log.offline
 
-echo "online offline diff..."
+echo "online offline diff..." 
 cd $TOOL_PATH
 python3 onoff_diff.py -l ./data/log.online \
                       -m ./data/log.offline \
