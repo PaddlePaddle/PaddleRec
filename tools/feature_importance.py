@@ -134,7 +134,7 @@ class Main(object):
 
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
-        fleet.load_model(init_model_path, mode="0")
+        fleet.load_model(init_model_path, mode=0)
 
         logger.info("Prepare Dataset Begin.")
         prepare_data_start_time = time.time()
@@ -169,8 +169,9 @@ class Main(object):
                       self.metric_types)
         logger.info("baseline auc: {}".format(baseline_auc))
         slots_shuffle_list = config.get("runner.shots_shuffle_list", [])
+        candidate_size = config.get("runner.candidate_size", 10)
         for slots_list in slots_shuffle_list:
-            cur_dataset.set_fea_eval(10, True)
+            cur_dataset.set_fea_eval(candidate_size, True)
             cur_dataset.slots_shuffle(slots_list)
             self.exe.infer_from_dataset(
                 program=paddle.static.default_main_program(),
