@@ -119,7 +119,7 @@ class Main(object):
 
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
-        
+
         init_model_path = config.get("runner.init_model_path")
         fleet.load_model(init_model_path, mode=0)
 
