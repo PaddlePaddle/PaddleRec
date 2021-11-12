@@ -111,30 +111,27 @@ class Main(object):
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
 
+        if reader_type == "QueueDataset" or reader_type == "InmemoryDataset":
+            if config.get("runner.reader_type",
+                          "DataLoader") == 'InmemoryDataset':
+                tree_path = config.get("hyper_parameters.tree_path", None)
+                self.reader.load_into_memory()
+                self.reader.global_shuffle(thread_num=config.get(
+                    "runner.thread_num", 1))
+                if tree_path != None:
+                    self.reader.tdm_sample(
+                        config.get("hyper_parameters.tree_name"), tree_path,
+                        config.get("hyper_parameters.tdm_layer_counts"),
+                        config.get("hyper_parameters.start_sample_layer", 1),
+                        config.get("hyper_parameters.with_hierachy", False),
+                        config.get("hyper_parameters.seed", 0),
+                        config.get("hyper_parameters.id_slot", 0))
+
         for epoch in range(epochs):
             epoch_start_time = time.time()
-
             if sync_mode == "heter":
                 self.heter_train_loop(epoch)
             elif reader_type == "QueueDataset" or reader_type == "InmemoryDataset":
-                if config.get("runner.reader_type",
-                              "DataLoader") == 'InmemoryDataset':
-                    tree_path = config.get("hyper_parameters.tree_path", None)
-                    self.reader.load_into_memory()
-                    self.reader.global_shuffle(thread_num=config.get(
-                        "runner.thread_num", 1))
-                    if tree_path != None:
-                        self.reader.tdm_sample(
-                            config.get("hyper_parameters.tree_name"),
-                            tree_path,
-                            config.get("hyper_parameters.tdm_layer_counts"),
-                            config.get("hyper_parameters.start_sample_layer",
-                                       1),
-                            config.get("hyper_parameters.with_hierachy",
-                                       False),
-                            config.get("hyper_parameters.seed", 0),
-                            config.get("hyper_parameters.id_slot", 0))
-
                 self.dataset_train_loop(epoch)
             elif reader_type == "DataLoader":
                 self.dataloader_train_loop(epoch)
@@ -157,7 +154,7 @@ class Main(object):
                     self.inference_target_var)
 
         if reader_type == "InmemoryDataset":
-            dataset.release_memory()
+            self.reader.release_memory()
 
     def init_reader(self):
         if fleet.is_server():
