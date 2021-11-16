@@ -39,3 +39,17 @@ sh data_process.sh
  |[AmazonBook](https://paddlerec.bj.bcebos.com/datasets/AmazonBook/AmazonBook.tar.gz)|论文原作者处理过的AmazonBook数据集,[github](https://github.com/THUDM/ComiRec) |[《Controllable Multi-Interest Framework for Recommendation》](https://arxiv.org/abs/2005.09347)|
  |[Ali_Display_Ad_Click](https://paddlerec.bj.bcebos.com/datasets/dmr/dataset_full.zip)|预处理过的Alimama数据集 |[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR)|
  |[omniglot](https://paddlerec.bj.bcebos.com/datasets/omniglot/omniglot.tar)|预处理过的omniglot数据集 |[Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/pdf/1703.03400.pdf)|
+ |[LastFM](https://paddlerec.bj.bcebos.com/datasets/LastFM/lastfm-2k.zip)|提供音乐推荐的数据集,对于数据集中的每个用户，包含他们最受欢迎的艺术家的列表以及播放次数 |[HetRec 2011](https://grouplens.org/datasets/hetrec-2011/)|
+ |[Epinions](https://paddlerec.bj.bcebos.com/datasets/Epinions/epinions_data.tar.gz)|Epinions数据集由一个普通消费者评论网站Epinions.com的who信任who在线社交网络构建 |[Epinions](https://snap.stanford.edu/data/soc-Epinions1.html)|
+ |[Yelp](https://paddlerec.bj.bcebos.com/datasets/Epinions/soc-Epinions1.txt.gz)|Yelp数据集是我们用于个人，教育和学术目的的业务，评论和用户数据的子集。以JSON文件形式提供，可用于在学习如何制作移动应用程序的同时，教给学生有关数据库，学习NLP或用于样例生产数据的信息。 |[Yelp](https://www.yelp.com/dataset)|
+ |[book-crossing](https://paddlerec.bj.bcebos.com/datasets/book-crossing/BX-CSV-Dump.zip)|Book-Crossings是由Cai-Nicolas Ziegler根据  bookcrossing.com 的数据编写的图书评分数据集。|[IIF](http://www2.informatik.uni-freiburg.de/~cziegler/BX/)|
+ |[Pinterest](https://paddlerec.bj.bcebos.com/datasets/Pinterest/pinterest-20.train.rating)|Pinterest数据集包含超过100万张与Pinterest用户相关联的图像。|[Learning Image and User Features for Recommendation in Social Networks](https://openaccess.thecvf.com/content_iccv_2015/papers/Geng_Learning_Image_and_ICCV_2015_paper.pdf)|
+ |[Gowalla](https://paddlerec.bj.bcebos.com/datasets/Gowalla/loc-gowalla_totalCheckins.txt.gz)|Gowalla是一个基于位置的社交网站，用户可以通过登录来分享自己的位置 |[SNAP](https://cs.stanford.edu/people/jure/pubs/mobile-kdd11.pdf)|
+ |[YOOCHOOSE](https://paddlerec.bj.bcebos.com/datasets/yoochose/yoochoose-data.zip)|欧洲一家在线零售商用户的点击和购买行为. |[ACM](https://dl.acm.org/doi/10.1145/2792838.2798723)|
+ |[Avazu](https://www.kaggle.com/c/avazu-ctr-prediction/data)|按时间顺序排列的10天点击率数据. |[kaggle](https://www.kaggle.com/c/avazu-ctr-prediction/data)|
+ |[Phishing_Websites](https://paddlerec.bj.bcebos.com/datasets/Phishing_Websites/train.arff)|预测网络钓鱼网站有效的特征. |[Phishing_Websites](https://archive.ics.uci.edu/ml/datasets/phishing+websites)|
+ |[Adult](https://paddlerec.bj.bcebos.com/datasets/Adult/adult.data)|部分1994年人口普查数据库. |[Adult](https://archive.ics.uci.edu/ml/datasets/adult)|
+ |[Taobao](https://tianchi.aliyun.com/dataset/dataDetail?dataId=649)|淘宝网用户行为数据. |[Ali](https://tianchi.aliyun.com/dataset/dataDetail?dataId=649)|
+ |[JD](https://paddlerec.bj.bcebos.com/datasets/JD/jdata_tfrecord.zip)|来自京东的用户行为数据，用于流媒体推荐. |[JD](https://datascience.jd.com/page/opendataset.html)|
+ |[movielens](http://files.grouplens.org/datasets/movielens/ml-1m.zip)|电影推荐数据集. |[movielens](https://grouplens.org/datasets/movielens/)|
+ |[Imagenet](https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar)|ImageNet项目是一个大型视觉数据库，用于视觉目标识别研究任务，该项目已手动标注了 1400 多万张图像. |[Imagenet](https://www.image-net.org/)|
