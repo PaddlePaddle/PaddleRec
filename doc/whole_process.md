@@ -2,20 +2,20 @@
 基于推荐场景的技术需求和项目经验，PaddleRec目前已覆盖推荐系统从模型准备到最终线上推理服务的全过程，本教程将索引在推荐全流程中所需的各项功能。 
 
 ## 数据准备
-PaddleRec支持多种数据源，包括文件、kafka、odps、tf_record等，具体数据源适配和接入方法参见[数据接入](../tools/dataset/README.md)
+PaddleRec支持多种数据源，包括文件、kafka、odps、tf_record等，具体数据源适配和接入方法参见[数据接入](../tools/dataset/README.MD)
 
 ## 分布式训练
 由于在推荐系统中，会不断产生用于训练模型的日志数据，因此往往采用流式训练模式，即训练数据不是一次性放入训练系统中，而是随着时间不断加入。流式训练具体内容参见[流式训练](./online_trainer.md)  
-如果你正在做推荐系统的召回模块，可以参考[dssm模型](../models/match/dssm/readme.md)，除了具体的组网实现之外，在进阶教程中还提供了关于召回模块需要的离线灌库和裁剪网络功能。  
-如果你正在做推荐系统的精排模块，可以参考[slot_dnn模型](../models/rank/slot_dnn/README.md)。  
+1. 如果你正在做推荐系统的召回模块，可以参考[dssm模型](../models/match/dssm/readme.md)，除了具体的组网实现之外，在进阶教程中还提供了关于召回模块需要的离线灌库和裁剪网络功能。  
+2. 如果你正在做推荐系统的精排模块，可以参考[slot_dnn模型](../models/rank/slot_dnn/README.md)。  
 
 ## 特征重要性
 在训练过程中，如果你想要衡量模型中特征的重要性，可以参考[特征重要性](./feature_importance.md)
 
 ## 预测
 分布式训练过程中，会保存inference_model用于线上预测。
-1、如果你想要搭建一个独立的预测服务，请参考[Serving部署](./serving.md)
-2、如果你已经拥有一个线上服务，想要在其中增加Paddle的推荐预测内容，请参考[Inference部署](../tools/inference/README.md)
+1. 如果你想要搭建一个独立的预测服务，请参考[Serving部署](./serving.md)
+2. 如果你已经拥有一个线上服务，想要在其中增加Paddle的推荐预测内容，请参考[Inference部署](../tools/inference/README.md)
 
 ## 在线离线一致性检查
 在线上服务搭建完成，正式投入使用之前，需要进行在线离线一致性检查，确保在线服务的正确性，具体内容参见[在线离线一致性检查](./onoff_diff.md)
