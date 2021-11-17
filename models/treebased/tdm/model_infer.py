@@ -49,8 +49,6 @@ def middle_transform(output_dim, x, y):
     dot_res = _layer_dot(x, y)
     sub_res = _layer_sub(x, y)
     mul_res = _layer_mul(x, y)
-
-    #paddle.static.Print(y, summarize=-1)
     hiddens_ = paddle.concat(x=[mul_res, sub_res, dot_res], axis=-1)
     '''    
     for idx in range(len(layer_list)):
@@ -61,34 +59,21 @@ def middle_transform(output_dim, x, y):
                 weight_attr=paddle.ParamAttr(name="relu.w" + str(idx)),
                 bias_attr=fluid.ParamAttr(name="relu.b" + str(idx)))
     '''
-    #paddle.static.Print(hiddens_, summarize=-1)
-    hiddens_ = paddle.static.nn.fc(
-        x=hiddens_,
-        size=output_dim,
-        num_flatten_dims=2,
-        activation='relu',
-        weight_attr=paddle.ParamAttr(
-            name="relu.w",
-            initializer=paddle.fluid.initializer.NormalInitializer(seed=1)),
-        bias_attr=fluid.ParamAttr(
-            name="relu.b",
-            initializer=paddle.fluid.initializer.ConstantInitializer(
-                value=0.1)))
-    #hiddens_ = paddle.nn.functional.dropout(hiddens_, 0.1)
+    hiddens_ = paddle.static.nn.fc(x=hiddens_,
+                                   size=output_dim,
+                                   activation='relu',
+                                   num_flatten_dims=2,
+                                   weight_attr=paddle.ParamAttr(name="relu.w"),
+                                   bias_attr=fluid.ParamAttr(name="relu.b"))
 
-    #paddle.static.Print(hiddens_, summarize=-1)
-    #hiddens_ = paddle.fluid.layers.dropout(hiddens_, 0.1, seed=1)
     hiddens_ = paddle.static.nn.fc(
         x=hiddens_,
         size=2,
         activation=None,
-        weight_attr=paddle.fluid.ParamAttr(
-            name="cos_sim.w",
-            initializer=paddle.fluid.initializer.NormalInitializer(seed=1)),
-        bias_attr=fluid.ParamAttr(
-            name="cos_sim.b",
-            initializer=paddle.fluid.initializer.ConstantInitializer(
-                value=0.1)))
+        num_flatten_dims=2,
+        weight_attr=paddle.ParamAttr(name="cos_sim.w"),
+        bias_attr=fluid.ParamAttr(name="cos_sim.b"))
+
     return hiddens_
 
 
