@@ -407,6 +407,7 @@ class Main(object):
                         xbox_base_key=model_base_key,
                         train_local=self.train_local,
                         client=self.hadoop_client)
+            fleet.barrier_worker()
             day = get_next_day(day)
 
     def dataset_train_loop(self, cur_dataset, day, pass_index,
