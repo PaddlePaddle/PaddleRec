@@ -166,6 +166,7 @@ class Main(object):
                         model_dir,
                         [feed.name for feed in self.inference_feed_var],
                         [self.inference_target_var], self.exe)
+            fleet.barrier_worker()
 
         if reader_type == "InmemoryDataset":
             self.reader.release_memory()
