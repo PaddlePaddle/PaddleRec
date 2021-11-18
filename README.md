@@ -92,6 +92,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 * [在线Serving部署](doc/serving.md)
 * [python端预测库推理](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
+* [推荐全流程](doc/whole_process.md)
 
 ### FAQ
 * [常见问题FAQ](doc/faq.md)
