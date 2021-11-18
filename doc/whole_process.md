@@ -19,10 +19,10 @@ PaddleRec支持多种数据源，包括文件、kafka、odps、tf_record等，�
 ## 特征重要性
 在训练过程中，如果你想要衡量模型中特征的重要性，可以参考[特征重要性](./feature_importance.md)
 
-## 预测
-分布式训练过程中，会保存inference_model用于线上预测。
-1. 如果你想要搭建一个独立的预测服务，请参考[Serving部署](./serving.md)
-2. 如果你已经拥有一个线上服务，想要在其中增加Paddle的推荐预测内容，请参考[Inference部署](../tools/inference/README.md)
+## 在线推理
+分布式训练过程中，会保存inference_model用于在线推理。
+1. 如果你想要搭建一个独立的推理服务，请参考[Paddle Serving部署](./serving.md)
+2. 如果你已经拥有一个在线服务，想要在其中增加Paddle的推理内容，请参考[Paddle Inference部署](../tools/inference/README.md)
 
 ## 在线离线一致性检查
 在线上服务搭建完成，正式投入使用之前，需要进行在线离线一致性检查，确保在线服务的正确性，具体内容参见[在线离线一致性检查](./onoff_diff.md)
