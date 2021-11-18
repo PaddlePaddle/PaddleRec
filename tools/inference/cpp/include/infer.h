@@ -84,7 +84,7 @@ public:
     {
         USE_GPU = 0;
         EMBEDDING_SIZE = 9;
-        SLOT_NUMBER = 409;
+        SLOT_NUMBER = 301;
         place = paddle::PaddlePlace::kCPU;
     }
 
