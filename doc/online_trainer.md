@@ -41,7 +41,7 @@
 ## 模型
 流式训练采用静态图参数服务器方式训练，在组网时需要注意几点：
 1. embedding层需使用paddle.static.nn.sparse_embedding，其中size参数的第一维可指定任意值，第二维为embedding向量的维度。  
-2. 在组网中增加inference_feed_vars、inference_target_var两个变量的赋值，指明inference_model的输入和输出，供线上预测使用。
+2. 在组网中增加inference_feed_vars、inference_target_var两个变量的赋值，指明inference_model的输入和输出，供在线推理使用。
 3. 在组网中增加all_vars变量的赋值，可用于在线离线一致性检查。
 4. 如果希望在训练过程中dump出组网中的变量和网络参数（主要用于训练中的调试和异常检查），请赋值train_dump_fields和train_dump_params；如果希望在预测过程中dump出组网中的变量（主要用于线上预测所需特征的离线灌库），请赋值infer_dump_fields。
 
@@ -65,5 +65,5 @@ fleetrun --server_num=1 --worker_num=1 ../../../tools/static_ps_online_trainer.p
 目录下的embedding.shard目录为sparse特征对应的embedding，其中.txt文件为具体的embedding值和优化方法需要的统计量，.meta文件指明.txt文件的具体schema。  
 目录下的其他文件为dense参数，文件名即为这些参数在组网中对应的var_name。  
 ### inference_model
-用于线上预测的模型，保存于model_save_path/day/inference_model_{$pass_id}中，分为model、sparse、dense三个部分。  
+用于在线推理的模型，保存于model_save_path/day/inference_model_{$pass_id}中，分为model、sparse、dense三个部分。  
 其中sparse和dense参数与checkpoint模型类似，多出一个名为“__model__”的文件，保存的是在线服务使用的组网（可能经过裁剪），线上服务可以直接加载。  
