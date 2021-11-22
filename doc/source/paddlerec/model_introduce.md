@@ -9,6 +9,9 @@
 
 ## [召回模型库](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/recall)
 ### [word2vec模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/recall/word2vec)
+### [ncf模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/ncf)
+### [MIND模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/mind)
+### [deepwalk模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/deepwalk)
 
 ## [排序模型库](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank)
 ### [dnn模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/dnn)
@@ -18,9 +21,21 @@
 ### [wide&deep模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/wide_deep)
 ### [gatednn模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/gateDnn)
 ### [naml模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/naml)
+### [bst模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/bst)
+### [dcn模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dcn)
+### [deepfefm模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/deepfefm)
+### [dien模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dien)
+### [din模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/din)
+### [dlrm模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dlrm)
+### [dmr模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dmr)
+### [ffm模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/ffm)
+### [xdeepfm模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/xdeepfm)
 
 ## [多任务学习模型库](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask)
 ### [MMOE模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/mmoe)
 ### [ESMM模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/esmm)
+### [MAML模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/maml)
+### [PLE模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/ple)
+### [share_bottom模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share_bottom)
 
 ## [重排序模型库](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rerank)
