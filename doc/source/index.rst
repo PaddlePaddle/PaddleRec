@@ -36,10 +36,15 @@
    :caption: 进阶教程
    :name: Advanced course
 
+   paddlerec/contribute.md
    paddlerec/custom_reader.md
    paddlerec/model_develop.md
    paddlerec/yaml.md
+   paddlerec/visualization.md
+   paddlerec/serving.md
+   paddlerec/inference.md
    paddlerec/benchmark.md
+   paddlerec/whole_process.md
 
 .. toctree::
    :maxdepth: 1
