@@ -47,13 +47,13 @@
    paddlerec/whole_process.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :numbered:
    :caption: 模型介绍
    :name: Model introduction
 
    paddlerec/model_introduce.md
-   recall_model/index.rst
+   recall_model/index
    
 .. toctree::
    :maxdepth: 1
