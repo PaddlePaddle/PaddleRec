@@ -7,7 +7,7 @@
 - 模型算法库在持续添加中，欢迎关注，点亮star就是对我们的支持。
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :numbered:
    :caption: 召回模型库
    :name: recall
