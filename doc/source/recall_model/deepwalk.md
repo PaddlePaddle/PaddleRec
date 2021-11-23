@@ -1,4 +1,4 @@
-# Distributed Deepwalk in PGL
+# Deepwalk
 
 代码请参考：[deepwalk模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/deepwalk) 
 
