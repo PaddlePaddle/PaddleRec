@@ -53,6 +53,7 @@
    :name: Model introduction
 
    paddlerec/model_introduce.md
+   recall_model/index.rst
    
 .. toctree::
    :maxdepth: 1
