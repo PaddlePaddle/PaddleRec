@@ -47,7 +47,7 @@
    paddlerec/whole_process.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :numbered:
    :caption: 模型介绍
    :name: Model introduction
