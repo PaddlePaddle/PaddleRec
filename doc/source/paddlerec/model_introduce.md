@@ -12,6 +12,7 @@
 ### [ncf模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/ncf)
 ### [MIND模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/mind)
 ### [deepwalk模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/deepwalk)
+### [GRU4REC模型](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/gru4rec/)
 
 ## [排序模型库](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank)
 ### [dnn模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/dnn)
