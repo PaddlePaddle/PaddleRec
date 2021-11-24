@@ -88,7 +88,6 @@ def init_predictor(args):
                 precision_mode=paddle.inference.PrecisionType.Float32)
     else:
         config.disable_gpu()
-        config.delete_pass("repeated_fc_relu_fuse_pass")
         config.set_cpu_math_library_num_threads(args.cpu_threads)
         if args.enable_mkldnn:
             config.enable_mkldnn()
