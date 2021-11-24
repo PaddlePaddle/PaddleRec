@@ -266,7 +266,6 @@ class Main(object):
         train_run_cost = 0.0
         train_reader_cost = 0.0
         total_samples = 0
-        from paddle.fluid.tests.unittests.op_test import convert_uint16_to_float
         reader_start = time.time()
         for batch_id, batch_data in enumerate(self.reader()):
             train_reader_cost += time.time() - reader_start
@@ -285,7 +284,7 @@ class Main(object):
                     metric_str += "{}: {}, ".format(
                         var_name, fetch_batch_var[var_idx]
                         if var_name != "LOSS" or config['pure_bf16'] is False
-                        else convert_uint16_to_float(fetch_batch_var[var_idx]))
+                        else bf16_to_fp32(fetch_batch_var[var_idx][0]))
                 logger.info(
                     "Epoch: {}, Batch_id: {}, ".format(epoch,
                                                        batch_id) + metric_str +
