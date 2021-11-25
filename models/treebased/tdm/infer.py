@@ -30,7 +30,7 @@ paddle.enable_static()
 class Reader():
     def __init__(self, item_nums):
         self.item_nums = item_nums
-        self.get_id_code('../builder/ids_id_mini_outcode.txt')
+        self.get_id_code('../builder/ids_id.txt')
 
     def get_id_code(self, _path):
         self.id_code = {}
