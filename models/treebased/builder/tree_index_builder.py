@@ -114,12 +114,28 @@ class TreeIndexBuilder:
         print("Read data done, {} records read, elapsed: {}".format(
             len(ids), t2 - t1))
 
-        read_codes = []
-        with open('kmeans_code', 'r') as f:
-            for line in f:
-                line = line.strip()
-                read_codes.append(line)
-        self.codes = np.array(read_codes, dtype=np.int64)
+        queue = mp.Queue()
+        queue.put((0, np.array(range(len(self.ids)))))
+        processes = []
+        pipes = []
+        for _ in range(parall):
+            a, b = mp.Pipe()
+            p = mp.Process(target=self._train, args=(b, queue))
+            processes.append(p)
+            pipes.append(a)
+            p.start()
+
+        self.codes = np.zeros((len(self.ids), ), dtype=np.int64)
+        for pipe in pipes:
+            codes = pipe.recv()
+            for i in range(len(codes)):
+                if codes[i] > 0:
+                    self.codes[i] = codes[i]
+
+        for p in processes:
+            p.join()
+
+        assert (queue.empty())
 
         self.build(output_filename, self.ids, self.codes, data=self.data)
 
@@ -320,9 +336,9 @@ class TreeIndexBuilder:
         #tree_emb_np = np.zeros((leaf_right + 1, 128))
         #for key in self.id_emb.keys():
         #    tree_emb_np[key] = np.array(self.id_emb[key])
-        np.save('./tree_emb_mini_outcode.npy', tree_emb_np)
+        np.save('./tree_emb.npy', tree_emb_np)
 
-        with open('ids_id_mini_outcode.txt', 'w') as f:
+        with open('ids_id.txt', 'w') as f:
             for i in range(len(codes)):
                 f.write(
                     str(ids[i]) + '\t' + str(self.code_id[codes[i]]) + '\n')

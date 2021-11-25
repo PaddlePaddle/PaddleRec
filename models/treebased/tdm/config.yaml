@@ -16,7 +16,7 @@
 
 runner:
   sync_mode: "async"  # sync / async /geo / heter
-  thread_num: 16
+  thread_num: 1
   use_gpu: False
   
   model_path: "static_model.py"
@@ -25,13 +25,12 @@ runner:
   dataset_debug: False
   split_file_list: False
 
-  train_data_dir: "/paddle/workspace/tdm-wz/data/demo_data/train_mini/"
+  train_data_dir: "../data/demo_train/"
   train_reader_path: "reader"
 
-  #train_batch_size: 63  # 30000
   train_batch_size: 1  # 30000
   epochs: 1
-  print_interval: 10   # 1000
+  print_interval: 1   # 1000
   model_save_path: "output_model_tdm_init"
 
   use_out_vec: True
