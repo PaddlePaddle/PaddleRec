@@ -51,6 +51,7 @@ class RecDataset(IterableDataset):
         self.items = list(self.items)
 
     def __iter__(self):
+        random.seed(12345)
         while True:
             user_id_list = random.sample(self.users, self.batch_size)
             if self.count >= self.batches_per_epoch * self.batch_size:
