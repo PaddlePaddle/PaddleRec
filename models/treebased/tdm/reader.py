@@ -58,9 +58,9 @@ class MyDataset(fleet.MultiSlotDataGenerator):
     def line_process(self, line):
         #history_ids = [0] * (self.item_nums)
         history_ids = []
-        features = line.strip().split('\t')
+        features = line.strip().split(' ')
         item_id = self.id_code[features[-1]]
-        for item in features[0].split():
+        for item in features[0:-1]:
             history_ids.append(float(item))
         #positive data 
         label = 1
