@@ -83,7 +83,6 @@ elif [ ${model_name} == "ple" ]; then
     # prepare pretrained weights and dataset 
     # TODO
     # TODO
-
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
     if [ ${MODE} = "lite_train_lite_infer" ];then
@@ -102,7 +101,6 @@ elif [ ${model_name} == "esmm" ]; then
     # prepare pretrained weights and dataset 
     # TODO
     # TODO
-
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
     if [ ${MODE} = "lite_train_lite_infer" ];then
