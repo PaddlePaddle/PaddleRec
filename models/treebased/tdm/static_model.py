@@ -71,22 +71,8 @@ class StaticModel():
             sparse=True,
             padding_idx=0,
             weight_attr=pretrained_attr)
-        '''
-        user_feature = input[0:self.item_nums]
-        user_feature_emb = list(map(embedding, user_feature))  # [(bs, emb)]
-        '''
-        '''
-        user_input_fc = paddle.static.nn.fc(
-            inputs[0],
-            size=self.x_bert_embed_size,
-            activation="tanh",
-            weight_attr=paddle.framework.ParamAttr(
-                name="user_fc_w",
-                   ),
-            bias_attr=paddle.ParamAttr(
-                name="user_fc_b",
-                ))
-        '''
+
+        #paddle.static.Print(inputs[i], summarize=-1)
         user_input_fc = paddle.static.nn.fc(
             x=inputs[0],
             size=self.x_bert_embed_size,
@@ -113,7 +99,6 @@ class StaticModel():
             label=inputs[-1],
             return_softmax=True,
             ignore_index=-1)
-        #paddle.static.Print(softmax_prob, summarize=-1)
         ignore_label = paddle.full_like(inputs[-1], fill_value=-1)
         avg_cost = paddle.divide(
             paddle.sum(cost),

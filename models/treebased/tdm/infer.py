@@ -275,7 +275,7 @@ if __name__ == '__main__':
     yaml_helper = common.YamlHelper()
     config = yaml_helper.load_yaml(sys.argv[1])
 
-    test_files_path = "/paddle/workspace/tdm-wz/data/demo_data/test_d"
+    test_files_path = "../data/demo_test_data/"
     filelist = [
         "{}/{}".format(test_files_path, x) for x in os.listdir(test_files_path)
     ]

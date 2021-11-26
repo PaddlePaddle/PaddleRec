@@ -25,13 +25,13 @@ runner:
   dataset_debug: False
   split_file_list: False
 
-  train_data_dir: "../data/demo_train/"
+  train_data_dir: "../data/demo_train_data/"
   train_reader_path: "reader"
 
   train_batch_size: 1  # 30000
   epochs: 1
   print_interval: 1   # 1000
-  model_save_path: "output_model_tdm_init"
+  model_save_path: "output_model_tdm_demo"
 
   use_out_vec: True
   emb_weight_name: "tdm.bw_emb.weight"
@@ -49,7 +49,7 @@ hyper_parameters:
   with_att: False
   # tree
   #sparse_feature_num: 4000001 
-  sparse_feature_num: 32767 
+  sparse_feature_num: 30100
   node_emb_size: 128
   item_nums: 69
   fea_group: "20,20,10,10,2,2,2,1,1,1"
@@ -63,3 +63,4 @@ hyper_parameters:
   tree_path: "../builder/tree.pb"
   with_hierachy: False
   topk: 100
+  id_slot: 1

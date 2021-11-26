@@ -67,7 +67,7 @@ os : linux
 ```shell
 cd ${PaddleRec_Home}/models/treebased/builder
 ./get_item.sh
-python builder/tree_index_builder.py --mode by_kmeans --input item_mini.txt --output ./tree.pb
+python tree_index_builder.py --mode by_kmeans --input item_mini.txt --output ./tree.pb
 ```
 执行上述命令之后，您会在builder文件夹下面看到如下结构：
 
