@@ -55,12 +55,13 @@ def get_strategy(config):
         strategy.a_sync = True
         strategy.a_sync_configs = {"use_ps_gpu": 1}
 
-    # strategy.trainer_desc_configs = {
-    #     "dump_fields_path": config.get("runner.dump_fields_path", ""),
-    #     "dump_fields": config.get("runner.dump_fields", []),
-    #     "dump_param": config.get("runner.dump_param", [])
-    # }
-    # print("strategy:", strategy.trainer_desc_configs)
+    strategy.trainer_desc_configs = {
+        "dump_fields_path": config.get("runner.dump_fields_path", ""),
+        "dump_fields": config.get("runner.dump_fields", []),
+        "dump_param": config.get("runner.dump_param", []),
+        "stat_var_names": config.get("stat_var_names", [])
+    }
+    print("strategy:", strategy.trainer_desc_configs)
     return strategy
 
 

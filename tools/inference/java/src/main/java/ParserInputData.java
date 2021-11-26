@@ -33,14 +33,14 @@ public class ParserInputData {
     public static int BATCH_SIZE = 2;
     public static final int BUFFER_MAX = 20480;
     public static int BATCH_NUM;
-    public static final int SLOT_NUM = 408;
+    public static final int SLOT_NUM = 300;
     public static BatchSample[] batchSamples = new BatchSample[BUFFER_MAX];
     public static TreeMap<String, Integer> feasignMap = new TreeMap<String, Integer>();
 
     public static void ReadInputData() {
         Integer[] slotIds = new Integer[SLOT_NUM];
         String[] inputVarnames =  new String[SLOT_NUM];
-        for (int i = 2; i <= 409; i++) {
+        for (int i = 2; i <= 301; i++) {
             inputVarnames[i - 2] = String.valueOf(i);
             slotIds[i - 2] = i;
         }

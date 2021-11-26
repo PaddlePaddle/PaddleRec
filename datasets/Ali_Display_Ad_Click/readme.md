@@ -1,5 +1,5 @@
 # Ali_Display_Ad_Click数据集
-Ali_Display_Ad_Click是阿里巴巴提供的一个淘宝展示广告点击率预估数据集
+[Ali_Display_Ad_Click](https://tianchi.aliyun.com/dataset/dataDetail?dataId=56)是阿里巴巴提供的一个淘宝展示广告点击率预估数据集
 
 ## 原始数据集介绍
 - 原始样本骨架raw_sample：淘宝网站中随机抽样了114万用户8天内的广告展示/点击日志（2600万条记录），构成原始的样本骨架
