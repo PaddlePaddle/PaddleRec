@@ -81,8 +81,9 @@ elif [ ${model_name} == "deepfm" ]; then
 
 elif [ ${model_name} == "ple" ]; then
     # prepare pretrained weights and dataset 
-    # TODO
-    # TODO
+    wget -nc -P  ./test_tipc/save_ple_model https://paddlerec.bj.bcebos.com/tipc/ple.tar
+    cd test_tipc/save_ple_model && tar -xvf ple.tar && rm -rf ple.tar && cd ../../
+
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
     if [ ${MODE} = "lite_train_lite_infer" ];then
@@ -99,8 +100,9 @@ elif [ ${model_name} == "ple" ]; then
 
 elif [ ${model_name} == "esmm" ]; then
     # prepare pretrained weights and dataset 
-    # TODO
-    # TODO
+    wget -nc -P  ./test_tipc/save_esmm_model https://paddlerec.bj.bcebos.com/esmm/esmm.tar
+    cd test_tipc/save_esmm_model && tar -xvf esmm.tar && rm -rf esmm.tar && cd ../../
+
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
     if [ ${MODE} = "lite_train_lite_infer" ];then

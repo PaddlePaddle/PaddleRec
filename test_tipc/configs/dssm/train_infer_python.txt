@@ -27,17 +27,17 @@ null:null
 ===========================infer_params===========================
 runner.model_save_path:
 runner.model_init_path:
-norm_export:-u tools/to_static.py -m ./models/rank/dssm/config_bigdata.yaml -o runner.CE=true
+norm_export:-u test_tipc/configs/dssm/to_static.py -m ./models/match/dssm/config.yaml -o runner.CE=true
 quant_export:null
 fpgm_export:null
 distill_export:null
 null:null
 null:null
 ##
-infer_model:test_tipc/save_deepfm_model
+infer_model:test_tipc/save_dssm_model
 infer_export:null
 infer_quant:False
-inference:-u tools/paddle_infer.py --model_name=deepfm --reader_file=models/rank/deepfm/criteo_reader.py
+inference:-u tools/paddle_infer.pp --model_name=dssm --reader_file=models/match/dssm/bq_reader_infer.py
 --use_gpu:True|False
 --enable_mkldnn:True|False
 --cpu_threads:1|6
