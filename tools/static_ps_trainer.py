@@ -146,15 +146,17 @@ class Main(object):
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
-            if model_dir and (not os.path.exists(model_dir)):
-                os.makedirs(model_dir)
-            logger.info("model_dir_wangzhen: {}".format(model_dir))
-            if fleet.is_first_worker(
-            ) and save_model_path and is_distributed_env():
-                fleet.save_inference_model(
-                    self.exe, model_dir,
-                    [feed.name for feed in self.input_data],
-                    self.inference_target_var)
+            if fleet.is_first_worker() and save_model_path:
+                if is_distributed_env():
+                    fleet.save_inference_model(
+                        self.exe, model_dir,
+                        [feed.name for feed in self.inference_feed_var],
+                        self.inference_target_var)
+                else:
+                    paddle.fluid.io.save_inference_model(
+                        model_dir,
+                        [feed.name for feed in self.inference_feed_var],
+                        [self.inference_target_var], self.exe)
             fleet.barrier_worker()
 
         if reader_type == "InmemoryDataset":
@@ -257,8 +259,10 @@ class Main(object):
             if batch_id % print_interval == 0:
                 metric_str = ""
                 for var_idx, var_name in enumerate(self.metrics):
-                    metric_str += "{}: {}, ".format(var_name,
-                                                    fetch_batch_var[var_idx])
+                    metric_str += "{}: {}, ".format(
+                        var_name, fetch_batch_var[var_idx]
+                        if var_name != "LOSS" or config['pure_bf16'] is False
+                        else bf16_to_fp32(fetch_batch_var[var_idx][0]))
                 logger.info(
                     "Epoch: {}, Batch_id: {}, ".format(epoch,
                                                        batch_id) + metric_str +

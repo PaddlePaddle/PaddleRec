@@ -1,19 +1,19 @@
 ===========================train_params===========================
-model_name:wide_deep
+model_name:deepfm
 python:python3.7
 gpu_list:0|-1
 runner.use_gpu:True|False
 auto_cast:False
-runner.epochs:lite_train_infer=4|whole_train_infer=4|whole_infer=4
+runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=1|whole_infer=1
 runner.model_save_path
-runner.train_batch_size:lite_train_infer=50|whole_train_infer=512|whole_infer=50
+runner.train_batch_size:lite_train_lite_infer=2|whole_train_whole_infer=512|whole_infer=2
 runner.infer_load_path:null
-train_model_name:3
-runner.test_data_dir:tests/data/infer
-runner.train_data_dir:../../../tests/data/train
+train_model_name:0
+runner.test_data_dir:test_tipc/data/infer
+runner.train_data_dir:../../../test_tipc/data/train
 ##
 trainer:norm_train
-norm_train:-u tools/trainer.py -m ./models/rank/wide_deep/config_bigdata.yaml -o runner.print_interval=2
+norm_train:-u tools/trainer.py -m ./models/rank/deepfm/config_bigdata.yaml -o runner.print_interval=2
 quant_train:null
 fpgm_train:null
 distill_train:null
@@ -27,17 +27,17 @@ null:null
 ===========================infer_params===========================
 runner.model_save_path:
 runner.model_init_path:
-norm_export:-u tools/to_static.py -m ./models/rank/wide_deep/config_bigdata.yaml -o runner.CE=true
+norm_export:-u tools/to_static.py -m ./models/rank/deepfm/config_bigdata.yaml -o runner.CE=true
 quant_export:null
 fpgm_export:null
 distill_export:null
 null:null
 null:null
 ##
-infer_model:tests/save_wide_deep_model
+infer_model:test_tipc/save_deepfm_model
 infer_export:null
 infer_quant:False
-inference:-u tools/paddle_infer.py --model_name=wide_deep --reader_file=models/rank/wide_deep/criteo_reader.py
+inference:-u tools/paddle_infer.py --model_name=deepfm --reader_file=models/rank/deepfm/criteo_reader.py
 --use_gpu:True|False
 --enable_mkldnn:True|False
 --cpu_threads:1|6
@@ -45,7 +45,7 @@ inference:-u tools/paddle_infer.py --model_name=wide_deep --reader_file=models/r
 --enable_tensorRT:True|False
 --precision:fp32
 --model_dir:
---data_dir:tests/data/infer
---save_log_path:./tests/output/
+--data_dir:test_tipc/data/infer
+--save_log_path:./test_tipc/output/
 --benchmark:True
 null:null

@@ -56,7 +56,7 @@ class Reader(fleet.MultiSlotDataGenerator):
             self.visit[slot] = False
 
     def slot_reader(self):
-        slot_num = 408
+        slot_num = 300
         slots = []
         if slot_num > 0:
             for i in range(2, slot_num + 2):
