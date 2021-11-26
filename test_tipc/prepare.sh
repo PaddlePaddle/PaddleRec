@@ -79,4 +79,68 @@ elif [ ${model_name} == "deepfm" ]; then
         cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
     fi
 
+elif [ ${model_name} == "dssm" ]; then
+    # prepare pretrained weights and dataset 
+    # 占位
+    # 占位
+
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/match/dssm/data/train/* ./test_tipc/data/train
+        cp -r ./models/match/dssm/data/test/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/BQ_dssm
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/BQ_dssm/big_train/* ./test_tipc/data/train
+        cp -r ./datasets/BQ_dssm/big_test/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/BQ_dssm
+        bash run.sh
+        cd ../..
+        cp -r ./models/match/dssm/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/BQ_dssm/big_test/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/BQ_dssm
+        bash run.sh
+        cd ../..
+        cp -r ./models/match/dssm/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/BQ_dssm/big_test/* ./test_tipc/data/infer
+    fi
+
+elif [ ${model_name} == "mmoe" ]; then
+    # prepare pretrained weights and dataset 
+    wget -nc -P  ./test_tipc/save_mmoe_model https://paddlerec.bj.bcebos.com/mmoe/mmoe.tar
+    cd test_tipc/save_mmoe_model && tar -xvf mmoe.tar && rm -rf mmoe.tar && cd ../../
+
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/multitask/mmoe/data/train/* ./test_tipc/data/train
+        cp -r ./models/multitask/mmoe/data/test/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/census
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/census/train_all/* ./test_tipc/data/train
+        cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/census
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/mmoe/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/census
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/mmoe/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
+    fi
+
 fi
