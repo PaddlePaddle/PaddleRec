@@ -79,6 +79,43 @@ elif [ ${model_name} == "deepfm" ]; then
         cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
     fi
 
+elif [ ${model_name} == "ple" ]; then
+    # prepare pretrained weights and dataset 
+    # TODO
+    # TODO
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/multitask/ple/data/train/* ./test_tipc/data/train
+        cp -r ./models/multitask/ple/data/test/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        echo "TODO"
+    elif [ ${MODE} = "whole_infer" ];then
+        echo "TODO"
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        echo "TODO"
+    fi
+
+elif [ ${model_name} == "esmm" ]; then
+    # prepare pretrained weights and dataset 
+    # TODO
+    # TODO
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/multitask/esmm/data/train/* ./test_tipc/data/train
+        cp -r ./models/multitask/esmm/data/test/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        echo "TODO"
+    elif [ ${MODE} = "whole_infer" ];then
+        echo "TODO"
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        echo "TODO"
+    fi
+
+
 elif [ ${model_name} == "dssm" ]; then
     # prepare pretrained weights and dataset 
     # 占位
