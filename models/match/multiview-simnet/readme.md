@@ -25,6 +25,7 @@
 注：在阅读该示例前，建议您先了解以下内容：
 
 [paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+[multiview-sminet](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/multiview-sminet.html)
 
 ## 内容
 
