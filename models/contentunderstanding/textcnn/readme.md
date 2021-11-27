@@ -19,8 +19,8 @@
 ├── senti_clas_reader.py #数据读取程序
 ```
 注：在阅读该示例前，建议您先了解以下内容：
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
-[textcnn](https://paddlerec20.readthedocs.io/en/readthedocs/models/contentunderstanding/textcnn.html)
+[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)    
+[textcnn](https://paddlerec20.readthedocs.io/en/readthedocs/models/contentunderstanding/textcnn.html)  
 
 
 ## 内容
