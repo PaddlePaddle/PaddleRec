@@ -53,7 +53,7 @@
    :name: Model introduction
 
    paddlerec/model_introduce.md
-   paddlerec/gru4rec.md
+   models/index.rst
    
 .. toctree::
    :maxdepth: 1

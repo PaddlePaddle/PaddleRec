@@ -1,31 +1,8 @@
 # multiview-simnet文本匹配模型
 
-以下是本例的简要目录结构及说明： 
-
-```
-├── data #样例数据
-    ├── train
-        ├── train.txt #训练数据样例
-    ├── test
-        ├── test.txt #测试数据样例
-    ├── preprocess.py #数据处理程序
-    ├── data_process.sh #一键数据处理脚本
-├── __init__.py
-├── README.md #文档
-├── config_bigdata.yaml #配置文件
-├── config.yaml #配置文件
-├── static_model.py # 构建静态图
-├── dygraph_model.py # 构建动态图
-├── run.sh #运行脚本,在效果复现时使用
-├── transform.py #整理格式准备计算指标的程序
-├── net.py # 模型核心组网（动静统一）
-├── bq_reader_train.py #训练时数据读取程序
-├── bq_reader_infer.py #预测时数据读取程序
-```
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
-[multiview-sminet](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/multiview-sminet.html)  
+代码请参考：[multiview-simnet文本匹配模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/match/multiview-simnet)  
+如果我们的代码对您有用，还请点个star啊~  
+关注我们，多少你能懂一点  
 
 ## 内容
 

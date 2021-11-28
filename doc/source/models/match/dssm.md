@@ -1,32 +1,8 @@
 # DSSM文本匹配模型
 
-以下是本例的简要目录结构及说明： 
-
-```
-├── data #样例数据
-    ├── train
-        ├── train.txt #训练数据样例
-    ├── test
-        ├── test.txt #测试数据样例
-    ├── preprocess.py #数据处理程序
-    ├── data_process #数据一键处理脚本
-├── __init__.py
-├── README.md #文档
-├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据配置
-├── net.py # 模型核心组网（动静统一）
-├── static_model.py # 构建静态图
-├── dygraph_model.py # 构建动态图
-├── transform.py #将数据整理成合适的格式方便计算指标
-├── run.sh #全量数据集中的训练脚本，从训练到预测并计算指标
-├── bq_reader_train.py #训练时数据读取程序
-├── bq_reader_infer.py #预测时数据读取程序
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
-[dssm](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/dssm.html)  
+代码请参考：[DSSM文本匹配模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/match/dssm)  
+如果我们的代码对您有用，还请点个star啊~  
+关注我们，多少你能懂一点  
 
 ## 内容
 
