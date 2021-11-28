@@ -1,28 +1,8 @@
 # tagspace文本分类模型
 
-以下是本例的简要目录结构及说明： 
-
-```
-├── data #样例数据
-    ├── train_data
-        ├── small_train.csv #训练数据样例
-    ├── test_data
-        ├── small_test.csv #测试数据样例
-    ├── text2paddle.py #数据处理程序
-├── __init__.py
-├── README.md #文档
-├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据配置
-├── net.py # 模型核心组网（动静统一）
-├── agnews_reader.py #数据读取程序
-├── static_model.py # 构建静态图
-├── dygraph_model.py # 构建动态图
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
-[tagespace](https://paddlerec20.readthedocs.io/en/readthedocs/models/contentunderstanding/tagspace.html)  
+代码请参考：[tagspace文本分类模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/contentunderstanding/tagspace)  
+如果我们的代码对您有用，还请点个star啊~  
+关注我们，多少你能懂一点  
 
 ## 内容
 
