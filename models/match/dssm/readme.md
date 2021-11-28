@@ -26,7 +26,7 @@
 注：在阅读该示例前，建议您先了解以下内容：
 
 [paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
-[dssm](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/dssm.html)  
+[dssm](https://paddlerec.readthedocs.io/en/latest/models/match/dssm.html)  
 
 ## 内容
 
