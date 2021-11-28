@@ -1,4 +1,4 @@
-# 基于GATE DNN模型的点击率预估模型
+# 基于GateNet模型的点击率预估模型
 
 以下是本例的简要目录结构及说明： 
 
@@ -65,7 +65,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在gatednn模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/rank/gatednn # 在任意目录均可运行
+# cd models/rank/gatenet # 在任意目录均可运行
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
@@ -79,11 +79,11 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 ## 模型组网
 ### 数据输入声明
-正如数据准备章节所介绍，Criteo数据集中，分为连续数据与离散（稀疏）数据，所以整体而言，GATE-DNN模型的数据输入层包括三个，分别是：`dense_input`用于输入连续数据，维度由超参数`dense_input_dim`指定，数据类型是归一化后的浮点型数据。`sparse_inputs`用于记录离散数据，在Criteo数据集中，共有26个slot，所以我们创建了名为`1~26`的26个稀疏参数输入，数据类型为整数；最后是每条样本的`label`，代表了是否被点击，数据类型是整数，0代表负样例，1代表正样例。
+正如数据准备章节所介绍，Criteo数据集中，分为连续数据与离散（稀疏）数据，所以整体而言，Gate-Net模型的数据输入层包括三个，分别是：`dense_input`用于输入连续数据，维度由超参数`dense_input_dim`指定，数据类型是归一化后的浮点型数据。`sparse_inputs`用于记录离散数据，在Criteo数据集中，共有26个slot，所以我们创建了名为`1~26`的26个稀疏参数输入，数据类型为整数；最后是每条样本的`label`，代表了是否被点击，数据类型是整数，0代表负样例，1代表正样例。
 
-### GATE-DNN模型组网
+### GateNet模型组网
 
-GATE-DNN模型主要组成是一个`Embedding`层,三个`FC`层，以及相应的分类任务的loss计算和auc计算。
+GateNet模型主要组成是一个`Embedding`层,三个`FC`层，以及相应的分类任务的loss计算和auc计算。
 
 #### Embedding层
 首先介绍Embedding层的搭建方式：`Embedding`层的输入是`sparse_input`，由超参的`sparse_feature_number`和`sparse_feature_dim`定义。需要特别解释的是`is_sparse`参数，当我们指定`is_sprase=True`后，计算图会将该参数视为稀疏参数，反向更新以及分布式通信时，都以稀疏的方式进行，会极大的提升运行效率，同时保证效果一致。
@@ -148,10 +148,10 @@ GATE-DNN模型主要组成是一个`Embedding`层,三个`FC`层，以及相应�
 在全量数据下模型的指标如下:  
 | 模型 | auc | batch_size | epoch_num| Time of each epoch| GateType|  
 | :------| :------ | :------ | :------| :------ | :------ |  
-| gateDnn | 0.7974 | 512 | 4 | 约5小时 | embeddingGate + hiddenGate |  
+| gatenet | 0.7974 | 512 | 4 | 约5小时 | embeddingGate + hiddenGate |  
 | dnn      | 0.7959 | 512 | 4 | 约2小时 | None                       |  
 
-1. 确认您当前所在目录为PaddleRec/models/rank/gateDnn  
+1. 确认您当前所在目录为PaddleRec/models/rank/gatenet 
 2. 进入paddlerec/datasets/criteo目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的Criteo全量数据集，并解压到指定文件夹。
 ```bash
 cd ../../../datasets/criteo
