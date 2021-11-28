@@ -2,7 +2,7 @@
 
 代码请参考：[tagspace文本分类模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/contentunderstanding/tagspace)  
 如果我们的代码对您有用，还请点个star啊~  
-关注我，多少你能懂一点  
+关注我们，多少你能懂一点  
 
 ## 内容
 

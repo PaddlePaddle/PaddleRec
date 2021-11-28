@@ -52,6 +52,7 @@
    :caption: 模型介绍
    :name: Model introduction
 
+   paddlerec/model_introduce.md
    models/index.rst
    
 .. toctree::
