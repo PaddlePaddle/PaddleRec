@@ -31,7 +31,7 @@ PaddleRec 模型库
 
    match/dssm.md
    match/match-pyramid.md
-   match/multiview-sminet.md
+   match/multiview-simnet.md
 
 
 召回
