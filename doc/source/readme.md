@@ -8,3 +8,6 @@
 [dssm](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/dssm.html)  
 [match-pyramid](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/match-pyramid.html)  
 [multiview-sminet](https://paddlerec20.readthedocs.io/en/readthedocs/models/match/multiview-sminet.html)  
+
+## 召回模型
+[gru4rec]() 
