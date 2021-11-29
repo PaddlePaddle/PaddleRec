@@ -5,9 +5,14 @@
 ├── treebased
 |   ├── builder                      生成树索引目录
 |   |   ├── tree_index_builder.py    生成树索引脚本
+|   |   ├── get_item.sh              下载建树所需item文件
 |   ├── data                         数据生成目录
 |   |   ├── data_cutter.py           数据切分脚本
 |   |   ├── data_generator.py        样本生成脚本
+|   |   ├── demo_train_data          demo训练集目录
+|   |   |   ├──train_data            demo训练集
+|   |   ├── demo_test_data           demo测试集目录
+|   |   |   ├──test_data             demo测试集
 |   ├── data_prepare.sh              下载数据及启动数据切分、样本生成脚本
 |   ├── jtm                          JTM算法目录
 |   ├── tdm                          TDM算法目录
@@ -41,8 +46,7 @@
 
 ## 数据准备
 
-训练及测试数据集选用[User Behavior Data from Taobao for Recommendation](https://tianchi.aliyun.com/dataset/dataDetail?dataId=649)。
-详细数据准备参看[快速开始]Step1，小数据可选用demo数据，全量数据可选用user_behaviour。
+目前提供了特定数据下的demo训练和测试数据；训练集中，前128位为浮点型数据，代表了历史物品对应的bert向量；最后一个整型数据为item id，代表用户会点击该物品。
 
 ## 运行环境
 
@@ -58,24 +62,22 @@ os : linux
 
 假定您PaddleRec所在目录为${PaddleRec_Home}。
 
-- Step1: 进入tree-based模型库文件夹下，完成demo数据集的切分、建树等准备工作。
+- Step1: 进入treebased/builde文件夹下，完成item文件下载、建树等准备工作。
 
 ```shell
-cd ${PaddleRec_Home}/models/treebased/
-./data_prepare.sh demo
+cd ${PaddleRec_Home}/models/treebased/builder
+./get_item.sh
+python tree_index_builder.py --mode by_kmeans --input item_mini.txt --output ./tree.pb
 ```
-demo数据集预处理一键命令为 `./data_prepare.sh demo` 。若对具体的数据处理、建树细节感兴趣，请查看    `data_prepare.sh` 脚本。这一步完成后，您会在 `${PaddleRec_Home}/models/treebased/` 目录下得到一个名为 `demo_data`的目录，该目录结构如下：
+执行上述命令之后，您会在builder文件夹下面看到如下结构：
 
 ```
-├── treebased
-├── demo_data
-|   ├── samples                      JTM Tree-Learning算法所需，
-|   |   ├── samples_{item_id}.json   记录了所有和item_id相关的训练集样本。
-|   ├── train_data                   训练集目录
-|   ├── test_data                    测试集目录
-|   ├── ItemCate.txt                 记录所有item的类别信息，用于初始化建树。
-|   ├── Stat.txt                     记录所有item在训练集中出现的频次信息，用于采样。
-|   ├── tree.pb                      预处理后，生成的初始化树文件
+├── builder
+|   ├── tree_index_builder.py    生成树索引脚本
+|   ├── get_item.sh              下载建树所需item文件
+|   ├── tree_emb.npy             树中各个节点的向量表示 
+|   ├── ids_id.txt               用于将item id转换成模型可识别id，具体细节可见tree_index_builder.py
+|   ├── tree.pb                  预处理后，生成的初始化树文件
 ```
 
 - Step2: 训练。config.yaml中配置了模型训练所有的超参，运行方式同PaddleRec其他模型静态图运行方式。当前树模型暂不支持动态图运行模式。
@@ -100,7 +102,7 @@ python get_leaf_embedding.py config.yaml  ./output_model_tdm_demo/0/ epoch_0_ite
 - Step5: 基于Step4得到的Item的Embedding，重新建树。命令如下所示。
 
 ```
-cd ../builder && python tree_index_builder.py --mode by_kmeans --input ../tdm/epoch_0_item_embedding.txt --output ../demo_data/new_tree.pb
+cd ../builder && python tree_index_builder.py --mode by_kmeans --input ../tdm/epoch_0_item_embedding.txt --output ./new_tree.pb
 ```
 
 - Step6: 修改config.yaml中tree文件的路径为最新tree.pb，返回Step2，开始新一轮的训练。

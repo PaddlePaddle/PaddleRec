@@ -16,22 +16,26 @@
 
 runner:
   sync_mode: "async"  # sync / async /geo / heter
-  thread_num: 16
+  thread_num: 1
   use_gpu: False
   
   model_path: "static_model.py"
-  reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
+  reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset
   pipe_command: "python reader.py"
   dataset_debug: False
   split_file_list: False
 
-  train_data_dir: "../demo_data/train_data"
+  train_data_dir: "../data/demo_train_data/"
   train_reader_path: "reader"
 
-  train_batch_size: 100  # 30000
-  epochs: 5
-  print_interval: 10   # 1000
+  train_batch_size: 1  # 30000
+  epochs: 1
+  print_interval: 1   # 1000
   model_save_path: "output_model_tdm_demo"
+
+  use_out_vec: True
+  emb_weight_name: "tdm.bw_emb.weight"
+  out_vec_path: "../builder/tree_emb.npy"
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -40,18 +44,23 @@ hyper_parameters:
     class: Adam
     learning_rate: 0.001
     strategy: async
+    lazy_mode: True
  
   with_att: False
   # tree
-  sparse_feature_num: 5171136
-  node_emb_size: 24
+  #sparse_feature_num: 4000001 
+  sparse_feature_num: 30100
+  node_emb_size: 128
   item_nums: 69
   fea_group: "20,20,10,10,2,2,2,1,1,1"
 
   start_sample_layer: 1
   seed: 0
-  tdm_layer_counts: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,19,22,25,30,76,200]
+  #tdm_layer_counts: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,19,22,25,30,76,200]
+  tdm_layer_counts: [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,12,12,20,20,20]
+
   tree_name: "demo"
-  tree_path: "../demo_data/tree.pb"
-  with_hierachy: True
+  tree_path: "../builder/tree.pb"
+  with_hierachy: False
   topk: 100
+  id_slot: 1

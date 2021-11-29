@@ -28,6 +28,8 @@ class TreeIndexBuilder:
     def __init__(self):
         self.branch = 2
         self.timeout = 5
+        self.id_emb = {}
+        self.code_id = {}
 
     def build_by_category(self, input_filename, output_filename):
         class Item:
@@ -74,7 +76,23 @@ class TreeIndexBuilder:
         gen_code(0, len(items), 0)
         ids = np.array([item.item_id for item in items])
         codes = np.array([item.code for item in items])
+        print('before build')
         self.build(output_filename, ids, codes)
+
+    def get_id_code(self, _path):
+        self.id_code = {}
+        with open(_path, 'r') as f:
+            for line in f:
+                line = line.strip().split()
+                key = line[1]
+                self.id_code[key] = int(line[0])
+
+    def codes_reader(self, path):
+        codes = []
+        with open(path, 'r') as f:
+            for line in f:
+                codes.append(line.strip())
+        return codes
 
     def tree_init_by_kmeans(self, input_filename, output_filename, parall=1):
         t1 = time.time()
@@ -118,6 +136,7 @@ class TreeIndexBuilder:
             p.join()
 
         assert (queue.empty())
+
         self.build(output_filename, self.ids, self.codes, data=self.data)
 
     def _train(self, pipe, queue):
@@ -225,23 +244,130 @@ class TreeIndexBuilder:
         mid = int(len(idx) / 2)
         return idx[mid:], idx[:mid]
 
+    def get_id_emb_bk(self, id, leaf_left, leaf_right):
+        if self.id_emb.get(id) is not None:
+            return self.id_emb[id]
+        if id > leaf_right:
+            return None
+        if id >= leaf_left and id <= leaf_right and (id in self.codes):
+            if self.id_emb.get(id) is not None:
+                return self.id_emb[id]
+            else:
+                return None
+        id_left_child = self.get_id_emb(2 * id + 1, leaf_left, leaf_right)
+        id_right_child = self.get_id_emb(2 * id + 2, leaf_left, leaf_right)
+
+        if id_left_child is not None and id_right_child is not None:
+            tmp = []
+            for i in range(len(id_left_child)):
+                tmp.append(float(id_left_child[i] + id_right_child[i]) / 2)
+            assert tmp[0] != ' ', 'tmp!!!'
+            self.id_emb[id] = tmp
+        elif id_left_child is not None:
+            self.id_emb[id] = id_left_child
+            if id == 8191:
+                print('left!!!')
+            assert len(id_left_child), 'left!!!'
+        elif id_right_child is not None:
+            if id == 8191:
+                print('right!!!')
+            self.id_emb[id] = id_right_child
+            assert len(id_right_child), 'right!!!'
+        else:
+            return None
+        if self.id_emb.get(id):
+            assert len(self.id_emb[id]), 'return!!!'
+            return self.id_emb[id]
+        else:
+            return None
+
+    def assign_value(self, k):
+        res = 0.0
+        tmp = []
+        if self.id_emb.get(2 * k + 1) is not None and self.id_emb.get(
+                2 * k + 2) is not None:
+            for i in range(len(self.id_emb[2 * k + 1])):
+                tmp.append(
+                    float(self.id_emb[2 * k + 1][i] + self.id_emb[2 * k + 2][
+                        i]) / 2)
+            self.id_emb[k] = tmp
+        elif self.id_emb.get(2 * k + 1) is not None:
+            self.id_emb[k] = self.id_emb[2 * k + 1]
+        elif self.id_emb.get(2 * k + 2) is not None:
+            self.id_emb[k] = self.id_emb[2 * k + 2]
+        else:
+            print('nonLeafNode should have real_child!!!!', k)
+            exit(0)
+
+    def get_id_emb(self, id, leaf_left, leaf_right):
+        last_nonleaf_node = int((leaf_right - 1) / 2)
+        node_point = last_nonleaf_node
+        while node_point:
+            self.assign_value(node_point)
+            node_point -= 1
+        assert node_point == 0, 'it have shoule been root node!!!'
+        self.assign_value(node_point)
+
+    def save_node_info(self, codes, data, ids, id_offset, leaf_left,
+                       leaf_right):
+        data = data.tolist()
+        for code, vec in zip(codes, data):
+            assert len(vec), 'vec!!!'
+            self.id_emb[code] = vec
+
+        print('leaf_left: ', leaf_left)
+        print('leaf_right: ', leaf_right)
+
+        print('befor dic len: ', len(self.id_emb))
+        self.get_id_emb(0, leaf_left, leaf_right)
+        len_dic = len(self.id_emb)
+        print('dic len: ', len_dic)
+
+        #tree_emb_np = np.zeros((len(self.id_emb), 128))
+        tree_emb_ = []
+        cnt = 0
+        for i in range(leaf_right + 1):
+            if self.id_emb.get(i) is not None:
+                #tree_emb_np[cnt] = self.id_emb[i]
+                tree_emb_.append(self.id_emb[i])
+                self.code_id[i] = cnt
+                cnt = cnt + 1
+        tree_emb_np = np.array(tree_emb_).astype(np.float32)
+        #tree_emb_np = np.zeros((leaf_right + 1, 128))
+        #for key in self.id_emb.keys():
+        #    tree_emb_np[key] = np.array(self.id_emb[key])
+        np.save('./tree_emb.npy', tree_emb_np)
+
+        with open('ids_id.txt', 'w') as f:
+            for i in range(len(codes)):
+                f.write(
+                    str(ids[i]) + '\t' + str(self.code_id[codes[i]]) + '\n')
+        f.close()
+
     def build(self, output_filename, ids, codes, data=None, id_offset=None):
         # process id offset
+        '''
         if not id_offset:
             max_id = 0
             for id in ids:
                 if id > max_id:
                     max_id = id
             id_offset = max_id + 1
+        '''
 
         # sort by codes
+        '''
         argindex = np.argsort(codes)
         codes = codes[argindex]
         ids = ids[argindex]
+        data = data[argindex]
+        '''
 
         # Trick, make all leaf nodes to be in same level
         min_code = 0
         max_code = codes[-1]
+        for i in codes:
+            max_code = max(i, max_code)
         while max_code > 0:
             min_code = min_code * self.branch + 1
             max_code = int((max_code - 1) / self.branch)
@@ -249,15 +375,25 @@ class TreeIndexBuilder:
         for i in range(len(codes)):
             while codes[i] < min_code:
                 codes[i] = codes[i] * self.branch + 1
+        leaf_left = codes[0]
+        leaf_right = codes[0]
+        for i in codes:
+            leaf_left = min(i, leaf_left)
+            leaf_right = max(i, leaf_right)
 
+        if not id_offset:
+            id_offset = leaf_right - leaf_left + 1
+
+        self.save_node_info(codes, data, ids, id_offset, leaf_left, leaf_right)
         filter_set = set()
         max_level = 0
         tree_meta = index_dataset_pb2.TreeMeta()
-
+        print('reading...')
         with open(output_filename, 'wb') as f:
-            for id, code in zip(ids, codes):
+            for num, (item_name, code) in enumerate(zip(ids, codes)):
                 node = index_dataset_pb2.IndexNode()
-                node.id = id
+                node.id = self.code_id[code]
+                node.item_name = str(item_name)
                 node.is_leaf = True
                 node.probability = 1.0
 
@@ -273,7 +409,7 @@ class TreeIndexBuilder:
                 for ancessor in ancessors:
                     if ancessor not in filter_set:
                         node = index_dataset_pb2.IndexNode()
-                        node.id = id_offset + ancessor  # id = id_offset + code
+                        node.id = ancessor  # id = id_offset + code
                         node.is_leaf = False
                         node.probability = 1.0
                         kv_item = index_dataset_pb2.KVItem()
@@ -322,9 +458,13 @@ if __name__ == '__main__':
     parser.add_argument("--output", required=True, help="output filename")
 
     args = parser.parse_args()
+    t1 = time.time()
     if args.mode == "by_category":
         builder = TreeIndexBuilder()
         builder.build_by_category(args.input, args.output)
     elif args.mode == "by_kmeans":
         builder = TreeIndexBuilder()
         builder.tree_init_by_kmeans(args.input, args.output, args.parallel)
+    t2 = time.time()
+    print('DONE!')
+    print('spend {} seconds!'.format(t2 - t1))
