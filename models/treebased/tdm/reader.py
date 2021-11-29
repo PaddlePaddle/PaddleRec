@@ -22,7 +22,7 @@ import time
 import sys
 import paddle.distributed.fleet as fleet
 import logging
-from paddle.distributed.fleet.dataset import TreeIndex
+#from paddle.distributed.fleet.dataset import TreeIndex
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -40,38 +40,55 @@ class MyDataset(fleet.MultiSlotDataGenerator):
             "hyper_parameters.start_sample_layer", 1)
         self.with_hierachy = config.get("hyper_parameters.with_hierachy", True)
         self.seed = config.get("hyper_parameters.seed", 0)
-
+        '''
         self.tree = TreeIndex(
             config.get("hyper_parameters.tree_name"),
             config.get("hyper_parameters.tree_path"))
-        self.tree.init_layerwise_sampler(self.sample_layer_counts,
-                                         self.start_sample_layer, self.seed)
+        '''
+        self.get_id_code('../builder/ids_id.txt')
+
+    def get_id_code(self, _path):
+        self.id_code = {}
+        with open(_path, 'r') as f:
+            for line in f:
+                line = line.strip().split()
+                key = line[0]
+                self.id_code[key] = int(line[1])
 
     def line_process(self, line):
-        history_ids = [0] * (self.item_nums)
-        features = line.strip().split("\t")
-        item_id = int(features[1])
-        for item in features[2:]:
-            slot, feasign = item.split(":")
-            slot_id = int(slot.split("_")[1])
-            history_ids[slot_id - 1] = int(feasign)
-        res = self.tree.layerwise_sample([history_ids], [item_id],
-                                         self.with_hierachy)
+        #history_ids = [0] * (self.item_nums)
+        history_ids = []
+        features = line.strip().split(' ')
+        item_id = self.id_code[features[-1]]
+        for item in features[0:-1]:
+            history_ids.append(float(item))
+        #positive data 
+        label = 1
+        res = []
+        res.append(history_ids)
+        res.append(item_id)
+        res.append(label)
+
         return res
 
     def generate_sample(self, line):
         "Dataset Generator"
 
         def reader():
-            output_list = self.line_process(line)
+            _ = self.line_process(line)
             feature_name = []
-            for i in range(self.item_nums):
-                feature_name.append("item_" + str(i + 1))
+            #for i in range(self.item_nums):
+            #    feature_name.append("item_" + str(i + 1))
+            feature_name.append("user_item")
             feature_name.append("unit_id")
             feature_name.append("label")
-            for _ in output_list:
-                output = [[item] for item in _]
-                yield zip(feature_name, output)
+            #output_list.reverse()
+            output = []
+            #tmp = _[:-2]
+            output.append(_[0])
+            output.append([int(_[-2])])
+            output.append([int(_[-1])])
+            yield zip(feature_name, output)
 
         return reader
 
