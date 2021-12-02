@@ -66,7 +66,6 @@ class LoadData(object):
         '''
         length_user = 0
         length_item = 0
-        length_item = 0
         f = open(self.trainfile)
         line = f.readline()
         while line:

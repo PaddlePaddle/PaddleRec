@@ -17,7 +17,6 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 import numpy as np
 import math
-from paddlenlp.ops import einsum
 
 default_type = paddle.get_default_dtype()
 
@@ -61,13 +60,10 @@ class ENSFMLayer(nn.Layer):
         user_bias = self.user_bias(input_u).sum(1)
         item_bias = self.item_bias(item_attribute).sum(1)
 
-        # I = paddle.ones([input_u.shape[0], 1])
-        I = paddle.ones_like(input_u[:, :1], dtype=default_type)
-        # print(summed_user_emb.shape, (user_cross+user_bias).shape, I.shape)
+        I = paddle.ones([input_u.shape[0], 1])
         p_emb = paddle.concat([summed_user_emb, user_cross_score + user_bias + self.bias, I], 1)
 
-        # I = paddle.ones([summed_all_item_emb.shape[0], 1])
-        I = paddle.ones_like(summed_all_item_emb[:, :1], dtype=default_type)
+        I = paddle.ones([summed_all_item_emb.shape[0], 1])
         q_emb = paddle.concat([summed_all_item_emb, I, item_cross_score + item_bias], 1)
 
         H_i_emb = paddle.concat([self.H_i, paddle.ones([2, 1])], 0)

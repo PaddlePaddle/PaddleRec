@@ -152,12 +152,9 @@ def main(args):
         infer_reader_cost = 0.0
         infer_run_cost = 0.0
         reader_start = time.time()
-
         for batch_id, batch in enumerate(test_dataloader()):
-
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
-            batch_size = len(batch[0])
             metric_list, tensor_print_dict = dy_model_class.infer_forward(
                 dy_model, metric_list, batch, config)
 
@@ -192,7 +189,7 @@ def main(args):
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
                     format(infer_reader_cost / print_interval, (
                             infer_reader_cost + infer_run_cost) / print_interval,
-                           infer_batch_size, print_interval * batch_size / (
+                           infer_batch_size, print_interval * infer_batch_size / (
                                    time.time() - interval_begin)))
                 interval_begin = time.time()
                 infer_reader_cost = 0.0
