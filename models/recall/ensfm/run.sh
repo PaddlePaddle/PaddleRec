@@ -12,6 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-echo "................run................."
+echo ".................run.................."
 python -u ../../../tools/trainer.py -m config_bigdata.yaml  &> log_train.txt
 python -u infer.py -m config.yaml &> result.txt
