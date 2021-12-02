@@ -17,12 +17,13 @@
         ├── ml-1m
             ├── train.zip #训练数据
             ├── test.csv #训练数据
-├── readme.md #文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据数据配置
-├── net.py # 模型核心组网（动静统一）
-├── movielens_reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
+├── infer.py # 预测脚本
+├── movielens_reader.py #数据读取程序
+├── net.py # 模型核心组网（动静统一）
+├── readme.md #文档
 ├── run.sh # 一键运行脚本
 ```
 
