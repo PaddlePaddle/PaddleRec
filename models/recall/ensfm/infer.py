@@ -25,18 +25,16 @@ print(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 sys.path.append(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
 
-
 from tools.utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from tools.utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
+import numpy as np
 from importlib import import_module
-
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 # def create_data_loader(args):
 #     data_dir = args['runner.train_data_dir']
@@ -51,6 +49,7 @@ logger = logging.getLogger(__name__)
 #     loader = DataLoader(
 #         dataset, batch_size=batchsize,drop_last=False)
 #     return loader
+
 
 def create_data_loader(config, place, mode="train"):
     config['runner.mode'] = 'test'
@@ -113,8 +112,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, use_xpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-            format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
-                   start_epoch, end_epoch, print_interval, model_load_path))
+        format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
+               start_epoch, end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
@@ -135,14 +134,14 @@ def main(args):
 
     logger.info("read data")
     print(config)
-    test_dataloader = create_data_loader(
-        config, place)
+    test_dataloader = create_data_loader(config, place)
 
     epoch_begin = time.time()
     interval_begin = time.time()
 
     metric_list, metric_list_name = dy_model_class.create_metrics()
     step_num = 0
+    dataset = test_dataloader.dataset
 
     for epoch_id in range(start_epoch, end_epoch):
         logger.info("load model epoch {}".format(epoch_id))
@@ -152,6 +151,12 @@ def main(args):
         infer_reader_cost = 0.0
         infer_run_cost = 0.0
         reader_start = time.time()
+        recall50 = []
+        recall100 = []
+        recall200 = []
+        ndcg50 = []
+        ndcg100 = []
+        ndcg200 = []
         for batch_id, batch in enumerate(test_dataloader()):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
@@ -161,58 +166,66 @@ def main(args):
             infer_run_cost += time.time() - infer_start
 
             if batch_id % print_interval == 0:
-                tensor_print_str = ""
-                if tensor_print_dict is not None:
-                    for var_name, var in tensor_print_dict.items():
-                        tensor_print_str += (
-                                "{}:".format(var_name) +
-                                str(var.numpy()).strip("[]") + ",")
-                        if use_visual:
-                            log_visual.add_scalar(
-                                tag="infer/" + var_name,
-                                step=step_num,
-                                value=var.numpy())
-                metric_str = ""
-                for metric_id in range(len(metric_list_name)):
-                    metric_str += (
-                            metric_list_name[metric_id] +
-                            ": {:.6f},".format(metric_list[metric_id].accumulate())
-                    )
-                    if use_visual:
-                        log_visual.add_scalar(
-                            tag="infer/" + metric_list_name[metric_id],
-                            step=step_num,
-                            value=metric_list[metric_id].accumulate())
                 logger.info(
-                    "epoch: {}, batch_id: {}, ".format(
-                        epoch_id, batch_id) + metric_str + tensor_print_str +
+                    "epoch: {}, batch_id: {}, ".format(epoch_id, batch_id) +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
                     format(infer_reader_cost / print_interval, (
-                            infer_reader_cost + infer_run_cost) / print_interval,
-                           infer_batch_size, print_interval * infer_batch_size / (
-                                   time.time() - interval_begin)))
+                        infer_reader_cost + infer_run_cost) / print_interval,
+                           infer_batch_size, print_interval * infer_batch_size
+                           / (time.time() - interval_begin)))
                 interval_begin = time.time()
                 infer_reader_cost = 0.0
                 infer_run_cost = 0.0
             step_num = step_num + 1
-            reader_start = time.time()
+            pre = tensor_print_dict['prediction']
+            u_batch = tensor_print_dict['user']
 
-        metric_str = ""
-        for metric_id in range(len(metric_list_name)):
-            metric_str += (
-                    metric_list_name[metric_id] +
-                    ": {:.6f},".format(metric_list[metric_id].accumulate()))
+            pre = pre.cpu().numpy()
+            pre = np.delete(pre, -1, axis=1)
+
+            user_id = []
+            for one in u_batch.cpu().numpy():
+                user_id.append(dataset.data.binded_users["-".join(
+                    [str((item)) for item in one[0:]])])
+
+            idx = np.zeros_like(pre, dtype=bool)
+            idx[dataset.data.Train_data[user_id].nonzero()] = True
+            pre[idx] = -np.inf
+
+            recall = []
+
+            for kj in [5, 10, 20]:
+                idx_topk_part = np.argpartition(-pre, kj, 1)
+
+                pre_bin = np.zeros_like(pre, dtype=bool)
+                pre_bin[np.arange(len(u_batch))[:, np.newaxis],
+                        idx_topk_part[:, :kj]] = True
+
+                true_bin = np.zeros_like(pre, dtype=bool)
+                true_bin[dataset.data.Test_data[user_id].nonzero()] = True
+
+                tmp = (np.logical_and(true_bin, pre_bin).sum(
+                    axis=1)).astype(np.float32)
+                recall.append(tmp / np.minimum(kj, true_bin.sum(axis=1)))
+
+            recall50.append(recall[0])
+            recall100.append(recall[1])
+            recall200.append(recall[2])
+
+            reader_start = time.time()
+        recall50 = np.hstack(recall50).mean()
+        recall100 = np.hstack(recall100).mean()
+        recall200 = np.hstack(recall200).mean()
+
+        metric_str = "HR@5 : {:.4f},".format(
+            recall50) + " HR@10 : {:.4f},".format(
+                recall100) + " HR@20 : {:.4f},".format(recall200)
 
         tensor_print_str = ""
-        if tensor_print_dict is not None:
-            for var_name, var in tensor_print_dict.items():
-                tensor_print_str += (
-                        "{}:".format(var_name) + str(var.numpy()).strip("[]") + ","
-                )
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     tensor_print_str + " epoch time: {:.2f} s".format(
-            time.time() - epoch_begin))
+                        time.time() - epoch_begin))
         epoch_begin = time.time()
 
 

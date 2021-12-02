@@ -18,16 +18,16 @@ runner:
   train_batch_size: 512
   model_save_path: "output_model_ensfm"
   mode: "train"
-  use_gpu: False
+  use_gpu: True
   epochs: 501
   print_interval: 10
   
-  test_data_dir: "data/ml-1m-ensfmgit"
+  test_data_dir: "data/ml-1m-ensfm"
   infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 1
+  infer_batch_size: 128
   infer_load_path: "output_model_ensfm"
-  infer_start_epoch: 80
-  infer_end_epoch: 120
+  infer_start_epoch: 50
+  infer_end_epoch: 400
 
 hyper_parameters:
   optimizer: 
