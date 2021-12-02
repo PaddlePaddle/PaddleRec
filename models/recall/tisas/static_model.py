@@ -53,13 +53,15 @@ class StaticModel():
         return log_seqs, time_matrices, pos_seqs, neg_seqs
 
     def net(self, input, is_infer=False):
-        model = TiSASRecLayer(self.num_users, self.num_items, self.hidden_units, self.maxlen, self.time_span,
+        model = TiSASRecLayer(self.num_users, self.num_items,
+                              self.hidden_units, self.maxlen, self.time_span,
                               self.num_blocks, self.num_heads)
 
         if is_infer:
             prediction = model(*input)
         else:
-            prediction = model(input[0], input[1], pos_seqs=input[2], neg_seqs=input[3])
+            prediction = model(
+                input[0], input[1], pos_seqs=input[2], neg_seqs=input[3])
 
         self.inference_target_var = prediction
         if is_infer:
@@ -90,7 +92,12 @@ class StaticModel():
     def create_loss(self, prediction, mask):
         loss_fct = paddle.nn.BCEWithLogitsLoss()
         pos_logits, neg_logits = prediction
-        pos_labels, neg_labels = paddle.ones_like(pos_logits), paddle.zeros_like(neg_logits)
-        loss = loss_fct(paddle.masked_select(pos_logits, mask), paddle.masked_select(pos_labels, mask))
-        loss += loss_fct(paddle.masked_select(neg_logits, mask), paddle.masked_select(neg_labels, mask))
+        pos_labels, neg_labels = paddle.ones_like(
+            pos_logits), paddle.zeros_like(neg_logits)
+        loss = loss_fct(
+            paddle.masked_select(pos_logits, mask),
+            paddle.masked_select(pos_labels, mask))
+        loss += loss_fct(
+            paddle.masked_select(neg_logits, mask),
+            paddle.masked_select(neg_labels, mask))
         return loss

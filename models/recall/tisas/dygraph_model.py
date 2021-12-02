@@ -29,7 +29,9 @@ class DygraphModel():
         time_span = config.get("hyper_parameters.time_span")
         num_blocks = config.get("hyper_parameters.num_blocks")
         num_heads = config.get("hyper_parameters.num_heads")
-        enc_fm_model = net.TiSASRecLayer(num_users, num_items, hidden_units, maxlen, time_span, num_blocks, num_heads)
+        enc_fm_model = net.TiSASRecLayer(num_users, num_items, hidden_units,
+                                         maxlen, time_span, num_blocks,
+                                         num_heads)
         return enc_fm_model
 
     # define feeds which convert numpy of batch data to paddle.tensor 
@@ -40,15 +42,24 @@ class DygraphModel():
     def create_loss(self, prediction, mask):
         loss_fct = paddle.nn.BCEWithLogitsLoss()
         pos_logits, neg_logits = prediction
-        pos_labels, neg_labels = paddle.ones_like(pos_logits), paddle.zeros_like(neg_logits)
-        loss = loss_fct(paddle.masked_select(pos_logits, mask), paddle.masked_select(pos_labels, mask))
-        loss += loss_fct(paddle.masked_select(neg_logits, mask), paddle.masked_select(neg_labels, mask))
+        pos_labels, neg_labels = paddle.ones_like(
+            pos_logits), paddle.zeros_like(neg_logits)
+        loss = loss_fct(
+            paddle.masked_select(pos_logits, mask),
+            paddle.masked_select(pos_labels, mask))
+        loss += loss_fct(
+            paddle.masked_select(neg_logits, mask),
+            paddle.masked_select(neg_labels, mask))
         return loss
 
     # define optimizer 
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
-        optimizer = paddle.optimizer.Adam(parameters=dy_model.parameters(), learning_rate=lr, beta1=0.9, beta2=0.98)
+        optimizer = paddle.optimizer.Adam(
+            parameters=dy_model.parameters(),
+            learning_rate=lr,
+            beta1=0.9,
+            beta2=0.98)
         return optimizer
 
     # define metrics such as auc/acc
@@ -63,7 +74,8 @@ class DygraphModel():
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         inputs = self.create_feeds(batch_data)
         seq, time_matrix, pos, neg = inputs
-        prediction = dy_model.forward(seq, time_matrix, pos_seqs=pos, neg_seqs=neg)
+        prediction = dy_model.forward(
+            seq, time_matrix, pos_seqs=pos, neg_seqs=neg)
         mask = pos != 0
         loss = self.create_loss(prediction, mask)
         # update metrics

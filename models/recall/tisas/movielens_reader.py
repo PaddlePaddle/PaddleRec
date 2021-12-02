@@ -36,7 +36,8 @@ class RecDataset(Dataset):
             file_list[0])
         self.maxlen = config.get("hyper_parameters.maxlen")
         self.time_span = config.get("hyper_parameters.time_span")
-        self.relation_matrix = Relation(self.user_train, self.usernum, self.maxlen, self.time_span)
+        self.relation_matrix = Relation(self.user_train, self.usernum,
+                                        self.maxlen, self.time_span)
         self.mode = config.get("runner.mode", 'test')
         if self.mode == 'test':
             self.test_users = []
@@ -44,7 +45,10 @@ class RecDataset(Dataset):
             if self.usernum > 10000:
                 user_idx = np.random.sample(user_idx, 10000)
 
-            self.test_users = [u for u in user_idx if len(self.user_train[u]) > 0 or len(self.user_train[u]) > 0]
+            self.test_users = [
+                u for u in user_idx
+                if len(self.user_train[u]) > 0 or len(self.user_train[u]) > 0
+            ]
 
     def __getitem__(self, idx):
         if self.mode == 'train':
@@ -171,7 +175,8 @@ def cleanAndsort(User, time_map):
 
     User_res = dict()
     for user, items in User_filted.items():
-        User_res[user_map[user]] = list(map(lambda x: [item_map[x[0]], time_map[x[1]]], items))
+        User_res[user_map[user]] = list(
+            map(lambda x: [item_map[x[0]], time_map[x[1]]], items))
 
     time_max = set()
     for user, items in User_res.items():
@@ -242,6 +247,7 @@ def data_partition(fname):
             user_test[user] = []
             user_test[user].append(User[user][-1])
     return [user_train, user_valid, user_test, usernum, itemnum, timenum]
+
 
 # def evaluate(model, dataset, args):
 #     [train, valid, test, usernum, itemnum, timenum] = copy.deepcopy(dataset)

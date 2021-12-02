@@ -25,18 +25,15 @@ print(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 sys.path.append(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
 
-
 from tools.utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from tools.utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 from importlib import import_module
 
-
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 # def create_data_loader(args):
 #     data_dir = args['runner.train_data_dir']
@@ -51,6 +48,7 @@ logger = logging.getLogger(__name__)
 #     loader = DataLoader(
 #         dataset, batch_size=batchsize,drop_last=False)
 #     return loader
+
 
 def create_data_loader(config, place, mode="train"):
     config['runner.mode'] = 'test'
@@ -113,8 +111,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, use_xpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-            format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
-                   start_epoch, end_epoch, print_interval, model_load_path))
+        format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
+               start_epoch, end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
@@ -135,8 +133,7 @@ def main(args):
 
     logger.info("read data")
     print(config)
-    test_dataloader = create_data_loader(
-        config, place)
+    test_dataloader = create_data_loader(config, place)
 
     epoch_begin = time.time()
     interval_begin = time.time()
@@ -165,8 +162,8 @@ def main(args):
                 if tensor_print_dict is not None:
                     for var_name, var in tensor_print_dict.items():
                         tensor_print_str += (
-                                "{}:".format(var_name) +
-                                str(var.numpy()).strip("[]") + ",")
+                            "{}:".format(var_name) +
+                            str(var.numpy()).strip("[]") + ",")
                         if use_visual:
                             log_visual.add_scalar(
                                 tag="infer/" + var_name,
@@ -175,8 +172,8 @@ def main(args):
                 metric_str = ""
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
-                            metric_list_name[metric_id] +
-                            ": {:.6f},".format(metric_list[metric_id].accumulate())
+                        metric_list_name[metric_id] +
+                        ": {:.6f},".format(metric_list[metric_id].accumulate())
                     )
                     if use_visual:
                         log_visual.add_scalar(
@@ -188,9 +185,9 @@ def main(args):
                         epoch_id, batch_id) + metric_str + tensor_print_str +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
                     format(infer_reader_cost / print_interval, (
-                            infer_reader_cost + infer_run_cost) / print_interval,
-                           infer_batch_size, print_interval * infer_batch_size / (
-                                   time.time() - interval_begin)))
+                        infer_reader_cost + infer_run_cost) / print_interval,
+                           infer_batch_size, print_interval * infer_batch_size
+                           / (time.time() - interval_begin)))
                 interval_begin = time.time()
                 infer_reader_cost = 0.0
                 infer_run_cost = 0.0
@@ -200,19 +197,19 @@ def main(args):
         metric_str = ""
         for metric_id in range(len(metric_list_name)):
             metric_str += (
-                    metric_list_name[metric_id] +
-                    ": {:.6f},".format(metric_list[metric_id].accumulate()))
+                metric_list_name[metric_id] +
+                ": {:.6f},".format(metric_list[metric_id].accumulate()))
 
         tensor_print_str = ""
         if tensor_print_dict is not None:
             for var_name, var in tensor_print_dict.items():
                 tensor_print_str += (
-                        "{}:".format(var_name) + str(var.numpy()).strip("[]") + ","
+                    "{}:".format(var_name) + str(var.numpy()).strip("[]") + ","
                 )
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     tensor_print_str + " epoch time: {:.2f} s".format(
-            time.time() - epoch_begin))
+                        time.time() - epoch_begin))
         epoch_begin = time.time()
 
 
