@@ -7,24 +7,14 @@
     ├── sample_data
         ├── train.csv #训练数据样例
         ├── test.csv #训练数据样例
-    ├── whole_data
-        ├── frappe
-            ├── train.csv #训练数据
-            ├── test.csv #训练数据
-        ├── lastfm
-            ├── train.csv #训练数据
-            ├── test.csv #训练数据
-        ├── ml-1m
-            ├── train.zip #训练数据
-            ├── test.csv #训练数据
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据数据配置
+├── download.sh # 下载全量数据
 ├── dygraph_model.py # 构建动态图
 ├── infer.py # 预测脚本
 ├── movielens_reader.py #数据读取程序
 ├── net.py # 模型核心组网（动静统一）
 ├── readme.md #文档
-├── run.sh # 一键运行脚本
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -72,13 +62,14 @@ python -u infer.py -m config.yaml
 | ENSFM | 0.0601 | 0.1024 | 512 | 500 | 约2分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/recall/ensfm  
-2. unzip data/whole_data/ml-1m/train.csv.zip -d data/whole_data/ml-1m
+2. 执行脚本 "sh download.sh"
 3. 切回模型目录,执行命令运行全量数据
 
 ```bash
 cd - # 切回模型目录
 # 动态图训练并得到指标(这里需要使用bash启动脚本)
-bash run.sh
+python -u ../../../tools/trainer.py -m config_bigdata.yaml
+python -u infer.py -m config_bigdata.yaml
 ```
 
 ## 进阶使用

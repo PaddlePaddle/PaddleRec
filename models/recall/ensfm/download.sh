@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-echo ".................run.................."
-python -u ../../../tools/trainer.py -m config_bigdata.yaml  &> log_train.txt
-python -u infer.py -m config.yaml &> result.txt
+#!/bin/bash
+
+
+wget https://paddlerec.bj.bcebos.com/recall/ensfm/ml-1m-ensfm.tar.gz
+tar zxvf ml-1m-ensfm.tar.gz -C data
+rm ml-1m-ensfm.tar.gz

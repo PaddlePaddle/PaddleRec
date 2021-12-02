@@ -13,7 +13,7 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/whole_data/ml-1m"
+  train_data_dir: "data/ml-1m-ensfm"
   train_reader_path: "movielens_reader"  # importlib format
   train_batch_size: 512
   model_save_path: "output_model_ensfm"
@@ -22,7 +22,7 @@ runner:
   epochs: 501
   print_interval: 10
   
-  test_data_dir: "data/whole_data/ml-1m"
+  test_data_dir: "data/ml-1m-ensfmgit"
   infer_reader_path: "movielens_reader"  # importlib format
   infer_batch_size: 1
   infer_load_path: "output_model_ensfm"
