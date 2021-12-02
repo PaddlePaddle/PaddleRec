@@ -1,4 +1,4 @@
-# NCF召回模型
+# ENSFM召回模型
 
 以下是本例的简要目录结构及说明： 
 
@@ -19,7 +19,7 @@
             ├── test.csv #训练数据
 ├── readme.md #文档
 ├── config.yaml # sample数据配置
-├── config_test.yaml # 预测时数据配置
+├── config_bigdata.yaml # 全量数据数据配置
 ├── net.py # 模型核心组网（动静统一）
 ├── movielens_reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
@@ -44,7 +44,6 @@
 ENSFM 是一个只有一层预测层的浅 FM 模型，跟 DeepFM, CFM 相比在复杂度和参数量上都更少，却在模型效果上表现显著的优势。结果验证了论文的观点：负采样策略并不足以使模型收敛到最优。与之相比，非采样学习对于优化 Top-N 推荐任务是非常有效的
 ## 数据准备
 本模型使用论文中的数据集ml-1m（即MovieLens数据集）、lastfm和frappe
-
 
 ## 运行环境
 PaddlePaddle>=2.0
