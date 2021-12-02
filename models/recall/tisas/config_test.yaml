@@ -1,0 +1,42 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runner:
+  train_data_dir: "data/"
+  train_reader_path: "movielens_reader"  # importlib format
+  train_batch_size: 2
+  model_save_path: "output_model_tisas"
+  mode: "test"
+  use_gpu: False
+  epochs: 3
+  print_interval: 10
+
+  test_data_dir: "data/"
+  infer_reader_path: "movielens_reader"  # importlib format
+  infer_batch_size: 1
+  infer_load_path: "output_model_tisas"
+  infer_start_epoch: 2
+  infer_end_epoch: 3
+
+hyper_parameters:
+  optimizer:
+    class: adam
+    learning_rate: 0.001
+  num_users: 6040
+  num_items: 3416
+  num_blocks: 2
+  num_heads: 1
+  maxlen: 50
+  hidden_units: 50
+  time_span: 256
