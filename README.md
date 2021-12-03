@@ -1,7 +1,4 @@
-([中文文档](https://paddlerec.readthedocs.io/en/latest/)|简体中文|[English](./README_EN.md))  
-
-注意：正版github官方地址：  
-https://github.com/PaddlePaddle/PaddleRec  
+([中文文档](https://paddlerec.readthedocs.io/en/latest/)|简体中文|[English](./README_EN.md))
 
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
@@ -58,6 +55,9 @@ https://github.com/PaddlePaddle/PaddleRec
 更多版本下载可参考paddle官网[下载安装](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/install/index_cn.html)
 
 ### 下载PaddleRec
+
+注意：github官方维护版本地址：  
+https://github.com/PaddlePaddle/PaddleRec  
 
 ```bash
 git clone https://github.com/PaddlePaddle/PaddleRec/
