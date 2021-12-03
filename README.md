@@ -56,7 +56,7 @@
 
 ### 下载PaddleRec
 
-注意：github官方维护版本地址：  
+注意：官方维护github版本地址：  
 https://github.com/PaddlePaddle/PaddleRec  
 
 ```bash
