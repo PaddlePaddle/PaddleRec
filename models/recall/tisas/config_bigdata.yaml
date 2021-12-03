@@ -15,22 +15,22 @@
 runner:
   train_data_dir: "data/"
   train_reader_path: "movielens_reader"  # importlib format
-  train_batch_size: 2
+  train_batch_size: 128
   model_save_path: "output_model_tisas"
-  mode: "test"
-  use_gpu: False
-  epochs: 3
+  mode: "train"
+  use_gpu: True
+  epochs: 201
   print_interval: 10
-
+  
   test_data_dir: "data/"
   infer_reader_path: "movielens_reader"  # importlib format
   infer_batch_size: 1
   infer_load_path: "output_model_tisas"
-  infer_start_epoch: 2
-  infer_end_epoch: 3
+  infer_start_epoch: 100
+  infer_end_epoch: 101
 
 hyper_parameters:
-  optimizer:
+  optimizer: 
     class: adam
     learning_rate: 0.001
   num_users: 6040
