@@ -43,6 +43,10 @@ PaddlePaddle>=2.0
 python 3.7
 
 ## 效果复现
+| 模型 | HR@10 | NDCG@10 | MRR | epoch_num| Time of each epoch |
+| :------| :------ |:------ | :------ | :------| :------ | 
+| BERT4Rec | 0.306 | 0.187 | 0.170 | 50 | 约2小时 |
+
 本文提供了beauty数据集可以供您快速体验及其复现。在BERT4Rec模型目录的快速执行命令如下： 
 
 ```bash
