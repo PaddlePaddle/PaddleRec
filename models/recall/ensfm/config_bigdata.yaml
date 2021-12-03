@@ -24,16 +24,15 @@ runner:
   
   test_data_dir: "data/ml-1m-ensfm"
   infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 128
+  infer_batch_size: 64
   infer_load_path: "output_model_ensfm"
-  infer_start_epoch: 50
-  infer_end_epoch: 400
+  infer_start_epoch: 0
+  infer_end_epoch: 501
 
 hyper_parameters:
   optimizer: 
     class: adagrad
     learning_rate: 0.05
-    initial_accumulator_value: 0.00000001
   num_users: 6069
   num_items: 3953
   mf_dim: 64
