@@ -36,7 +36,7 @@ PaddleRec 模型库
 
 召回
 --------------------------
-我们提供了常见的召回任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的召回模型包括 gru4rec  
+我们提供了常见的召回任务中使用的模型算法的PaddleRec实现, 单机训练&预测效果指标以及分布式训练&预测性能指标等。实现的召回模型包括 gru4rec、deepwalk、mind、ncf、word2vec等  
 
 模型算法库在持续添加中，欢迎关注。
 
@@ -44,10 +44,38 @@ PaddleRec 模型库
    :maxdepth: 1
 
    recall/gru4rec.md
+   recall/deepwalk.md
+   recall/mind.md
+   recall/ncf.md
+   recall/word2vec.md
 
 
 排序
 --------------------------
+我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 包括动态图和静态图的单机训练&预测效果指标。实现的排序模型包括 bst、dcn、deepfefm、deepfm、dien、difm、din、dlrm、dmr、dnn、ffm、fm、gatenet、logistic_regression、naml、wide_deep、xdeepfm等
+
+模型算法库在持续添加中，欢迎关注。
+
+.. toctree::
+   :maxdepth: 1
+
+   rank/bst.md
+   rank/dcn.md
+   rank/deepfefm.md
+   rank/deepfm.md
+   rank/dien.md
+   rank/difm.md
+   rank/din.md
+   rank/dlrm.md
+   rank/dmr.md
+   rank/dnn.md
+   rank/ffm.md
+   rank/fm.md
+   rank/gatenet.md
+   rank/logistic_regression.md
+   rank/naml.md
+   rank/wide_deep.md
+   rank/xdeepfm.md
 
 
 重排序
