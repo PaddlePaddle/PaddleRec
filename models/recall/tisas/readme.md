@@ -55,7 +55,6 @@ python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bi
 python -u infer.py -m config.yaml 
 ```
 
-
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。  
 在全量数据下模型的指标如下：  

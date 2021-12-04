@@ -14,6 +14,5 @@
 #!/bin/bash
 
 
-wget https://paddlerec.bj.bcebos.com/recall/ensfm/ml-1m-ensfm.tar.gz
-tar zxvf ml-1m-ensfm.tar.gz -C data
-rm ml-1m-ensfm.tar.gz
+wget https://paddlerec.bj.bcebos.com/datasets/ml-m1-tisasrec/ml-1m.txt
+mv ml-1m.txt -C data
