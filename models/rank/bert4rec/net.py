@@ -432,3 +432,4 @@ class BertConfig(object):
     def print_config(self):
         for arg, value in sorted(six.iteritems(self._config_dict)):
             print('%s: %s' % (arg, value))
+        print('------------------------------------------------')
