@@ -24,7 +24,8 @@ class RecDataset(IterableDataset):
         self.data_dir = data_path
         self.config = config
         self.batch_size = self.config.get("runner.data_batch_size")
-        self.max_len = self.config.get("hyper_parameters._max_position_seq_len")
+        self.max_len = self.config.get(
+            "hyper_parameters._max_position_seq_len")
 
     def __iter__(self):
         cnt = 0
@@ -51,7 +52,10 @@ class RecDataset(IterableDataset):
                     tmp_mask = split_samples[2].split(',')
                     input_mask.append([[int(x)] for x in tmp_mask])
                     tmp_mask_pos = split_samples[4].split(',')
-                    mask_pos = mask_pos + [[int(x) + (sample_count % self.batch_size) * self.max_len] for x in tmp_mask_pos]
+                    mask_pos = mask_pos + [[
+                        int(x) +
+                        (sample_count % self.batch_size) * self.max_len
+                    ] for x in tmp_mask_pos]
                     tmp_label = split_samples[5].split(',')
                     mask_label = mask_label + [[int(x)] for x in tmp_label]
                     sample_count += 1
@@ -99,8 +103,10 @@ class RecDataset(IterableDataset):
                     tmp_mask = split_samples[2].split(',')
                     input_mask.append([[int(x)] for x in tmp_mask])
                     tmp_mask_pos = split_samples[4].split(',')
-                    mask_pos = mask_pos + [[int(x) + (sample_count % self.batch_size) * self.max_len] for x in
-                                           tmp_mask_pos]
+                    mask_pos = mask_pos + [[
+                        int(x) +
+                        (sample_count % self.batch_size) * self.max_len
+                    ] for x in tmp_mask_pos]
                     tmp_label = split_samples[5].split(',')
                     mask_label = mask_label + [[int(x)] for x in tmp_label]
 
