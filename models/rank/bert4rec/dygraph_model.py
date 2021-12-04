@@ -22,22 +22,26 @@ import numpy as np
 
 class DygraphModel():
     def create_model(self, config):
-        self.num_test_batch = int(config.get("hyper_parameters.num_test_user") // config.get("runner.data_batch_size"))
+        self.num_test_batch = int(
+            config.get("hyper_parameters.num_test_user") //
+            config.get("runner.data_batch_size"))
         self.test_count = 0
         self.results = [0., 0., 0.]
         _emb_size = config.get("hyper_parameters._emb_size")
         _n_layer = config.get("hyper_parameters._n_layer")
         _n_head = config.get("hyper_parameters._n_head")
         _voc_size = config.get("hyper_parameters._voc_size")
-        _max_position_seq_len = config.get("hyper_parameters._max_position_seq_len")
+        _max_position_seq_len = config.get(
+            "hyper_parameters._max_position_seq_len")
         _sent_types = config.get("hyper_parameters._sent_types")
         hidden_act = config.get("hyper_parameters.hidden_act")
         _dropout = config.get("hyper_parameters._dropout")
         _attention_dropout = config.get("hyper_parameters._attention_dropout")
         initializer_range = config.get("hyper_parameters._param_initializer")
-        Bert4Rec = net.BertModel(_emb_size, _n_layer, _n_head, _voc_size, _max_position_seq_len, _sent_types, hidden_act,
-                                _dropout, _attention_dropout,
-                                initializer_range)
+        Bert4Rec = net.BertModel(_emb_size, _n_layer, _n_head, _voc_size,
+                                 _max_position_seq_len, _sent_types,
+                                 hidden_act, _dropout, _attention_dropout,
+                                 initializer_range)
         return Bert4Rec
 
     # define feeds which convert numpy of batch data to paddle.tensor
@@ -56,9 +60,12 @@ class DygraphModel():
 
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.0001)
-        weight_decay = config.get("hyper_parameters.optimizer.weight_decay", 0.01)
+        weight_decay = config.get("hyper_parameters.optimizer.weight_decay",
+                                  0.01)
         optimizer = paddle.optimizer.AdamW(
-            learning_rate=lr, weight_decay=weight_decay, grad_clip=nn.ClipGradByGlobalNorm(clip_norm=5.0),
+            learning_rate=lr,
+            weight_decay=weight_decay,
+            grad_clip=nn.ClipGradByGlobalNorm(clip_norm=5.0),
             parameters=dy_model.parameters())
         return optimizer
 
@@ -74,7 +81,8 @@ class DygraphModel():
         return mean_mask_lm_loss
 
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        src_ids, pos_ids, sent_ids, input_mask, mask_pos, mask_label = self.create_feeds(batch_data, config)
+        src_ids, pos_ids, sent_ids, input_mask, mask_pos, mask_label = self.create_feeds(
+            batch_data, config)
 
         prediction = dy_model(src_ids, pos_ids, sent_ids, input_mask, mask_pos)
         loss = self.create_loss(prediction, mask_label)
@@ -83,30 +91,42 @@ class DygraphModel():
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
-        def evaluate_rec_ndcg_mrr_batch(ratings, results, top_k=10, row_target_position=0):
+        def evaluate_rec_ndcg_mrr_batch(ratings,
+                                        results,
+                                        top_k=10,
+                                        row_target_position=0):
             ratings = np.array(ratings)
-            ratings = ratings[~ np.any(np.isnan(ratings), -1)]
+            ratings = ratings[~np.any(np.isnan(ratings), -1)]
             num_rows = len(ratings)
             if num_rows == 0:
                 return 0, 0, 0
-            ranks = np.argsort(np.argsort(-np.array(ratings), axis=-1), axis=-1)[:, row_target_position] + 1
+            ranks = np.argsort(
+                np.argsort(
+                    -np.array(ratings), axis=-1),
+                axis=-1)[:, row_target_position] + 1
             results[2] += np.sum(1 / ranks)
             ranks = ranks[ranks <= top_k]
             results[0] += len(ranks)
             results[1] += np.sum(1 / np.log2(ranks + 1))
 
-        src_ids, pos_ids, sent_ids, input_mask, mask_pos, mask_label = self.create_feeds(batch_data[:-1], config)
+        src_ids, pos_ids, sent_ids, input_mask, mask_pos, mask_label = self.create_feeds(
+            batch_data[:-1], config)
         batch_size = config.get("runner.data_batch_size")
         candiate = batch_data[-1]
         prediction = dy_model(src_ids, pos_ids, sent_ids, input_mask, mask_pos)
         pred_ratings = []
         self.test_count += 1
         for i in range(batch_size):
-            pred_ratings.append(paddle.fluid.layers.gather(prediction[i], paddle.to_tensor(candiate[0][i])).numpy())
-        evaluate_rec_ndcg_mrr_batch(pred_ratings, self.results, top_k=10, row_target_position=0)
+            pred_ratings.append(
+                paddle.fluid.layers.gather(prediction[
+                    i], paddle.to_tensor(candiate[0][i])).numpy())
+        evaluate_rec_ndcg_mrr_batch(
+            pred_ratings, self.results, top_k=10, row_target_position=0)
         if self.test_count == self.num_test_batch:
             num_user = self.num_test_batch * batch_size
-            rec, ndcg, mrr = self.results[0] / num_user, self.results[1] / num_user, self.results[2] / num_user
-            print("HR@10: %.6f, NDCG@10: %.6f, MRR: %.6f" % (
-                rec, ndcg, mrr), end='\n')
+            rec, ndcg, mrr = self.results[0] / num_user, self.results[
+                1] / num_user, self.results[2] / num_user
+            print(
+                "HR@10: %.6f, NDCG@10: %.6f, MRR: %.6f" % (rec, ndcg, mrr),
+                end='\n')
         return metrics_list, None
