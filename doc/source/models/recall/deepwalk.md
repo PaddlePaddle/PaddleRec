@@ -1,4 +1,4 @@
-# Distributed Deepwalk in PGL
+# deepwalk (DeepWalk: Online Learning of Social Representations)
 
 代码请参考：[Deepwalk](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/deepwalk)  
 如果我们的代码对您有用，还请点个star啊~  

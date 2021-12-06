@@ -1,4 +1,4 @@
-# MMOE
+# mmoe (Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts)
 
 代码请参考：[MMOE](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/mmoe)  
 如果我们的代码对您有用，还请点个star啊~ 
