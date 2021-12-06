@@ -49,9 +49,9 @@ class DygraphModel():
 
     # define optimizer 
     def create_optimizer(self, dy_model, config):
-        lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
-        optimizer = paddle.optimizer.Adagrad(
-            learning_rate=lr, parameters=dy_model.parameters())
+        lr = config.get("hyper_parameters.optimizer.learning_rate", 0.05)
+        optimizer = paddle.optimizer.Adagrad(learning_rate=lr, initial_accumulator_value=1e-8,
+                                             parameters=dy_model.parameters())
         return optimizer
 
     # define metrics such as auc/acc

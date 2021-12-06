@@ -44,12 +44,18 @@ class RecDataset(Dataset):
 
 
 class LoadData(object):
+
     def __init__(self, DATA_ROOT):
         self.trainfile = os.path.join(DATA_ROOT, 'train.csv')
         self.testfile = os.path.join(DATA_ROOT, 'test.csv')
         self.user_field_M, self.item_field_M = self.get_length()
+        print("user_field_M", self.user_field_M)
+        print("item_field_M", self.item_field_M)
+        print("field_M", self.user_field_M + self.item_field_M)
         self.item_bind_M = self.bind_item()  # assaign a userID for a specific user-context
         self.user_bind_M = self.bind_user()  # assaign a itemID for a specific item-feature
+        print("item_bind_M", len(self.binded_items.values()))
+        print("user_bind_M", len(self.binded_users.values()))
         self.item_map_list = []
         for itemid in self.item_map.keys():
             self.item_map_list.append([int(feature) for feature in self.item_map[itemid].strip().split('-')[0:]])
@@ -116,7 +122,7 @@ class LoadData(object):
     def bind_user(self):
         '''
         Map the item fields in all files, kept in self.item_fields dictionary
-        :return:bind_user
+        :return:
         '''
         self.binded_users = {}
         self.user_map = {}

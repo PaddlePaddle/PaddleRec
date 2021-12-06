@@ -204,8 +204,7 @@ def main(args):
                 true_bin = np.zeros_like(pre, dtype=bool)
                 true_bin[dataset.data.Test_data[user_id].nonzero()] = True
 
-                tmp = (np.logical_and(true_bin, pre_bin).sum(
-                    axis=1)).astype(np.float32)
+                tmp = (np.logical_and(true_bin, pre_bin).sum(axis=1)).astype(np.float32)
                 recall.append(tmp / np.minimum(kj, true_bin.sum(axis=1)))
 
             recall50.append(recall[0])
