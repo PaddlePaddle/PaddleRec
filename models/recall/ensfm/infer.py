@@ -157,7 +157,7 @@ def main(args):
         ndcg50 = []
         ndcg100 = []
         ndcg200 = []
-        for batch_id, batch in enumerate(test_dataloader()):
+        for batch_id, batch in enumerate(test_dataloader):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
             metric_list, tensor_print_dict = dy_model_class.infer_forward(
@@ -204,7 +204,8 @@ def main(args):
                 true_bin = np.zeros_like(pre, dtype=bool)
                 true_bin[dataset.data.Test_data[user_id].nonzero()] = True
 
-                tmp = (np.logical_and(true_bin, pre_bin).sum(axis=1)).astype(np.float32)
+                tmp = (np.logical_and(true_bin, pre_bin).sum(
+                    axis=1)).astype(np.float32)
                 recall.append(tmp / np.minimum(kj, true_bin.sum(axis=1)))
 
             recall50.append(recall[0])

@@ -44,7 +44,6 @@ class RecDataset(Dataset):
 
 
 class LoadData(object):
-
     def __init__(self, DATA_ROOT):
         self.trainfile = os.path.join(DATA_ROOT, 'train.csv')
         self.testfile = os.path.join(DATA_ROOT, 'test.csv')
@@ -52,15 +51,23 @@ class LoadData(object):
         print("user_field_M", self.user_field_M)
         print("item_field_M", self.item_field_M)
         print("field_M", self.user_field_M + self.item_field_M)
-        self.item_bind_M = self.bind_item()  # assaign a userID for a specific user-context
-        self.user_bind_M = self.bind_user()  # assaign a itemID for a specific item-feature
+        self.item_bind_M = self.bind_item(
+        )  # assaign a userID for a specific user-context
+        self.user_bind_M = self.bind_user(
+        )  # assaign a itemID for a specific item-feature
         print("item_bind_M", len(self.binded_items.values()))
         print("user_bind_M", len(self.binded_users.values()))
         self.item_map_list = []
         for itemid in self.item_map.keys():
-            self.item_map_list.append([int(feature) for feature in self.item_map[itemid].strip().split('-')[0:]])
-        self.item_map_list.append([int(feature) for feature in self.item_map[0].strip().split('-')[0:]])
-        self.user_positive_list = self.get_positive_list(self.trainfile)  # userID positive itemID
+            self.item_map_list.append([
+                int(feature)
+                for feature in self.item_map[itemid].strip().split('-')[0:]
+            ])
+        self.item_map_list.append([
+            int(feature) for feature in self.item_map[0].strip().split('-')[0:]
+        ])
+        self.user_positive_list = self.get_positive_list(
+            self.trainfile)  # userID positive itemID
         self.Train_data, self.Test_data = self.construct_data()
         self.user_train, self.item_train = self.get_train_instances()
         self.user_test = self.get_test()
@@ -177,7 +184,10 @@ class LoadData(object):
     def get_train_instances(self):
         user_train, item_train = [], []
         for i in self.user_positive_list:
-            u_train = [int(feature) for feature in self.user_map[i].strip().split('-')[0:]]
+            u_train = [
+                int(feature)
+                for feature in self.user_map[i].strip().split('-')[0:]
+            ]
             user_train.append(u_train)
             temp = self.user_positive_list[i]
             while len(temp) < self.max_positive_len:
@@ -201,13 +211,17 @@ class LoadData(object):
 
         user_id = []
         for one in X_user:
-            user_id.append(self.binded_users["-".join([str(item) for item in one[0:]])])
+            user_id.append(self.binded_users["-".join(
+                [str(item) for item in one[0:]])])
         item_id = []
         for one in X_item:
-            item_id.append(self.binded_items["-".join([str(item) for item in one[0:]])])
+            item_id.append(self.binded_items["-".join(
+                [str(item) for item in one[0:]])])
         count = np.ones(len(X_user))
-        sparse_matrix = scipy.sparse.csr_matrix((count, (user_id, item_id)), dtype=np.int16,
-                                                shape=(self.user_bind_M, self.item_bind_M))
+        sparse_matrix = scipy.sparse.csr_matrix(
+            (count, (user_id, item_id)),
+            dtype=np.int16,
+            shape=(self.user_bind_M, self.item_bind_M))
         return sparse_matrix
 
     def get_test(self):

@@ -40,18 +40,23 @@ class DygraphModel():
     def create_loss(self, prediction, config):
         pre, pos_r, q_emb, p_emb, H_i_emb = prediction
         weight = config.get('hyper_parameters.negative_weight', 0.5)
-        loss = weight * paddle.sum(
-            paddle.sum(paddle.sum(paddle.einsum('ab,ac->abc', q_emb, q_emb), 0)
-                       * paddle.sum(paddle.einsum('ab,ac->abc', p_emb, p_emb), 0)
-                       * paddle.matmul(H_i_emb, H_i_emb, transpose_y=True), 0), 0)
+        loss = weight * paddle.sum(paddle.sum(
+            paddle.sum(paddle.einsum('ab,ac->abc', q_emb, q_emb), 0) *
+            paddle.sum(paddle.einsum('ab,ac->abc', p_emb, p_emb), 0) *
+            paddle.matmul(
+                H_i_emb, H_i_emb, transpose_y=True),
+            0),
+                                   0)
         loss += paddle.sum((1.0 - weight) * paddle.square(pos_r) - 2.0 * pos_r)
         return loss
 
     # define optimizer 
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.05)
-        optimizer = paddle.optimizer.Adagrad(learning_rate=lr, initial_accumulator_value=1e-8,
-                                             parameters=dy_model.parameters())
+        optimizer = paddle.optimizer.Adagrad(
+            learning_rate=lr,
+            initial_accumulator_value=1e-8,
+            parameters=dy_model.parameters())
         return optimizer
 
     # define metrics such as auc/acc
