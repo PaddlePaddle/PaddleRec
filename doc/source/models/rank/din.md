@@ -1,4 +1,4 @@
-# 基于DIN模型的点击率预估模型
+# din (Deep Interest Network for Click-Through Rate Prediction)
 
 代码请参考：[din](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/din)  
 如果我们的代码对您有用，还请点个star啊~  

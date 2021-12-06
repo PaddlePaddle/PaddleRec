@@ -1,4 +1,4 @@
-# 基于BST模型的点击率预估模型
+# bst (Behavior Sequence Transformer for E-commerce Recommendation in Alibaba)
 
 代码请参考：[bst](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/bst)  
 如果我们的代码对您有用，还请点个star啊~   

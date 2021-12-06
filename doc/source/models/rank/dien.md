@@ -1,4 +1,4 @@
-# 基于DIEN模型的点击率预估模型
+# dien (Deep Interest Evolution Network for Click-Through Rate Prediction)
 
 代码请参考：[dien](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dien)  
 如果我们的代码对您有用，还请点个star啊~  

@@ -1,4 +1,4 @@
-# 基于 DIFM 模型的点击率预估模型
+# difm (A Dual Input-aware Factorization Machine for CTR Prediction)
 
 代码请参考：[difm](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/difm)  
 如果我们的代码对您有用，还请点个star啊~  

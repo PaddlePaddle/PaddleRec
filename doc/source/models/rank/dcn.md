@@ -1,4 +1,4 @@
-# 基于DeepAndCross模型的点击率预估模型
+# dcn (Deep & Cross Network for Ad Click Predictions)
 
 代码请参考：[dcn](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dcn)  
 如果我们的代码对您有用，还请点个star啊~  

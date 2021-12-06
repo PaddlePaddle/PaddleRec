@@ -1,4 +1,4 @@
-# 基于logistic_regression模型的点击率预估模型
+# logistic_regression ( - )
 
 代码请参考：[logistic_regression](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/logistic_regression)  
 如果我们的代码对您有用，还请点个star啊~  
