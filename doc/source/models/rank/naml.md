@@ -1,4 +1,4 @@
-# 基于NAML模型的点击率预估模型
+# naml (Neural News Recommendation with Attentive Multi-View Learning)
 
 代码请参考：[naml](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/naml)  
 如果我们的代码对您有用，还请点个star啊~  

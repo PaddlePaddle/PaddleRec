@@ -1,4 +1,4 @@
-# MIND(Multi-Interest Network with Dynamic Routing)
+# mind (Multi-Interest Network with Dynamic Routing for Recommendation at Tmall)
 
 代码请参考：[MIND](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/mind)  
 如果我们的代码对您有用，还请点个star啊~  

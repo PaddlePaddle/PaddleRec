@@ -1,4 +1,4 @@
-# 基于xDeepFM模型的点击率预估模型
+# xdeepfm (xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems)
 
 代码请参考：[xdeepfm](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/xdeepfm)  
 如果我们的代码对您有用，还请点个star啊~  

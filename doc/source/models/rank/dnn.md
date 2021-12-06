@@ -1,4 +1,4 @@
-# 基于DNN模型的点击率预估模型
+# dnn ( - )
 
 代码请参考：[dnn](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/dnn)  
 如果我们的代码对您有用，还请点个star啊~  

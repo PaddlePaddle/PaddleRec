@@ -1,4 +1,4 @@
-# NCF召回模型
+# ncf (Neural Collaborative Filtering)
 
 代码请参考：[NCF](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/ncf)  
 如果我们的代码对您有用，还请点个star啊~  

@@ -1,4 +1,4 @@
-# DSSM文本匹配模型
+# dssm (Learning Deep Structured Semantic Models for Web Search using Clickthrough Data)
 
 代码请参考：[DSSM文本匹配模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/match/dssm)  
 如果我们的代码对您有用，还请点个star啊~  

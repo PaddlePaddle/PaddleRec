@@ -1,4 +1,4 @@
-# multiview-simnet文本匹配模型
+# multiview-simnet (A Multi-View Deep Learning Approach for Cross Domain User Modeling in Recommendation Systems)
 
 代码请参考：[multiview-simnet文本匹配模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/match/multiview-simnet)  
 如果我们的代码对您有用，还请点个star啊~  

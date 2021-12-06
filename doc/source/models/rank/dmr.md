@@ -1,4 +1,4 @@
-# DMR模型
+# dmr (Deep Match to Rank Model for Personalized Click-Through Rate Prediction)
 
 代码请参考：[dmr](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dmr)  
 如果我们的代码对您有用，还请点个star啊~  

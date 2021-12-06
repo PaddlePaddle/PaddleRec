@@ -1,4 +1,4 @@
-# 元学习MAML算法
+# maml (Model-agnostic meta-learning for fast adaptation of deep networks)
 
 代码请参考：[MAML](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/maml)  
 如果我们的代码对您有用，还请点个star啊~ 
