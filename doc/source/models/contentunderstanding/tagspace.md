@@ -1,4 +1,4 @@
-# tagspace文本分类模型
+# tagspace (TagSpace: Semantic Embeddings from Hashtags)
 
 代码请参考：[tagspace文本分类模型](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/contentunderstanding/tagspace)  
 如果我们的代码对您有用，还请点个star啊~  

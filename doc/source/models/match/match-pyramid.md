@@ -1,4 +1,4 @@
-# match-pyramid文本匹配模型
+# match-pyramid (Text Matching as Image Recognition)
 
 代码请参考：[match-pyramid文本匹配模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/match/match-pyramid)  
 如果我们的代码对您有用，还请点个star啊~  

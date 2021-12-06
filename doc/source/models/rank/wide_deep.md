@@ -1,4 +1,4 @@
-# wide&deep
+# wide&deep (Wide & Deep Learning for Recommender Systems)
 
 代码请参考：[wide&deep](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/wide_deep)  
 如果我们的代码对您有用，还请点个star啊~  

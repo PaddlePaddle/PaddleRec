@@ -1,4 +1,4 @@
-# Skip-Gram W2V
+# word2vec (Distributed Representations of Words and Phrases and their Compositionality)
 
 代码请参考：[word2vec](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/recall/word2vec)  
 如果我们的代码对您有用，还请点个star啊~  

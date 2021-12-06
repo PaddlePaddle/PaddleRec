@@ -1,4 +1,4 @@
-# 基于 DLRM 模型的点击率预估模型
+# dlrm (Deep Learning Recommendation Model for Personalization and Recommendation Systems)
 
 代码请参考：[dlrm](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dlrm)  
 如果我们的代码对您有用，还请点个star啊~  

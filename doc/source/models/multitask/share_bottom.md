@@ -1,4 +1,4 @@
-# ShareBottom
+# share_bottom (Multitask learning)
 
 代码请参考：[ShareBottom](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/share_bottom)  
 如果我们的代码对您有用，还请点个star啊~ 

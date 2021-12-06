@@ -1,4 +1,4 @@
-# PLE
+# ple (Progressive Layered Extraction : A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations)
 
 代码请参考：[PLE](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/multitask/ple)  
 如果我们的代码对您有用，还请点个star啊~ 

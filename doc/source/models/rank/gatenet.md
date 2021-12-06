@@ -1,4 +1,4 @@
-# 基于GateNet模型的点击率预估模型
+# gatenet (GateNet: Gating-Enhanced Deep Network for Click-Through Rate Prediction)
 
 代码请参考：[gatenet](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/gateDnn)  
 如果我们的代码对您有用，还请点个star啊~  

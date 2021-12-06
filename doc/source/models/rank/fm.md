@@ -1,4 +1,4 @@
-# 基于FM模型的点击率预估模型
+# fm ( - )
 
 代码请参考：[fm](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/fm)  
 如果我们的代码对您有用，还请点个star啊~  

@@ -1,4 +1,4 @@
-# 基于FFM模型的点击率预估模型
+# ffm (Field-aware Factorization Machines for CTR Prediction)
 
 代码请参考：[ffm](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/ffm)  
 如果我们的代码对您有用，还请点个star啊~  

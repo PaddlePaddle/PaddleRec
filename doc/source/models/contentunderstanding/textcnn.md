@@ -1,4 +1,4 @@
-# textcnn文本分类模型
+# textcnn (Convolutional neural networks for sentence classication)
 
 代码请参考：[textcnn文本分类模型](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/contentunderstanding/textcnn)  
 如果我们的代码对您有用，还请点个star啊~  
