@@ -181,5 +181,11 @@ elif [ ${model_name} == "mmoe" ]; then
         cp -r ./models/multitask/mmoe/data/train/* ./test_tipc/data/train
         cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
     fi
-
+elif [ ${model_name} == "tisas" ]; then
+    # prepare pretrained weights and dataset
+    mkdir -p test_tipc/data
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/recall/tisas/data/sample_data/* ./test_tipc/data
+        echo "demo data ready"
+    fi
 fi
