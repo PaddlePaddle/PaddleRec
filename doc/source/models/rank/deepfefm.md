@@ -1,6 +1,6 @@
 # deepfefm (Field-Embedded Factorization Machines for Click-through rate prediction)
 
-代码请参考：[deepfm](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/deepfm)  
+代码请参考：[deepfefm](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/deepfefm)  
 如果我们的代码对您有用，还请点个star啊~  
 
 ## 内容
