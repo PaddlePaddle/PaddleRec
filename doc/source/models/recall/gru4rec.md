@@ -1,6 +1,6 @@
-# GRU4REC
+# gru4rec (Session-based Recommendations with Recurrent Neural Networks)
 
-代码请参考：[GRU4REC模型](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/gru4rec/)
+代码请参考：[GRU4REC模型](https://github.com/PaddlePaddle/PaddleRec/tree/release/1.8.5/models/recall/gru4rec/)  
 如果我们的代码对您有用，还请点个star啊~  
 关注我们，多少你能懂一点
 
