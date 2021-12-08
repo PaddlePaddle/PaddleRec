@@ -85,7 +85,7 @@ class DygraphModel():
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         label, input_tensor = self.create_feeds(batch_data, config)
 
-        pred, loss = dy_model(input_tensor, False)
+        pred, loss = dy_model.forward(input_tensor, False)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
@@ -97,7 +97,7 @@ class DygraphModel():
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         label, input_tensor = self.create_feeds(batch_data, config)
 
-        pred, loss = dy_model(input_tensor, True)
+        pred, loss = dy_model.forward(input_tensor, True)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())

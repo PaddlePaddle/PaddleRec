@@ -117,9 +117,9 @@ class StaticModel():
             self.prepostprocess_dropout, self.d_inner_hid, self.relu_dropout,
             self.layer_sizes)
 
-        pred = bst_model(self.user_input, self.hist_input, self.cate_input,
-                         self.pos_input, self.target_input,
-                         self.target_cate_input, self.target_pos_input)
+        pred = bst_model.forward(
+            self.user_input, self.hist_input, self.cate_input, self.pos_input,
+            self.target_input, self.target_cate_input, self.target_pos_input)
 
         #pred = F.sigmoid(prediction)
 

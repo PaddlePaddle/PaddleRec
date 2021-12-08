@@ -59,7 +59,7 @@ class StaticModel():
         LR_model = LRLayer(self.sparse_feature_number, init_value_, self.reg,
                            self.num_field)
 
-        self.predict = LR_model(feat_idx, feat_value)
+        self.predict = LR_model.forward(feat_idx, feat_value)
 
         predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
         label_int = paddle.cast(self.label, 'int64')

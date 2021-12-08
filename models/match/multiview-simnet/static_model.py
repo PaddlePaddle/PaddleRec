@@ -75,7 +75,7 @@ class StaticModel():
             self.title_encode_dim, self.emb_size, self.emb_dim,
             self.hidden_size, self.margin, self.query_len, self.pos_len,
             self.neg_len)
-        cos_pos, cos_neg = simnet_model(inputs, is_infer)
+        cos_pos, cos_neg = simnet_model.forward(inputs, is_infer)
 
         self.inference_target_var = cos_pos
         if is_infer:

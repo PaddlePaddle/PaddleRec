@@ -92,7 +92,7 @@ class StaticModel():
             att_factor_dim=self.att_factor_dim,
             att_head_num=self.att_head_num)
 
-        pred = difm_model(self.sparse_inputs, self.dense_input)
+        pred = difm_model.forward(self.sparse_inputs, self.dense_input)
         raw_predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
         cost = paddle.nn.functional.cross_entropy(

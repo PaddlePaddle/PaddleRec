@@ -78,7 +78,7 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        pred = dy_model(sparse_tensor, dense_tensor)
+        pred = dy_model.forward(sparse_tensor, dense_tensor)
         loss = self.create_loss(pred, label)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
@@ -92,7 +92,7 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        pred = dy_model(sparse_tensor, dense_tensor)
+        pred = dy_model.forward(sparse_tensor, dense_tensor)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())

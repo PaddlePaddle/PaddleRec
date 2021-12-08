@@ -87,7 +87,8 @@ class StaticModel():
             num_field=self.num_field,
             self_interaction=False)
 
-        raw_predict_2d = dlrm_model(self.sparse_inputs, self.dense_input)
+        raw_predict_2d = dlrm_model.forward(self.sparse_inputs,
+                                            self.dense_input)
 
         cost = paddle.nn.functional.cross_entropy(
             input=raw_predict_2d, label=self.label_input)

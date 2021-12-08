@@ -87,7 +87,7 @@ class DygraphModel():
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         labels, sparse_tensor = self.create_feeds(batch_data, config)
 
-        raw = dy_model(sparse_tensor)
+        raw = dy_model.forward(sparse_tensor)
 
         loss = paddle.nn.functional.cross_entropy(
             input=raw, label=paddle.cast(labels, "float32"), soft_label=True)
@@ -104,7 +104,7 @@ class DygraphModel():
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         labels, sparse_tensor = self.create_feeds(batch_data, config)
-        raw = dy_model(sparse_tensor)
+        raw = dy_model.forward(sparse_tensor)
         #predict_raw = paddle.nn.functional.softmax(raw)
 
         soft_predict = paddle.nn.functional.sigmoid(

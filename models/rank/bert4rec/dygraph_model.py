@@ -84,7 +84,8 @@ class DygraphModel():
         src_ids, pos_ids, sent_ids, input_mask, mask_pos, mask_label = self.create_feeds(
             batch_data, config)
 
-        prediction = dy_model(src_ids, pos_ids, sent_ids, input_mask, mask_pos)
+        prediction = dy_model.forward(src_ids, pos_ids, sent_ids, input_mask,
+                                      mask_pos)
         loss = self.create_loss(prediction, mask_label)
 
         print_dict = {'loss': loss}
@@ -113,7 +114,8 @@ class DygraphModel():
             batch_data[:-1], config)
         batch_size = config.get("runner.data_batch_size")
         candiate = batch_data[-1]
-        prediction = dy_model(src_ids, pos_ids, sent_ids, input_mask, mask_pos)
+        prediction = dy_model.forward(src_ids, pos_ids, sent_ids, input_mask,
+                                      mask_pos)
         pred_ratings = []
         self.test_count += 1
         for i in range(batch_size):
