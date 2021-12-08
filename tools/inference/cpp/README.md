@@ -48,12 +48,12 @@ tools/inference/cpp
 ```
     ./cube-cli -dict_name=test_dict -keys [keys文件] -conf ./cube_app/cube.conf # 本项目中 cube client 的功能已经集成在 inference 代码里了
 ```  
-<h2>测试用例<h2>
+<h2>测试用例</h2>
 
 1. 不启用 cube 服务：全量带 embedding 的模型
 2. 启用 cube 服务：裁剪后不带 embedding 的模型（small_model, 300 个 slot）、输入数据（demo_10_300）、可打印的varname（all_vars_small_model.txt）
 
-<h2>编译运行<h2>
+<h2>编译运行</h2>
 
 我们准备了 run.sh 脚本提供一键编译并运行，主要启动参数如下：
 |        名称         |    类型    |             取值             | 是否必须 |                               作用描述                               |
