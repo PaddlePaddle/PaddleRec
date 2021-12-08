@@ -84,7 +84,7 @@ public:
     {
         USE_GPU = 0;
         EMBEDDING_SIZE = 9;
-	SLOT_NUMBER = 409;
+	SLOT_NUMBER = 301;
         place = paddle::PaddlePlace::kCPU;
     }
 
@@ -111,7 +111,7 @@ public:
 public:
     int USE_GPU;
     int EMBEDDING_SIZE;
-    int SLOT_NUMBER = 301;
+    int SLOT_NUMBER;
     paddle::PaddlePlace place;
     std::shared_ptr<paddle_infer::Predictor> predictor;
 };

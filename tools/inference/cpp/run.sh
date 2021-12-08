@@ -5,6 +5,7 @@ rm -rf predictor.log
 rm -rf std.log
 #rm -rf performance.txt
 rm -rf cube.result
+rm -rf embed_input.txt
 
 mkdir -p bin
 cd bin

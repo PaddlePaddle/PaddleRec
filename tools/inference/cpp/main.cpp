@@ -41,14 +41,14 @@ DEFINE_bool(withCube, true, "with cube");
 DEFINE_int32(threadNum, 2, "thread num");
 DEFINE_int32(batchSize, 3, "batch size");
 DEFINE_int32(iterationNum, 100, "iteration num");
-DEFINE_string(performanceFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/performance.txt", "performanceFile");
-DEFINE_string(trainingFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/data/out_test.1", "input data file");
-DEFINE_string(modelFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/data/rec_inference/rec_inference.pdmodel", "model file");
-DEFINE_string(paramFile, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/data/rec_inference/rec_inference.pdiparams", "param file");
-DEFINE_string(predictorLog, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/predictor.log", "predictor log");
-DEFINE_string(stdLog, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/std.log", "standard log");
-DEFINE_string(varsName, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/all_vars.txt", "all vars name");
-DEFINE_string(keys, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/keys", "keys to seek");
+DEFINE_string(performanceFile, "", "perf file");
+DEFINE_string(trainingFile, "", "inputdata file");
+DEFINE_string(modelFile, "", "model file");
+DEFINE_string(paramFile, "", "param file");
+DEFINE_string(predictorLog, "", "predictor log");
+DEFINE_string(stdLog, "", "standard log");
+DEFINE_string(varsName, "", "all print vars name");
+DEFINE_string(keys, "", "keys to seek");
 DEFINE_uint64(cube_batch_size, 1, "cube batch size");
 
 static int currResIdx = 0;
@@ -173,7 +173,7 @@ if (FLAGS_testPredictor) {
                     tPredictor2 = std::chrono::high_resolution_clock::now();
                     tPredictor += (tPredictor2 - tPredictor1);
                 }
-                //tp->tr->GetInferResult(batches[i]);
+                tp->tr->GetInferResult(batches[i]);
                 if (FLAGS_debug) {
                     tp->pd->PrintInferResult(tid, batches[i]);
                     tp->pd->WriteLayersOutput(tid, batches[i].batchIdx);
