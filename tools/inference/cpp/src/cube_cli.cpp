@@ -27,13 +27,13 @@
 	gettimeofday(&(flag), NULL);
 extern std::vector<uint64_t> globalKeys;
 DECLARE_bool(debug);
-DEFINE_string(config_file, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/cube_app/conf/cube.conf", "m-cube config file");
+DEFINE_string(config_file, "../cube_app/conf/cube.conf", "m-cube config file");
 DECLARE_string(keys);
 DEFINE_string(dict, "test_dict", "dict to seek");
 DEFINE_int32(timeout, 200, "timeout in ms");
 DEFINE_int32(retry, 3, "retry times");
 DEFINE_int32(cube_thread_num, 1, "thread num");
-DEFINE_string(cube_result_file, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/cube.result", "cube qry result");
+DEFINE_string(cube_result_file, "../cube.result", "cube qry result");
 
 std::atomic<int> g_concurrency(0);
 
