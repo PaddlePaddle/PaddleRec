@@ -57,6 +57,7 @@ void XboxPbDeconverter::Deconvert(uint64_t& key, std::string& value) {
         CHECK(fprintf(fout, "\n"));
         CHECK(fflush(fout) == 0);
         fclose(fout);
+        mf.insert(mf.begin(), lr);
     }
 };
 
