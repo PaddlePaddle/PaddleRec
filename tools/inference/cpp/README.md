@@ -48,6 +48,7 @@ tools/inference/cpp
 ```
     ./cube-cli -dict_name=test_dict -keys [keys文件] -conf ./cube_app/cube.conf # 本项目中 cube client 的功能已经集成在 inference 代码里了
 ```  
+
 <h2>测试用例</h2>
 
 1. 不启用 cube 服务：全量带 embedding 的模型
