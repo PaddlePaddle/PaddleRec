@@ -49,9 +49,12 @@ public:
 
     int size()
     {
-        if (features.size() == featureCnts.size()) {
+        if (features.size() == featureCnts.size())
+        {
             return features.size();
-        } else {
+        }
+        else
+        {
             return 0;
         }
     }
@@ -60,7 +63,7 @@ public:
     long batchIdx;
     std::vector<uint32_t> slotIds;
     std::set<uint64_t> feasignIds;
-    std::unordered_map<uint32_t, std::vector<std::vector<int64_t>>> features; // key1: slotId
+    std::unordered_map<uint32_t, std::vector<std::vector<uint64_t>>> features; // key1: slotId
     std::unordered_map<uint32_t, std::vector<std::vector<uint64_t>>> feasigns; // key1: slotId
     std::unordered_map<uint32_t, std::vector<uint32_t>> featureCnts;
 
@@ -148,12 +151,10 @@ template <typename T>
 T SharedQueue<T>::pop()
 {
     std::unique_lock<std::mutex> mlock(mutex_);
-    /*
-    while (queue_.empty())
-    {
-        cond_.wait(mlock);
-    }
-    */
+//    while (queue_.empty())
+//    {
+//        cond_.wait(mlock);
+//    }
     cond_.wait(mlock, [this](){ return !this->queue_.empty();});
     T rc(std::move(queue_.front()));
     queue_.pop_front();

@@ -45,10 +45,10 @@ private:
     uint mfRatio;
 
 public:
-    uint64_t show;
-    uint64_t clk;
-    float pred;
-    float lr;
+    uint64_t show = 0;
+    uint64_t clk = 0;
+    float pred = 0.0;
+    float lr = 0.0;
     std::vector<float> mf;
 };
 

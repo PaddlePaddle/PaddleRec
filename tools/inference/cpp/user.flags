@@ -1,18 +1,17 @@
---trainingFile=../../data/out_test.1
---modelFile=../../model/rec_inference.pdmodel
---paramFile=../../model/rec_inference.pdiparams
---performanceFile=../performance.txt
+--trainingFile=../data/demo_10_300
+--modelFile=../small_model
+--performanceFile=../perf.txt
 --predictorLog=../predictor.log
---varsName=../all_vars.txt
+--varsName=../all_vars_small_model.txt
 --stdLog=../std.log
 --cube_result_file=../cube.result
---cube_batch_size=10000
---testPredictor=false
+--cube_batch_size=1
+--testPredictor=true
 --testCubeCost=false
 
---withCube=false
---debug=false
---iterationNum=100
+--withCube=true
+--debug=true
+--iterationNum=1
 
 --config_file=../cube_app/conf/cube.conf
 --keys=../keys

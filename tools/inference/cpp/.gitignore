@@ -8,7 +8,7 @@ cube_app/tmp
 cube_app/keys-values
 cube_app/log/
 cube_app/monitor/
-paddle_inference.so
+embed_input.txt
 predictor.log
 std.log
 cube.result

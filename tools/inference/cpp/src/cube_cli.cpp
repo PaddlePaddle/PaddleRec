@@ -27,13 +27,13 @@
 	gettimeofday(&(flag), NULL);
 extern std::vector<uint64_t> globalKeys;
 DECLARE_bool(debug);
-DEFINE_string(config_file, "../cube_app/conf/cube.conf", "m-cube config file");
+DEFINE_string(config_file, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/cube_app/conf/cube.conf", "m-cube config file");
 DECLARE_string(keys);
 DEFINE_string(dict, "test_dict", "dict to seek");
 DEFINE_int32(timeout, 200, "timeout in ms");
 DEFINE_int32(retry, 3, "retry times");
 DEFINE_int32(cube_thread_num, 1, "thread num");
-DEFINE_string(cube_result_file, "../cube.result", "cube qry result");
+DEFINE_string(cube_result_file, "/home/soft/xiaoxiao-PaddleRec/PaddleRec/tools/inference_c++2.0/cube.result", "cube qry result");
 
 std::atomic<int> g_concurrency(0);
 
@@ -82,11 +82,11 @@ namespace rec
 			}
 			std::vector<CubeValue> values;
 			std::vector<uint64_t> keys;
-			//keys.assign(feasigns.begin(), feasigns.end());
+			keys.assign(feasigns.begin(), feasigns.end());
 			if (feasigns.size() > globalKeys.size()) {
 				LOG(ERROR) << "global keys not enough!";
 			}
-			keys.assign(globalKeys.begin(), globalKeys.begin() + feasigns.size());
+			//keys.assign(globalKeys.begin(), globalKeys.begin() + feasigns.size());
 			/*
 			std::ifstream keyFile(FLAGS_keys.c_str());
 			if (!keyFile.is_open()) {
@@ -121,12 +121,16 @@ namespace rec
 			}
 			uint64_t seek_cost = time_diff(seek_start, seek_end);
 			// convert && save cube qurey result
-			paddleRecInfer::xbox_pb_converter::XboxPbDeconverter deconverter;
+			//paddleRecInfer::xbox_pb_converter::XboxPbDeconverter deconverter;
 			for (uint64_t i = 0; i < keys.size(); i++) {
 				if (result.find(keys[i]) != result.end()) {
 					continue;
 				}
+				paddleRecInfer::xbox_pb_converter::XboxPbDeconverter deconverter;
 				deconverter.Deconvert(keys[i], values[i].buff);
+					if (keys[i] == 439129985366587427) {
+					std::cout << deconverter.mf.size() << std::endl;
+					}
 				result[keys[i]].swap(deconverter.mf);
 			}
 			keys.clear();

@@ -1,10 +1,9 @@
 #!/bin/bash
 
 #protoc *.proto --cpp_out .
-
 rm -rf predictor.log
 rm -rf std.log
-rm -rf performance.txt
+#rm -rf performance.txt
 rm -rf cube.result
 
 mkdir -p bin
@@ -27,16 +26,9 @@ cd ../bin
 #    done
 #done
 
-#for threadNum in 1 2 4 8 16 24 32 64
-#do
-#    for batchSize in 1
-#    do
-#        echo "++++ executing task : threadNum - $threadNum, batchSize - $batchSize"
-#        ./main --flagfile ../user.flags -threadNum $threadNum -batchSize $batchSize
-#    done
-#done
+#exit
 
-for threadNum in 1
+for threadNum in 1 #1 2 4 8 16 24 32 64
 do
     for batchSize in 1
     do
@@ -44,3 +36,12 @@ do
         ./main --flagfile ../user.flags -threadNum $threadNum -batchSize $batchSize
     done
 done
+
+#for threadNum in 4 8 16 24
+#do
+#    for batchSize in 8 24 32 128
+#    do
+#        echo "++++ executing task : threadNum - $threadNum, batchSize - $batchSize"
+#        ./main --flagfile ../user.flags -threadNum $threadNum -batchSize $batchSize
+#    done
+#done

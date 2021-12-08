@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include "xbox_pb_deconverter.h"
-
+#include <iostream>
 DECLARE_bool(debug);
 DECLARE_string(cube_result_file);
 
@@ -36,8 +36,9 @@ void XboxPbDeconverter::Deconvert(uint64_t& key, std::string& value) {
     }
     if (mio_pb.has_weight_lr_person() && mio_pb.weight_lr_person() != 0) {
         lr = 1.0 * mio_pb.weight_lr_person() / lrRatio;
-    }
+}
     size_t mf_count = mio_pb.weight_mf_size();
+	mf.clear();
     if (mf_count != 0) {
         for (size_t i = 0; i < mf_count; ++i) {
             mf.push_back(1.0 * mio_pb.weight_mf(i) / mfRatio);
@@ -47,7 +48,7 @@ void XboxPbDeconverter::Deconvert(uint64_t& key, std::string& value) {
         FILE* fout = fopen(const_cast<char*>(FLAGS_cube_result_file.c_str()), "a+");
         CHECK(fprintf(fout, "%lu\t", key) > 0);
         CHECK(fprintf(fout, "%f,", lr) > 0);
-        for (uint i = 0; i < mf.size(); i++) {
+	for (uint i = 0; i < mf.size(); i++) {
             if (i == (mf.size() - 1)) {
                 CHECK(fprintf(fout, "%f", mf[i]) > 0);
             } else {
@@ -57,7 +58,7 @@ void XboxPbDeconverter::Deconvert(uint64_t& key, std::string& value) {
         CHECK(fprintf(fout, "\n"));
         CHECK(fflush(fout) == 0);
         fclose(fout);
-        mf.insert(mf.begin(), lr);
+	mf.insert(mf.begin(), lr);
     }
 };
 
