@@ -2,7 +2,6 @@ paddle_inference/
 bin/
 build/
 cube_app/data/
-cube_app/cube_model/
 cube_app/keys
 cube_app/tmp
 cube_app/keys-values

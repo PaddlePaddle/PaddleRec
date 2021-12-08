@@ -27,7 +27,7 @@ link_directories("${PADDLE_LIB}/third_party/install/brpc/lib")
 link_directories("${PADDLE_LIB}/third_party/install/zlib/lib")
 link_directories("${PADDLE_LIB}/third_party/install/leveldb/lib")
 add_definitions(-DBRPC_WITH_GLOG)
-add_definitions(-DCUBE) # 启用 cube 功能
+#add_definitions(-DCUBE) # 启用 cube 功能
 #add_definitions(-DUSE_LOCK) # 使用加锁队列
 
 #SET(CMAKE_BUILD_TYPE "Debug")

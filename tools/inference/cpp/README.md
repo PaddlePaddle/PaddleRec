@@ -35,15 +35,19 @@ sh run.sh
     mv ./cube_app/data/0_0/test_dict_part0/* ./cube_app/data/
     cd cube_app && ./cube 
 ```
-5. 查询
+5. 用户查询测试功能，inference代码中用不到
 ```
     ./cube-cli -dict_name=test_dict -keys [keys文件] -conf ./cube_app/cube.conf # 本项目中 cube client 的功能已经集成在 inference 代码里了
 ```  
+<h2>测试用例<h2>
+
+* 1. 不启用 cube 服务：全量带 embedding 的模型
+* 2. 启用 cube 服务：裁剪后不带 embedding 的模型（small_model, 300 个 slot）、输入数据（demo_10_300）、可打印的varname（all_vars_small_model.txt）
 
 <h2>Notice</h2>
  
-* 样例中的模型文件由 Paddle 2.0.2 生成的  
+* 样例中的模型文件由 PaddlePaddle develop 分支生成的  
 * paddle inference 预测库默认版本 2.1   
 * cube client 代码基于 Paddle Serving v0.3.0 server  
 * cube-builder、cube、cube-transfer、cube-agent、brpc 由 Paddle Serving v0.6.2 server 编译出来的，当然 v0.3.0 也可以编出来
-* 由于该项目能加载完整模型和裁剪后的模型，测试时注意修改模型文件路径（在 user.flag 文件中）和 infer.h 中的 dataType（分别是 int64_t 和 float）
+* 由于该项目能加载完整模型和裁剪后的模型，测试时注意修改模型文件路径（在 user.flag 文件中）和 CMakeLists.txt 中的 -DCUBE 开关
