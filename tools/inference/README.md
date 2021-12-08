@@ -3,5 +3,5 @@
 - java：java 预测代码
 - python：python 预测代码
 - go: go 预测代码
-- data：预测所使用的样本数据
-- model：预测所使用的模型文件
+- data：java、python 预测所使用的样本数据，c++ 所使用的模型和参数文件在 cpp 目录下
+- model：java、python 预测所使用的模型文件，c++ 所使用的模型和参数文件在 cpp 目录下
