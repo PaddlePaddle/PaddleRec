@@ -316,7 +316,7 @@ std::ofstream fout("../embed_input.txt", std::ios_base::app);
             for (int sampleIdx = 0; sampleIdx < FLAGS_batchSize; ++sampleIdx) {
                 int len = batchSample.featureCnts[slotId][sampleIdx];
                 lod0.push_back(lod0.back() + len);
-		width += (batchSample.featureCnts[slotId][sampleIdx]);
+		width += len;
             }
             memcpy(lod[0].data(), lod0.data(), sizeof(size_t) * lod0.size()); // low performance
             lodTensor->SetLoD(lod);
@@ -333,7 +333,7 @@ std::ofstream fout("../embed_input.txt", std::ios_base::app);
                     TypeIn *data_ptr = lodTensor->mutable_data<TypeIn>(piModel->place) + offset;
 		fout << feasign << ": ";
                  if (queryResult[feasign].empty()) {
-			std::cout << "no result: " << feasign;
+			LOG(ERROR) << "no result: " << feasign;
 		    }
 		    for (int k = 0; k < queryResult[feasign].size(); k++) {
                         fout << queryResult[feasign][k] << ", ";

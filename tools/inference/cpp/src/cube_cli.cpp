@@ -128,9 +128,6 @@ namespace rec
 				}
 				paddleRecInfer::xbox_pb_converter::XboxPbDeconverter deconverter;
 				deconverter.Deconvert(keys[i], values[i].buff);
-					if (keys[i] == 439129985366587427) {
-					std::cout << deconverter.mf.size() << std::endl;
-					}
 				result[keys[i]].swap(deconverter.mf);
 			}
 			keys.clear();
