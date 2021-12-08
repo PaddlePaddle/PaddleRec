@@ -77,7 +77,8 @@ class StaticModel():
             self.fc_sizes,
             sync_mode=self.sync_mode)
 
-        raw_predict_2d = dnn_model(self.sparse_inputs, self.dense_input)
+        raw_predict_2d = dnn_model.forward(self.sparse_inputs,
+                                           self.dense_input)
 
         predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 

@@ -87,10 +87,10 @@ class DygraphModel():
         hist_item_seq, hist_cat_seq, target_item, target_cat, label, mask, target_item_seq, target_cat_seq, neg_hist_item_seq, neg_hist_cat_seq = self.create_feeds(
             batch_data, config)
 
-        raw_pred, aux_loss = dy_model(hist_item_seq, hist_cat_seq, target_item,
-                                      target_cat, label, mask, target_item_seq,
-                                      target_cat_seq, neg_hist_item_seq,
-                                      neg_hist_cat_seq)
+        raw_pred, aux_loss = dy_model.forward(
+            hist_item_seq, hist_cat_seq, target_item, target_cat, label, mask,
+            target_item_seq, target_cat_seq, neg_hist_item_seq,
+            neg_hist_cat_seq)
 
         loss = self.create_loss(raw_pred, label)
         cost = loss + aux_loss
@@ -105,10 +105,10 @@ class DygraphModel():
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         hist_item_seq, hist_cat_seq, target_item, target_cat, label, mask, target_item_seq, target_cat_seq, neg_hist_item_seq, neg_hist_cat_seq = self.create_feeds(
             batch_data, config)
-        raw_pred, aux_loss = dy_model(hist_item_seq, hist_cat_seq, target_item,
-                                      target_cat, label, mask, target_item_seq,
-                                      target_cat_seq, neg_hist_item_seq,
-                                      neg_hist_cat_seq)
+        raw_pred, aux_loss = dy_model.forward(
+            hist_item_seq, hist_cat_seq, target_item, target_cat, label, mask,
+            target_item_seq, target_cat_seq, neg_hist_item_seq,
+            neg_hist_cat_seq)
 
         predict = paddle.nn.functional.sigmoid(raw_pred)
         predict_2d = paddle.concat(x=[1 - predict, predict], axis=1)

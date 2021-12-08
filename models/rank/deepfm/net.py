@@ -40,9 +40,9 @@ class DeepFMLayer(nn.Layer):
 
     def forward(self, sparse_inputs, dense_inputs):
 
-        y_first_order, y_second_order, feat_embeddings = self.fm(sparse_inputs,
-                                                                 dense_inputs)
-        y_dnn = self.dnn(feat_embeddings)
+        y_first_order, y_second_order, feat_embeddings = self.fm.forward(
+            sparse_inputs, dense_inputs)
+        y_dnn = self.dnn.forward(feat_embeddings)
 
         predict = F.sigmoid(y_first_order + y_second_order + y_dnn)
 

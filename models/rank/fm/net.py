@@ -37,7 +37,8 @@ class FMLayer(nn.Layer):
 
     def forward(self, sparse_inputs, dense_inputs):
 
-        y_first_order, y_second_order = self.fm(sparse_inputs, dense_inputs)
+        y_first_order, y_second_order = self.fm.forward(sparse_inputs,
+                                                        dense_inputs)
 
         predict = F.sigmoid(y_first_order + y_second_order + self.bias)
 
