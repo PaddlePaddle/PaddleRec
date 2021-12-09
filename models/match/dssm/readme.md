@@ -1,6 +1,6 @@
 # DSSM文本匹配模型
 
-**注意：[aistudio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3217658?contributionType=1)**
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3217658?contributionType=1)**
 
 以下是本例的简要目录结构及说明： 
 
