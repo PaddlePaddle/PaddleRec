@@ -27,6 +27,7 @@
 
 [paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
 [dssm](https://paddlerec.readthedocs.io/en/latest/models/match/dssm.html)  
+[在线环境](https://aistudio.baidu.com/aistudio/projectdetail/3217658?contributionType=1)
 
 ## 内容
 
