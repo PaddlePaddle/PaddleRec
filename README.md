@@ -34,6 +34,10 @@
 
 <h2 align="center">快速使用</h2>
 
+### 在线运行  
+
+- **[AI Studio在线运行示例](https://aistudio.baidu.com/aistudio/projectdetail/3217658?contributionType=1)**
+
 ### 环境要求
 * Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用python3.7，示例中的python默认表示python3.7
 * PaddlePaddle >=2.0 
