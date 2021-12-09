@@ -55,7 +55,7 @@ class StaticModel():
             ncf_model = NCF_MLP_Layer(self.num_users, self.num_items,
                                       self.mf_dim, self.layers)
 
-        prediction = ncf_model(input)
+        prediction = ncf_model.forward(input)
 
         self.inference_target_var = prediction
         if is_infer:

@@ -76,7 +76,7 @@ class StaticModel():
             self.embed_size,
             self.neg_num,
             sparse=not self.use_gpu)
-        loss = skip_gramp_model(src, dsts)
+        loss = skip_gramp_model.forward(src, dsts)
 
         avg_cost = paddle.mean(x=loss)
         self._cost = avg_cost

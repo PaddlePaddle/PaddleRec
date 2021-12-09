@@ -56,7 +56,7 @@ class StaticModel():
     def net(self, input, is_infer=False):
         dssm_model = DSSMLayer(self.trigram_d, self.neg_num, self.slice_end,
                                self.hidden_layers, self.hidden_acts)
-        R_Q_D_p, hit_prob = dssm_model(input, is_infer)
+        R_Q_D_p, hit_prob = dssm_model.forward(input, is_infer)
 
         self.inference_target_var = R_Q_D_p
         self.prune_target_var = dssm_model.query_fc

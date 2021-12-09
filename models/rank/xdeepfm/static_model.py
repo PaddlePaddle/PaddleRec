@@ -80,7 +80,7 @@ class StaticModel():
             self.dense_input_dim, sparse_number, self.layer_sizes_cin,
             self.layer_sizes_dnn)
 
-        pred = xdeepfm_model(self.sparse_inputs, self.dense_input)
+        pred = xdeepfm_model.forward(self.sparse_inputs, self.dense_input)
 
         #pred = F.sigmoid(prediction)
 

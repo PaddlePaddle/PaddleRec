@@ -83,7 +83,7 @@ class StaticModel():
             self.clip_by_norm, self.l2_reg_cross, self.is_sparse)
         print("----self.dense_input-----", self.dense_input)
         print("----self.sparse_inputs----", self.sparse_inputs)
-        pred, l2_loss = dcn_model(self.sparse_inputs, self.dense_input)
+        pred, l2_loss = dcn_model.forward(self.sparse_inputs, self.dense_input)
 
         #pred = F.sigmoid(prediction)
 

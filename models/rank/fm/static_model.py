@@ -69,7 +69,7 @@ class StaticModel():
         fm_model = FMLayer(self.sparse_feature_number, self.sparse_feature_dim,
                            self.dense_input_dim, sparse_number)
 
-        pred = fm_model(self.sparse_inputs, self.dense_input)
+        pred = fm_model.forward(self.sparse_inputs, self.dense_input)
 
         #pred = F.sigmoid(prediction)
 
