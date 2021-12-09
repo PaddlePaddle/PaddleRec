@@ -63,7 +63,7 @@ class StaticModel():
             self.conv_filter, self.conv_act, self.hidden_size, self.out_size,
             self.pool_size, self.pool_stride, self.pool_padding,
             self.pool_type, self.hidden_act)
-        prediction = pyramid_model(input)
+        prediction = pyramid_model.forward(input)
 
         if is_infer:
             fetch_dict = {'prediction': prediction}

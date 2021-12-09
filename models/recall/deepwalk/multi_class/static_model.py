@@ -79,7 +79,7 @@ class StaticModel():
         num_samples = self.batch_size
         multi_class_model = MultiClassLayer(self.num_nodes, self.embed_size,
                                             self.num_groups)
-        logits = multi_class_model(node)
+        logits = multi_class_model.forward(node)
         probs = paddle.nn.functional.sigmoid(logits)
         bce_loss = paddle.nn.BCEWithLogitsLoss()
         loss = bce_loss(logits, labels)

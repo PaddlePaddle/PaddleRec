@@ -67,8 +67,8 @@ class StaticModel():
             self.batch_size = self.config.get("runner.train_batch_size")
         rank_model = DNNLayer(self.sparse_feature_number,
                               self.sparse_feature_dim, self.hidden_layers)
-        predict = rank_model(self.batch_size, self.user_sparse_inputs,
-                             self.mov_sparse_inputs, self.label_input)
+        predict = rank_model.forward(self.batch_size, self.user_sparse_inputs,
+                                     self.mov_sparse_inputs, self.label_input)
 
         self.inference_target_var = predict
         if is_infer:

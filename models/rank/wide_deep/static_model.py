@@ -74,7 +74,7 @@ class StaticModel():
             self.sparse_feature_number, self.sparse_feature_dim,
             self.dense_input_dim, sparse_number, self.fc_sizes)
 
-        pred = wide_deep_model(self.sparse_inputs, self.dense_input)
+        pred = wide_deep_model.forward(self.sparse_inputs, self.dense_input)
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
