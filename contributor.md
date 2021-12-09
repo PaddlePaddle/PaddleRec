@@ -2,7 +2,7 @@
 
 
   |   方向   |                                   模型                                    | githubID | PR |
-  | :------: | :-----------------------------------------------------------------------: | :-----: | :-----: | :----- |
+  | :------: | :-----------------------------------------------------------------------: | :-----: | :----- |
   |   排序   |                       [BERT4REC](models/rank/bert4rec/)                       |  [jinweiluo](https://github.com/jinweiluo)  |    https://github.com/PaddlePaddle/PaddleRec/pull/624    |
   |   排序   |                     [dlrm](models/rank/dlrm/)                     |  [chenzq](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/554    |
   |   排序   |                     [difm](models/rank/difm/)                     |  [chenzq](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/562    |
