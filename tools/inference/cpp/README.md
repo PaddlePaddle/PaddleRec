@@ -31,14 +31,15 @@ tools/inference/cpp
 2. 引入百度 brpc 库: [brpc 源码地址](https://github.com/apache/incubator-brpc)，下载后编译，编译输出文件放入 ./paddle_inference 目录下
 3. 训练保存好的模型和参数文件、推理样本文件
 
-<h2>kv 功能流程</h2>
+<h2>cube kv 功能流程</h2>
 
 1. 准备 Sequence File [样例seqfile](https://paddle-serving.bj.bcebos.com/others/part-000-00000 )  
-2. 编译 Paddle Serving server，获取 cube、cube-builder 可执行文件
+2. 编译 Paddle Serving server，获取 cube、cube-builder 可执行文件(本代码仓中已提供)
 3. 生成分片文件
 ```
     ./cube_app/cube-builder -dict_name=test_dict -job_mode=base -last_version=0 -cur_version=0 -depend_version=0 -input_path=./cube_app/cube_model -output_path=${PWD}/cube_app/data -shard_num=1 -only_build=false  
 ```
+此处可能需要用户升级 libcurl(apt-get install libcurl3)
 4. 本地配送
 ```
     mv ./cube_app/data/0_0/test_dict_part0/* ./cube_app/data/
@@ -78,4 +79,4 @@ tools/inference/cpp
 * paddle inference 预测库默认版本 2.1   
 * cube client 代码基于 Paddle Serving v0.3.0 server  
 * cube-builder、cube、cube-transfer、cube-agent、brpc 由 Paddle Serving v0.6.2 server 编译出来的，当然 v0.3.0 也可以编出来
-* 由于该项目能加载完整模型和裁剪后的模型，测试时注意修改模型文件路径（在 user.flag 文件中）和 CMakeLists.txt 中的 -DCUBE 开关
+* 由于该项目能加载完整模型和裁剪后的模型，测试时注意修改模型文件路径（在 user.flags 文件中）和 CMakeLists.txt 中的 -DCUBE 开关
