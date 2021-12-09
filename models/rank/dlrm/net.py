@@ -111,7 +111,7 @@ class DLRMLayer(nn.Layer):
         R = paddle.concat([x] + [Zflat], axis=1)
 
         y = self.top_mlp(R)
-        return y
+        return nn.functional.sigmoid(y)
 
 
 class MLPLayer(nn.Layer):

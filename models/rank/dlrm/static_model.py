@@ -87,14 +87,13 @@ class StaticModel():
             num_field=self.num_field,
             self_interaction=False)
 
-        raw_predict_2d = dlrm_model(self.sparse_inputs, self.dense_input)
+        pred = dlrm_model(self.sparse_inputs, self.dense_input)
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
         cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict_2d, label=self.label_input)
+            input=predict_2d, label=self.label_input)
         avg_cost = paddle.mean(x=cost)
 
-        # pred = F.sigmoid(prediction)
-        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
         self.predict = predict_2d
 
         auc, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,

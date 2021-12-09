@@ -40,6 +40,11 @@ class DygraphModel():
             num_field=num_field,
             self_interaction=False)
 
+        paddle.summary(
+            dlrm_model,
+            input_size=[(26, 128), (128, 13)],
+            dtypes=['int64', 'float32'])
+
         return dlrm_model
 
     # define feeds which convert numpy of batch data to paddle.tensor
@@ -82,10 +87,11 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        raw_pred_2d = dy_model.forward(sparse_tensor, dense_tensor)
-        loss = self.create_loss(raw_pred_2d, label)
+        pred = dy_model.forward(sparse_tensor, dense_tensor)
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+        loss = self.create_loss(predict_2d, label)
+
         # update metrics
-        predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
         metrics_list[1].update(metrics_list[1].compute(
             pred=predict_2d, label=label).numpy())
@@ -98,9 +104,10 @@ class DygraphModel():
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
 
-        raw_pred_2d = dy_model.forward(sparse_tensor, dense_tensor)
+        pred = dy_model.forward(sparse_tensor, dense_tensor)
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+
         # update metrics
-        predict_2d = paddle.nn.functional.softmax(raw_pred_2d)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
         metrics_list[1].update(metrics_list[1].compute(
             pred=predict_2d, label=label).numpy())
