@@ -11,4 +11,4 @@
   |   排序   |                     [DIFM](models/rank/difm/)                     |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/562    | 论文复现赛第四期 |
   |   排序   |                       [BERT4REC](models/rank/bert4rec/)                       |  [jinweiluo](https://github.com/jinweiluo)  |    https://github.com/PaddlePaddle/PaddleRec/pull/624    | 论文复现赛第四期 |
 
-</div>
+</div> 
