@@ -62,6 +62,28 @@ def get_strategy(config):
         "stat_var_names": config.get("stat_var_names", [])
     }
     print("strategy:", strategy.trainer_desc_configs)
+
+    if config.get("runner.fs_client.uri") is not None:
+        strategy.fs_client_param = {
+            "uri": config.get("runner.fs_client.uri", ""),
+            "user": config.get("runner.fs_client.user", ""),
+            "passwd": config.get("runner.fs_client.passwd", ""),
+            "hadoop_bin": config.get("runner.fs_client.hadoop_bin", "hadoop")
+        }
+    print("strategy:", strategy.fs_client_param)
+
+    strategy.adam_d2sum = config.get("hyper_parameters.adam_d2sum", True)
+    table_config = {}
+    for x in config:
+        if x.startswith("table_parameters"):
+            table_name = x.split('.')[1]
+            if table_name not in table_config:
+                table_config[table_name] = {}
+            table_config[table_name][x] = config[x]
+    print("table_config:", table_config)
+    strategy.sparse_table_configs = table_config
+    print("strategy table config:", strategy.sparse_table_configs)
+
     return strategy
 
 
