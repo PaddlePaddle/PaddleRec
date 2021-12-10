@@ -50,7 +50,6 @@ def parse_args():
     parser.add_argument("--save_log_path", type=str, default="./output")
     parser.add_argument("--precision", type=str)
 
-
     args = parser.parse_args()
     args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
     args.enable_mkldnn = (True
