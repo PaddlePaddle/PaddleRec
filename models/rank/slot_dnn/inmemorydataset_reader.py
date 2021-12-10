@@ -78,6 +78,9 @@ class Reader(fleet.MultiSlotStringDataGenerator):
                 output[self.slot2index[i]][1].extend([self.padding])
             else:
                 self.visit[slot] = False
+
+        # add show
+        output = [("0", ["1"])] + output
         output = [("ins_id", [ins_id])] + output
         return output
         #return [label] + sparse_feature + [dense_feature]
