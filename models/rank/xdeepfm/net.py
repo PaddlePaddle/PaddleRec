@@ -47,9 +47,10 @@ class xDeepFMLayer(nn.Layer):
 
     def forward(self, sparse_inputs, dense_inputs):
 
-        y_linear, feat_embeddings = self.fm(sparse_inputs, dense_inputs)
-        y_cin = self.cin(feat_embeddings)
-        y_dnn = self.dnn(feat_embeddings)
+        y_linear, feat_embeddings = self.fm.forward(sparse_inputs,
+                                                    dense_inputs)
+        y_cin = self.cin.forward(feat_embeddings)
+        y_dnn = self.dnn.forward(feat_embeddings)
         predict = F.sigmoid(y_linear + self.bias + y_cin + y_dnn)
         return predict
 

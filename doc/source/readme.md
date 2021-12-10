@@ -10,4 +10,34 @@
 [multiview-sminet](https://paddlerec.readthedocs.io/en/latest/models/match/multiview-simnet.html)  
 
 ## 召回模型
-[gru4rec](https://paddlerec.readthedocs.io/en/latest/models/recall/gru4rec.html) 
+[gru4rec](https://paddlerec.readthedocs.io/en/latest/models/recall/gru4rec.html)  
+[word2vec](https://paddlerec.readthedocs.io/en/latest/models/recall/word2vec.html)  
+[ncf](https://paddlerec.readthedocs.io/en/latest/models/recall/ncf.html)  
+[mind](https://paddlerec.readthedocs.io/en/latest/models/recall/mind.html)  
+[deepwalk](https://paddlerec.readthedocs.io/en/latest/models/recall/deepwalk.html)  
+
+## 多任务模型
+[esmm](https://paddlerec.readthedocs.io/en/latest/models/multitask/esmm.html)  
+[maml](https://paddlerec.readthedocs.io/en/latest/models/multitask/maml.html)  
+[mmoe](https://paddlerec.readthedocs.io/en/latest/models/multitask/mmoe.html)  
+[ple](https://paddlerec.readthedocs.io/en/latest/models/multitask/ple.html)  
+[share_bottom](https://paddlerec.readthedocs.io/en/latest/models/multitask/share_bottom.html)  
+
+## 排序模型
+[bst](https://paddlerec.readthedocs.io/en/latest/models/rank/bst.html)  
+[dcn](https://paddlerec.readthedocs.io/en/latest/models/rank/dcn.html)  
+[deepfefm](https://paddlerec.readthedocs.io/en/latest/models/rank/deepfefm.html)  
+[deepfm](https://paddlerec.readthedocs.io/en/latest/models/rank/deepfm.html)  
+[dien](https://paddlerec.readthedocs.io/en/latest/models/rank/dien.html)  
+[difm](https://paddlerec.readthedocs.io/en/latest/models/rank/difm.html)  
+[din](https://paddlerec.readthedocs.io/en/latest/models/rank/din.html)  
+[dlrm](https://paddlerec.readthedocs.io/en/latest/models/rank/dlrm.html)  
+[dmr](https://paddlerec.readthedocs.io/en/latest/models/rank/dmr.html)  
+[dnn](https://paddlerec.readthedocs.io/en/latest/models/rank/dnn.html)  
+[ffm](https://paddlerec.readthedocs.io/en/latest/models/rank/ffm.html)  
+[fm](https://paddlerec.readthedocs.io/en/latest/models/rank/fm.html)  
+[gatenet](https://paddlerec.readthedocs.io/en/latest/models/rank/gatenet.html)  
+[logistic_regression](https://paddlerec.readthedocs.io/en/latest/models/rank/logistic_regression.html)  
+[naml](https://paddlerec.readthedocs.io/en/latest/models/rank/naml.html)  
+[wide_deep](https://paddlerec.readthedocs.io/en/latest/models/rank/wide_deep.html)  
+[xdeepfm](https://paddlerec.readthedocs.io/en/latest/models/rank/xdeepfm.html)  

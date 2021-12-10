@@ -80,12 +80,12 @@ class DygraphModel():
             for j in range(update_step):
                 #内循环
                 task_optimizer.clear_grad()  # 梯度清零
-                y_hat = task_net(x_spt[i])  # (setsz, ways) [5,5]
+                y_hat = task_net.forward(x_spt[i])  # (setsz, ways) [5,5]
                 loss_spt = F.cross_entropy(y_hat, y_spt[i])
                 loss_spt.backward()
                 task_optimizer.step()
 
-            y_hat = task_net(x_qry[i])
+            y_hat = task_net.forward(x_qry[i])
             loss_qry = F.cross_entropy(y_hat, y_qry[i])
             loss_qry.backward()
             for k in task_net.parameters():
@@ -127,12 +127,12 @@ class DygraphModel():
                                               parameters=task_net.parameters())
         for j in range(update_step):
             task_optimizer.clear_grad()
-            y_hat = task_net(x_spt)
+            y_hat = task_net.forward(x_spt)
             loss_spt = F.cross_entropy(y_hat, y_spt)
             loss_spt.backward()
             task_optimizer.step()
 
-        y_hat = task_net(x_qry)
+        y_hat = task_net.forward(x_qry)
         pred_qry = F.softmax(y_hat, axis=1).argmax(axis=1)
         correct = paddle.equal(pred_qry, y_qry).numpy().sum().item()
         correct_list.append(correct)

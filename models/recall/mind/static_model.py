@@ -67,7 +67,7 @@ class StaticModel():
         # self.model = mind_model
         if is_infer:
             mind_model.eval()
-            user_cap, cap_weights = mind_model(*inputs)
+            user_cap, cap_weights = mind_model.forward(*inputs)
             # self.inference_target_var = user_cap
             fetch_dict = {"user_cap": user_cap}
             return fetch_dict

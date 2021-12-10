@@ -108,7 +108,7 @@ class StaticModel():
             self.item_emb_size, self.cat_emb_size, self.act, self.is_sparse,
             self.use_DataLoader, self.item_count, self.cat_count)
 
-        logit, aux_loss = dien_model(
+        logit, aux_loss = dien_model.forward(
             self.hist_item_seq, self.hist_cat_seq, self.target_item,
             self.target_cat, self.label, self.mask, self.target_item_seq,
             self.target_cat_seq, self.neg_hist_item_seq, self.neg_hist_cat_seq)

@@ -52,8 +52,34 @@
    :caption: 模型介绍
    :name: Model introduction
 
-   paddlerec/model_introduce.md
-   models/index.rst
+   models/contentunderstanding/tagspace.md
+   models/contentunderstanding/textcnn.md
+   models/match/dssm.md
+   models/match/match-pyramid.md
+   models/match/multiview-simnet.md
+   models/recall/gru4rec.md
+   models/recall/deepwalk.md
+   models/recall/mind.md
+   models/recall/ncf.md
+   models/recall/word2vec.md
+   models/rank/bst.md
+   models/rank/dcn.md
+   models/rank/deepfefm.md
+   models/rank/deepfm.md
+   models/rank/dien.md
+   models/rank/difm.md
+   models/rank/din.md
+   models/rank/dlrm.md
+   models/rank/dmr.md
+   models/rank/dnn.md
+   models/rank/ffm.md
+   models/rank/fm.md
+   models/rank/gatenet.md
+   models/rank/logistic_regression.md
+   models/rank/naml.md
+   models/rank/wide_deep.md
+   models/rank/xdeepfm.md
+
    
 .. toctree::
    :maxdepth: 1
