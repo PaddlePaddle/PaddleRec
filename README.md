@@ -104,6 +104,9 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 ### FAQ
 * [常见问题FAQ](doc/faq.md)
 
+### 致谢
+* [外部开发者贡献列表](contributor.md)
+
 <h2 align="center">支持模型列表</h2>
 
 
