@@ -81,7 +81,7 @@ class StaticModel():
             self.customer_size, self.brand_size, self.btag_size, self.pid_size,
             self.main_embedding_size, self.other_embedding_size)
 
-        pred, loss = DMR_model(inputs, is_infer)
+        pred, loss = DMR_model.forward(inputs, is_infer)
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         auc, batch_auc, _ = paddle.static.auc(input=predict_2d,

@@ -84,7 +84,7 @@ class StaticModel():
                                  sparse_number, self.fc_sizes,
                                  self.use_embedding_gate, self.use_hidden_gate)
 
-        raw_pred = dnn_model(self.sparse_inputs, self.dense_input)
+        raw_pred = dnn_model.forward(self.sparse_inputs, self.dense_input)
 
         predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
 

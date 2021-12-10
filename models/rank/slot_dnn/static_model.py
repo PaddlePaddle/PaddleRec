@@ -68,7 +68,7 @@ class StaticModel():
             self.layer_sizes,
             sync_mode=self.sync_mode)
 
-        self.predict = dnn_model(self.slot_inputs)
+        self.predict = dnn_model.forward(self.slot_inputs)
 
         # self.all_vars = input + dnn_model.all_vars
         self.all_vars = dnn_model.all_vars
