@@ -1,6 +1,8 @@
 # ShareBottom
 
- 以下是本例的简要目录结构及说明： 
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3238943)**
+
+以下是本例的简要目录结构及说明： 
 
 ```
 ├── data # 文档
