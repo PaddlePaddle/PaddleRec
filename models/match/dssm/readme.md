@@ -57,7 +57,7 @@ PaddlePaddle>=2.0
 python 2.7/3.5/3.6/3.7
 
 os : windows/linux/macos 
-12234
+
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在dssm模型目录的快速执行命令如下： 
 ```bash
@@ -89,7 +89,7 @@ Query 和 Doc 的语义相似性可以用这两个向量的 cosine 距离表示�
 
 | 模型 | 正序率 | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| DSSM | 0.93 | 128 | 1 | 约9分钟 |  
+| DSSM | 0.79 | 128 | 1 | 约7分钟 |  
 
 1. 确认您当前所在目录为PaddleRec/models/match/dssm
 2. 进入paddlerec/datasets/BQ_dssm目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的BQ全量数据集，并解压到指定文件夹。  
@@ -105,32 +105,5 @@ bash run.sh #动态图训练并测试，最后得到指标
 ```
 
 ## 进阶使用
-DSSM作为推荐系统中一种向量召回的方式，一般需要将doc侧的向量预先计算出来，灌入向量搜索引擎（例如milvus）中，同时保存的模型仅为query侧的模型。线上使用阶段，输入query侧的数据，计算出query侧向量后，直接通过向量搜索引擎召回对应的doc。  
-一般在训练的过程中，增加预测阶段，dump出全量的doc侧向量，需要做如下修改： 
-1. 为了区分dump出的向量，预测阶段使用的数据需要增加insid和content两个字段，其中insid唯一标记样本，content指明对应的doc。并在数据处理脚本中对这两个字段进行解析，详见bq_reader_train_insid.py脚本。
-2. dataset选择InmemoryDataset，同时设置
-```python
-dataset.set_parse_ins_id(True)
-dataset.set_parse_content(True)
-```
-3. 在static_model.py中配置需要dump的变量（doc侧最上层输出）
-```python
-self.infer_dump_fields = [dssm_model.doc_pos_fc]
-```
-4. 配置文件中，打开预测阶段的dump功能，并配置dump_path
-```bash
-need_infer_dump: True
-infer_dump_fields_dir: "./infer_dump_data"
-```
-保存模型时，只需要保存query侧网络
-1. 配置文件中，打开裁剪网络开关
-```bash
-need_prune: True
-```
-2. 在static_model.py中配置裁剪网络的输入和输出
-```python
-self.prune_feed_vars = [query]
-self.prune_target_var = dssm_model.query_fc
-```
   
 ## FAQ

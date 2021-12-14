@@ -21,7 +21,8 @@
 
 注：在阅读该示例前，建议您先了解以下内容：
 
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
+[tagespace](https://paddlerec.readthedocs.io/en/latest/models/contentunderstanding/tagspace.html)  
 
 ## 内容
 
