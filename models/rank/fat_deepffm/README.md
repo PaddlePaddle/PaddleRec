@@ -100,7 +100,7 @@ DeepFFM网络结构如下图所示：
 
 <img align="center" src="https://wx1.sinaimg.cn/orj360/0073e4AWly1gx7p0casynj30qk0fq461.jpg">
 
-使用FFM对特征的不同field的关系进行建模，计算公式如下所示：
+使用FFM对特征的不同field的关系进行建模，计算如下公式所示：
 
 <img align="center" src="https://wx1.sinaimg.cn/mw2000/0073e4AWly1gx7p2f1t2cj30e1024t99.jpg">
 
