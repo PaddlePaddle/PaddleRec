@@ -78,8 +78,10 @@ class Reader(fleet.MultiSlotDataGenerator):
             else:
                 self.visit[slot] = False
 
+        # add show
+        output = [("0", [1])] + output
         return output
-        #return [label] + sparse_feature + [dense_feature]
+
     def generate_sample(self, line):
         "Dataset Generator"
 
