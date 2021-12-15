@@ -81,7 +81,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 FAT_DeepFFM 模型的组网，代码参考 `net.py`。模型主要组成是 Embedding 层，CENet 层，DeepFFM特征交叉层，DNN层以及相应的分类任务的loss计算和auc计算。模型架构如下：
 
-<img align="center" src="picture/1.jpg">
+<img align="center" src="picture/1.jpg" width="500" height="100">
 
 
 ### **CENet 层**
@@ -89,17 +89,17 @@ FAT_DeepFFM 模型的组网，代码参考 `net.py`。模型主要组成是 Embe
 FAT_DeepFFM 模型的特征输入，主要包括 sparse 类别特征。（在处理 dense 数值型特征时，进行升维与sparse 类别特征拼接）
 sparse features 经由 embedding 层查找得到相应的 embedding 向量。使用CENet显示地建模特征之间的依赖关系。CENet网络结构如下图所示：
 
-<img align="center" src="picture/2.jpg">
+<img align="center" src="picture/2.jpg" width="400" height="300">
 
 根据网络结构图，通过CENet的注意力机制有选择性地突出信息特征并抑制不太有用的特征，公式如下所示：
 
-<img align="center" src="picture/3.jpg">
+<img align="center" src="picture/3.jpg" width="400" height="300">
 
 
 ### **DeepFFM层**
 DeepFFM网络结构如下图所示：
 
-<img align="center" src="picture/4.jpg">
+<img align="center" src="picture/4.jpg" width="400" height="300">
 
 使用FFM对特征的不同field的关系进行建模，计算公式如下所示：
 
