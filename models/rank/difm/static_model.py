@@ -93,19 +93,18 @@ class StaticModel():
             att_head_num=self.att_head_num)
 
         pred = difm_model.forward(self.sparse_inputs, self.dense_input)
-        raw_predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
+        predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        cost = paddle.nn.functional.cross_entropy(
-            input=raw_predict_2d, label=self.label_input)
+        cost = paddle.nn.functional.log_loss(
+            input=pred, label=paddle.cast(
+                self.label_input, dtype="float32"))
         avg_cost = paddle.mean(x=cost)
 
         # pred = F.sigmoid(prediction)
-        predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
-        self.predict = predict_2d
 
-        auc, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
-                                                        label=self.label_input,
-                                                        slide_steps=0)
+        auc, batch_auc_var, _ = paddle.static.auc(input=predict_2d,
+                                                  label=self.label_input,
+                                                  slide_steps=0)
 
         self.inference_target_var = auc
         if is_infer:
@@ -117,8 +116,7 @@ class StaticModel():
         return fetch_dict
 
     def create_optimizer(self, strategy=None):
-        optimizer = paddle.optimizer.Adam(
-            learning_rate=self.learning_rate, lazy_mode=True)
+        optimizer = paddle.optimizer.Adam(learning_rate=self.learning_rate)
         if strategy != None:
             import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
