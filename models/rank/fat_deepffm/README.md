@@ -93,7 +93,7 @@ sparse features 经由 embedding 层查找得到相应的 embedding 向量。使
 
 根据网络结构图，通过CENet的注意力机制有选择性地突出信息特征并抑制不太有用的特征，公式如下所示：
 
-<img align="center" src="picture/3.jpg" width="400" height="300">
+<img align="center" src="picture/3.jpg" width="500" height="100">
 
 
 ### **DeepFFM层**
@@ -103,7 +103,7 @@ DeepFFM网络结构如下图所示：
 
 使用FFM对特征的不同field的关系进行建模，计算公式如下所示：
 
-<img align="center" src="picture/5.jpg">
+<img align="center" src="picture/5.jpg" width="400" height="300">
 
 
 
