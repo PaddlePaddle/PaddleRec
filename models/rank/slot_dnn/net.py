@@ -16,6 +16,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import math
+import paddle.fluid as fluid
 
 
 class BenchmarkDNNLayer(nn.Layer):
@@ -33,15 +34,7 @@ class BenchmarkDNNLayer(nn.Layer):
         self.layer_sizes = layer_sizes
         self._init_range = 0.2
 
-        # to do
-        #self.embedding = paddle.nn.Embedding(
-        #    self.dict_dim,
-        #    self.emb_dim,
-        #    sparse=True,
-        #    weight_attr=paddle.ParamAttr(
-        #        name="embedding",
-        #        initializer=paddle.nn.initializer.XavierNormal()))
-        #initializer=paddle.nn.initializer.Uniform()))
+        self.entry = paddle.distributed.ShowClickEntry("show", "click")
 
         sizes = [emb_dim * slot_num] + self.layer_sizes + [1]
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
@@ -70,7 +63,10 @@ class BenchmarkDNNLayer(nn.Layer):
             emb = paddle.static.nn.sparse_embedding(
                 input=s_input,
                 size=[self.dict_dim, self.emb_dim],
+                padding_idx=0,
+                entry=self.entry,
                 param_attr=paddle.ParamAttr(name="embedding"))
+
             self.inference_feed_vars.append(emb)
 
             bow = paddle.fluid.layers.sequence_pool(input=emb, pool_type='sum')

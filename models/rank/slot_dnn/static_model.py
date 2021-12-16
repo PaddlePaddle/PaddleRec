@@ -49,15 +49,17 @@ class StaticModel():
             for i in range(2, self.slot_num + 2)
         ]
 
+        show = paddle.static.data(
+            name="show", shape=[None, 1], dtype="int64", lod_level=1)
         label = paddle.static.data(
             name="click", shape=[None, 1], dtype="int64", lod_level=1)
 
-        feeds_list = [label] + slot_ids
+        feeds_list = [show, label] + slot_ids
         return feeds_list
 
     def net(self, input, is_infer=False):
-        self.label_input = input[0]
-        self.slot_inputs = input[1:]
+        self.label_input = input[1]
+        self.slot_inputs = input[2:]
 
         dnn_model = BenchmarkDNNLayer(
             self.dict_dim,
@@ -66,7 +68,7 @@ class StaticModel():
             self.layer_sizes,
             sync_mode=self.sync_mode)
 
-        self.predict = dnn_model(self.slot_inputs)
+        self.predict = dnn_model.forward(self.slot_inputs)
 
         # self.all_vars = input + dnn_model.all_vars
         self.all_vars = dnn_model.all_vars
@@ -74,12 +76,23 @@ class StaticModel():
         predict_2d = paddle.concat(x=[1 - self.predict, self.predict], axis=1)
         #label_int = paddle.cast(self.label, 'int64')
 
-        auc, batch_auc_var, self.auc_stat_list = paddle.static.auc(
+        auc, batch_auc_var, auc_stat_list = paddle.static.auc(
             input=predict_2d, label=self.label_input, slide_steps=0)
-        self.metric_list = fluid.contrib.layers.ctr_metric_bundle(
+        metric_list = fluid.contrib.layers.ctr_metric_bundle(
             self.predict,
             fluid.layers.cast(
                 x=self.label_input, dtype='float32'))
+
+        self.thread_stat_var_names = [
+            auc_stat_list[2].name, auc_stat_list[3].name
+        ]
+        self.thread_stat_var_names += [i.name for i in metric_list]
+        self.thread_stat_var_names = list(set(self.thread_stat_var_names))
+
+        self.metric_list = list(auc_stat_list) + list(metric_list)
+        self.metric_types = ["int64"] * len(auc_stat_list) + ["float32"] * len(
+            metric_list)
+
         self.inference_feed_vars = dnn_model.inference_feed_vars
         self.inference_target_var = self.predict
 

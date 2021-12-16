@@ -94,10 +94,10 @@ class StaticModel():
                              self.is_sparse, self.use_DataLoader,
                              self.item_count, self.cat_count)
 
-        raw_predict = din_model(self.hist_item_seq, self.hist_cat_seq,
-                                self.target_item, self.target_cat, self.label,
-                                self.mask, self.target_item_seq,
-                                self.target_cat_seq)
+        raw_predict = din_model.forward(
+            self.hist_item_seq, self.hist_cat_seq, self.target_item,
+            self.target_cat, self.label, self.mask, self.target_item_seq,
+            self.target_cat_seq)
 
         avg_loss = paddle.nn.functional.binary_cross_entropy_with_logits(
             raw_predict, self.label, reduction='mean')

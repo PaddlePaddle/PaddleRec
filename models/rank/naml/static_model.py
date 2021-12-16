@@ -91,7 +91,7 @@ class StaticModel():
                           self.sub_category_size, self.cate_dimension,
                           self.word_dict_size)
 
-        raw = model(self.sparse_inputs)
+        raw = model.forward(self.sparse_inputs)
 
         soft_predict = paddle.nn.functional.sigmoid(
             paddle.reshape(raw, [-1, 1]))
