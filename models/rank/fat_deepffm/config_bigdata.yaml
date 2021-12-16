@@ -17,7 +17,7 @@
 
 
 runner:
-  train_data_dir: "/paddle220_c11/workplace/git/PaddleRec/datasets/criteo/slot_train_data_full"  # criteo_sample_train slot_train_data_full
+  train_data_dir: "../../../datasets/criteo/slot_train_data_full"  # criteo_sample_train slot_train_data_full
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
   use_auc: True
@@ -28,7 +28,7 @@ runner:
   model_save_path: "output_model_all_fat_deepffm"
   infer_batch_size: 1000
   infer_reader_path: "criteo_reader" # importlib format
-  test_data_dir: "/paddle220_c11/workplace/git/PaddleRec/datasets/criteo/slot_test_data_full"
+  test_data_dir: "../../../datasets/criteo/slot_test_data_full"
 
   infer_load_path: "output_model_fat_deepffm"
   infer_start_epoch: 0
