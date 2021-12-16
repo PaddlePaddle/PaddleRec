@@ -14,6 +14,9 @@ lines=(${dataline})
 # The training params
 model_name=$(func_parser_value "${lines[1]}")
 
+# clear dataset and output
+rm -rf ./test_tipc/data
+rm -rf ./test_tipc/output
 
 if [ ${model_name} == "wide_deep" ]; then
     # prepare pretrained weights and dataset 
