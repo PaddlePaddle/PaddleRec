@@ -24,7 +24,7 @@ runner:
   train_batch_size: 2000
   epochs: 2
   print_interval: 100
-  model_save_path: "output_model_difm"
+  model_save_path: "output_model_all_difm"
   infer_batch_size: 2000
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "../../../datasets/criteo/slot_test_data_full"
