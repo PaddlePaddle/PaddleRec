@@ -23,7 +23,7 @@ runner:
   use_auc: True
   train_batch_size: 1 
   epochs: 1
-  print_interval: 100
+  print_interval: 10
 
   model_save_path: "output_model_fat_deepffm"
   infer_batch_size: 1000
