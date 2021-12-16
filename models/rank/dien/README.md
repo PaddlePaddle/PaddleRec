@@ -1,4 +1,7 @@
 # 基于DIEN模型的点击率预估模型
+
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3240212)**
+
 以下是本例的简要目录结构及说明： 
 
 ```
