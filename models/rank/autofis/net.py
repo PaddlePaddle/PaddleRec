@@ -38,8 +38,15 @@ def generate_pairs(ranges, mask=None, order=2):
 
 
 class AutoDeepFMLayer(nn.Layer):
-    def __init__(self, num_inputs, input_size, embedding_size, width, depth,
-                 pairs, stage, use_bn=True):
+    def __init__(self,
+                 num_inputs,
+                 input_size,
+                 embedding_size,
+                 width,
+                 depth,
+                 pairs,
+                 stage,
+                 use_bn=True):
         super().__init__()
         self.stage = stage
         self.depth = depth

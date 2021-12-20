@@ -64,7 +64,7 @@ python -u ../../../tools/infer.py -m config.yaml
 在全量数据下模型的指标如下：  
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| AutodeepFM | 0.78 | 2000 | 1 | 约2小时 |
+| AutodeepFM | 0.8009 | 2000 | 1 | 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/autofis
 2. 参考https://github.com/renmada/rec_datasets获取数据,放到对应的文件夹。(train: data/whole_data/train, test: data/whole_data/test)
