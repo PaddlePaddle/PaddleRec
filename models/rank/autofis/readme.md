@@ -34,7 +34,7 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-点击率预测问题下因子分解机模型的自动特征交互选择模型。华为在2020kdd上提出了新的CTR预估方法。录完呢指出，很多CTR预估算法都需要进行特征组合，但是传统的特征组合方式都是简单的暴力组合或者人工选择，人工选择的方式依赖于先验知识，而简单的暴力组合其实对模型的性能的提升并不是总有益的，有些组合方式其实对模型的性能提升并没有多少的帮助，甚至会损害模型的性能，而且大量无效的特征组合会形成很多的参数，降低内存的利用率。根据AutoML技术，论文提出了Automatic Feature Interaction Selection in Factorization Models，即AutoFIS，顾名思义，就是自动去找最佳的特征组合
+Automatic Feature Interaction Selection in Factorization Models（点击率预测问题下因子分解机模型的自动特征交互选择模）是华为在2020kdd上提出了新的CTR预估方法。论文指出，很多CTR预估算法都需要进行特征组合，但是传统的特征组合方式都是简单的暴力组合或者人工选择，人工选择的方式依赖于先验知识，而简单的暴力组合其实对模型的性能的提升并不是总有益的，有些组合方式其实对模型的性能提升并没有多少的帮助，甚至会损害模型的性能，而且大量无效的特征组合会形成很多的参数，降低内存的利用率。根据AutoML技术，提出AutoFIS，顾名思义，就是自动去找最佳的特征组合。
 
 ## 数据准备
 
@@ -64,7 +64,7 @@ python -u ../../../tools/infer.py -m config.yaml
 在全量数据下模型的指标如下：  
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| deepFM | 0.78 | 2000 | 1 | 约2小时 |
+| AutodeepFM | 0.78 | 2000 | 1 | 约2小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/autofis
 2. 参考https://github.com/renmada/rec_datasets获取数据,放到对应的文件夹。(train: data/whole_data/train, test: data/whole_data/test)
@@ -76,7 +76,8 @@ python trainer.py -m config_bigdata.yaml # stage0：自动搜索最佳特征组�
 python trainer.py -m config_bigdata.yaml -o stage=1 # stage1：训练最终名
 python -u ../../../tools/infer.py -m config_bigdata.yaml -o stage=1 # 全量数据运行config_bigdata.yaml 
 ```
-
+### 日志
+[stage0](./logs/stage0.log)|[state1](./logs/stage1.log)|[infer](./logs/infer.log)
 ## 进阶使用
   
 ## FAQ

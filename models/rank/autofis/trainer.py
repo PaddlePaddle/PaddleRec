@@ -80,8 +80,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, use_xpu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-            format(use_gpu, use_xpu, use_visual, train_batch_size, train_data_dir,
-                   epochs, print_interval, model_save_path))
+        format(use_gpu, use_xpu, use_visual, train_batch_size, train_data_dir,
+               epochs, print_interval, model_save_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
@@ -133,7 +133,7 @@ def main(args):
 
         for batch_id, batch in enumerate(train_dataloader()):
             if (batch_id + 1) % decay_steps == 0:
-                optimizer1.set_lr(optimizer1.get_lr()*gamma)
+                optimizer1.set_lr(optimizer1.get_lr() * gamma)
             train_reader_cost += time.time() - reader_start
             optimizer1.clear_grad()
             if stage == 0:
@@ -155,8 +155,8 @@ def main(args):
                 metric_str = ""
                 for metric_id in range(len(metric_list_name)):
                     metric_str += (
-                            metric_list_name[metric_id] +
-                            ":{:.6f}, ".format(metric_list[metric_id].accumulate())
+                        metric_list_name[metric_id] +
+                        ":{:.6f}, ".format(metric_list[metric_id].accumulate())
                     )
                     if use_visual:
                         log_visual.add_scalar(
@@ -167,8 +167,8 @@ def main(args):
                 if tensor_print_dict is not None:
                     for var_name, var in tensor_print_dict.items():
                         tensor_print_str += (
-                                "{}:".format(var_name) +
-                                str(var.numpy()).strip("[]") + ",")
+                            "{}:".format(var_name) +
+                            str(var.numpy()).strip("[]") + ",")
                         if use_visual:
                             log_visual.add_scalar(
                                 tag="train/" + var_name,
@@ -176,12 +176,13 @@ def main(args):
                                 value=var.numpy())
                 logger.info(
                     "epoch: {}, batch_id: {}, lr: {}, ".format(
-                        epoch_id, batch_id,optimizer1.get_lr()) + metric_str + tensor_print_str +
+                        epoch_id, batch_id, optimizer1.get_lr(
+                        )) + metric_str + tensor_print_str +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} ins/s".
                     format(train_reader_cost / print_interval, (
-                            train_reader_cost + train_run_cost) / print_interval,
+                        train_reader_cost + train_run_cost) / print_interval,
                            total_samples / print_interval, total_samples / (
-                                   train_reader_cost + train_run_cost)))
+                               train_reader_cost + train_run_cost)))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0
@@ -191,19 +192,19 @@ def main(args):
         metric_str = ""
         for metric_id in range(len(metric_list_name)):
             metric_str += (
-                    metric_list_name[metric_id] +
-                    ": {:.6f},".format(metric_list[metric_id].accumulate()))
+                metric_list_name[metric_id] +
+                ": {:.6f},".format(metric_list[metric_id].accumulate()))
 
         tensor_print_str = ""
         if tensor_print_dict is not None:
             for var_name, var in tensor_print_dict.items():
                 tensor_print_str += (
-                        "{}:".format(var_name) + str(var.numpy()).strip("[]") + ","
+                    "{}:".format(var_name) + str(var.numpy()).strip("[]") + ","
                 )
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     tensor_print_str + " epoch time: {:.2f} s".format(
-            time.time() - epoch_begin))
+                        time.time() - epoch_begin))
 
         if use_fleet and stage == 1:
             trainer_id = paddle.distributed.get_rank()
@@ -224,8 +225,6 @@ def main(args):
         np.save('comb_mask.npy', mask_val)
 
     print(mask_val)
-
-
 
 
 if __name__ == '__main__':
