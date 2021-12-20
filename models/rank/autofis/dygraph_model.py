@@ -30,7 +30,8 @@ class DygraphModel():
         width = config.get("hyper_parameters.width")
         depth = config.get('hyper_parameters.depth')
         pairs = config.get('hyper_parameters.pairs')
-        deepfm_model = net.AutoDeepFMLayer(num_inputs, input_size, embedding_size, width, depth, pairs, stage)
+        deepfm_model = net.AutoDeepFMLayer(
+            num_inputs, input_size, embedding_size, width, depth, pairs, stage)
 
         return deepfm_model
 
@@ -53,9 +54,14 @@ class DygraphModel():
         else:
             from optimizer import SimpleGrda
             params = [p for n, p in dy_model.named_parameters() if n != 'mask']
-            mask_params = [p for n, p in dy_model.named_parameters() if n == 'mask']
-            optimizer1 = paddle.optimizer.Adam(learning_rate=lr, parameters=params)
-            optimizer2 = SimpleGrda(mask_params, 1, config['hyper_parameters.grad_c'], config['hyper_parameters.grad_mu'])
+            mask_params = [
+                p for n, p in dy_model.named_parameters() if n == 'mask'
+            ]
+            optimizer1 = paddle.optimizer.Adam(
+                learning_rate=lr, parameters=params)
+            optimizer2 = SimpleGrda(mask_params, 1,
+                                    config['hyper_parameters.grad_c'],
+                                    config['hyper_parameters.grad_mu'])
 
         return optimizer1, optimizer2
 
@@ -69,7 +75,7 @@ class DygraphModel():
 
     # construct train forward phase  
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        inputs, label = self.create_feeds(batch_data,config)
+        inputs, label = self.create_feeds(batch_data, config)
 
         pred = dy_model.forward(inputs)
         loss = self.create_loss(pred, label)
@@ -79,7 +85,6 @@ class DygraphModel():
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
 
         print_dict = {'loss': loss}
-        # print_dict = None
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):

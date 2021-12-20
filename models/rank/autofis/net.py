@@ -19,6 +19,12 @@ import numpy as np
 from itertools import combinations
 
 
+def xavier_init(shape):
+    max_val = np.sqrt(6 / np.sum(shape))
+    min_val = -max_val
+    return paddle.ParamAttr(initializer=nn.initializer.Uniform(min_val, max_val))
+
+
 def generate_pairs(ranges, mask=None, order=2):
     res = []
     for i in range(order):
@@ -27,27 +33,32 @@ def generate_pairs(ranges, mask=None, order=2):
         if mask is None or mask[i] == 1:
             for j in range(order):
                 res[j].append(pair[j])
-    return paddle.to_tensor(res[0]), paddle.to_tensor(res[1])
+    return res
 
 
 class AutoDeepFMLayer(nn.Layer):
-    def __init__(self, num_inputs, input_size, embedding_size, width, depth, pairs, stage):
+    def __init__(self, num_inputs, input_size, embedding_size, width, depth,
+                 pairs, stage):
         super().__init__()
         self.stage = stage
         self.depth = depth
-        self.w_embeddings = nn.Embedding(input_size, 1)
-        self.v_embeddings = nn.Embedding(input_size, embedding_size)
+        self.w_embeddings = nn.Embedding(input_size, 1, weight_attr=xavier_init([input_size]))
+        self.v_embeddings = nn.Embedding(input_size, embedding_size,
+                                         weight_attr=xavier_init([input_size, embedding_size]))
         in_features = [num_inputs * embedding_size] + [width] * depth
         out_features = [width] * depth + [1]
-        self.bn = nn.LayerList([nn.BatchNorm1D(width) for _ in range(width)])
-        self.linear = nn.LayerList([nn.Linear(*_) for _ in zip(in_features, out_features)])
-
-        self.mask = paddle.create_parameter([1, pairs], 'float32',
-                                            default_initializer=nn.initializer.Uniform(0.6 - 0.001, 0.6 + 0.001))
-        # self.bn2 = nn.BatchNorm1D(pairs)
-        self.bn2 = nn.Identity()
-
+        self.bn = nn.LayerList([nn.BatchNorm(width) for _ in range(depth)])
+        self.linear = nn.LayerList(
+            [nn.Linear(*_, weight_attr=xavier_init([_])) for _ in zip(in_features, out_features)])
         self.comb_mask = None if stage == 0 else np.load('comb_mask.npy')
+        pairs = pairs if stage == 0 else sum(self.comb_mask)
+        self.mask = paddle.create_parameter(
+            [1, pairs],
+            'float32',
+            default_initializer=nn.initializer.Uniform(0.6 - 0.001,
+                                                       0.6 + 0.001))
+        self.bn2 = nn.BatchNorm(pairs)
+        # self.bn2 = nn.Identity()
 
     def forward(self, inputs):
         # 对应embedding lookup
@@ -58,8 +69,8 @@ class AutoDeepFMLayer(nn.Layer):
         # 对应bin_mlp
         for i in range(self.depth + 1):
             h = self.linear[i](h)
-            # h = self.bn[i](h)
             if i != self.depth:
+                h = self.bn[i](h)
                 h = F.relu(h)
         h = h.squeeze(-1)
         l = xw.sum(1)

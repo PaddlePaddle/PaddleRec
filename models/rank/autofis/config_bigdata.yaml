@@ -24,10 +24,10 @@ runner:
   print_interval: 50
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all_autodeepfm"
-  test_data_dir: "../../../datasets/criteo/slot_test_data_full"
+  test_data_dir: "data/whole_data/test"
   infer_reader_path: "criteo_reader" # importlib format
   infer_batch_size: 2000
-  infer_load_path: "output_model_all_deepfm"
+  infer_load_path: "output_model_all_autodeepfm"
   infer_start_epoch: 0
   infer_end_epoch: 1
 

@@ -11,17 +11,22 @@ class SimpleGrda:
         self.iterations = 0
         # self.accumulators = [paddle.to_tensor(x.detach().cpu().numpy())
         #                      for x in self.params]
-        self.accumulators = [paddle.create_parameter(x.shape, x.dtype,
-                                                     default_initializer=paddle.nn.initializer.Uniform(-0.1, 0.1))
-                             for x in self.params]
+        self.accumulators = [
+            paddle.create_parameter(
+                x.shape,
+                x.dtype,
+                default_initializer=paddle.nn.initializer.Uniform(-0.1, 0.1))
+            for x in self.params
+        ]
         self.l1_accumulation = 0
 
     def step(self):
         c = self.c
         mu = self.mu
         lr = self.lr
-        l1_diff = c * math.pow(lr, (0.5 + mu)) * math.pow(self.iterations + 1., mu) - c * math.pow(lr, (
-                    0.5 + mu)) * math.pow(self.iterations + 0., mu)
+        l1_diff = c * math.pow(lr, (0.5 + mu)) * math.pow(
+            self.iterations + 1., mu) - c * math.pow(lr, (
+                0.5 + mu)) * math.pow(self.iterations + 0., mu)
         self.l1_accumulation += l1_diff
         first_iter = max(1 - self.iterations, 0)
 

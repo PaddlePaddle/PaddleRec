@@ -133,7 +133,7 @@ def main(args):
 
         for batch_id, batch in enumerate(train_dataloader()):
             if (batch_id + 1) % decay_steps == 0:
-                optimizer1.set_lr(optimizer1.get_lr())
+                optimizer1.set_lr(optimizer1.get_lr()*gamma)
             train_reader_cost += time.time() - reader_start
             optimizer1.clear_grad()
             if stage == 0:
@@ -218,10 +218,14 @@ def main(args):
             save_model(
                 dy_model, optimizer1, model_save_path, epoch_id, prefix='rec')
 
-    mask_val = dy_model.mask.unsqueeze(0).detach().cpu().numpy()
-    mask_val = (mask_val == 0).astype(int)
+    mask_val = dy_model.mask.squeeze(0).detach().cpu().numpy()
+    if stage == 0:
+        mask_val = (mask_val != 0).astype(int)
+        np.save('comb_mask.npy', mask_val)
+
     print(mask_val)
-    np.save('comb_mask.npy', mask_val)
+
+
 
 
 if __name__ == '__main__':
