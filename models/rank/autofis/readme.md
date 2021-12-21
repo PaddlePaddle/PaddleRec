@@ -62,9 +62,9 @@ python -u ../../../tools/infer.py -m config.yaml
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：  
-| 模型 | auc | batch_size | epoch_num| Time of each epoch |
-| :------| :------ | :------ | :------| :------ | 
-| AutodeepFM | 0.8009 | 2000 | 1 | 约3小时 |
+| 模型 | auc | log_loss|batch_size | epoch_num| Time of each epoch |
+| :------| :------ | :------ | :------ | :------| :------ | 
+| AutodeepFM | 0.8009 |0.5403 | 2000 | 1 | 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/autofis
 2. 参考https://github.com/renmada/rec_datasets获取数据,放到对应的文件夹。(train: data/whole_data/train, test: data/whole_data/test)
@@ -73,7 +73,7 @@ python -u ../../../tools/infer.py -m config.yaml
 cd - # 切回模型目录
 # 动态图训练
 python trainer.py -m config_bigdata.yaml # stage0：自动搜索最佳特征组合
-python trainer.py -m config_bigdata.yaml -o stage=1 # stage1：训练最终名
+python trainer.py -m config_bigdata.yaml -o stage=1 # stage1：训练最终模型
 python -u ../../../tools/infer.py -m config_bigdata.yaml -o stage=1 # 全量数据运行config_bigdata.yaml 
 ```
 ### 日志

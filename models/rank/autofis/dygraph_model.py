@@ -16,6 +16,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import math
+from metrics import LogLoss
 
 import net
 
@@ -68,9 +69,9 @@ class DygraphModel():
     # define metrics such as auc/acc
     # multi-task need to define multi metric
     def create_metrics(self):
-        metrics_list_name = ["auc"]
+        metrics_list_name = ["auc", "log_loss"]
         auc_metric = paddle.metric.Auc("ROC")
-        metrics_list = [auc_metric]
+        metrics_list = [auc_metric, LogLoss()]
         return metrics_list, metrics_list_name
 
     # construct train forward phase  
@@ -89,6 +90,9 @@ class DygraphModel():
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         inputs, label = self.create_feeds(batch_data, config)
         pred = dy_model.forward(inputs)
+        pred = pred.unsqueeze(-1)
+        metrics_list[1].update(pred, label.astype('float32').unsqueeze(-1))
+
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
