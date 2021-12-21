@@ -28,7 +28,7 @@ runner:
   infer_batch_size: 2000
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "../../../datasets/criteo/slot_test_data_full"
-  infer_load_path: "output_model_difm"
+  infer_load_path: "output_model_all_difm"
   infer_start_epoch: 0
   infer_end_epoch: 2
 
