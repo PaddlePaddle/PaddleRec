@@ -14,6 +14,9 @@ lines=(${dataline})
 # The training params
 model_name=$(func_parser_value "${lines[1]}")
 
+# clear dataset and output
+rm -rf ./test_tipc/data
+rm -rf ./test_tipc/output
 
 if [ ${model_name} == "wide_deep" ]; then
     # prepare pretrained weights and dataset 
@@ -91,11 +94,23 @@ elif [ ${model_name} == "ple" ]; then
         cp -r ./models/multitask/ple/data/test/* ./test_tipc/data/infer
         echo "demo data ready"
     elif [ ${MODE} = "whole_train_whole_infer" ];then
-        echo "TODO"
+        cd ./datasets/census
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/census/train_all/* ./test_tipc/data/train
+        cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
     elif [ ${MODE} = "whole_infer" ];then
-        echo "TODO"
+        cd ./datasets/census
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/ple/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
     elif [ ${MODE} = "lite_train_whole_infer" ];then
-        echo "TODO"
+        cd ./datasets/census
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/ple/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
     fi
 
 elif [ ${model_name} == "esmm" ]; then
@@ -110,11 +125,23 @@ elif [ ${model_name} == "esmm" ]; then
         cp -r ./models/multitask/esmm/data/test/* ./test_tipc/data/infer
         echo "demo data ready"
     elif [ ${MODE} = "whole_train_whole_infer" ];then
-        echo "TODO"
+        cd ./datasets/ali-ccp
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/ali-ccp/train_data/* ./test_tipc/data/train
+        cp -r ./datasets/ali-ccp/test_data/* ./test_tipc/data/infer
     elif [ ${MODE} = "whole_infer" ];then
-        echo "TODO"
+        cd ./datasets/ali-ccp
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/esmm/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/ali-ccp/test_data/* ./test_tipc/data/infer
     elif [ ${MODE} = "lite_train_whole_infer" ];then
-        echo "TODO"
+        cd ./datasets/ali-ccp
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/esmm/data/train/* ./test_tipc/data/train
+        cp -r ./datasets/ali-ccp/test_data/* ./test_tipc/data/infer
     fi
 
 
