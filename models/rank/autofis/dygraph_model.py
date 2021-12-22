@@ -82,6 +82,7 @@ class DygraphModel():
         loss = self.create_loss(pred, label)
         # update metrics
         pred = pred.unsqueeze(-1)
+        metrics_list[1].update(pred, label.astype('float32').unsqueeze(-1))
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
         print_dict = {'loss': loss}
@@ -90,10 +91,10 @@ class DygraphModel():
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         inputs, label = self.create_feeds(batch_data, config)
         pred = dy_model.forward(inputs)
-        pred = pred.unsqueeze(-1)
-        metrics_list[1].update(pred, label.astype('float32').unsqueeze(-1))
 
         # update metrics
+        pred = pred.unsqueeze(-1)
+        metrics_list[1].update(pred, label.astype('float32').unsqueeze(-1))
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
         return metrics_list, None
