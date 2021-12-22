@@ -16,7 +16,7 @@
 runner:
   train_data_dir: "./data/sample_data"
   train_reader_path: "reader" # importlib format
-  use_gpu: True
+  use_gpu: False
   use_auc: True
   train_batch_size: 8
   epochs: 10
