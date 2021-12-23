@@ -70,11 +70,6 @@ os : windows/linux/macos
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
 python -u ../../../tools/infer.py -m config.yaml 
-
-# 静态图训练
-python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
-# 静态图预测
-python -u ../../../tools/static_infer.py -m config.yaml 
 ``` 
 
 ## 模型组网
