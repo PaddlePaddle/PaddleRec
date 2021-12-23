@@ -64,7 +64,7 @@ class Main(object):
         self.train_result_dict["speed"] = []
 
     def run(self):
-        fleet.init()
+        self.init_fleet_with_gloo()
         self.network()
         if fleet.is_server():
             self.run_server()
@@ -73,6 +73,14 @@ class Main(object):
             fleet.stop_worker()
             # self.record_result()
         logger.info("Run Success, Exit.")
+
+    def init_fleet_with_gloo(use_gloo=True):
+        if use_gloo:
+            os.environ["PADDLE_WITH_GLOO"] = "1"
+            role = role_maker.PaddleCloudRoleMaker()
+            fleet.init(role)
+        else:
+            fleet.init()
 
     def network(self):
         model = get_model(self.config)
