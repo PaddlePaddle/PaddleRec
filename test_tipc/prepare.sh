@@ -183,10 +183,6 @@ elif [ ${model_name} == "mmoe" ]; then
     fi
 
 elif [ ${model_name} == "dlrm" ]; then
-    # prepare pretrained weights and dataset
-    #    wget -nc -P  ./test_tipc/ https://paddlerec.bj.bcebos.com/dlrm/dlrm.tar
-    #    cd test_tipc && tar -xvf dlrm.tar && rm -rf dlrm.tar && cd ..
-
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
     if [ ${MODE} = "lite_train_lite_infer" ];then
