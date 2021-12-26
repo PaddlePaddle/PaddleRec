@@ -182,4 +182,36 @@ elif [ ${model_name} == "mmoe" ]; then
         cp -r ./datasets/census/test_all/* ./test_tipc/data/infer
     fi
 
+elif [ ${model_name} == "dlrm" ]; then
+    # prepare pretrained weights and dataset
+    #    wget -nc -P  ./test_tipc/ https://paddlerec.bj.bcebos.com/dlrm/dlrm.tar
+    #    cd test_tipc && tar -xvf dlrm.tar && rm -rf dlrm.tar && cd ..
+
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/rank/dlrm/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./models/rank/dlrm/data/sample_data/train/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/criteo
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/criteo/slot_train_data_full/* ./test_tipc/data/train
+        cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/criteo
+        bash run.sh
+        cd ../..
+        cp -r ./models/rank/dlrm/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/criteo
+        bash run.sh
+        cd ../..
+        cp -r ./models/rank/dlrm/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
+    fi
+
 fi
