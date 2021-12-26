@@ -6,7 +6,7 @@ runner.use_gpu:True|False
 auto_cast:False
 runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=1|whole_infer=1
 runner.model_save_path
-runner.train_batch_size:lite_train_lite_infer=2|whole_train_whole_infer=2048|whole_infer=2
+runner.train_batch_size:lite_train_lite_infer=2|whole_train_whole_infer=2048|whole_infer=2048
 runner.infer_load_path:null
 train_model_name:0
 runner.test_data_dir:test_tipc/data/infer
