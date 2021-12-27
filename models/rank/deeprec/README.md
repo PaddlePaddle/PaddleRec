@@ -30,7 +30,7 @@
 	- [运行环境](#运行环境)
 	- [快速开始](#快速开始)
 	- [模型组网](#模型组网)
-		- [效果复现](#效果复现)
+	- [效果复现](#效果复现)
 	- [进阶使用](#进阶使用)
 	- [FAQ](#faq)
 
@@ -83,7 +83,7 @@ DeepRec是一个自编码器, 由encoder和decoder组成, 在encoder和decoder�
 
 ``` bash
 cd data
-sh get_data.sh
+sh run.sh
 ```
 3. 切回模型目录,执行命令运行全量数据
 ```bash
