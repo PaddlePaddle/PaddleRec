@@ -18,7 +18,7 @@ runner:
   train_reader_path: "netflix_reader" # importlib format
   reader_batch_size: 128
   use_gpu: True
-  mode: "train"
+  mode: "train" # control the return of the create_feeds function
   epochs: 60
   print_interval: 1000
   model_save_path: "output_model_deeprec"
