@@ -17,7 +17,7 @@ runner:
   train_data_dir: "data/train"
   train_reader_path: "netflix_reader" # importlib format
   use_gpu: False
-  mode: "train"
+  mode: "train" # control the return of the create_feeds function
   epochs: 5
   batch_size: 4
   print_interval: 100
