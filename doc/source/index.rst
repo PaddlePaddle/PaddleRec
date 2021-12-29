@@ -79,7 +79,11 @@
    models/rank/naml.md
    models/rank/wide_deep.md
    models/rank/xdeepfm.md
-
+   models/multitask/esmm.md
+   models/multitask/maml.md
+   models/multitask/mmoe.md
+   models/multitask/ple.md
+   models/multitask/share_bottom.md
    
 .. toctree::
    :maxdepth: 1

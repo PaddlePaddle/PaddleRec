@@ -54,7 +54,7 @@ class StaticModel():
         PLE = PLELayer(self.feature_size, self.task_num, self.exp_per_task,
                        self.shared_num, self.expert_size, self.tower_size,
                        self.level_number)
-        pred_income, pred_marital = PLE(input_data)
+        pred_income, pred_marital = PLE.forward(input_data)
 
         pred_income_1 = paddle.slice(
             pred_income, axes=[1], starts=[1], ends=[2])

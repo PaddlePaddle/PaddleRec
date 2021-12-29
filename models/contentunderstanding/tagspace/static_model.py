@@ -57,7 +57,7 @@ class StaticModel():
             self.vocab_text_size, self.vocab_tag_size, self.emb_dim,
             self.hid_dim, self.win_size, self.margin, self.neg_size,
             self.text_len)
-        cos_pos, cos_neg = tagspace_model(input)
+        cos_pos, cos_neg = tagspace_model.forward(input)
         # calculate hinge loss
         loss_part1 = paddle.subtract(
             paddle.full(

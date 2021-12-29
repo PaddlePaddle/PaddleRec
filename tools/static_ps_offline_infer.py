@@ -46,7 +46,7 @@ def parse_args():
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
-    config = yaml_helper.load_yaml(args.config_yaml)
+    config = yaml_helper.load_yaml(args.config_yaml, ["table_parameters"])
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
     yaml_helper.print_yaml(config)
@@ -121,7 +121,10 @@ class Main(object):
         fleet.init_worker()
 
         init_model_path = config.get("runner.init_model_path")
-        fleet.load_model(init_model_path, mode=0)
+        model_mode = config.get("runner.model_mode", 0)
+        if fleet.is_first_worker():
+            fleet.load_model(init_model_path, mode=model_mode)
+        fleet.barrier_worker()
 
         logger.info("Prepare Dataset Begin.")
         prepare_data_start_time = time.time()
@@ -147,7 +150,6 @@ class Main(object):
             "dump_fields_path": dump_fields_path,
             "dump_fields": dump_fields
         })
-        print(paddle.static.default_main_program()._fleet_opt)
 
         self.exe.infer_from_dataset(
             program=paddle.static.default_main_program(),
