@@ -17,7 +17,7 @@ runner:
   train_reader_path: "movielens_reader"  # importlib format
   train_batch_size: 512
   model_save_path: "output_model_ensfm_all"
-  mode: "train"  #distinguish between training sets and test sets
+  mode: "train"  # distinguish between training sets and test sets
   use_gpu: False 
   epochs: 501
   print_interval: 10
