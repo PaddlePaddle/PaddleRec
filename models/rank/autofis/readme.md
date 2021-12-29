@@ -60,7 +60,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在deepfm模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/rank/deepfm # 在任意目录均可运行
+# cd models/rank/autofis
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
@@ -72,7 +72,7 @@ python -u ../../../tools/infer.py -m config.yaml
 在全量数据下模型的指标如下：  
 | 模型 | auc | log_loss|batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------ | :------| :------ | 
-| AutodeepFM | 0.8009 |0.5403 | 2000 | 1 | 约3小时 |
+| AutodeepFM(2nd) | 0.8009 |0.5403 | 2000 | 1 | 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/autofis
 2. 执行下载数据命令 
