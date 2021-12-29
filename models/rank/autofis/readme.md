@@ -8,14 +8,22 @@
         ├── train
             ├── train_x.npy #训练数据样例
             ├── train_y.npy #训练数据样例
+        ├── test
+            ├── test_x.npy #测试数据样例
+            ├── test_y.npy #测试数据样例
 ├── __init__.py
 ├── README.md #文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据配置
 ├── net.py # 模型核心组网（动静统一）
+├── Criteo.py # 数据预处理程序
+├── get_data.py # 数据预处理程序
 ├── criteo_reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
 ├── trainer.py # 训练脚本
+├── download.sh # 下载全量数据并进行预处理
+├── optimizer.sh # GRDA优化器
+├── metircs # log loss指标
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -67,8 +75,11 @@ python -u ../../../tools/infer.py -m config.yaml
 | AutodeepFM | 0.8009 |0.5403 | 2000 | 1 | 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/autofis
-2. 参考https://github.com/renmada/rec_datasets获取数据,放到对应的文件夹。(train: data/whole_data/train, test: data/whole_data/test)
-3. 切回模型目录,执行命令运行全量数据
+2. 执行下载数据命令 
+```bash
+bash download.sh
+```
+3. 执行命令运行全量数据
 ```bash
 cd - # 切回模型目录
 # 动态图训练
@@ -76,8 +87,6 @@ python trainer.py -m config_bigdata.yaml # stage0：自动搜索最佳特征组�
 python trainer.py -m config_bigdata.yaml -o stage=1 # stage1：训练最终模型
 python -u ../../../tools/infer.py -m config_bigdata.yaml -o stage=1 # 全量数据运行config_bigdata.yaml 
 ```
-### 日志
-[stage0](./logs/stage0.log)|[state1](./logs/stage1.log)|[infer](./logs/infer.log)
 ## 进阶使用
   
 ## FAQ

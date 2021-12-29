@@ -12,41 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# global settings
 
 runner:
   train_data_dir: "data/sample_data/train"
   train_reader_path: "criteo_reader" # importlib format
-  use_gpu: False
-  use_auc: True
+  use_gpu: True
+  use_auc: False
   train_batch_size: 2
-  epochs: 3
-  print_interval: 2
-  # model_init_path: "output_model_deepfm/2" # init model
-  model_save_path: "output_model_deepfm"
-  test_data_dir: "data/sample_data/train"
+  epochs: 1
+  print_interval: 1
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_all_autodeepfm"
+  test_data_dir: "data/sample_data/test"
   infer_reader_path: "criteo_reader" # importlib format
-  infer_batch_size: 5
-  infer_load_path: "output_model_deepfm"
+  infer_batch_size: 2
+  infer_load_path: "output_model_all_autodeepfm"
   infer_start_epoch: 0
-  infer_end_epoch: 3
-  #use inference save model
-  use_inference: False
-  save_inference_feed_varnames: ["C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","dense_input"]
-  save_inference_fetch_varnames: ["sigmoid_0.tmp_0"]
-  # use fleet
-  use_fleet: False
-  
+  infer_end_epoch: 1
+
 # hyper parameters of user-defined network
 hyper_parameters:
   # optimizer config
   optimizer:
     class: Adam
     learning_rate: 0.001
-    strategy: async
+    gamma: 0.7
   # user-defined <key, value> pairs
-  sparse_inputs_slots: 27
-  sparse_feature_number: 1000001
-  sparse_feature_dim: 9
-  dense_input_dim: 13
-  fc_sizes: [512, 256, 128, 32]
-  distributed_embedding: 0
+  num_inputs: 39
+  input_size: 1178909
+  embedding_size: 40
+  width: 700
+  depth: 5
+  n_col: 741
+  grad_c: 0.0005
+  grad_mu: 0.8
+  pairs: 741
