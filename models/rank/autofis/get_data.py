@@ -50,8 +50,8 @@ for x, y in tqdm(train_gen):
 x = np.concatenate(xs, 0)
 y = np.concatenate(ys, 0)
 print(x.shape)
-np.save(os.path.join(output_dir, 'train_x.npy'), x)
-np.save(os.path.join(output_dir, 'train_y.npy'), y)
+np.save(os.path.join(output_dir, 'train', 'train_x.npy'), x)
+np.save(os.path.join(output_dir, 'train', 'train_y.npy'), y)
 
 xs = []
 ys = []
@@ -62,5 +62,5 @@ for x, y in tqdm(test_gen):
 x = np.concatenate(xs, 0)
 y = np.concatenate(ys, 0)
 print(x.shape)
-np.save(os.path.join(output_dir, 'test_x.npy'), x)
-np.save(os.path.join(output_dir, 'test_y.npy'), y)
+np.save(os.path.join(output_dir, 'test', 'test_x.npy'), x)
+np.save(os.path.join(output_dir, 'test', 'test_y.npy'), y)

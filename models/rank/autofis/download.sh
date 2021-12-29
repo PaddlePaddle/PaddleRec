@@ -13,7 +13,9 @@
 # limitations under the License.
 #!/bin/bash
 
-mkdir -p data/whole_data
+pip install tables
+mkdir -p data/whole_data/train
+mkdir -p data/whole_data/test
 mkdir tmp
 wget https://paddlerec.bj.bcebos.com/datasets/criteo_8d/part0.tar -O tmp/part0.tar
 wget https://paddlerec.bj.bcebos.com/datasets/criteo_8d/part1.tar -O tmp/part1.tar
@@ -25,5 +27,4 @@ cat tmp/part* > tmp/criteo_8d.tar
 tar xvf tmp/criteo_8d.tar -C tmp
 
 python get_data.py tmp
-
 rm -r tmp
