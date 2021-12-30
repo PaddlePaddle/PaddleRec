@@ -1,12 +1,11 @@
 runner:
-  use_gloo: True
-  # train_data_dir: "afs:/xxx"
   train_data_dir: "./data"
+  # train_data_dir: "afs:/xxx"
   use_gpu: False
   train_batch_size: 32
   print_interval: 1
   model_save_path: "output_model"
-  # model_save_path: "afs:/user/paddle/wangguanqun/pscore_output_model"
+  # model_save_path: "afs:/xxx"
   checkpoint_per_pass: 1
   save_delta_frequency: 1
 
@@ -32,7 +31,6 @@ runner:
   train_dump_fields_dir: "./train_dump_data"
   infer_dump_fields_dir: "./infer_dump_data"
 
-  use_hadoop: False
   # fs_client:
   #   uri: "afs://xxx"
   #   user: "xxx"

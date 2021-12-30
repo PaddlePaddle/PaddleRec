@@ -62,7 +62,6 @@ class Main(object):
         self.metrics = {}
         self.config = config
         self.exe = None
-        self.use_gloo = config.get("runner.use_gloo", False)
         self.reader_type = config.get("runner.reader_type", "InMemoryDataset")
         self.split_interval = config.get("runner.split_interval", 5)
         self.split_per_pass = config.get("runner.split_per_pass", 1)
@@ -92,12 +91,7 @@ class Main(object):
             self.hadoop_client = None
 
     def run(self):
-        if self.use_gloo:
-            os.environ["PADDLE_WITH_GLOO"] = "1"
-            role = role_maker.PaddleCloudRoleMaker(init_gloo=True)
-            fleet.init(role)
-        else:
-            fleet.init()
+        self.init_fleet_with_gloo()
         self.init_network()
         if fleet.is_server():
             self.run_server()
@@ -106,6 +100,14 @@ class Main(object):
             fleet.stop_worker()
             # self.record_result()
         logger.info("Run Success, Exit.")
+
+    def init_fleet_with_gloo(use_gloo=True):
+        if use_gloo:
+            os.environ["PADDLE_WITH_GLOO"] = "1"
+            role = role_maker.PaddleCloudRoleMaker()
+            fleet.init(role)
+        else:
+            fleet.init()
 
     def init_network(self):
         model = get_model(self.config)
