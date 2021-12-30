@@ -11,7 +11,7 @@
 ├── README.md # 文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据配置
-├── net.py # 模型核心组网（动静统一）
+├── net.py # 模型核心组网
 ├── criteo_reader.py # 数据读取程序
 ├── dygraph_model.py # 构建动态图
 ```
@@ -114,7 +114,7 @@ DeepFFM网络结构如下图所示：
 
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| FAT_DeepFFM | 0.8037 | 1000 | 1 | 约 3.5 小时 |
+| FAT_DeepFFM | 0.803+ | 1000 | 1 | 约 3.5 小时 |
 
 1. 确认您当前所在目录为 `PaddleRec/models/rank/fat_deepffm`
 2. 进入 `PaddleRec/datasets/criteo` 目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。
