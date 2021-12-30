@@ -13,7 +13,7 @@
 # limitations under the License.
 #workspace: "models/recall/word2vec"
 runner:
-  train_data_dir: "../../../datasets/one_billion/data/train_all"
+  train_data_dir: "../../../datasets/one_billion/data/all_train"
   train_reader_path: "word2vec_reader" # importlib format
   use_gpu: True
   train_batch_size: 100
@@ -28,8 +28,8 @@ runner:
   infer_start_epoch: 0
   infer_end_epoch: 5
   # dataset
-  word_count_dict_path: "../../../tools/datasets/one_billion/data/all_dict/word_count_dict.txt"
-  word_id_dict_path: "../../../tools/datasets/one_billion/data/all_dict/word_id_dict.txt"
+  word_count_dict_path: "../../../datasets/one_billion/data/all_dict/word_count_dict.txt"
+  word_id_dict_path: "../../../datasets/one_billion/data/all_dict/word_id_dict.txt"
 
 hyper_parameters:
   optimizer:
