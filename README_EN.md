@@ -94,6 +94,9 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 ### FAQ
 * [Common Problem FAQ](doc/faq.md)
 
+### Acknowledgements
+* [Contributions from external developer](contributor.md)
+
 <h2 align="center">Support model list</h2>
 
 
