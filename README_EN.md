@@ -1,4 +1,4 @@
-([简体中文](./README.md)|English)
+([中文文档](https://paddlerec.readthedocs.io/en/latest/)|[简体中文](./README_CN.md)|English)
 <p align="center">
 <img align="center" src="doc/imgs/logo.png">
 <p>
