@@ -30,7 +30,6 @@
 - [数据准备](#数据准备)
 - [运行环境](#运行环境)
 - [快速开始](#快速开始)
-- [模型组网](#模型组网)
 - [效果复现](#效果复现)
 - [进阶使用](#进阶使用)
 - [FAQ](#FAQ)
@@ -72,7 +71,7 @@
 在 PaperswithCode 网站上检索到 【NeurlPS 2019】[Pareto Multi-Task Learning](https://arxiv.org/pdf/1912.12854v1.pdf) 公布了该数据集，
 下载链接： https://drive.google.com/drive/folders/1VnmCmBAVh8f_BKJg1KYx-E137gBLXbGG。
 
-````
+
 ## 运行环境
 
 PaddlePaddle>=2.1
