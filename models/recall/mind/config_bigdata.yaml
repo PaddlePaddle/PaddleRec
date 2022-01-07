@@ -20,11 +20,11 @@ runner:
   train_batch_size: 128
   epochs: 20
   print_interval: 500
-  model_save_path: "output_model_mind"
+  model_save_path: "output_model_mind_all"
   infer_batch_size: 128
   infer_reader_path: "mind_infer_reader" # importlib format
   test_data_dir: "../../../datasets/AmazonBook/valid"
-  infer_load_path: "output_model_mind"
+  infer_load_path: "output_model_mind_all"
   infer_start_epoch: 19
   infer_end_epoch: 20
 
