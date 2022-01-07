@@ -180,20 +180,20 @@ class DSelectkGate(nn.Layer):
                 weight_attr=paddle.ParamAttr(initializer=self._w_initializer),
                 bias_attr=paddle.ParamAttr(initializer=self._w_initializer))
 
-        binary_matrix = np.array([
-            list(np.binary_repr(
-                val, width=self._num_binary)) for val in range(expert_num)
-        ]).astype(bool)
+        self._binary_codes = paddle.unsqueeze(
+            self.dec2bin(
+                paddle.arange(
+                    start=0, end=expert_num, dtype=paddle.int64),
+                self._num_binary),
+            axis=0)
 
-        if not paddle.in_dynamic_mode():
-            # 兼容静态图
-            self._binary_codes = paddle.cast(
-                paddle.ones(shape=[1, expert_num, self._num_binary]),
-                dtype=bool)
-        else:
-            self._binary_codes = paddle.unsqueeze(
-                paddle.to_tensor(
-                    binary_matrix, dtype=bool), axis=0)
+    def dec2bin(self, x, bits):
+        mask = paddle.arange(bits - 1, -1, -1, dtype=paddle.float32)
+        mask = paddle.cast(2**mask, dtype=paddle.int64)
+        return paddle.not_equal(
+            x.unsqueeze(-1).bitwise_and(mask),
+            paddle.full(
+                shape=[1], fill_value=0, dtype=paddle.int64))
 
     def forward(self, inputs, training=False):
         if isinstance(inputs, tuple):
