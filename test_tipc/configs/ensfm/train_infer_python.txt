@@ -4,11 +4,11 @@ python:python3
 gpu_list:0|-1
 runner.use_gpu:True|False
 auto_cast:False
-runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=501|whole_infer=501
+runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=501|whole_infer=501|lite_train_whole_infer=1
 runner.model_save_path
-runner.train_batch_size:lite_train_lite_infer=2|whole_train_whole_infer=512|whole_infer=512
+runner.train_batch_size:lite_train_lite_infer=2|whole_train_whole_infer=512|whole_infer=512|lite_train_whole_infer=2
 runner.infer_load_path:null
-train_model_name:lite_train_lite_infer=0|whole_train_whole_infer=500|whole_infer=500
+train_model_name:lite_train_lite_infer=0|whole_train_whole_infer=500|whole_infer=500|lite_train_whole_infer=0
 runner.test_data_dir:test_tipc/data
 runner.train_data_dir:../../../test_tipc/data
 ##
