@@ -15,16 +15,16 @@
 runner:
   train_data_dir: "../../../datasets/criteo/slot_train_data_full"
   train_reader_path: "criteo_reader" # importlib format
-  use_gpu: False
+  use_gpu: True
   use_auc: True
   train_batch_size: 512
   epochs: 4
   print_interval: 100
-  model_save_path: "output_model_gatednn_all"
+  model_save_path: "output_model_gatenet_all"
   infer_batch_size: 512
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "../../../datasets/criteo/slot_test_data_full"
-  infer_load_path: "output_model_gatednn_all"
+  infer_load_path: "output_model_gatenet_all"
   infer_start_epoch: 3
   infer_end_epoch: 4
 
