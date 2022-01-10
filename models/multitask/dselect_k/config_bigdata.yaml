@@ -13,7 +13,7 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/train"
+  train_data_dir: "../../../datasets/Multi_MNIST_DselectK/train"
   train_reader_path: "multiMNIST_reader" # importlib format
   use_gpu: True
   use_auc: True
@@ -21,11 +21,11 @@ runner:
   epochs: 100
   print_interval: 32
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_dselect_k"
-  test_data_dir: "data/test"
+  model_save_path: "output_model_dselect_k_all"
+  test_data_dir: "../../../datasets/Multi_MNIST_DselectK/test"
   infer_batch_size: 20000
   infer_reader_path: "multiMNIST_reader" # importlib format
-  infer_load_path: "output_model_dselect_k"
+  infer_load_path: "output_model_dselect_k_all"
   infer_start_epoch: 0
   infer_end_epoch: 100
   #use inference save model

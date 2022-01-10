@@ -109,15 +109,17 @@ python -u ../../../tools/static_infer.py -m config.yaml
 
 1. 确认您当前所在目录为 PaddleRec/models/multitask/dselect_k
 
-2. 执行 prepare_data.sh 脚本，将数据解压到指定文件夹。(git 无法上传大文件，需在 https://aistudio.baidu.com/aistudio/datasetdetail/124575 下载并放在 data 文件夹下）
+2. 进入 paddlerec/datasets/Multi_MNIST_DselectK 目录下，执行该脚本，会从国内源的服务器上下载数据集，并解压到指定文件夹。
+
 ``` bash
-sh prepare_data.sh
-``` 
+cd ../../../datasets/Multi_MNIST_DselectK
+sh run.sh
+```
 
 3. 切回模型目录,执行命令运行全量数据
 
 ```bash
-cd - # 切回模型目录
+# 切回模型目录 PaddleRec/models/multitask/dselect_k
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 

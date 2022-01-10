@@ -13,17 +13,17 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/train"
+  train_data_dir: "data/sample_data"
   train_reader_path: "multiMNIST_reader" # importlib format
   use_gpu: False
   use_auc: True
-  train_batch_size: 256
+  train_batch_size: 8
   epochs: 10
   print_interval: 2
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_dselect_k"
-  test_data_dir: "data/test"
-  infer_batch_size: 512
+  test_data_dir: "data/sample_data"
+  infer_batch_size: 8
   infer_reader_path: "multiMNIST_reader" # importlib format
   infer_load_path: "output_model_dselect_k"
   infer_start_epoch: 0
