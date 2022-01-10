@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 import numpy as np
-import random
+from random import shuffle, randint, choice
 from collections import defaultdict
 
 from paddle.io import IterableDataset
@@ -176,6 +176,143 @@ class Rating(object):
         return len(self.trainingData)
 
 
+class SparseMatrix():
+    'matrix used to store raw data'
+
+    def __init__(self, triple):
+        self.matrix_User = {}
+        self.matrix_Item = {}
+        for item in triple:
+            if item[0] not in self.matrix_User:
+                self.matrix_User[item[0]] = {}
+            if item[1] not in self.matrix_Item:
+                self.matrix_Item[item[1]] = {}
+            self.matrix_User[item[0]][item[1]] = item[2]
+            self.matrix_Item[item[1]][item[0]] = item[2]
+        self.elemNum = len(triple)
+        self.size = (len(self.matrix_User), len(self.matrix_Item))
+
+    def sRow(self, r):
+        if r not in self.matrix_User:
+            return {}
+        else:
+            return self.matrix_User[r]
+
+    def sCol(self, c):
+        if c not in self.matrix_Item:
+            return {}
+        else:
+            return self.matrix_Item[c]
+
+    def row(self, r):
+        if r not in self.matrix_User:
+            return np.zeros((1, self.size[1]))
+        else:
+            array = np.zeros((1, self.size[1]))
+            ind = list(self.matrix_User[r].keys())
+            val = list(self.matrix_User[r].values())
+            array[0][ind] = val
+            return array
+
+    def col(self, c):
+        if c not in self.matrix_Item:
+            return np.zeros((1, self.size[0]))
+        else:
+            array = np.zeros((1, self.size[0]))
+            ind = list(self.matrix_Item[c].keys())
+            val = list(self.matrix_Item[c].values())
+            array[0][ind] = val
+            return array
+
+    def elem(self, r, c):
+        if not self.contains(r, c):
+            return 0
+        return self.matrix_User[r][c]
+
+    def contains(self, r, c):
+        if r in self.matrix_User and c in self.matrix_User[r]:
+            return True
+        return False
+
+    def elemCount(self):
+        return self.elemNum
+
+    def size(self):
+        return self.size
+
+
+class Social(object):
+    def __init__(self, relation=None):
+        self.user = {}  # used to store the order of users
+        self.relation = relation
+        self.followees = defaultdict(dict)
+        self.followers = defaultdict(dict)
+        self.trustMatrix = self.__generateSet()
+
+    def __generateSet(self):
+        triple = []
+        for line in self.relation:
+            userId1, userId2, weight = line
+            # add relations to dict
+            self.followees[userId1][userId2] = weight
+            self.followers[userId2][userId1] = weight
+            # order the user
+            if userId1 not in self.user:
+                self.user[userId1] = len(self.user)
+            if userId2 not in self.user:
+                self.user[userId2] = len(self.user)
+            triple.append([self.user[userId1], self.user[userId2], weight])
+        return SparseMatrix(triple)
+
+    def row(self, u):
+        # return user u's followees
+        return self.trustMatrix.row(self.user[u])
+
+    def col(self, u):
+        # return user u's followers
+        return self.trustMatrix.col(self.user[u])
+
+    def elem(self, u1, u2):
+        return self.trustMatrix.elem(u1, u2)
+
+    def weight(self, u1, u2):
+        if u1 in self.followees and u2 in self.followees[u1]:
+            return self.followees[u1][u2]
+        else:
+            return 0
+
+    def trustSize(self):
+        return self.trustMatrix.size
+
+    def getFollowers(self, u):
+        if u in self.followers:
+            return self.followers[u]
+        else:
+            return {}
+
+    def getFollowees(self, u):
+        if u in self.followees:
+            return self.followees[u]
+        else:
+            return {}
+
+    def hasFollowee(self, u1, u2):
+        if u1 in self.followees:
+            if u2 in self.followees[u1]:
+                return True
+            else:
+                return False
+        return False
+
+    def hasFollower(self, u1, u2):
+        if u1 in self.followers:
+            if u2 in self.followers[u1]:
+                return True
+            else:
+                return False
+        return False
+
+
 def loadDataSet(file, bTest=False, binarized=False, threshold=3.0):
     trainingData, testData = [], []
 
@@ -249,19 +386,77 @@ class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
-        self.data = Rating(trainingSet, testSet)
+        self.trainingSet = loadDataSet(
+            config.get("runner.rating_file", None),
+            bTest=False,
+            binarized=True,
+            threshold=1.0)
+        self.relation = loadRelationship(
+            config.get("runner.relation_file", None))
+        self.social = Social(relation=self.relation)
+        self.batch_size = config.get("runner.train_batch_size", 2000)
+
+        for trainingSet, testSet in crossValidation(self.trainingSet, k=5):
+            self.data = Rating(trainingSet, testSet)
+            self.trainingSet = trainingSet
+            self.testSet = testSet
+            break
+
+        _, _, self.train_size = self.data.trainingSize()
+
+    def get_dataset(self):
+        # data clean
+        cleanList = []
+        cleanPair = []
+        for user in self.social.followees:
+            if user not in self.data.user:
+                cleanList.append(user)
+            for u2 in self.social.followees[user]:
+                if u2 not in self.data.user:
+                    cleanPair.append((user, u2))
+        for u in cleanList:
+            del self.social.followees[u]
+        for pair in cleanPair:
+            if pair[0] in self.social.followees:
+                del self.social.followees[pair[0]][pair[1]]
+        cleanList = []
+        cleanPair = []
+        for user in self.social.followers:
+            if user not in self.data.user:
+                cleanList.append(user)
+            for u2 in self.social.followers[user]:
+                if u2 not in self.data.user:
+                    cleanPair.append((user, u2))
+        for u in cleanList:
+            del self.social.followers[u]
+        for pair in cleanPair:
+            if pair[0] in self.social.followers:
+                del self.social.followers[pair[0]][pair[1]]
+        idx = []
+        for n, pair in enumerate(self.social.relation):
+            if pair[0] not in self.data.user or pair[1] not in self.data.user:
+                idx.append(n)
+        for item in reversed(idx):
+            del self.social.relation[item]
+        return self.data, self.social
 
     def __iter__(self):
-        full_lines = []
-        for file in self.file_list:
-            with open(file, "r") as rf:
-                for line in rf:
-                    output_list = []
-                    features = line.strip().split(',')
-                    user_input = [int(features[0])]
-                    item_input = [int(features[1])]
-                    label = [int(features[2])]
-                    output_list.append(np.array(user_input).astype('int64'))
-                    output_list.append(np.array(item_input).astype('int64'))
-                    output_list.append(np.array(label).astype('int64'))
-                    yield output_list
+        shuffle(self.data.trainingData)
+        count = 0
+
+        item_list = list(self.data.item.keys())
+        while count < self.train_size:
+            output_list = []
+
+            user, item = self.data.trainingData[count][
+                0], self.data.trainingData[count][1]
+            neg_item = choice(item_list)
+            while neg_item in self.data.trainSet_u[user]:
+                neg_item = choice(item_list)
+
+            output_list.append(np.array(user).astype("int64"))
+            output_list.append(np.array(item).astype("int64"))
+            output_list.append(np.array(neg_item).astype("int64"))
+
+            count += 1
+            yield output_list
