@@ -23,7 +23,7 @@ runner:
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_dselect_k"
   test_data_dir: "data/test"
-  infer_batch_size: 256
+  infer_batch_size: 20000
   infer_reader_path: "multiMNIST_reader" # importlib format
   infer_load_path: "output_model_dselect_k"
   infer_start_epoch: 0
