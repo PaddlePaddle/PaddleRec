@@ -23,11 +23,11 @@ runner:
   epochs: 1
   print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_bigdata_deepfm_dy"
+  model_save_path: "output_model_xdeepfm_all"
   test_data_dir: "../../../datasets/criteo/slot_test_data_full"
   infer_reader_path: "criteo_reader" # importlib format
   infer_batch_size: 512
-  infer_load_path: "output_model_bigdata_deepfm_dy"
+  infer_load_path: "output_model_xdeepfm_all"
   infer_start_epoch: 0
   infer_end_epoch: 1
 
