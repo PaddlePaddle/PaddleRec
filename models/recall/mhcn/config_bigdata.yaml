@@ -18,15 +18,15 @@ runner:
   relation_file: "data/trusts.txt"
   train_batch_size: 2000
   train_reader_path: "lastfm_reader" # importlib format
-  use_gpu: False
+  use_gpu: True
   use_auc: False
   epochs: 120
   print_interval: 1
-  model_save_path: "output_model_mhcn"
+  model_save_path: "output_model_mhcn_all"
   test_data_dir: "data/test"
   infer_batch_size: 2000
   infer_reader_path: "lastfm_reader" # importlib format
-  infer_load_path: "output_model_mhcn"
+  infer_load_path: "output_model_mhcn_all"
   infer_start_epoch: 0
   infer_end_epoch: 120
   top_k: 10

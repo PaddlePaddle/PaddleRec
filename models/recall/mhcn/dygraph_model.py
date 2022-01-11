@@ -32,25 +32,33 @@ class DygraphModel():
     def create_feeds(self, batch_data):
         # u_idx, v_idx, neg_idx = inputs
 
-        user_input = paddle.to_tensor(batch_data[0].numpy().astype('int64')
-                                      .reshape(-1, 1))
-        item_input = paddle.to_tensor(batch_data[1].numpy().astype('int64')
-                                      .reshape(-1, 1))
-        neg_item_input = paddle.to_tensor(batch_data[2].numpy().astype('int64')
-                                          .reshape(-1, 1))
-        print("user input shape: ", paddle.shape(user_input))
-        print("item input shape: ", paddle.shape(item_input))
+        user_input = paddle.squeeze(
+            paddle.to_tensor(batch_data[0].numpy().astype('int64')
+                             .reshape(-1, 1)),
+            axis=1)
+        item_input = paddle.squeeze(
+            paddle.to_tensor(batch_data[1].numpy().astype('int64')
+                             .reshape(-1, 1)),
+            axis=1)
+        neg_item_input = paddle.squeeze(
+            paddle.to_tensor(batch_data[2].numpy().astype('int64')
+                             .reshape(-1, 1)),
+            axis=1)
 
         return [user_input, item_input, neg_item_input]
 
     # define loss function
     def create_loss(self, outputs):
-        user_emb, pos_item_emb, neg_item_emb = outputs
+        user_emb, pos_item_emb, neg_item_emb, ss_loss = outputs
+
         score = paddle.sum(paddle.multiply(user_emb, pos_item_emb),
                            1) - paddle.sum(
                                paddle.multiply(user_emb, neg_item_emb), 1)
-        loss = -paddle.sum(paddle.log(F.sigmoid(score) + 10e-8))
-        return loss
+
+        rec_loss = -paddle.sum(paddle.log(F.sigmoid(score) + 10e-8))
+        ss_loss = ss_loss * 0.01
+        loss = rec_loss + ss_loss
+        return loss, rec_loss, ss_loss
 
     # define optimizer
     def create_optimizer(self, dy_model, config):
@@ -72,17 +80,14 @@ class DygraphModel():
         inputs = self.create_feeds(batch_data)
 
         prediction = dy_model.forward(inputs)
-        loss = self.create_loss(prediction)
+        loss, rec_loss, ss_loss = self.create_loss(prediction)
         # update metrics
-        print_dict = {"loss": loss}
+        print_dict = {"loss": loss, "rec_loss": rec_loss}
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         inputs = self.create_feeds(batch_data)
 
         prediction = dy_model.forward(inputs)
-        # update metrics
-        # print_dict = {
-        #     "user": inputs[0],
-        # }
-        return metrics_list, None
+
+        return metrics_list, prediction

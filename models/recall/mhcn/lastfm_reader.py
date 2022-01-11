@@ -386,6 +386,7 @@ class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
+        self.is_train = True if "train" in file_list or file_list else False
         self.trainingSet = loadDataSet(
             config.get("runner.rating_file", None),
             bTest=False,
@@ -403,6 +404,7 @@ class RecDataset(IterableDataset):
             break
 
         _, _, self.train_size = self.data.trainingSize()
+        _, _, self.test_size = self.data.testSize()
 
     def get_dataset(self):
         # data clean
@@ -441,22 +443,43 @@ class RecDataset(IterableDataset):
         return self.data, self.social
 
     def __iter__(self):
-        shuffle(self.data.trainingData)
         count = 0
-
         item_list = list(self.data.item.keys())
-        while count < self.train_size:
-            output_list = []
 
-            user, item = self.data.trainingData[count][
-                0], self.data.trainingData[count][1]
-            neg_item = choice(item_list)
-            while neg_item in self.data.trainSet_u[user]:
+        if self.is_train:
+            shuffle(self.data.trainingData)
+            while count < self.train_size:
+                output_list = []
+
+                user, item = self.data.trainingData[count][
+                    0], self.data.trainingData[count][1]
+                neg_item = choice(item_list)
+                while neg_item in self.data.trainSet_u[user]:
+                    neg_item = choice(item_list)
+
+                output_list.append(
+                    np.array(self.data.user[user]).astype("int64"))
+                output_list.append(
+                    np.array(self.data.item[item]).astype("int64"))
+                output_list.append(
+                    np.array(self.data.item[neg_item]).astype("int64"))
+
+                count += 1
+                yield output_list
+        else:
+            while count < self.test_size:
+                output_list = []
+
+                user, item = self.data.testData[count][0], self.data.testData[
+                    count][1]
                 neg_item = choice(item_list)
 
-            output_list.append(np.array(user).astype("int64"))
-            output_list.append(np.array(item).astype("int64"))
-            output_list.append(np.array(neg_item).astype("int64"))
+                output_list.append(
+                    np.array(self.data.user[user]).astype("int64"))
+                output_list.append(
+                    np.array(self.data.item[item]).astype("int64"))
+                output_list.append(
+                    np.array(self.data.item[neg_item]).astype("int64"))
 
-            count += 1
-            yield output_list
+                count += 1
+                yield output_list
