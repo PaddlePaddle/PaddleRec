@@ -10,5 +10,7 @@
   |                     [DLRM](models/rank/dlrm/)                     |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/554    | 论文复现赛第四期 |
   |                     [DIFM](models/rank/difm/)                     |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/562    | 论文复现赛第四期 |
   |                       [BERT4REC](models/rank/bert4rec/)                       |  [jinweiluo](https://github.com/jinweiluo)  |    https://github.com/PaddlePaddle/PaddleRec/pull/624    | 论文复现赛第四期 |
+  |                       [FAT_DeepFFM](models/rank/fat_deepffm/)                       |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/651    | 论文复现赛第四期 |
+  |                       [DeepRec](models/rank/deeprec/)                       |  [chenjiyan2001](https://github.com/chenjiyan2001)  |    https://github.com/PaddlePaddle/PaddleRec/pull/647    | 论文复现赛第五期 |
 
 </div> 
