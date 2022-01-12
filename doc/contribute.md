@@ -46,6 +46,8 @@ Tips1: 如果有条件请同步添加英文文档Readme_en.md
 
 Tips2: 文档很重要，文档很重要，文档很重要！重要的事情说三遍
 
+Tips3: 可运行命令部分需要使用```bash格式，可参考MMoE的README命令部分
+
 ## 数据
 
 样例数据统一以sample_data命名，在模型目录下面，只支持小样本数据
@@ -91,6 +93,8 @@ yaml的详细配置说明请参考[config.yaml配置说明](https://github.com/P
 
 Tips1: config_bigdata中的数据路径请配置dataset的相对路径，方便一键执行
 
+Tips2: config_bigdata中的模型保存路径请设置为output_model_模型名_all的形式，区别于config中模型保存路径的output_model_模型名
+
 ## 将模型信息添加到主页
 为了方便用户在主页了解到模型分布情况，需要在主页(包括中文和英文)的支持模型列表添加该模型信息
 
@@ -111,7 +115,15 @@ Tips1: config_bigdata中的数据路径请配置dataset的相对路径，方便�
 如果模型的贡献来自外部开发者，需将该作者信息添加到[外部开发者列表](../contributor.md)
 
 ## 添加TIPC
-请参考[TIPC基础链条测试接入规范](https://github.com/PaddlePaddle/PaddleRec/tree/master/test_tipc)
+为了方便检测模型的精度变化及运行情况，需要模型添加tipc的配置并支持tipc的脚本运行
+
+添加新的模型需要支持lite_train_lite_infer，lite_train_whole_infer，whole_infer，whole_train_whole_infer四种模式。详细运行方式可以参考[基础训练预测功能测试](https://github.com/PaddlePaddle/PaddleRec/blob/master/test_tipc/doc/test_train_inference_python.md)
+
+tips1：更改test_tipc/prepare.sh脚本，在最后添加自己的模型在四种模式时需要下载的数据集，以及用于全量数据预测时的模型下载链接
+
+tips2：在test_tipc/configs目录下为自己的模型建立子目录，目录中需要有train_infer_python.txt文件以运行测试脚本、以及测试脚本运行时需要用到的独立脚本
+
+PS:模型若需要存放于云端可以联系我们
 
 ## 添加AIStudio在线运行示列
 
