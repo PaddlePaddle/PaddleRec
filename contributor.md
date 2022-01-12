@@ -12,5 +12,6 @@
   |                       [BERT4REC](models/rank/bert4rec/)                       |  [jinweiluo](https://github.com/jinweiluo)  |    https://github.com/PaddlePaddle/PaddleRec/pull/624    | 论文复现赛第四期 |
   |                       [FAT_DeepFFM](models/rank/fat_deepffm/)                       |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/651    | 论文复现赛第四期 |
   |                       [DeepRec](models/rank/deeprec/)                       |  [chenjiyan2001](https://github.com/chenjiyan2001)  |    https://github.com/PaddlePaddle/PaddleRec/pull/647    | 论文复现赛第五期 |
+  |                     [MIND](models/r/mind/)                     |  [duyiqi17 ](https://github.com/duyiqi17)  |    https://github.com/PaddlePaddle/PaddleRec/pull/398   | 内部同学贡献 |
 
 </div> 
