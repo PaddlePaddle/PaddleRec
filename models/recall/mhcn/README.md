@@ -126,15 +126,16 @@ MHCN 网络结构见上图 2 所示，与 net.py 文件中代码一一对应。
 ![](https://tva1.sinaimg.cn/large/008i3skNly1gya5pggeiaj30nq02mt97.jpg)
 
 原论文 MHCN 在 LastFM 数据集上 P@10、R@10、N@10 最佳结果分别为
-20.052%、20.375%、0.24395，其 [github 开源代码](https://github.com/Coder-Yu/QRec/issues/216) 复现结果为
-19.607%、19.914%、0.24459，前两项指标稍低, NDCG@10 要稍高一些，但结果相对其他模型仍是最优的。
+20.052%、20.375%、0.24395，其 [github 开源代码](https://github.com/Coder-Yu/QRec/issues/216) issues 有反馈前两项指标稍低, NDCG@10 要稍高一些，
+复现结果为 19.607%、19.914%、0.24459，但结果相对其他模型仍是最优的。
 
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现 readme 中的效果,请按如下步骤依次操作即可。 在全量数据下模型的指标如下：  
 | 模型 | P@10 | R@10 | N@10 | batch_size | epoch_num| Time of each epoch | | :------| :------ | :------ | :------ | :
 ------ | :------| :------ | | MHCN | 20.063% | 20.452% | 0.24780 | 2000 | 120 | 约 15 分钟 |
 
 1. 确认您当前所在目录为 PaddleRec/models/recall/mhcn
-2. 切回模型目录,执行命令运行全量数据 (需从 https://github.com/Coder-Yu/QRec/blob/master/dataset/lastfm 下载 ratings.txt 和 trusts.txt 两个文件放在 data 文件夹下)
+2. 切回模型目录,执行命令运行全量数据 (需从 https://github.com/Coder-Yu/QRec/blob/master/dataset/lastfm 下载 ratings.txt 和 trusts.txt 两个文件放在
+   data 文件夹下)
 
 ```bash
 # 需要在 mhcn 目录下
