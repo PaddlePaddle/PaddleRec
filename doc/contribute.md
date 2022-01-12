@@ -91,6 +91,22 @@ yaml的详细配置说明请参考[config.yaml配置说明](https://github.com/P
 
 Tips1: config_bigdata中的数据路径请配置dataset的相对路径，方便一键执行
 
+## 将模型信息添加到主页
+为了方便用户在主页了解到模型分布情况，需要在主页(包括中文和英文)的支持模型列表添加该模型信息
+目前首页默认为英文，参考Support model list部分即可
+中文首页参考[中文首页支持模型列表](https://github.com/PaddlePaddle/PaddleRec/blob/master/README_CN.md#%E6%94%AF%E6%8C%81%E6%A8%A1%E5%9E%8B%E5%88%97%E8%A1%A8)
+注意：中英文两部分的模型信息顺序须保持一致
 
+## 将模型添加到PaperWithCode
+进入[PaperWithCode](https://paperswithcode.com/)
+若无账号须要先申请个
+搜索模型对应论文名称，进入该页面即可添加模型
+
+## 外部开发者列表
+如果模型的贡献来自外部开发者，需将该作者信息添加到[外部开发者列表](../contributor.md)
+
+## 添加TIPC
+
+## 添加AIStudio在线运行
 
 ## FAQ
