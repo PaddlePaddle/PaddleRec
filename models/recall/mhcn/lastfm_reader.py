@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 import numpy as np
+import random
 from random import shuffle, randint, choice
 from collections import defaultdict
 
@@ -405,6 +406,8 @@ class RecDataset(IterableDataset):
 
         _, _, self.train_size = self.data.trainingSize()
         _, _, self.test_size = self.data.testSize()
+
+        random.seed(2)
 
     def get_dataset(self):
         # data clean

@@ -28,7 +28,7 @@ runner:
   infer_reader_path: "lastfm_reader" # importlib format
   infer_load_path: "output_model_mhcn_all"
   infer_start_epoch: 0
-  infer_end_epoch: 120
+  infer_end_epoch: 117
   top_k: 10
 
   # hyper parameters of user-defined network
