@@ -102,41 +102,15 @@ CrossNetwork计算特征交叉时，随着层数和特征维度的增大，计�
 | :------| :------ | :------ | :------| :------ | :------ | 
 | DCN_V2 | 0.8026 | 0.4384 |512 | 1 | 约 3 小时 |
 
-
-1.下载Criteo原始数据和对应的Sparse特征数量文件
-
-```
-# 切换路径至数据处理脚本目录下
-cd work/PaddleRec/datasets/criteo_dcn_v2/
-
-# 下载、解压数据
-wget --no-check-certificate https://paddlerec.bj.bcebos.com/deepfm%2Ffeat_dict_10.pkl2
-wget --no-check-certificate https://fleet.bj.bcebos.com/ctr_data.tar.gz
-tar -zxvf ctr_data.tar.gz
-mv ./raw_data ./train_data_full
-mkdir train_data && cd train_data
-cp ../train_data_full/part-0 ../train_data_full/part-1 ./ && cd ..
-mv ./test_data ./test_data_full
-mkdir test_data && cd test_data
-cp ../test_data_full/part-220 ./  && cd ..
-echo "Complete data download."
-echo "Full Train data stored in ./train_data_full "
-echo "Full Test data stored in ./test_data_full "
-echo "Rapid Verification train data stored in ./train_data "
-echo "Rapid Verification test data stored in ./test_data "
-```
-2.处理原始数据，对dense特征进行log化
-```bash
-# 在终端中运行数据处理脚本
-
-# 确保目录在 work/PaddleRec/datasets/criteo_dcn_v2/
+1. 确认您当前所在目录为PaddleRec/models/rank/dcn_v2
+2. 进入paddlerec/datasets/criteo_dcn_v2目录下，执行该脚本，会从国内源的服务器上下载并预处理完成criteo全量数据集，放到指定文件夹。
+``` bash
+cd ../../../datasets/criteo_dcn_v2
 sh data_process.sh
-
-```
-
-3. 确认您当前所在目录为 `PaddleRec/models/rank/dcn_v2`
-
-```
+``` 
+3. 切回模型目录,执行命令运行全量数据
+```bash
+cd - # 切回模型目录
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
 python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 

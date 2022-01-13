@@ -14,7 +14,7 @@
 
 
 runner:
-  train_data_dir: "../../../datasets/criteo_DCNv2/slot_train_data_full"
+  train_data_dir: "../../../datasets/criteo_dcn_v2/slot_train_data_full"
   train_reader_path: "reader" # importlib format
   use_gpu: True
   use_auc: True
@@ -22,11 +22,11 @@ runner:
   epochs: 1
   print_interval: 500
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_dcn_v2_4"
-  test_data_dir: "../../../datasets/criteo_DCNv2/slot_test_data_full"
+  model_save_path: "output_model_dcn_v2_all"
+  test_data_dir: "../../../datasets/criteo_dcn_v2/slot_test_data_full"
   infer_reader_path: "reader" # importlib format
   infer_batch_size: 512
-  infer_load_path: "output_model_dcn_v2_4"
+  infer_load_path: "output_model_dcn_v2_all"
   infer_start_epoch: 0
   infer_end_epoch: 1
 
