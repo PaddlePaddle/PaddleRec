@@ -14,8 +14,8 @@
 
 runner:
   train_data_dir: "data/train"
-  rating_file: "data/ratings.txt"
-  relation_file: "data/trusts.txt"
+  rating_file: "../../../datasets/LastFM_MHCN/lastfm/ratings.txt"
+  relation_file: "../../../datasets/LastFM_MHCN/lastfm/trusts.txt"
   train_batch_size: 2000
   train_reader_path: "lastfm_reader" # importlib format
   use_gpu: True

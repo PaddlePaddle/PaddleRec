@@ -135,8 +135,12 @@ MHCN 网络结构见上图 2 所示，与 net.py 文件中代码一一对应。
 | MHCN | 20.063% | 20.452% | 0.24780 | 2000 | 120 | 约 15 分钟 |
 
 1. 确认您当前所在目录为 PaddleRec/models/recall/mhcn
-2. 切回模型目录,执行命令运行全量数据 (需从 https://github.com/Coder-Yu/QRec/blob/master/dataset/lastfm 下载 ratings.txt 和 trusts.txt 两个文件放在
-   data 文件夹下)
+2. 进入 PaddleRec/datasets/LastFM_MHCN 目录下，执行该脚本，会从国内源的服务器上下载数据集，并解压到指定文件夹。
+```shell
+cd ../../../datasets/LastFM_MHCN
+sh run.sh
+```
+3. 切回模型目录,执行命令运行全量数据
 
 ```bash
 # 需要在 mhcn 目录下
