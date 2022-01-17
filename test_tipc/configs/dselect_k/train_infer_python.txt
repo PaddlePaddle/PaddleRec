@@ -27,7 +27,7 @@ null:null
 ===========================infer_params===========================
 runner.model_save_path:
 runner.model_init_path:
-norm_export:-u ./to_static.py -m ./models/multitask/dselect_k/config_bigdata.yaml -o runner.CE=true
+norm_export:-u ./test_tipc/configs/dselect_k/to_static.py -m ./models/multitask/dselect_k/config_bigdata.yaml -o runner.CE=true
 quant_export:null
 fpgm_export:null
 distill_export:null
