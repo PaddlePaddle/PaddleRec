@@ -22,11 +22,11 @@ runner:
   epochs: 7
   print_interval: 2
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_bst_bigdata"
+  model_save_path: "output_model_bst_all"
   test_data_dir: "./data/all_data/test_data"
   infer_reader_path: "amazon_reader" # importlib format
   infer_batch_size: 256
-  infer_load_path: "output_model_bst_bigdata"
+  infer_load_path: "output_model_bst_all"
   infer_start_epoch: 6
   infer_end_epoch: 7
 

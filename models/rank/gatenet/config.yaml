@@ -20,11 +20,11 @@ runner:
   train_batch_size: 2
   epochs: 3
   print_interval: 2
-  model_save_path: "output_model_gatednn"
+  model_save_path: "output_model_gatenet"
   infer_batch_size: 2
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model_gatednn"
+  infer_load_path: "output_model_gatenet"
   infer_start_epoch: 2
   infer_end_epoch: 3
 
