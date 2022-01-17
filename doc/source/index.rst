@@ -84,6 +84,7 @@
    models/multitask/mmoe.md
    models/multitask/ple.md
    models/multitask/share_bottom.md
+   models/multitask/dselect_k.md
    
 .. toctree::
    :maxdepth: 1
