@@ -1,5 +1,7 @@
 # DSSM文本匹配模型
 
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3238124)**
+
 以下是本例的简要目录结构及说明： 
 
 ```
@@ -25,7 +27,9 @@
 
 注：在阅读该示例前，建议您先了解以下内容：
 
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
+[readthedocs文档](https://paddlerec.readthedocs.io/en/latest/models/match/dssm.html)  
+
 
 ## 内容
 
@@ -105,8 +109,8 @@ bash run.sh #动态图训练并测试，最后得到指标
 ```
 
 ## 进阶使用
-DSSM作为推荐系统中一种向量召回的方式，一般需要将doc侧的向量预先计算出来，灌入向量搜索引擎（例如milvus）中，同时保存的模型仅为query侧的模型。线上使用阶段，输入query侧的数据，计算出query侧向量后，直接通过向量搜索引擎召回对应的doc。
-一般在训练的过程中，增加预测阶段，dump出全量的doc侧向量，需要做如下修改：
+DSSM作为推荐系统中一种向量召回的方式，一般需要将doc侧的向量预先计算出来，灌入向量搜索引擎（例如milvus）中，同时保存的模型仅为query侧的模型。线上使用阶段，输入query侧的数据，计算出query侧向量后，直接通过向量搜索引擎召回对应的doc。  
+一般在训练的过程中，增加预测阶段，dump出全量的doc侧向量，需要做如下修改： 
 1. 为了区分dump出的向量，预测阶段使用的数据需要增加insid和content两个字段，其中insid唯一标记样本，content指明对应的doc。并在数据处理脚本中对这两个字段进行解析，详见bq_reader_train_insid.py脚本。
 2. dataset选择InmemoryDataset，同时设置
 ```python

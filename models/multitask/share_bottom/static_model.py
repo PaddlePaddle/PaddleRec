@@ -50,7 +50,7 @@ class StaticModel():
 
         ShareBottom = ShareBottomLayer(self.feature_size, self.task_num,
                                        self.bottom_size, self.tower_size)
-        pred_income, pred_marital = ShareBottom(input_data)
+        pred_income, pred_marital = ShareBottom.forward(input_data)
 
         pred_income_1 = paddle.slice(
             pred_income, axes=[1], starts=[1], ends=[2])

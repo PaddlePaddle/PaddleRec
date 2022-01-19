@@ -58,7 +58,7 @@ def serialize_example(dense_feature, sparse_feature, label):
 if __name__ == '__main__':
 
     output_file = 'wd.tfrecord'
-    input_file = '/work/FleetX/examples/wide_and_deep/data/part-0'
+    input_file = './part-0'
 
     # setting for this dataset only
     continuous_range_ = range(1, 14)

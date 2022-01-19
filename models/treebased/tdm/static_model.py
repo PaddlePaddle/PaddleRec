@@ -14,7 +14,7 @@
 
 import math
 import paddle
-
+import numpy as np
 from model import dnn_model_define
 
 
@@ -30,6 +30,8 @@ class StaticModel():
         # model training hyper parameter
         self.node_nums = self.config.get("hyper_parameters.sparse_feature_num",
                                          10326150)
+        self.x_bert_embed_size = self.config.get(
+            "hyper_parameters.x_bert_embed_size", 128)
         self.node_emb_size = self.config.get("hyper_parameters.node_emb_size",
                                              24)
         self.item_nums = self.config.get("hyper_parameters.item_nums", 69)
@@ -38,11 +40,17 @@ class StaticModel():
         self.with_att = self.config.get("hyper_parameters.with_att", False)
 
     def create_feeds(self, is_infer=False):
+        '''
         user_input = [
             paddle.static.data(
                 name="item_" + str(i + 1), shape=[None, 1], dtype="int64")
             for i in range(self.item_nums)
         ]
+        '''
+        user_input = paddle.static.data(
+            name="item_id",
+            shape=[None, self.x_bert_embed_size],
+            dtype="float32")
 
         item = paddle.static.data(
             name="unit_id", shape=[None, 1], dtype="int64")
@@ -50,61 +58,67 @@ class StaticModel():
         label = paddle.static.data(
             name="label", shape=[None, 1], dtype="int64")
 
-        feed_list = user_input + [item, label]
+        feed_list = [user_input, item, label]
         return feed_list
 
-    def net(self, input, is_infer=False):
+    def net(self, inputs, is_infer=False):
+
+        pretrained_attr = paddle.ParamAttr(
+            name='tdm.bw_emb.weight', trainable=True)
         embedding = paddle.nn.Embedding(
             self.node_nums,
             self.node_emb_size,
             sparse=True,
             padding_idx=0,
-            weight_attr=paddle.framework.ParamAttr(
-                name="tdm.bw_emb.weight",
-                initializer=paddle.nn.initializer.Normal(std=0.001)))
+            weight_attr=pretrained_attr)
 
-        # embedding = paddle.nn.Embedding(
-        #     self.node_nums,
-        #     self.node_emb_size,
-        #     sparse=True,
-        #     padding_idx=0,
-        #     weight_attr=paddle.framework.ParamAttr(
-        #         name="TDM_Tree_Emb",
-        #         initializer=paddle.nn.initializer.Constant(0.01)))
-
-        user_feature = input[0:self.item_nums]
-        user_feature_emb = list(map(embedding, user_feature))  # [(bs, emb)]
-
-        unit_id_emb = embedding(input[-2])
+        #paddle.static.Print(inputs[i], summarize=-1)
+        user_input_fc = paddle.static.nn.fc(
+            x=inputs[0],
+            size=self.x_bert_embed_size,
+            activation="tanh",
+            weight_attr=paddle.fluid.ParamAttr(
+                name="user_fc_w",
+                initializer=paddle.fluid.initializer.NormalInitializer(
+                    seed=1)),
+            bias_attr=paddle.fluid.ParamAttr(
+                name="user_fc_b",
+                initializer=paddle.fluid.initializer.ConstantInitializer(
+                    value=0.1)))
+        unit_id_emb = embedding(inputs[-2])
         dout = dnn_model_define(
-            user_feature_emb,
+            self.x_bert_embed_size,
+            user_input_fc,
             unit_id_emb,
             node_emb_size=self.node_emb_size,
             fea_groups=self.fea_group,
             with_att=self.with_att)
 
         cost, softmax_prob = paddle.nn.functional.softmax_with_cross_entropy(
-            logits=dout, label=input[-1], return_softmax=True, ignore_index=-1)
-
-        ignore_label = paddle.full_like(input[-1], fill_value=-1)
-        #        avg_cost = paddle.sum(cost) / paddle.sum(
-        #            paddle.cast(
-        #                paddle.not_equal(input[-1], ignore_label), dtype='int32'))
+            logits=dout,
+            label=inputs[-1],
+            return_softmax=True,
+            ignore_index=-1)
+        ignore_label = paddle.full_like(inputs[-1], fill_value=-1)
         avg_cost = paddle.divide(
             paddle.sum(cost),
             paddle.sum(
                 paddle.cast(
-                    paddle.not_equal(input[-1], ignore_label),
+                    paddle.not_equal(inputs[-1], ignore_label),
                     dtype='float32')))
 
         self._cost = avg_cost
-
+        '''
         auc, _, _ = paddle.static.auc(input=softmax_prob,
-                                      label=input[-1],
+                                      label=inputs[-1],
                                       slide_steps=0)
+        '''
+        auc = paddle.metric.accuracy(input=softmax_prob, label=inputs[-1])
+
         self.inference_target_var = softmax_prob
 
-        fetch_dict = {'cost': avg_cost, 'auc': auc}
+        fetch_dict = {'cost': avg_cost, 'acc': auc}
+        #fetch_dict = {'cost': avg_cost}
         return fetch_dict
 
     def create_optimizer(self, strategy=None):

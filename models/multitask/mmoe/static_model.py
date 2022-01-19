@@ -51,7 +51,7 @@ class StaticModel():
 
         MMoE = MMoELayer(self.feature_size, self.expert_num, self.expert_size,
                          self.tower_size, self.gate_num)
-        pred_income, pred_marital = MMoE(input_data)
+        pred_income, pred_marital = MMoE.forward(input_data)
 
         pred_income_1 = paddle.slice(
             pred_income, axes=[1], starts=[1], ends=[2])

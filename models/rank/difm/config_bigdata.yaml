@@ -1,0 +1,58 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# workspace
+#workspace: "models/rank/difm"
+
+
+runner:
+  train_data_dir: "../../../datasets/criteo/slot_train_data_full"
+  train_reader_path: "criteo_reader" # importlib format
+  use_gpu: True
+  use_auc: True
+  train_batch_size: 2000
+  epochs: 2
+  print_interval: 100
+  model_save_path: "output_model_difm_all"
+  infer_batch_size: 2000
+  infer_reader_path: "criteo_reader" # importlib format
+  test_data_dir: "../../../datasets/criteo/slot_test_data_full"
+  infer_load_path: "output_model_difm_all"
+  infer_start_epoch: 0
+  infer_end_epoch: 2
+
+  # distribute_config
+  sync_mode: "async"
+  split_file_list: False
+  thread_num: 1
+
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: async
+  # user-defined <key, value> pairs
+  sparse_inputs_slots: 27
+  dense_input_dim: 13
+  sparse_field_num: 26
+  sparse_feature_num: 1000001
+  sparse_feature_dim: 20
+  dense_feature_dim: 13
+  att_factor_dim: 80
+  att_head_num: 16
+  fen_layers_size:  [256, 256, 27]
+  dense_layers_size:  [256, 20]

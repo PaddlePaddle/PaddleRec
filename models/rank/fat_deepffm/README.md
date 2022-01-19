@@ -11,7 +11,11 @@
 ├── README.md # 文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据配置
+<<<<<<< HEAD
 ├── net.py # 模型核心组网（动静统一）
+=======
+├── net.py # 模型核心组网
+>>>>>>> upstream/master
 ├── criteo_reader.py # 数据读取程序
 ├── dygraph_model.py # 构建动态图
 ```
@@ -70,18 +74,25 @@ os : windows/linux/macos
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
 python -u ../../../tools/infer.py -m config.yaml 
+<<<<<<< HEAD
 
 # 静态图训练
 python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 静态图预测
 python -u ../../../tools/static_infer.py -m config.yaml 
+=======
+>>>>>>> upstream/master
 ``` 
 
 ## 模型组网
 
 FAT_DeepFFM 模型的组网，代码参考 `net.py`。模型主要组成是 Embedding 层，CENet 层，DeepFFM特征交叉层，DNN层以及相应的分类任务的loss计算和auc计算。模型架构如下：
 
+<<<<<<< HEAD
 <img align="center" src="https://wx1.sinaimg.cn/mw2000/0073e4AWly1gxdg17ndtcj30e30a30uv.jpg">
+=======
+<img align="center" src="picture/11.jpg" width="400" height="300">
+>>>>>>> upstream/master
 
 
 ### **CENet 层**
@@ -89,21 +100,37 @@ FAT_DeepFFM 模型的组网，代码参考 `net.py`。模型主要组成是 Embe
 FAT_DeepFFM 模型的特征输入，主要包括 sparse 类别特征。（在处理 dense 数值型特征时，进行升维与sparse 类别特征拼接）
 sparse features 经由 embedding 层查找得到相应的 embedding 向量。使用CENet显示地建模特征之间的依赖关系。CENet网络结构如下图所示：
 
+<<<<<<< HEAD
 <img align="center" src="https://wx2.sinaimg.cn/mw2000/0073e4AWly1gxdg1yujlcj30so0fc42b.jpg">
 
 根据网络结构图，通过CENet的注意力机制有选择性地突出信息特征并抑制不太有用的特征，公式如下所示：
 
 <img align="center" src="https://wx3.sinaimg.cn/mw2000/0073e4AWly1gxdg2h43wkj30fq01raah.jpg">
+=======
+<img align="center" src="picture/2.jpg" width="400" height="300">
+
+根据网络结构图，通过CENet的注意力机制有选择性地突出信息特征并抑制不太有用的特征，公式如下所示：
+
+<img align="center" src="picture/3.jpg" width="400" height="60">
+>>>>>>> upstream/master
 
 
 ### **DeepFFM层**
 DeepFFM网络结构如下图所示：
 
+<<<<<<< HEAD
 <img align="center" src="https://wx3.sinaimg.cn/mw2000/0073e4AWly1gxdg36si73j30qk0fqjyt.jpg">
 
 使用FFM对特征的不同field的关系进行建模，计算公式如下所示：
 
 <img align="center" src="https://wx4.sinaimg.cn/mw2000/0073e4AWly1gxdg4zxeefj30e5028q3f.jpg">
+=======
+<img align="center" src="picture/4.jpg" width="400" height="300">
+
+使用FFM对特征的不同field的关系进行建模，计算公式如下所示：
+
+<img align="center" src="picture/55.jpg" width="500" height="100">
+>>>>>>> upstream/master
 
 
 
@@ -119,7 +146,11 @@ DeepFFM网络结构如下图所示：
 
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
+<<<<<<< HEAD
 | FAT_DeepFFM | 0.8037 | 1000 | 1 | 约 3.5 小时 |
+=======
+| FAT_DeepFFM | 0.803+ | 1000 | 1 | 约 3.5 小时 |
+>>>>>>> upstream/master
 
 1. 确认您当前所在目录为 `PaddleRec/models/rank/fat_deepffm`
 2. 进入 `PaddleRec/datasets/criteo` 目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的criteo全量数据集，并解压到指定文件夹。

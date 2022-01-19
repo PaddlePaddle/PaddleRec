@@ -1,5 +1,7 @@
 # 基于NAML模型的点击率预估模型
 
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3240529)**
+
 以下是本例的简要目录结构及说明： 
 
 ```
@@ -70,13 +72,13 @@ os : windows/linux/macos
 
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在naml模型目录的快速执行命令如下： 
-```
+```bash
 # 进入模型目录
 cd models/rank/naml 
 # 动态图训练
-python3 -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
-python3 -u ../../../tools/infer.py -m config.yaml 
+python -u ../../../tools/infer.py -m config.yaml 
 ```
 其中yaml文件的超参数解释如下：
   article_content_size: 每篇文章包含的最大单词（超过则截断）
@@ -110,8 +112,8 @@ python3 -u ../../../tools/infer.py -m config.yaml
   word_dict_size
 
 4.运行：
-```
-python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
+```bash
+python -u ../../../tools/trainer.py -m config_bigdata.yaml
 ```
 以下为训练2个epoch的结果
 | 模型 | auc | batch_size | epoch_num| Time of each epoch| 
@@ -119,15 +121,15 @@ python3 -u ../../../tools/trainer.py -m config_bigdata.yaml
 | naml | 0.66 | 50 | 3 | 约4小时 | 
 
 预测
-```
-python3 -u ../../../tools/infer.py -m config_bigdata.yaml
+```bash
+python -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
 期待预测auc为0.66
 
 
 单机多卡执行方式(以训练为例)
-python3 -m paddle.distributed.launch ../../../tools/trainer.py -m config_bigdata.yaml
+python -m paddle.distributed.launch ../../../tools/trainer.py -m config_bigdata.yaml
 在此情况下将使用单机上所有gpu卡，若需要指定部分gpu卡执行，可以通过设置环境变量CUDA_VISIBLE_DEVICES
 来实现。例如单机上有8张卡，只打算用前4卡张训练，可以设置export CUDA_VISIBLE_DEVICES=0,1,2,3
 再执行训练脚本即可。

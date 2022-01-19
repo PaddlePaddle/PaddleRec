@@ -30,9 +30,15 @@ class DygraphModel():
         dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
         sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
 
+<<<<<<< HEAD
         model = net.FAT_DeepFFMLayer(sparse_feature_number,
                                        sparse_feature_dim, dense_feature_dim,
                                        sparse_input_slot - 1, layer_sizes_dnn)
+=======
+        model = net.FAT_DeepFFMLayer(sparse_feature_number, sparse_feature_dim,
+                                     dense_feature_dim, sparse_input_slot - 1,
+                                     layer_sizes_dnn)
+>>>>>>> upstream/master
 
         return model
 
@@ -50,7 +56,11 @@ class DygraphModel():
 
     # define loss function by predicts and label
     def create_loss(self, pred, label):
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> upstream/master
         cost = paddle.nn.functional.log_loss(
             input=pred, label=paddle.cast(
                 label, dtype="float32"))
@@ -85,7 +95,11 @@ class DygraphModel():
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
 
         # print_dict format :{'loss': loss} 
+<<<<<<< HEAD
         print_dict = {'loss': loss} 
+=======
+        print_dict = {'loss': loss}
+>>>>>>> upstream/master
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):

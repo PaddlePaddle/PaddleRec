@@ -1,4 +1,4 @@
-# yaml配置说明
+# PaddleRec config.yaml配置说明
 
 目前支持runner和hyper_parameters的读取。
 
@@ -20,10 +20,16 @@
 |             epochs            |    int    |                           >= 1                           |    是    |                       指定train阶段需要训练几个epoch                        |
 |             print_interval            |    int    |                           >= 1                           |    是    |                       训练指标打印batch间隔                        |
 |             use_auc            |    bool    |                           True/False                           |    否    |                       在每个epoch开始时重置auc指标的值                        |
+|             use_visual            |    bool    |                           True/False                           |    否    |                       开启模型训练的可视化功能，开启时需要安装visualDL                        |
+|             use_inference            |    bool    |                           True/False                           |    否    |                     是否使用save_inference_model接口保存                      |
+|             save_inference_feed_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的入口变量name                     |
+|             save_inference_fetch_varnames         |    list[string]    |                      组网中指定Variable的name                      |    否    |                     预测模型的出口变量name                     |
+|             use_fleet         |    bool    |                      True/False                      |    否    |                     指定是否使用分布式运行单机多卡或多机多卡                     |
+|             reader_type         |    string    |                      QueueDataset/DataLoader/CustomizeDataLoader                    |    否    |                     指定使用的reader类型                     |
+|             model_init_path         |    string    |                      任意                      |    否    |                     指定是否使用热启动，在训练初期加载初始化模型                     |
 
 
 ## hyper_parameters变量
-
 |          名称           |  类型  |       取值       | 是否必须 |          作用描述           |
 | :---------------------: | :----: | :--------------: | :------: | :-------------------------: |
 |     optimizer.class     | string | SGD/Adam/Adagrad |    是    |       指定优化器类型        |

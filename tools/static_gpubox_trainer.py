@@ -179,6 +179,7 @@ class Main(object):
                     self.exe, model_dir,
                     [feed.name for feed in self.input_data],
                     self.inference_target_var)
+            fleet.barrier_worker()
             self.reader.release_memory()
             self.PSGPU.end_pass()
             logger.info("finish {} epoch training....".format(epoch))

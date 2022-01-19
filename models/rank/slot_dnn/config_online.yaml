@@ -1,4 +1,5 @@
 runner:
+<<<<<<< HEAD
   use_gloo: True
   # train_data_dir: "afs:/xxx"
   train_data_dir: "./data"
@@ -17,32 +18,66 @@ runner:
   pipe_command: "python3.7 queuedataset_reader.py"
   dataset_debug: False
   split_file_list: False
+=======
+  train_data_dir: "./data"
+  # train_data_dir: "afs:/xxx"
+  use_gpu: False
+  train_batch_size: 32
+  print_interval: 1
+  model_save_path: "output_model"
+  # model_save_path: "afs:/xxx"
+  checkpoint_per_pass: 1
+  save_delta_frequency: 1
+
+  train_thread_num: 3
+  shuffle_thread_num: 12
+  reader_type: "InMemoryDataset"  # DataLoader / QueueDataset / RecDataset
+  pipe_command: "python3.7 queuedataset_reader.py"
+  dataset_debug: False
+>>>>>>> upstream/master
   # data_donefile: "data.done"
   data_sleep_second: 1
   sync_mode: "async"
 
+<<<<<<< HEAD
   split_interval: 5
+=======
+  split_interval: 30
+>>>>>>> upstream/master
   split_per_pass: 2
   start_day: "20190720"
   end_day: "20190722"
   infer_batch_size: 32
   infer_thread_num: 1
+<<<<<<< HEAD
   infer_reader_path: "criteo_reader" # importlib format
   infer_data_dir: "data/"
   infer_load_path: "output_model"
   infer_start_epoch: 0
   infer_end_epoch: 3
   use_inference: True
+=======
+  infer_data_dir: "data/"
+>>>>>>> upstream/master
   
   # need_train_dump: True
   # need_infer_dump: True
   train_dump_fields_dir: "./train_dump_data"
   infer_dump_fields_dir: "./infer_dump_data"
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
   # fs_client:
   #   uri: "afs://xxx"
   #   user: "xxx"
   #   passwd: "xxx"
+<<<<<<< HEAD
   #   hadoop_bin: "hadoop"    
+=======
+  #   hadoop_bin: "$HADOOP_HOME/bin/hadoop"
+
+>>>>>>> upstream/master
 # hyper parameters of user-defined network
 hyper_parameters:
   # optimizer config
@@ -57,3 +92,46 @@ hyper_parameters:
   slot_num: 300
   layer_sizes: [512, 256, 128]
   distributed_embedding: 0
+<<<<<<< HEAD
+=======
+  # adam_d2sum: False
+
+table_parameters:
+  embedding:
+    table_class: "MemorySparseTable"
+    shard_num: 10
+    accessor:
+      accessor_class: "CtrCommonAccessor"
+      fea_dim: 11
+      embedx_dim: 8
+      embedx_threshold: 10
+      embed_sgd_param:
+        name: "SparseAdaGradSGDRule"
+        adagrad:
+          learning_rate: 0.05
+          initial_g2sum: 3.0
+          initial_range: 0.0001
+          weight_bounds: [-10.0, 10.0]
+      embedx_sgd_param:
+        name: "SparseAdaGradSGDRule"
+        adagrad:
+          learning_rate: 0.05
+          initial_g2sum: 3.0
+          initial_range: 0.0001
+          weight_bounds: [-10.0, 10.0]
+      ctr_accessor_param:
+        nonclk_coeff: 0.1
+        click_coeff: 1.0
+        base_threshold: 1.5
+        delta_threshold: 0.25
+        delta_keep_days: 16.0
+        show_click_decay_rate: 0.98
+        delete_threshold: 0.8
+        delete_after_unseen_days: 30.0
+        ssd_unseenday_threshold: 1
+      # table_accessor_save_param:
+      #   num: 2
+      #   param: [1, 2]
+      #   converter: ""
+      #   deconverter: ""
+>>>>>>> upstream/master

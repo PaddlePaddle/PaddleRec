@@ -36,10 +36,15 @@
    :caption: 进阶教程
    :name: Advanced course
 
+   paddlerec/contribute.md
    paddlerec/custom_reader.md
    paddlerec/model_develop.md
    paddlerec/yaml.md
+   paddlerec/visualization.md
+   paddlerec/serving.md
+   paddlerec/inference.md
    paddlerec/benchmark.md
+   paddlerec/whole_process.md
 
 .. toctree::
    :maxdepth: 1
@@ -47,7 +52,38 @@
    :caption: 模型介绍
    :name: Model introduction
 
-   paddlerec/model_introduce.md
+   models/contentunderstanding/tagspace.md
+   models/contentunderstanding/textcnn.md
+   models/match/dssm.md
+   models/match/match-pyramid.md
+   models/match/multiview-simnet.md
+   models/recall/gru4rec.md
+   models/recall/deepwalk.md
+   models/recall/mind.md
+   models/recall/ncf.md
+   models/recall/word2vec.md
+   models/rank/bst.md
+   models/rank/dcn.md
+   models/rank/deepfefm.md
+   models/rank/deepfm.md
+   models/rank/dien.md
+   models/rank/difm.md
+   models/rank/din.md
+   models/rank/dlrm.md
+   models/rank/dmr.md
+   models/rank/dnn.md
+   models/rank/ffm.md
+   models/rank/fm.md
+   models/rank/gatenet.md
+   models/rank/logistic_regression.md
+   models/rank/naml.md
+   models/rank/wide_deep.md
+   models/rank/xdeepfm.md
+   models/multitask/esmm.md
+   models/multitask/maml.md
+   models/multitask/mmoe.md
+   models/multitask/ple.md
+   models/multitask/share_bottom.md
    
 .. toctree::
    :maxdepth: 1

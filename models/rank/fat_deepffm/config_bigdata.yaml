@@ -17,7 +17,11 @@
 
 
 runner:
+<<<<<<< HEAD
   train_data_dir: "data/slot_train_data_full"  # criteo_sample_train slot_train_data_full
+=======
+  train_data_dir: "../../../datasets/criteo/slot_train_data_full"  # criteo_sample_train slot_train_data_full
+>>>>>>> upstream/master
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
   use_auc: True
@@ -25,12 +29,21 @@ runner:
   epochs: 1
   print_interval: 100
 
+<<<<<<< HEAD
   model_save_path: "output_model_fat_deepffm"
   infer_batch_size: 1000
   infer_reader_path: "criteo_reader" # importlib format
   test_data_dir: "data/slot_test_data_full"
 
   infer_load_path: "output_model_fat_deepffm"
+=======
+  model_save_path: "output_model_fat_deepffm_all"
+  infer_batch_size: 1000
+  infer_reader_path: "criteo_reader" # importlib format
+  test_data_dir: "../../../datasets/criteo/slot_test_data_full"
+
+  infer_load_path: "output_model_fat_deepffm_all"
+>>>>>>> upstream/master
   infer_start_epoch: 0
   infer_end_epoch: 1
 
@@ -54,4 +67,7 @@ hyper_parameters:
   dense_input_dim: 13
   distributed_embedding: 0
   layer_sizes_dnn: [1600,1600]
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master

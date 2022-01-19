@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0  
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -84,6 +84,7 @@ public:
     {
         USE_GPU = 0;
         EMBEDDING_SIZE = 9;
+        SLOT_NUMBER = 301;
         place = paddle::PaddlePlace::kCPU;
     }
 
@@ -109,6 +110,7 @@ public:
 public:
     int USE_GPU;
     int EMBEDDING_SIZE;
+    int SLOT_NUMBER;
     paddle::PaddlePlace place;
     std::shared_ptr<paddle_infer::Predictor> predictor;
 };
@@ -151,16 +153,17 @@ public:
             for (size_t i = 1; i < ele.size(); i++) {
                 std::vector<std::string> feature = SplitStr(ele[i], ':');
                 // feasign -> embedding index
-                if (feasignMap.find(feature[0]) == feasignMap.end()) {
-                    feasignMap[feature[0]] = feasignMap.size() + 1;
-                }
-                int64_t feasign = feasignMap[feature[0]];
+                //if (feasignMap.find(feature[0]) == feasignMap.end()) {
+                //    feasignMap[feature[0]] = feasignMap.size() + 1;
+                //}
+                //int64_t feasign = feasignMap[feature[0]];
+                uint64_t feasign = std::stoull(feature[0]);
                 if (FLAGS_withCube) {
                     samples.feasignIds.insert(feasign);     
                 }
                 uint32_t slotId = std::stoul(feature[1]);
-                oneSample[slotId].push_back(feasign);
-                oneSampleFeasign[slotId].push_back(std::stoul(feature[0]));
+                oneSample[slotId].push_back(std::stoll(feature[0]));
+                oneSampleFeasign[slotId].push_back(feasign);
             }
             for (auto it = slotId2name.begin(); it != slotId2name.end(); it++) { // 全量 slot
                 int slotId = it->first;
@@ -175,6 +178,7 @@ public:
                 }
             }
             oneSample.clear();
+            oneSampleFeasign.clear()
             if (lineCnt == FLAGS_batchSize) {
                 lineCnt = 0;
                 samples.batchIdx = batchIdx;
@@ -196,7 +200,7 @@ public:
         if (inputVarNames.empty()) {
             GetInputVarNames();
         }
-        for (uint i = 2; i <= 409; i++) {
+        for (uint i = 2; i <= piModel->SLOT_NUMBER; i++) {
             //slotId2name[std::stoul(name)] = name;
             slotId2name[i] = std::to_string(i);
         }
@@ -296,6 +300,7 @@ public:
     void FillLodTensorWithEmbdingVec(BatchSample<TypeIn>& batchSample, std::unordered_map<uint64_t, std::vector<float>>& queryResult)
     {
         //LOG(INFO) << "enter FillLodTensorWithEmbdingVec ...";
+        queryResult[0] = std::vector<float>(piModel->EMBEDDING_SIZE, 0.0);
         std::vector<std::vector<size_t>> lod(1, std::vector<size_t>(FLAGS_batchSize + 1));
         uint feasignCnt = 0;
         uint feasignNum = batchSample.feasignIds.size();
@@ -309,8 +314,8 @@ public:
             int width = 0;
             for (int sampleIdx = 0; sampleIdx < FLAGS_batchSize; ++sampleIdx) {
                 int len = batchSample.featureCnts[slotId][sampleIdx];
-                lod0.push_back(lod0.back() + len * piModel->EMBEDDING_SIZE);
-                width += (batchSample.featureCnts[slotId][sampleIdx]);
+                lod0.push_back(lod0.back() + len);
+                width += len;
             }
             memcpy(lod[0].data(), lod0.data(), sizeof(size_t) * lod0.size()); // low performance
             lodTensor->SetLoD(lod);
@@ -321,8 +326,8 @@ public:
             int offset = 0;
             for (int sampleIdx = 0; sampleIdx < FLAGS_batchSize; ++sampleIdx) {
                 for (uint k = 0; k < batchSample.features[slotId][sampleIdx].size(); k++) {
-                    //uint64_t feasign = batchSample.feasigns[slotId][sampleIdx][k];
-                    uint64_t feasign = globalKeys[feasignCnt % feasignNum];
+                    uint64_t feasign = batchSample.feasigns[slotId][sampleIdx][k];
+                    //uint64_t feasign = globalKeys[feasignCnt % feasignNum];
                     feasignCnt++;
                     TypeIn *data_ptr = lodTensor->mutable_data<TypeIn>(piModel->place) + offset;
                     memcpy(data_ptr,

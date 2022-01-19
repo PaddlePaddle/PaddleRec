@@ -1,5 +1,7 @@
 # tagspace文本分类模型
 
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3238891)**
+
 以下是本例的简要目录结构及说明： 
 
 ```
@@ -21,7 +23,8 @@
 
 注：在阅读该示例前，建议您先了解以下内容：
 
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
+[tagespace](https://paddlerec.readthedocs.io/en/latest/models/contentunderstanding/tagspace.html)  
 
 ## 内容
 

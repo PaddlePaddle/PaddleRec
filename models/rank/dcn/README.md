@@ -1,5 +1,7 @@
 # 基于DeepAndCross模型的点击率预估模型
 
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3240207)**
+
 以下是本例的简要目录结构及说明： 
 
 ```
@@ -70,24 +72,20 @@ os : windows/linux/macos
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在paddlerec模型目录"PaddleRec/models/rank/dcn"目录下执行下面的命令即可快速启动训练： 
 
-动态图训练：
-```
-python ../../../tools/trainer.py -m ./config.yaml
+```bash
+# 进入模型目录
+# cd models/rank/dcn # 在任意目录均可运行
+# 动态图训练
+python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 动态图预测
+python -u ../../../tools/infer.py -m config.yaml 
+
+# 静态图训练
+python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+# 静态图预测
+python -u ../../../tools/static_infer.py -m config.yaml 
 ```
 
-静态图训练：
-```
-python ../../../tools/static_trainer.py -m ./config.yaml
-```
-
-动态图推理
-```
-python ../../../tools/infer.py -m ./config.yaml
-```
-静态图推理
-```
-python ../../../tools/static_infer.py -m ./config.yaml
-```
 注意训练-预测，模型存储文件位置的一致性；动态图模型与静态图模型存储位置要分开；
 
 ## 模型组网
@@ -106,37 +104,24 @@ deepAndCross模型的组网本质是一个二分类任务，模型代码参考�
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：  
 
-| 模型 | auc | batch_size | thread_num| epoch_num| Time of each epoch |
-| :------| :------ | :------| :------ | :------| :------ | 
-| dcn |  0.777   | 32   |   |  10  | 约 3 小时 |
+| 模型 | auc | batch_size | epoch_num| Time of each epoch |
+| :------| :------ | :------ | :------| :------ | 
+| dcn |  0.777   | 32  |  10  | 约 3 小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/dcn
 2. 在"criteo data"全量数据目录下，运行数据一键处理脚本，命令如下：  
-``` 
+```bash
 cd ../../../datasets/criteo
 sh run.sh
 ```
-3. 退回dcn目录中，配置改为使用config_big.yaml中的参数  
+3. 退回dcn目录中，配置改为使用config_bigdata.yaml中的参数  
 
 4. 运行命令，模型会进行两个epoch的训练，然后预测第二个epoch，并获得相应auc指标  
-动态图训练：
-```
-python ../../../tools/trainer.py -m ./config_big.yaml
-```
-
-静态图训练：
-```
-python ../../../tools/static_trainer.py -m ./config_big.yaml
-```
-
-5. 经过全量数据训练后，执行推理：
-动态图推理
-```
-python ../../../tools/infer.py -m ./config_big.yaml
-```
-静态图推理
-```
-python ../../../tools/static_infer.py -m ./config_big.yaml
+```bash
+cd - # 切回模型目录
+# 动态图训练
+python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml 
+python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据运行config_bigdata.yaml
 ```
 注意训练-预测，模型存储文件位置的一致性；
 ## 进阶使用

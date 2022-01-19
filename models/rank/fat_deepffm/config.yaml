@@ -19,11 +19,19 @@
 runner:
   train_data_dir: "data/sample_data/train"  
   train_reader_path: "criteo_reader" # importlib format
+<<<<<<< HEAD
   use_gpu: True
   use_auc: True
   train_batch_size: 1000 
   epochs: 1
   print_interval: 100
+=======
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 1 
+  epochs: 1
+  print_interval: 10
+>>>>>>> upstream/master
 
   model_save_path: "output_model_fat_deepffm"
   infer_batch_size: 1000
@@ -54,4 +62,7 @@ hyper_parameters:
   dense_input_dim: 13
   distributed_embedding: 0
   layer_sizes_dnn: [1600,1600]
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master

@@ -28,6 +28,10 @@ runner:
   infer_load_path: "output_model_mmoe"
   infer_start_epoch: 0
   infer_end_epoch: 3
+  #use inference save model
+  use_inference: False
+  save_inference_feed_varnames: ["input"]
+  save_inference_fetch_varnames: ["slice_0.tmp_0", "slice_1.tmp_0"]
 
 hyper_parameters:
   feature_size: 499

@@ -101,7 +101,7 @@ class StaticModel():
             self.sparse_feature_number, self.sparse_feature_dim,
             self.dense_input_dim, sparse_number, self.fc_sizes)
 
-        raw_predict_2d = dnn_model(sparse_embs, self.dense_input)
+        raw_predict_2d = dnn_model.forward(sparse_embs, self.dense_input)
 
         predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 

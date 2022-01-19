@@ -1,5 +1,7 @@
 # match-pyramid文本匹配模型
 
+**[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3238192)**
+
 以下是本例的简要目录结构及说明： 
 
 ```
@@ -25,7 +27,8 @@
 
 注：在阅读该示例前，建议您先了解以下内容：
 
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
+[match-pyramid](https://paddlerec.readthedocs.io/en/latest/models/match/match-pyramid.html)  
 
 ## 内容
 

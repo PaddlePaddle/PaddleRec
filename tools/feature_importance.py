@@ -66,7 +66,7 @@ class Main(object):
         self.train_result_dict["speed"] = []
 
     def run(self):
-        fleet.init()
+        self.init_fleet_with_gloo()
         self.network()
         if fleet.is_server():
             self.run_server()
@@ -75,6 +75,14 @@ class Main(object):
             fleet.stop_worker()
             # self.record_result()
         logger.info("Run Success, Exit.")
+
+    def init_fleet_with_gloo(use_gloo=True):
+        if use_gloo:
+            os.environ["PADDLE_WITH_GLOO"] = "1"
+            role = role_maker.PaddleCloudRoleMaker()
+            fleet.init(role)
+        else:
+            fleet.init()
 
     def network(self):
         self.model = get_model(self.config)
@@ -134,7 +142,13 @@ class Main(object):
 
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
+<<<<<<< HEAD
         fleet.load_model(init_model_path, mode=0)
+=======
+        if fleet.is_first_worker():
+            fleet.load_model(init_model_path, mode=0)
+        fleet.barrier_worker()
+>>>>>>> upstream/master
 
         logger.info("Prepare Dataset Begin.")
         prepare_data_start_time = time.time()

@@ -70,7 +70,7 @@ class StaticModel():
                              self.sparse_feature_dim, self.dense_input_dim,
                              sparse_number)
 
-        pred = ffm_model(self.sparse_inputs, self.dense_input)
+        pred = ffm_model.forward(self.sparse_inputs, self.dense_input)
 
         #pred = F.sigmoid(prediction)
 

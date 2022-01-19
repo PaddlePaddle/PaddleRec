@@ -28,7 +28,12 @@ runner:
   reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset
   pipe_command: "python3 inmemorydataset_reader.py"
 
+<<<<<<< HEAD
   init_model_path: "output_model/20190720/inference_model_6"
+=======
+  init_model_path: "output_model/20190720/6"
+  model_mode: 0
+>>>>>>> upstream/master
 
   dataset_debug: False
   parse_ins_id: True
@@ -52,3 +57,44 @@ hyper_parameters:
   slot_num: 300
   layer_sizes: [512, 256, 128]
   distributed_embedding: 0
+
+table_parameters:
+  embedding:
+    table_class: "MemorySparseTable"
+    shard_num: 10
+    accessor:
+      accessor_class: "CtrCommonAccessor"
+      fea_dim: 11
+      embedx_dim: 8
+      embedx_threshold: 10
+      embed_sgd_param:
+        name: "SparseAdaGradSGDRule"
+        adagrad:
+          learning_rate: 0.05
+          initial_g2sum: 1.0
+          initial_range: 0.0001
+          weight_bounds: [-10.0, 10.0]
+      embedx_sgd_param:
+        name: "SparseAdaGradSGDRule"
+        adagrad:
+          learning_rate: 0.05
+          initial_g2sum: 3.0
+          initial_range: 0.0001
+          weight_bounds: [-10.0, 10.0]
+      ctr_accessor_param:
+        nonclk_coeff: 0.1
+        click_coeff: 1.0
+        # base_threshold: 1.5
+        # delta_threshold: 0.25
+        base_threshold: 0
+        delta_threshold: 0
+        delta_keep_days: 16.0
+        show_click_decay_rate: 0.98
+        delete_threshold: 0.8
+        delete_after_unseen_days: 30.0
+        ssd_unseenday_threshold: 1
+      # table_accessor_save_param:
+      #   num: 2
+      #   param: [1, 2]
+      #   converter: ""
+      #   deconverter: ""

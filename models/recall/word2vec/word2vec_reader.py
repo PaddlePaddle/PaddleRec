@@ -23,12 +23,14 @@ from paddle.io import IterableDataset
 class NumpyRandomInt(object):
     def __init__(self, a, b, buf_size=1000):
         self.idx = 0
+        np.random.seed(12345)
         self.buffer = np.random.randint(a, b, buf_size)
         self.a = a
         self.b = b
 
     def __call__(self):
         if self.idx == len(self.buffer):
+            np.random.seed(12345)
             self.buffer = np.random.randint(self.a, self.b, len(self.buffer))
             self.idx = 0
 
@@ -100,7 +102,7 @@ class RecDataset(IterableDataset):
                                 np.array([int(target_id)]).astype('int64'))
                             output.append(
                                 np.array([int(context_id)]).astype('int64'))
-
+                            np.random.seed(12345)
                             neg_array = self.cs.searchsorted(
                                 np.random.sample(self.neg_num))
                             output.append(

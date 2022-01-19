@@ -27,7 +27,7 @@ class DygraphModel():
         query_encode_dim = config.get('hyper_parameters.query_encode_dim', 128)
         title_encode_dim = config.get('hyper_parameters.title_encode_dim', 128)
         emb_size = config.get('hyper_parameters.sparse_feature_dim', 6327)
-        emb_dim = config.get('hyper_parameters.emb_dim', 128)
+        emb_dim = config.get('hyper_parameters.embedding_dim', 128)
         hidden_size = config.get('hyper_parameters.hidden_size', 128)
         margin = config.get('hyper_parameters.margin', 0.1)
         query_len = config.get('hyper_parameters.query_len', 79)
