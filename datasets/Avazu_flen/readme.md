@@ -4,8 +4,9 @@ you can go to：[https://www.kaggle.com/c/avazu-ctr-prediction/data](https://www
 
 将下载的原始数据目录配置在data_config.yaml中，执行命令获取全量数据
 
-| raw_file_dir | 原始数据集目录 | 
+| 名称 | 说明 | 
 | -------- | -------- | 
+| raw_file_dir | 原始数据集目录 |
 | raw_filled_file_dir     | 原始数据缺失值处理后的目录     |
 |   train_data_dir   | 训练集存放目录     | 
 |   test_data_dir   | 测试集存放目录     | 
