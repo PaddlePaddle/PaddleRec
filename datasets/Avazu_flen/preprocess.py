@@ -28,12 +28,8 @@ import argparse
 import os
 import sys
 
-sys.path.append("../../../")
+sys.path.append("../../")
 from tools.utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
-
-import paddle
-from avazu_reader import RecDataset
-from paddle.io import DistributedBatchSampler, DataLoader
 
 
 def _mkdir_if_not_exist(path):
@@ -63,7 +59,7 @@ class PreDataset(object):
         self.min_threshold = self.config.get("runner.min_threshold")
         self.feature_map_cache = self.config.get("runner.feature_map_cache")
 
-        self.filled_raw()
+        # self.filled_raw()
 
         self.init()
 
@@ -109,6 +105,7 @@ class PreDataset(object):
         logging.info('All Samples: %s ' % (m))
 
     def _get_field_name(self):
+        self.file_object = self.raw_filled_file_dir + '/PreRaw_data.txt'  ##################
         with open(self.file_object) as csv_file:  # open the input file.
             data_file = csv.reader(csv_file)
             header = next(data_file)  # get the header line.

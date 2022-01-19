@@ -102,14 +102,14 @@ FieldWiseBiInteraction层主要包含两个部分，FM模块和MF模块。特征
 | :------| :------ | :------ | :------| :------ | :------ | 
 | FLEN | 0.7516 | 0.3963 |512 | 1 | 约 1 小时 |
 
-1.先下载原始数据，可从kaggle官方和AiStudio数据集获取数据：[Click-Through Rate Prediction](https://www.kaggle.com/c/avazu-ctr-prediction)和[AiStudio数据集Avazu](https://aistudio.baidu.com/aistudio/datasetdetail/17073/0)
-
-2.数据预处理，先在config_bigdata.yaml配置文件中配置好下载数据的路径，运行preprocess_data.py
-```
-cd PaddleRec/models/rank/flen/
+1. 确认您当前所在目录为PaddleRec/models/rank/flen
+2. 进入paddlerec/datasets/Avazu_flen目录下，根据readme.md获取数据，您可以下载原始数据放到指定文件夹，执行命令得到训练集
+和测试集，或者在[AiStudio数据集](https://aistudio.baidu.com/aistudio/datasetdetail/125200)获取已经预处理好的训练集和测试集。
+``` bash
+cd ../../../datasets/Avazu_flen
 # 处理数据、划分数据集大约耗时35分钟
-python preprocess_data.py -m config_bigdata.yaml
-```
+sh data_process.sh
+``` 
 3. 确认您当前所在目录为 `PaddleRec/models/rank/flen`
 
 ```

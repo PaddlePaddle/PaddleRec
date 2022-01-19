@@ -22,10 +22,6 @@ runner:
   epochs: 1
   print_interval: 2
 
-  raw_file_dir: "./data/raw_data/PreRaw_data.txt" 
-  rebuild_feature_map: True   # False use feature_map_cache
-  min_threshold: 4
-  feature_map_cache: '.feature_map'
 
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_flen"
