@@ -133,6 +133,7 @@ PS:模型若需要存放于云端可以联系我们
 在PaddleRec/doc/source下面的[README](https://github.com/PaddlePaddle/PaddleRec/tree/master/doc/source)文件中添加模型信息
 
 Tips1：对于模型doc，首行需要保持 模型名字(论文名字) 的格式
+
 Tips2：PR合入后，需要使用官网账号构建一下
 
 ## 添加AIStudio在线运行示列
