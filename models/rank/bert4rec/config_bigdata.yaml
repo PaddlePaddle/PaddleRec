@@ -23,11 +23,11 @@ runner:
   epochs: 10
   print_interval: 100
 
-  model_save_path: "output_model_bert4rec"
+  model_save_path: "output_model_bert4rec_all"
   test_data_dir: "data/test"
   infer_reader_path: "data_reader" # importlib format
   infer_batch_size: 1
-  infer_load_path: "output_model_bert4rec"
+  infer_load_path: "output_model_bert4rec_all"
   infer_start_epoch: 9
   infer_end_epoch: 10
 
