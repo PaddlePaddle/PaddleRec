@@ -125,14 +125,15 @@ tips2：在test_tipc/configs目录下为自己的模型建立子目录，目录�
 
 PS:模型若需要存放于云端可以联系我们
 
-## 添加read_the_docs
+## 添加read the docs
 进入PaddleRec/doc/source/models,在对应的分类目录中建立模型对应的doc，可根据该模型的README文件修改，具体参考[deepfm](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/source/models/rank/deepfm.md)
 
 在PaddleRec/doc/source/models下面的[index.rst](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/source/models/index.rst)文件中添加对应的模型信息
 
 在PaddleRec/doc/source下面的[README](https://github.com/PaddlePaddle/PaddleRec/tree/master/doc/source)文件中添加模型信息
 
-tips：PR合入后，需要使用官网账号构建一下
+Tips1：对于模型doc，首行需要保持 模型名字(论文名字) 的格式
+Tips2：PR合入后，需要使用官网账号构建一下
 
 ## 添加AIStudio在线运行示列
 
