@@ -128,7 +128,7 @@ PS:模型若需要存放于云端可以联系我们
 ## 添加read the docs
 进入PaddleRec/doc/source/models,在对应的分类目录中建立模型对应的doc，可根据该模型的README文件修改，具体参考[deepfm](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/source/models/rank/deepfm.md)
 
-在PaddleRec/doc/source/models下面的[index.rst](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/source/models/index.rst)文件中添加对应的模型信息
+在PaddleRec/doc/source/models目录下的[index.rst](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/source/models/index.rst)文件中添加对应的模型信息
 
 在PaddleRec/doc/source下面的[README](https://github.com/PaddlePaddle/PaddleRec/tree/master/doc/source)文件中添加模型信息
 
