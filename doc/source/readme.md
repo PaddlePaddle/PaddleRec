@@ -22,6 +22,7 @@
 [mmoe](https://paddlerec.readthedocs.io/en/latest/models/multitask/mmoe.html)  
 [ple](https://paddlerec.readthedocs.io/en/latest/models/multitask/ple.html)  
 [share_bottom](https://paddlerec.readthedocs.io/en/latest/models/multitask/share_bottom.html)  
+[dselect_k](https://paddlerec.readthedocs.io/en/latest/models/multitask/dselect_k.html)  
 
 ## 排序模型
 [bst](https://paddlerec.readthedocs.io/en/latest/models/rank/bst.html)  
