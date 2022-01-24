@@ -223,6 +223,7 @@ class DNN(nn.Layer):
             if acts[i] == 'relu':
                 act = paddle.nn.ReLU()
                 self.add_sublayer('act_%d' % i, act)
+                self._mlp_layers.append(act)
 
     def forward(self, feat_embeddings):
         y_dnn = paddle.reshape(feat_embeddings,
