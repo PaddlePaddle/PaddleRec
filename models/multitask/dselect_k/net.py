@@ -280,7 +280,8 @@ class DSelectkGate(nn.Layer):
         return expert_weights, selector_outputs
 
 
-class MMoELayer(nn.Layer):
+
+class MoELayer(nn.Layer):
     def __init__(self,
                  feature_size,
                  expert_num,
@@ -288,7 +289,7 @@ class MMoELayer(nn.Layer):
                  tower_size,
                  gate_num,
                  topk=2):
-        super(MMoELayer, self).__init__()
+        super(MoELayer, self).__init__()
 
         self.expert_num = expert_num
         self.expert_size = expert_size

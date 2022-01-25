@@ -26,10 +26,10 @@ class DygraphModel():
         gate_num = config.get('hyper_parameters.gate_num', None)
         top_k = config.get('hyper_parameters.top_k', 2)
 
-        MMoE = net.MMoELayer(feature_size, expert_num, expert_size, tower_size,
-                             gate_num, top_k)
+        MoE = net.MoELayer(feature_size, expert_num, expert_size, tower_size,
+                           gate_num, top_k)
 
-        return MMoE
+        return MoE
 
     # define feeds which convert numpy of batch data to paddle.tensor 
     def create_feeds(self, batch_data, config):

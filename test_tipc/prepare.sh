@@ -264,4 +264,68 @@ elif [ ${model_name} == "dselect_k" ]; then
         cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
     fi
 
+elif [ ${model_name} == "ensfm" ]; then
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/recall/ensfm/data/sample_data/* ./test_tipc/data/train
+        cp -r ./models/recall/ensfm/data/sample_data/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/ml-1m_ensfm
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/ml-1m_ensfm/data/ml-1m-ensfm/train.csv ./test_tipc/data/train
+        cp -r ./datasets/ml-1m_ensfm/data/ml-1m-ensfm/test.csv ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/ml-1m_ensfm
+        bash run.sh
+        cd ../..
+        cp -r ./models/recall/ensfm/data/sample_data/* ./test_tipc/data/train
+        cp -r ./datasets/ml-1m_ensfm/data/ml-1m-ensfm/test.csv ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/ml-1m_ensfm
+        bash run.sh
+        cd ../..
+        cp -r ./models/recall/ensfm/data/sample_data/* ./test_tipc/data/train
+        cp -r ./datasets/ml-1m_ensfm/data/ml-1m-ensfm/test.csv ./test_tipc/data/infer
+    fi
+
+elif [ ${model_name} == "tisas" ]; then
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/recall/tisas/data/sample_data/* ./test_tipc/data/train
+        cp -r ./models/recall/tisas/data/sample_data/* ./test_tipc/data/infer
+        echo "demo data ready"
+
+elif [ ${model_name} == "dselect_k" ]; then
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/train
+        cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/Multi_MNIST_DselectK
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/Multi_MNIST_DselectK/train/* ./test_tipc/data/train
+        cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/Multi_MNIST_DselectK
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/train
+        cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/Multi_MNIST_DselectK
+        bash run.sh
+        cd ../..
+        cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/train
+        cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
+    fi
+
 fi

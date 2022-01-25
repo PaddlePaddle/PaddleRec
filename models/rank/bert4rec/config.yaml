@@ -15,21 +15,21 @@
 # global settings
 
 runner:
-  train_data_dir: "../../../datasets/Beauty/data/train"
+  train_data_dir: "data/train/"
   train_reader_path: "data_reader" # importlib format
-  use_gpu: True
+  use_gpu: False
   train_batch_size: 1
-  data_batch_size: 256
-  epochs: 10
-  print_interval: 100
+  data_batch_size: 1
+  epochs: 1
+  print_interval: 1
 
-  model_save_path: "output_model_bert4rec_all"
-  test_data_dir: "../../../datasets/Beauty/data/test"
+  model_save_path: "output_model_bert4rec_demo"
+  test_data_dir: "data/test/"
   infer_reader_path: "data_reader" # importlib format
   infer_batch_size: 1
-  infer_load_path: "output_model_bert4rec_all"
-  infer_start_epoch: 9
-  infer_end_epoch: 10
+  infer_load_path: "output_model_bert4rec_demo"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
 
 
 # hyper parameters of user-defined network
@@ -49,5 +49,5 @@ hyper_parameters:
   _dropout: 0.5
   _attention_dropout: 0.2
   _param_initializer: 0.02
-  num_test_user: 40226
+  num_test_user: 1 
 

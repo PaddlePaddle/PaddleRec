@@ -72,8 +72,8 @@ class Main(object):
         self.exe = paddle.static.Executor(place)
 
         init_model_path = config.get("runner.model_save_path")
-        init_model_path = os.path.join(
-            config["config_abs_dir"], init_model_path)
+        init_model_path = os.path.join(config["config_abs_dir"],
+                                       init_model_path)
         logger.info("init_model_path: {}".format(init_model_path))
         for file in os.listdir(init_model_path):
             file_path = os.path.join(init_model_path, file)
@@ -102,6 +102,8 @@ class Main(object):
         self.init_reader()
 
     def run_infer(self, model_path, model_name):
+        model_path = model_path + "/dnn_plugin"
+        print("load model:", model_path)
         [inference_program, feed_target_names, fetch_targets] = (
             paddle.fluid.io.load_inference_model(
                 dirname=model_path, executor=self.exe))

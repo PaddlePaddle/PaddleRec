@@ -14,7 +14,8 @@
 
 import paddle
 
-from net import MMoELayer
+
+from net import MoELayer
 
 
 class StaticModel():
@@ -54,9 +55,10 @@ class StaticModel():
         label_left = paddle.reshape(inputs[1], [-1, 1])
         label_right = paddle.reshape(inputs[2], [-1, 1])
 
-        MMoE = MMoELayer(self.feature_size, self.expert_num, self.expert_size,
-                         self.tower_size, self.gate_num, self.top_k)
-        pred_left, pred_right = MMoE.forward(input_data)
+
+        MoE = MoELayer(self.feature_size, self.expert_num, self.expert_size,
+                       self.tower_size, self.gate_num, self.top_k)
+        pred_left, pred_right = MoE.forward(input_data)
 
         acc_left = paddle.static.accuracy(input=pred_left, label=label_left)
         acc_right = paddle.static.accuracy(input=pred_right, label=label_right)
