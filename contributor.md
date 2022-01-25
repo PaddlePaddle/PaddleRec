@@ -17,5 +17,6 @@
   |                       [AutoFIS](models/rank/autofis/)                       |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/660    | 论文复现赛第五期 |
   |                       [Dselect_K](models/multitask/dselect_k/)                       |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/671    | 论文复现赛第五期 |
   |                     [MIND](models/recall/mind/)                     |  [duyiqi17 ](https://github.com/duyiqi17)  |    https://github.com/PaddlePaddle/PaddleRec/pull/398   | 其他 |
+  |                     [MHCN](models/recall/mhcn/)                     |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/679   | 论文复现赛第五期 |
 
 </div> 
