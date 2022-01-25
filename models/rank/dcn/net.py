@@ -33,7 +33,6 @@ class DeepCroLayer(nn.Layer):
         self.l2_reg_cross = l2_reg_cross
         self.is_sparse = is_sparse
 
-        # self.dense_emb_dim = self.sparse_feature_dim
         self.init_value_ = 0.1
 
         # sparse coding
@@ -47,17 +46,6 @@ class DeepCroLayer(nn.Layer):
                     mean=0.0,
                     std=self.init_value_ /
                     math.sqrt(float(self.sparse_feature_dim)))))
-        # print("------self.sparse_embedding-------", self.embedding)
-
-        # # dense coding
-        # self.dense_w = paddle.create_parameter(
-        #     shape=[1, self.dense_feature_dim, self.dense_emb_dim],
-        #     dtype='float32',
-        #     default_initializer=paddle.nn.initializer.TruncatedNormal(
-        #         mean=0.0,
-        #         std=self.init_value_ /
-        #         math.sqrt(float(self.sparse_feature_dim))))
-        # # print("------self.dense_w-----", self.dense_w)    #shape=[1, 13, 9]
 
         # w
         self.layer_w = paddle.create_parameter(
@@ -70,7 +58,6 @@ class DeepCroLayer(nn.Layer):
                 mean=0.0,
                 std=self.init_value_ /
                 math.sqrt(float(self.sparse_feature_dim))))
-        # print("----self.layer_w", self.layer_w) #shape=[1000014]
 
         # b
         self.layer_b = paddle.create_parameter(
@@ -83,14 +70,13 @@ class DeepCroLayer(nn.Layer):
                 mean=0.0,
                 std=self.init_value_ /
                 math.sqrt(float(self.sparse_feature_dim))))
-        # print("----self.layer_b", self.layer_b) #shape=[1000014]
 
         # DNN
         self.num_field = self.dense_feature_dim + self.sparse_num_field * self.sparse_feature_dim
         sizes = [self.num_field] + self.layer_sizes
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
         self._mlp_layers = []
-        for i in range(len(self.layer_sizes)):  # + 1):
+        for i in range(len(self.layer_sizes)):
             linear = paddle.nn.Linear(
                 in_features=sizes[i],
                 out_features=sizes[i + 1],
@@ -114,52 +100,28 @@ class DeepCroLayer(nn.Layer):
                               self.dense_feature_dim))))
 
     def _create_embedding_input(self, sparse_inputs, dense_inputs):
-        # print("-----sparse_inputs-1-----",sparse_inputs)
-        sparse_inputs_concat = paddle.concat(
-            sparse_inputs, axis=1)  #Tensor(shape=[2, 26])
-        # print("----sparse_inputs_concat-----", sparse_inputs_concat) # shape(-1, 26)
-        sparse_embeddings = self.embedding(
-            sparse_inputs_concat)  # shape=[2, 26, 9]
-        # print("----sparse_embeddings-----", sparse_embeddings) #shape(-1, 26, 9)
+        sparse_inputs_concat = paddle.concat(sparse_inputs, axis=1)
+        sparse_embeddings = self.embedding(sparse_inputs_concat)
         sparse_embeddings_re = paddle.reshape(
             sparse_embeddings,
-            shape=[-1, self.sparse_num_field *
-                   self.sparse_feature_dim])  # paddle.reshape(x, shape
-        # print("----sparse_embeddings_re----", sparse_embeddings_re) # shape(-1, 234)
+            shape=[-1, self.sparse_num_field * self.sparse_feature_dim])
         feat_embeddings = paddle.concat([sparse_embeddings_re, dense_inputs],
                                         1)
-        # print("----feat_embeddings----", feat_embeddings) #shape(-1, 247)
         return feat_embeddings
 
     def _cross_layer(self, input_0, input_x):
-        # print("-----input_0---", input_0)   # Tensor(shape=[2, 247])
-        # print("-----input_x---", input_x)   # Tensor(shape=[2, 247])
-        # print("-----self.layer_w---", self.layer_w) #  #[247]
-        input_w = paddle.multiply(input_x, self.layer_w)  #shape=[2, 247]
-        # print("-----input_w----", input_w)
-        input_w1 = paddle.sum(input_w, axis=1, keepdim=True)  # shape=[2, 1]
-        # print("-----input_w1----", input_w1)
+        input_w = paddle.multiply(input_x, self.layer_w)
+        input_w1 = paddle.sum(input_w, axis=1, keepdim=True)
 
-        # input_w = paddle.matmul(input_0, self.layer_w) #shape=[2]
-        # print("-----input_w----", input_w)
-        # input_ww0 = paddle.matmul(input_w, input_0)
-        # print("-----input_ww0----", input_ww0)
-
-        input_ww = paddle.multiply(input_0, input_w1)  # shape=[2, 247]
-        # print("-----input_ww----", input_ww)
-
-        # input_ww_0 = paddle.sum(input_ww,dim=1, keep_dim=True)
-        # print("-----input_ww0----", input_ww0)
+        input_ww = paddle.multiply(input_0, input_w1)
 
         input_layer_0 = paddle.add(input_ww, self.layer_b)
         input_layer = paddle.add(input_layer_0, input_x)
-        # print("-----input_layer----", input_layer)
 
         return input_layer, input_w
 
     def _cross_net(self, input, num_corss_layers):
         x = x0 = input
-        # print("----cross--input----", input)
         l2_reg_cross_list = []
         for i in range(num_corss_layers):
             x, w = self._cross_layer(x0, x)
@@ -173,28 +135,20 @@ class DeepCroLayer(nn.Layer):
         return paddle.sum(paddle.square(w))
 
     def forward(self, sparse_inputs, dense_inputs):
-        # print("-----sparse_inputs", sparse_inputs)
-        # print("-----dense_inputs", dense_inputs)
-        feat_embeddings = self._create_embedding_input(
-            sparse_inputs, dense_inputs)  # shape=[2, 247]
-        # print("----feat_embeddings-----", feat_embeddings)
+        feat_embeddings = self._create_embedding_input(sparse_inputs,
+                                                       dense_inputs)
         cross_out, l2_reg_cross_loss = self._cross_net(feat_embeddings,
                                                        self.cross_num)
 
         dnn_feat = feat_embeddings
-        # print("----dnn_feat---",dnn_feat)
 
         for n_layer in self._mlp_layers:
             dnn_feat = n_layer(dnn_feat)
-            # print("----dnn_feat---",dnn_feat)
 
         last_out = paddle.concat([dnn_feat, cross_out], axis=-1)
-        # print("----last_out---",last_out)
 
         logit = self.fc(last_out)
-        # print("----logit---",logit)
 
         predict = F.sigmoid(logit)
-        # print("----predict---",predict)
 
         return predict, l2_reg_cross_loss
