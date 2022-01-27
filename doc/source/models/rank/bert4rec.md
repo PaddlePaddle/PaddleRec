@@ -1,22 +1,7 @@
-# BERT4Rec模型
+# BERT4Rec模型 (Sequential Recommendation with Bidirectional Encoder Representations from Transformer)
 
-以下是本例的简要目录结构及说明： 
-
-```
-├── data #示例数据
-    ├── train #训练数据
-    ├── test #测试数据
-├── readme.md #文档
-├── config_bigdata.yaml # 全量数据配置
-├── config.yaml # demo数据配置
-├── net.py # 模型核心组网
-├── data_reader.py #数据读取程序
-├── dygraph_model.py # 构建动态图
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+代码请参考：[bert4rec](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/bert4rec)  
+如果我们的代码对您有用，还请点个star啊~ 
 
 ## 内容
 
@@ -89,7 +74,6 @@ python -u data_augment_candi_gen.py
 python -u ../../../tools/trainer.py -m config_bigdata.yaml 
 # 动态图预测
 python -u ../../../tools/infer.py -m config_bigdata.yaml 
-
 ``` 
 
 ## 进阶使用
