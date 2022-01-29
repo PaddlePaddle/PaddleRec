@@ -1,0 +1,49 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+runner:
+  train_data_dir: "./data/sample_data/dataset"
+  train_reader_path: "avazu_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  train_batch_size: 1 #512
+  epochs: 1
+  print_interval: 2
+
+
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_flen"
+  test_data_dir:  "./data/sample_data/dataset" #"../../../../data/test"
+  infer_reader_path: "avazu_reader" # importlib format
+  infer_batch_size: 3 #512
+  infer_load_path: "output_model_flen"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
+
+
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adagrad
+    learning_rate: 0.04
+    strategy: async
+  # user-defined <key, value> pairs
+  sparse_inputs_slots: 23
+  sparse_feature_number: 20 #1544488
+  sparse_num_field: 3
+  sparse_feature_dim: 32
+  layer_sizes_dnn: [64, 32]
+  distributed_embedding: 0
