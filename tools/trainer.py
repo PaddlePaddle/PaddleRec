@@ -127,7 +127,7 @@ def main(args):
         total_samples = 0
         reader_start = time.time()
         assert any(train_dataloader(
-        )), "train_dataloader's size == zero, please ensure batch size < dataset size!"
+        )), "train_dataloader is null, please ensure batch size < dataset size!"
         for batch_id, batch in enumerate(train_dataloader()):
             train_reader_cost += time.time() - reader_start
             optimizer.clear_grad()
