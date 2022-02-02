@@ -246,8 +246,8 @@ class FieldWiseBiInteraction(nn.Layer):
 
         field_fm = paddle.concat([
             square_of_sum - sum_of_square
-            for square_of_sum, sum_of_square in zip(square_of_sum_list,
-                                                    sum_of_square_list)
+            for square_of_sum, sum_of_square in 
+            zip(square_of_sum_list, sum_of_square_list)
         ], 1)
         h_fm = paddle.sum(paddle.multiply(field_fm, self.kernel_fm), axis=1)
 
