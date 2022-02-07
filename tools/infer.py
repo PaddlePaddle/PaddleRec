@@ -116,6 +116,10 @@ def main(args):
         infer_run_cost = 0.0
         reader_start = time.time()
 
+        #we will drop the last incomplete batch when dataset size is not divisible by the batch size
+        assert any(test_dataloader(
+        )), "test_dataloader is null, please ensure batch size < dataset size!"
+
         for batch_id, batch in enumerate(test_dataloader()):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
