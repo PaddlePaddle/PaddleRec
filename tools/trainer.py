@@ -126,8 +126,11 @@ def main(args):
         train_run_cost = 0.0
         total_samples = 0
         reader_start = time.time()
+
+        #we will drop the last incomplete batch when dataset size is not divisible by the batch size
         assert any(train_dataloader(
         )), "train_dataloader is null, please ensure batch size < dataset size!"
+
         for batch_id, batch in enumerate(train_dataloader()):
             train_reader_cost += time.time() - reader_start
             optimizer.clear_grad()

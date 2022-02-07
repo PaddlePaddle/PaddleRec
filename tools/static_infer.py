@@ -128,6 +128,11 @@ def main(args):
 
         if use_auc:
             reset_auc(use_fleet, auc_num)
+
+        #we will drop the last incomplete batch when dataset size is not divisible by the batch size
+        assert any(test_dataloader(
+        )), "test_dataloader's size is null, please ensure batch size < dataset size!"
+
         for batch_id, batch_data in enumerate(test_dataloader()):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
