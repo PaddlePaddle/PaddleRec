@@ -18,6 +18,7 @@ runner:
   train_data_dir: "../../../datasets/criteo/slot_train_data_full"
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: True
+  use_xpu: False   # Enable this option only if you have an xpu device
   use_auc: False
   train_batch_size: 512
   epochs: 1
