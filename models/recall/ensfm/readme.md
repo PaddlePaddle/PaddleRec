@@ -9,7 +9,6 @@
         ├── test.csv #训练数据样例
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据数据配置
-├── download.sh # 下载全量数据
 ├── dygraph_model.py # 构建动态图
 ├── infer.py # 预测脚本
 ├── movielens_reader.py #数据读取程序
