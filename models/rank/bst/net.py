@@ -433,9 +433,9 @@ class BST(paddle.nn.Layer):
         target_position_emb = self.target_position_emb_attr(target_position)
 
         item_sequence = paddle.concat(
-            [hist_item_emb, hist_item_emb, hist_position_emb], axis=2)
+            [hist_item_emb, hist_cat_emb, hist_position_emb], axis=2)
         target_sequence = paddle.concat(
-            [target_item_emb, target_item_emb, target_position_emb], axis=2)
+            [target_item_emb, target_cat_emb, target_position_emb], axis=2)
 
         #print(position_sequence_target.shape) 
         whole_embedding = paddle.concat(
