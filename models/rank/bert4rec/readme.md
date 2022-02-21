@@ -57,6 +57,7 @@ python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bi
 python -u ../../../tools/infer.py -m config.yaml 
 ``` 
 
+
 ## 模型组网
 在BERT4Rec之前，SASRec已经将self-attention应用在了序列推荐任务中。
 
@@ -73,6 +74,7 @@ python -u ../../../tools/infer.py -m config.yaml
 在测试的时候，我们只需要mask掉序列最后的物品，并取出模型最后一步的representation出来，那么就将训练好的模型成功应用在Next-item Prediction任务上。
 
 ## 效果复现
+
 | 模型 | HR@10 | NDCG@10 | MRR | epoch_num| Time of each epoch |
 | :------| :------ |:------ | :------ | :------| :------ | 
 | BERT4Rec | 0.305 | 0.184 | 0.166 | 50 | 约2小时 |

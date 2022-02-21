@@ -62,6 +62,8 @@
    models/recall/mind.md
    models/recall/ncf.md
    models/recall/word2vec.md
+   models/recall/ensfm.md
+   models/recall/tisas.md
    models/rank/bst.md
    models/rank/dcn.md
    models/rank/deepfefm.md
@@ -79,6 +81,10 @@
    models/rank/naml.md
    models/rank/wide_deep.md
    models/rank/xdeepfm.md
+   models/rank/bert4rec.md
+   models/rank/fat_deepffm.md
+   models/rank/deeprec.md
+   models/rank/autofis.md
    models/multitask/esmm.md
    models/multitask/maml.md
    models/multitask/mmoe.md
