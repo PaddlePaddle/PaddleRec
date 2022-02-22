@@ -99,4 +99,3 @@ python -u ../../../tools/infer.py -m config_bigdata.yaml
 ## 进阶使用
   
 ## FAQ
-
