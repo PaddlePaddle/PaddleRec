@@ -9,7 +9,6 @@
         ├── test.csv #训练数据样例
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据数据配置
-├── download.sh # 下载全量数据
 ├── dygraph_model.py # 构建动态图
 ├── infer.py # 预测脚本
 ├── movielens_reader.py #数据读取程序
@@ -46,7 +45,7 @@ python 2.7/3.5/3.6/3.7
 os : windows/linux/macos 
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在ncf模型目录的快速执行命令如下： 
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在ensfm模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
 # cd models/recall/ensfm # 在任意目录均可运行
@@ -67,18 +66,18 @@ python -u infer.py -m config.yaml
 | :------| :------ |:------ | :------ | :------| :------ | 
 | ENSFM | 0.058 | 0.1 | 512 | 500 | 约2分钟 |
 
-1. 确认您当前所在目录为PaddleRec/models/recall/ensfm  
-2. 进入paddlerec/datasets/ml-1m_ensfm
+1. 确认您当前所在目录为`PaddleRec/models/recall/ensfm`  
+2. 进入`Paddlerec/datasets/ml-1m_ensfm`
 3. 执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens全量数据集，并解压到指定文件夹。
 
 ``` bash
-cd ../../../datasets/movielens_pinterest_NCF
+cd ../../../datasets/ml-1m_ensfm
 sh run.sh
 ```
 
 ```bash
 cd - # 切回模型目录
-# 动态图训练并得到指标(这里需要使用bash启动脚本)
+# 动态图训练并得到指标
 python -u ../../../tools/trainer.py -m config_bigdata.yaml
 python -u infer.py -m config_bigdata.yaml
 ```
