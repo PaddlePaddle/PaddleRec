@@ -33,11 +33,6 @@ class MHCN(nn.Layer):
         self.data, self.social = self.recDataset.get_dataset()
         self.num_users, self.num_items, _ = self.data.trainingSize()
 
-        # user num:  1891
-        print("user num: ", self.num_users)
-        # item num:  15438
-        print("item num: ", self.num_items)
-
         self.userAdjacency = None
         self.itemAdjacency = None
 
