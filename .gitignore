@@ -5,3 +5,4 @@ paddlerec.egg-info/
 *~
 *.pyc
 *.DS_Store
+kernel_meta/
