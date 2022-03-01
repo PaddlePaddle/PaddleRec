@@ -13,7 +13,7 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/train"
+  train_data_dir: "data"
   rating_file: "../../../datasets/LastFM_MHCN/lastfm/ratings.txt"
   relation_file: "../../../datasets/LastFM_MHCN/lastfm/trusts.txt"
   train_batch_size: 2000
@@ -23,13 +23,14 @@ runner:
   epochs: 120
   print_interval: 1
   model_save_path: "output_model_mhcn_all"
-  test_data_dir: "data/test"
+  test_data_dir: "data"
   infer_batch_size: 2000
   infer_reader_path: "lastfm_reader" # importlib format
   infer_load_path: "output_model_mhcn_all"
   infer_start_epoch: 0
   infer_end_epoch: 117
   top_k: 10
+  is_train: True
 
   # hyper parameters of user-defined network
 hyper_parameters:

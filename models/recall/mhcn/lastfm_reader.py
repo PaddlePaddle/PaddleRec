@@ -386,8 +386,7 @@ def crossValidation(data, k, binarized=False):
 class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
-        self.file_list = file_list
-        self.is_train = True if "train" in file_list or file_list else False
+        self.is_train = config.get("runner.is_train", True)
         self.trainingSet = loadDataSet(
             config.get("runner.rating_file", None),
             bTest=False,
