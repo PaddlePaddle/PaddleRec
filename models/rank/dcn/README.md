@@ -106,7 +106,7 @@ deepAndCross模型的组网本质是一个二分类任务，模型代码参考�
 
 | 模型 | auc | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | 
-| dcn |  0.777   | 32  |  10  | 约 3 小时 |
+| dcn |  0.777   | 512  |  10  | 约 3 小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/dcn
 2. 在"criteo data"全量数据目录下，运行数据一键处理脚本，命令如下：  
