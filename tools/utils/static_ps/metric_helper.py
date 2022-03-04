@@ -109,30 +109,27 @@ def get_global_metrics(scope=fluid.global_scope(),
                        q_name="q",
                        pos_ins_num_name="pos",
                        total_ins_num_name="total"):
-    from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-    fleet_util = FleetUtil()
     if scope.find_var(stat_pos_name) is None or \
             scope.find_var(stat_neg_name) is None:
-        fleet_util.rank0_print("not found auc bucket")
+        logger.info("not found auc bucket")
         return [None] * 9
     elif scope.find_var(sqrerr_name) is None:
-        fleet_util.rank0_print("not found sqrerr_name=%s" % sqrerr_name)
+        logger.info("not found sqrerr_name=%s" % sqrerr_name)
         return [None] * 9
     elif scope.find_var(abserr_name) is None:
-        fleet_util.rank0_print("not found abserr_name=%s" % abserr_name)
+        logger.info("not found abserr_name=%s" % abserr_name)
         return [None] * 9
     elif scope.find_var(prob_name) is None:
-        fleet_util.rank0_print("not found prob_name=%s" % prob_name)
+        logger.info("not found prob_name=%s" % prob_name)
         return [None] * 9
     elif scope.find_var(q_name) is None:
-        fleet_util.rank0_print("not found q_name=%s" % q_name)
+        logger.info("not found q_name=%s" % q_name)
         return [None] * 9
     elif scope.find_var(pos_ins_num_name) is None:
-        fleet_util.rank0_print("not found pos_ins_num_name=%s" %
-                               pos_ins_num_name)
+        logger.info("not found pos_ins_num_name=%s" % pos_ins_num_name)
         return [None] * 9
     elif scope.find_var(total_ins_num_name) is None:
-        fleet_util.rank0_print("not found total_ins_num_name=%s" % \
+        logger.info("not found total_ins_num_name=%s" % \
                                total_ins_num_name)
         return [None] * 9
 
@@ -261,8 +258,28 @@ def get_global_metrics_str(scope, metric_list, prefix):
     return metrics_str
 
 
+def set_zero(var_name,
+             scope=fluid.global_scope(),
+             place=fluid.CPUPlace(),
+             param_type="int64"):
+    """
+    Set tensor of a Variable to zero.
+
+    Args:
+        var_name(str): name of Variable
+        scope(Scope): Scope object, default is fluid.global_scope()
+        place(Place): Place object, default is fluid.CPUPlace()
+        param_type(str): param data type, default is int64
+
+    Examples:
+        set_zero(myvar.name, myscope)
+
+    """
+    param = scope.var(var_name).get_tensor()
+    param_array = np.zeros(param._get_dims()).astype(param_type)
+    param.set(param_array, place)
+
+
 def clear_metrics(scope, var_list, var_types):
-    from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-    fleet_util = FleetUtil()
     for i in range(len(var_list)):
-        fleet_util.set_zero(var_list[i].name, scope, param_type=var_types[i])
+        set_zero(var_list[i].name, scope, param_type=var_types[i])
