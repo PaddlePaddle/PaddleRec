@@ -25,7 +25,7 @@
 
 - A quick start tool of search & recommendation algorithm based on [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/en/beginners_guide/index_en.html)
 - A complete solution of recommendation system for beginners, developers and researchers.
-- Recommendation algorithm library including content-understanding, match, recall, rank, multi-task, re-rank etc.
+- Recommendation algorithm library including content-understanding, match, recall, rank, multi-task, re-rank etc.[Support model list](#Support_Model_List)
 
 <h2 align="center">Getting Started</h2>
 
@@ -73,31 +73,33 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 
 ### Background
 * [Recommendation System](doc/rec_background.md)
-* [Distributed deep learning](doc/ps_background.md)
+* [Distributed deep Learning](doc/ps_background.md)
 
-### Introductory tutorial
-* [PaddleRec function introduction](doc/introduction.md)
+### Introductory Tutorial
+* [PaddleRec Function Introduction](doc/introduction.md)
 * [Dygraph Train](doc/dygraph_mode.md)
 * [Static Train](doc/static_mode.md)
 * [Distributed Train](doc/fleet_mode.md)
 
 
-### Advanced tutorial
+### Advanced Tutorial
+* [Submit Specification](doc/contribute.md)
 * [Custom Reader](doc/custom_reader.md)
 * [Custom Model](doc/model_develop.md)
-* [Configuration description of yaml](doc/yaml.md)
-* [Training visualization](doc/visualization.md)
+* [Configuration Description of Yaml](doc/yaml.md)
+* [Training Visualization](doc/visualization.md)
 * [Serving](doc/serving.md)
-* [Python inference](doc/inference.md)
+* [Python Inference](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
 
 ### FAQ
 * [Common Problem FAQ](doc/faq.md)
 
 ### Acknowledgements
-* [Contributions from external developer](contributor.md)
+* [Contributions From External Developer](contributor.md)
 
-<h2 align="center">Support model list</h2>
+#### Support_Model_List
+<h2 align="center">Support Model List</h2>
 
 
   |         Type          |                                 Algorithm                                 | Online Environment | Parameter-Server | Multi-GPU | version | Paper                                                                                                                                                                                                       |

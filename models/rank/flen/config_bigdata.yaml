@@ -12,35 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-runner:
-  train_data_dir: "data/sample_data.pickle"
-  train_reader_path: "multiMNIST_reader" # importlib format
-  use_gpu: False
-  use_auc: True
-  train_batch_size: 8
-  epochs: 10
-  print_interval: 2
-  #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_dselect_k"
-  test_data_dir: "data/sample_data.pickle"
-  infer_batch_size: 8
-  infer_reader_path: "multiMNIST_reader" # importlib format
-  infer_load_path: "output_model_dselect_k"
-  infer_start_epoch: 0
-  infer_end_epoch: 10
-  #use inference save model
-  use_inference: False
-  save_inference_feed_varnames: ["input"]
-  save_inference_fetch_varnames: ["slice_0.tmp_0", "slice_1.tmp_0"]
 
+runner:
+  train_data_dir: "../../../datasets/criteo/train_data_full"
+  train_reader_path: "avazu_reader" # importlib format
+  use_gpu: True
+  use_auc: True
+  train_batch_size: 512 #512
+  epochs: 1
+  print_interval: 500
+ 
+
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model_flen_all"
+  test_data_dir:  "../../../datasets/criteo/test_data_full" 
+  infer_reader_path: "avazu_reader" # importlib format
+  infer_batch_size: 512 
+  infer_load_path: "output_model_flen_all"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
+
+
+# hyper parameters of user-defined network
 hyper_parameters:
-  feature_size: 1296
-  top_k: 2
-  expert_num: 8
-  gate_num: 2
-  expert_size: 50
-  tower_size: 8
+  # optimizer config
   optimizer:
-    class: adam
-    learning_rate: 0.001
+    class: Adagrad 
+    learning_rate: 0.04 
     strategy: async
+  # user-defined <key, value> pairs
+  sparse_inputs_slots: 22
+  sparse_feature_number: 2500000 
+  sparse_num_field: 3
+  sparse_feature_dim: 32
+  layer_sizes_dnn: [64, 32]
+  distributed_embedding: 0
