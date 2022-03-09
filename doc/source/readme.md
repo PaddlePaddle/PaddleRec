@@ -15,6 +15,8 @@
 [ncf](https://paddlerec.readthedocs.io/en/latest/models/recall/ncf.html)  
 [mind](https://paddlerec.readthedocs.io/en/latest/models/recall/mind.html)  
 [deepwalk](https://paddlerec.readthedocs.io/en/latest/models/recall/deepwalk.html)  
+[ensfm](https://paddlerec.readthedocs.io/en/latest/models/recall/ensfm.html)   
+[tisas](https://paddlerec.readthedocs.io/en/latest/models/recall/tisas.html)   
 
 ## 多任务模型
 [esmm](https://paddlerec.readthedocs.io/en/latest/models/multitask/esmm.html)  
@@ -42,3 +44,7 @@
 [naml](https://paddlerec.readthedocs.io/en/latest/models/rank/naml.html)  
 [wide_deep](https://paddlerec.readthedocs.io/en/latest/models/rank/wide_deep.html)  
 [xdeepfm](https://paddlerec.readthedocs.io/en/latest/models/rank/xdeepfm.html)  
+[bert4rec](https://paddlerec.readthedocs.io/en/latest/models/rank/bert4rec.html)  
+[fat_deepffm](https://paddlerec.readthedocs.io/en/latest/models/rank/fat_deepffm.html)  
+[deeprec](https://paddlerec.readthedocs.io/en/latest/models/rank/deeprec.html)  
+[autofis](https://paddlerec.readthedocs.io/en/latest/models/rank/autofis.html)  
