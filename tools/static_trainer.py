@@ -239,6 +239,11 @@ def dataloader_train(epoch_id, train_dataloader, input_data_names, fetch_vars,
     train_run_cost = 0.0
     total_samples = 0
     reader_start = time.time()
+
+    #we will drop the last incomplete batch when dataset size is not divisible by the batch size
+    assert any(train_dataloader(
+    )), "train_dataloader's size is null, please ensure batch size < dataset size!"
+
     for batch_id, batch_data in enumerate(train_dataloader()):
         train_reader_cost += time.time() - reader_start
         train_start = time.time()

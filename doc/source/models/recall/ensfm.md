@@ -1,24 +1,7 @@
-# ENSFM召回模型
+# ENSFM (Eicient Non-Sampling Factorization Machines for Optimal Context-Aware Recommendation)
 
-以下是本例的简要目录结构及说明： 
-
-```
-├── data #样例数据
-    ├── sample_data
-        ├── train.csv #训练数据样例
-        ├── test.csv #训练数据样例
-├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据数据配置
-├── dygraph_model.py # 构建动态图
-├── infer.py # 预测脚本
-├── movielens_reader.py #数据读取程序
-├── net.py # 模型核心组网（动静统一）
-├── readme.md #文档
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
+代码请参考：[ENSFM](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/recall/ensfm)  
+如果我们的代码对您有用，还请点个star啊~ 
 
 ## 内容
 
@@ -45,7 +28,7 @@ python 2.7/3.5/3.6/3.7
 os : windows/linux/macos 
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在ensfm模型目录的快速执行命令如下： 
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在ncf模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
 # cd models/recall/ensfm # 在任意目录均可运行
@@ -66,18 +49,18 @@ python -u infer.py -m config.yaml
 | :------| :------ |:------ | :------ | :------| :------ | 
 | ENSFM | 0.058 | 0.1 | 512 | 500 | 约2分钟 |
 
-1. 确认您当前所在目录为`PaddleRec/models/recall/ensfm`  
-2. 进入`Paddlerec/datasets/ml-1m_ensfm`
+1. 确认您当前所在目录为PaddleRec/models/recall/ensfm  
+2. 进入paddlerec/datasets/ml-1m_ensfm
 3. 执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens全量数据集，并解压到指定文件夹。
 
 ``` bash
-cd ../../../datasets/ml-1m_ensfm
+cd ../../../datasets/movielens_pinterest_NCF
 sh run.sh
 ```
 
 ```bash
 cd - # 切回模型目录
-# 动态图训练并得到指标
+# 动态图训练并得到指标(这里需要使用bash启动脚本)
 python -u ../../../tools/trainer.py -m config_bigdata.yaml
 python -u infer.py -m config_bigdata.yaml
 ```
