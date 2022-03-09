@@ -13,7 +13,7 @@
 # limitations under the License.
 #!/bin/bash
 
-
+mkdir data
 wget https://paddlerec.bj.bcebos.com/recall/ensfm/ml-1m-ensfm.tar.gz
 tar zxvf ml-1m-ensfm.tar.gz -C data
 rm ml-1m-ensfm.tar.gz
