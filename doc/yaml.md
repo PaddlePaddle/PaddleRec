@@ -17,6 +17,7 @@
 |             infer_start_epoch            |    int    |                           >= 0                           |    是    |    初始化模型时从第几个epoch保留的参数开始加载（从0开始计数，包括本次）    |
 |             infer_end_epoch            |    int    |                           >= 0                           |    是    |    初始化模型时到第几个epoch保留的参数停止加载（从0开始技术，不包括本次）    |
 |             use_gpu            |    bool    |                           True/False                           |    是    |                       指定是否使用gpu，若为False则默认使用cpu                        |
+|             use_xpu            |    bool    |                           True/False                           |    是    |                       指定是否使用xpu，若为False则默认使用cpu                        |
 |             epochs            |    int    |                           >= 1                           |    是    |                       指定train阶段需要训练几个epoch                        |
 |             print_interval            |    int    |                           >= 1                           |    是    |                       训练指标打印batch间隔                        |
 |             use_auc            |    bool    |                           True/False                           |    否    |                       在每个epoch开始时重置auc指标的值                        |

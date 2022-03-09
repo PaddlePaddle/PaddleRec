@@ -66,6 +66,7 @@ def main(args):
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
     use_xpu = config.get("runner.use_xpu", False)
+    use_npu = config.get("runner.use_npu", False)
     use_visual = config.get("runner.use_visual", False)
     test_data_dir = config.get("runner.test_data_dir", None)
     print_interval = config.get("runner.print_interval", None)
@@ -76,14 +77,18 @@ def main(args):
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_xpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
-               start_epoch, end_epoch, print_interval, model_load_path))
+        "use_gpu: {}, use_xpu: {}, use_npu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
+        format(use_gpu, use_xpu, use_npu, use_visual, infer_batch_size,
+               test_data_dir, start_epoch, end_epoch, print_interval,
+               model_load_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
         xpu_device = 'xpu:{0}'.format(os.getenv('FLAGS_selected_xpus', 0))
         place = paddle.set_device(xpu_device)
+    elif use_npu:
+        npu_device = 'npu:{0}'.format(os.getenv('FLAGS_selected_npus', 0))
+        place = paddle.set_device(npu_device)
     else:
         place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
@@ -115,6 +120,10 @@ def main(args):
         infer_reader_cost = 0.0
         infer_run_cost = 0.0
         reader_start = time.time()
+
+        #we will drop the last incomplete batch when dataset size is not divisible by the batch size
+        assert any(test_dataloader(
+        )), "test_dataloader is null, please ensure batch size < dataset size!"
 
         for batch_id, batch in enumerate(test_dataloader()):
             infer_reader_cost += time.time() - reader_start
