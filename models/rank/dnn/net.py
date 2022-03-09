@@ -34,10 +34,14 @@ class DNNLayer(nn.Layer):
         self.num_field = num_field
         self.layer_sizes = layer_sizes
 
+        use_sparse = True
+        if paddle.is_compiled_with_npu():
+            use_sparse = False
+
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.Uniform()))
