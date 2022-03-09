@@ -68,8 +68,7 @@
 
 上图是其中一张图片，与经典数据集 MNIST 不同，该图片上包含两位数字，左上和右下，对应两个多分类任务。数据集划分为训练集、验证集、测试集，数量分别为 100000、20000、20000。
 
-在 PaperswithCode 网站上检索到 【NeurlPS 2019】[Pareto Multi-Task Learning](https://arxiv.org/pdf/1912.12854v1.pdf) 公布了该数据集，
-下载链接： https://drive.google.com/drive/folders/1VnmCmBAVh8f_BKJg1KYx-E137gBLXbGG。
+在 PaperswithCode 网站上检索到 【NeurlPS 2019】[Pareto Multi-Task Learning](https://arxiv.org/pdf/1912.12854v1.pdf) 公布了该数据集。
 
 
 ## 运行环境

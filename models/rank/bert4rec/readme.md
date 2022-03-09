@@ -55,6 +55,8 @@ python 3.7
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
 python -u ../../../tools/infer.py -m config.yaml 
+``` 
+
 
 ## 模型组网
 在BERT4Rec之前，SASRec已经将self-attention应用在了序列推荐任务中。
@@ -72,17 +74,21 @@ python -u ../../../tools/infer.py -m config.yaml
 在测试的时候，我们只需要mask掉序列最后的物品，并取出模型最后一步的representation出来，那么就将训练好的模型成功应用在Next-item Prediction任务上。
 
 ## 效果复现
+
 | 模型 | HR@10 | NDCG@10 | MRR | epoch_num| Time of each epoch |
 | :------| :------ |:------ | :------ | :------| :------ | 
 | BERT4Rec | 0.305 | 0.184 | 0.166 | 50 | 约2小时 |
 
-本文提供了beauty数据集可以供您快速体验及其复现。在BERT4Rec模型目录的快速执行命令如下： 
+1. 确认您当前所在目录为 `PaddleRec/models/rank/bert4rec`
+2. 进入 `PaddleRec/datasets/Beauty` 目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的 Beauty 全量数据集，并解压到指定文件夹。
+``` bash
+cd ../../../datasets/Beauty
+sh run.sh
+``` 
+3. 切回模型目录,执行命令运行全量数据
 
 ```bash
 # 进入模型目录
-# cd models/rank/bert4rec # 在任意目录均可运行
-# 数据增强与候选集生成
-python -u data_augment_candi_gen.py 
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml 
 # 动态图预测
@@ -93,4 +99,3 @@ python -u ../../../tools/infer.py -m config_bigdata.yaml
 ## 进阶使用
   
 ## FAQ
-
