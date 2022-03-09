@@ -68,7 +68,7 @@ python -u infer.py -m config.yaml
 | ENSFM | 0.058 | 0.1 | 512 | 500 | 约2分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/recall/ensfm  
-2. 进入paddlerec/datasets/ml-1m_ensfm
+2. 进入Paddlerec/datasets/ml-1m_ensfm
 3. 执行该脚本，会从国内源的服务器上下载我们预处理完成的movielens全量数据集，并解压到指定文件夹。
 
 ``` bash
