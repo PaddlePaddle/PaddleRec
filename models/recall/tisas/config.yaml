@@ -16,16 +16,16 @@ runner:
   train_data_dir: "data/sample_data"
   train_reader_path: "movielens_reader"  # importlib format
   train_batch_size: 2
-  model_save_path: "output_model_tisas_demo"
+  model_save_path: "output_model_tisas"
   mode: "train"
-  use_gpu: True 
+  use_gpu: False 
   epochs: 3
   print_interval: 10
   
   test_data_dir: "data/sample_data"
   infer_reader_path: "movielens_reader"  # importlib format
   infer_batch_size: 1
-  infer_load_path: "output_model_tisas_demo"
+  infer_load_path: "output_model_tisas"
   infer_start_epoch: 2
   infer_end_epoch: 3
 
