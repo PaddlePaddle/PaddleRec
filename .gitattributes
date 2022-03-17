@@ -1,0 +1,7 @@
+*.txt linguist-language=markdown
+*.png linguist-language=markdown
+*.md linguist-language=markdown
+*.1 linguist-language=markdown
+*.7 linguist-language=markdown
+
+
