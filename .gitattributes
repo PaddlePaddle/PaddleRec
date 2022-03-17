@@ -1,4 +1,4 @@
-*.txt linguist-language=Markdown
+*.txt linguist-language=python
 *.png linguist-language=Markdown
 *.md linguist-language=Markdown
 
