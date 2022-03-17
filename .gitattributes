@@ -2,12 +2,6 @@
 *.png linguist-language=markdown
 *.md linguist-language=markdown
 *.1 linguist-language=markdown
-*.2 linguist-language=markdown
-*.3 linguist-language=markdown
-*.4 linguist-language=markdown
-*.5 linguist-language=markdown
-*.6 linguist-language=markdown
 *.7 linguist-language=markdown
-*.8 linguist-language=markdown
-*.9 linguist-language=markdown
+
 
