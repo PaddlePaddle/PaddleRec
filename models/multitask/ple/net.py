@@ -58,7 +58,8 @@ class PLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     expert_size,
                     tower_size,
-                    weight_attr=nn.initializer.Constant(value=0.1),
+                    #initialize the weight randly
+                    weight_attr=nn.initializer.XavierUniform(),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     #bias_attr=paddle.ParamAttr(learning_rate=1.0),
                     name='tower_' + str(i)))
@@ -69,7 +70,8 @@ class PLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     tower_size,
                     2,
-                    weight_attr=nn.initializer.Constant(value=0.1),
+                    #initialize the weight randly
+                    weight_attr=nn.initializer.XavierUniform(),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name='tower_out_' + str(i)))
             self._param_tower_out.append(linear)
@@ -118,7 +120,8 @@ class SinglePLELayer(nn.Layer):
                     sublayer=nn.Linear(
                         input_feature_size,
                         expert_size,
-                        weight_attr=nn.initializer.Constant(value=0.1),
+                        #initialize the weight randly
+                        weight_attr=nn.initializer.XavierUniform(),
                         bias_attr=nn.initializer.Constant(value=0.1),
                         name=level_name + "_exp_" + str(i) + "_" + str(j)))
                 self._param_expert.append(linear)
@@ -130,7 +133,8 @@ class SinglePLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     input_feature_size,
                     expert_size,
-                    weight_attr=nn.initializer.Constant(value=0.1),
+                    #initialize the weight randly
+                    weight_attr=nn.initializer.XavierUniform(),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_exp_shared_" + str(i)))
             self._param_expert.append(linear)
@@ -144,7 +148,8 @@ class SinglePLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     input_feature_size,
                     cur_expert_num,
-                    weight_attr=nn.initializer.Constant(value=0.1),
+                    #initialize the weight randly
+                    weight_attr=nn.initializer.XavierUniform(),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_gate_" + str(i)))
             self._param_gate.append(linear)
@@ -157,7 +162,8 @@ class SinglePLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     input_feature_size,
                     cur_expert_num,
-                    weight_attr=nn.initializer.Constant(value=0.1),
+                    #initialize the weight randly
+                    weight_attr=nn.initializer.XavierUniform(),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_gate_shared_"))
             self._param_gate_shared = linear
