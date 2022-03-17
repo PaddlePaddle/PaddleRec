@@ -19,5 +19,6 @@
   |                     [MIND](models/recall/mind/)                     |  [duyiqi17 ](https://github.com/duyiqi17)  |    https://github.com/PaddlePaddle/PaddleRec/pull/398   | 其他 |
   |                     [FLEN](models/rank/flen/)                     |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/685   | 论文复现赛第五期 |
   |                     [MHCN](models/recall/mhcn/)                     |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/679   | 论文复现赛第五期 |
+  |                     [DCN_V2](models/rank/dcn_v2/)                     |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/677   | 论文复现赛第五期 |
 
 </div> 
