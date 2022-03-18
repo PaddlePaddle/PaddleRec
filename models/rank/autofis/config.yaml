@@ -15,7 +15,7 @@
 # global settings
 
 runner:
-  train_data_dir: "data/sample_data/train"
+  train_data_dir: "data/sample_data"
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: False
   use_auc: False
@@ -24,7 +24,7 @@ runner:
   print_interval: 1
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_autofis"
-  test_data_dir: "data/sample_data/test"
+  test_data_dir: "data/sample_data"
   infer_reader_path: "criteo_reader" # importlib format
   infer_batch_size: 200
   infer_load_path: "output_model_autofis"
