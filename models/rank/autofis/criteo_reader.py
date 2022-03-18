@@ -22,10 +22,10 @@ class RecDataset(Dataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         for file in file_list:
-            if file.endswith('x.npy'):
-                self.x = np.load(file)
-            elif file.endswith('y.npy'):
-                self.y = np.load(file)
+            if file.endswith('x.txt'):
+                self.x = np.loadtxt(file, dtype=np.int64)
+            elif file.endswith('y.txt'):
+                self.y = np.loadtxt(file, dtype=np.int64)
 
     def __getitem__(self, item):
         return self.x[item], self.y[item]
