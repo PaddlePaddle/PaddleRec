@@ -224,7 +224,7 @@ def main(args):
         mask_val = (mask_val != 0).astype(int)
         np.save('comb_mask.npy', mask_val)
 
-    print(mask_val)
+    #print(mask_val)
 
 
 if __name__ == '__main__':
