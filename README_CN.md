@@ -10,6 +10,12 @@
 <img align="center" src="doc/imgs/overview.png">
 <p>
 
+<h2 align="center">最新动态<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
+
+* [2022/3/21] 新增[paper](./paper)目录，发布我们对21年的推荐顶会论文的分析，以及工业界的推荐论文列表，供大家参考。  
+* [2022/3/10] 新增5个前沿算法: [DCN_V2](models/rank/dcn_v2), [MHCN](models/recall/mhcn), [FLEN](models/rank/flen), [Dselect_K](models/multitask/dselect_k), [AutoFIS](models/rank/autofis)。  
+* [2022/1/12] 新增AI Studio一键[在线运行](https://aistudio.baidu.com/aistudio/projectdetail/3240640)功能，可以方便快捷的在AI Studio平台上在线体验我们的模型。  
+
 
 <h2 align="center">什么是推荐系统?</h2>
 <p align="center">
@@ -27,7 +33,6 @@
 
 <h2 align="center">什么是PaddleRec?</h2>
 
-
 - 源于飞桨生态的搜索推荐模型 **一站式开箱即用工具** 
 - 适合初学者，开发者，研究者的推荐系统全流程解决方案
 - 包含内容理解、匹配、召回、排序、 多任务、重排序等多个任务的完整推荐搜索算法库。[支持模型列表](#支持模型列表)
@@ -36,7 +41,7 @@
 
 ### 在线运行  
 
-- **[AI Studio在线运行示例](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**
+- **[AI Studio在线运行示例](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**  
 
 ### 环境要求
 * Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用python3.7，示例中的python默认表示python3.7
@@ -100,6 +105,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 * [python端预测库推理](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
 * [推荐全流程](doc/whole_process.md)
+* [最新工业界算法动态](paper/readme.md)
 
 ### FAQ
 * [常见问题FAQ](doc/faq.md)
