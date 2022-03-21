@@ -12,7 +12,10 @@
 
 <h2 align="center">最新动态<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
 
-* [2022/3/21] 新增[paper](./paper)目录，发布我们对21年的推荐顶会论文的分析，以及工业界的推荐论文列表，供大家参考。
+* [2022/3/21] 新增[paper](./paper)目录，发布我们对21年的推荐顶会论文的分析，以及工业界的推荐论文列表，供大家参考。  
+* [2022/3/10] 新增5个前沿算法: [DCN_V2](models/rank/dcn_v2), [MHCN](models/recall/mhcn), [FLEN](models/rank/flen), [Dselect_K](models/multitask/dselect_k)，[AutoFIS](models/rank/autofis)。  
+* [2022/1/12] 新增AI Studio一键[在线运行](https://aistudio.baidu.com/aistudio/projectdetail/3240640)功能，可以方便快捷的在AI Studio平台上在线体验我们的模型.  
+
 
 <h2 align="center">什么是推荐系统?</h2>
 <p align="center">
