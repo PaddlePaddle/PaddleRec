@@ -6,6 +6,11 @@
 <img align="center" src="doc/imgs/overview_en.png">
 <p>
 
+<h2 align="center">News<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
+
+* [2022/3/21] Add a new [paper](./paper) directory , show our analysis of the top meeting papers of the recommendation system in 2021 years and the list of recommendation system papers in the industry for your reference.  
+* [2022/3/10] Add 5 algorithms: [DCN_V2](models/rank/dcn_v2), [MHCN](models/recall/mhcn), [FLEN](models/rank/flen), [Dselect_K](models/multitask/dselect_k)，[AutoFIS](models/rank/autofis)。  
+* [2022/1/12] Add AI Studio [Online running](https://aistudio.baidu.com/aistudio/projectdetail/3240640) function, you can easily and quickly online experience our model on AI studio platform.
 
 <h2 align="center">What is recommendation system ?</h2>
 <p align="center">
@@ -91,6 +96,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 * [Serving](doc/serving.md)
 * [Python Inference](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
+* [The latest reserch trends of RS](paper/readme.md)
 
 ### FAQ
 * [Common Problem FAQ](doc/faq.md)
