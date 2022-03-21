@@ -10,6 +10,9 @@
 <img align="center" src="doc/imgs/overview.png">
 <p>
 
+<h2 align="center">最新动态<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
+
+* [2022/3/21] 新增[paper](./paper)目录，发布我们对21年的推荐顶会论文的分析，以及工业界的推荐论文列表，供大家参考。
 
 <h2 align="center">什么是推荐系统?</h2>
 <p align="center">
@@ -25,10 +28,6 @@
   > 可以说，谁能掌握和利用好推荐系统，谁就能在信息分发的激烈竞争中抢得先机。
   > 但与此同时，有着许多问题困扰着推荐系统的开发者，比如：庞大的数据量，复杂的模型结构，低效的分布式训练环境，波动的在离线一致性，苛刻的上线部署要求，以上种种，不胜枚举。
 
-<h2 align="center">最新动态<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
-
-* [2022/3/21] 新增paper目录，发布我们对21年的推荐顶会论文的分析，以及工业界的推荐论文列表，供大家参考。
-
 <h2 align="center">什么是PaddleRec?</h2>
 
 - 源于飞桨生态的搜索推荐模型 **一站式开箱即用工具** 
@@ -39,11 +38,7 @@
 
 ### 在线运行  
 
-- **[AI Studio在线运行示例](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**
-
-### 论文列表
-
-- **[最新工业界论文列表](paper/readme.md)**  
+- **[AI Studio在线运行示例](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**  
 
 ### 环境要求
 * Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用python3.7，示例中的python默认表示python3.7
@@ -107,6 +102,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 * [python端预测库推理](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
 * [推荐全流程](doc/whole_process.md)
+* [最新工业界论文分析](paper/readme.md)
 
 ### FAQ
 * [常见问题FAQ](doc/faq.md)

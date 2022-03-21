@@ -6,6 +6,9 @@
 <img align="center" src="doc/imgs/overview_en.png">
 <p>
 
+<h2 align="center">News<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
+
+* [2022/3/21] Add a new [paper](./paper) directory , show our analysis of the top meeting papers of the recommendation system in 2021 years and the list of recommendation system papers in the industry for your reference.
 
 <h2 align="center">What is recommendation system ?</h2>
 <p align="center">
@@ -20,10 +23,6 @@
   >
   > At the same time, there are many problems in the process of using the recommendation system, such as: huge data, complex model, inefficient distributed training, and so on.
 
-<h2 align="center">Latest Developments<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
-
-* [2022/3/21] Add a new paper directory , publish our analysis of the top meeting papers of the recommendation system in 2021 years and the list of recommendation system papers in the industry for your reference.
-
 <h2 align="center">What is PaddleRec ?</h2>
 
 
@@ -36,10 +35,6 @@
 ### Online running
 
 - **[AI Studio Online Running](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**
-
-### Paper List
-
-- **[List of Latest Industrial Recommendation System Papers](paper/readme.md)** 
 
 ### Environmental requirements
 * Python 2.7/ 3.5 / 3.6 / 3.7 , Python 3.7 is recommended ,Python in example represents Python 3.7 by default
@@ -99,6 +94,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 * [Serving](doc/serving.md)
 * [Python Inference](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
+* [List of Latest Industrial Recommendation System Papers](paper/readme.md)
 
 ### FAQ
 * [Common Problem FAQ](doc/faq.md)
