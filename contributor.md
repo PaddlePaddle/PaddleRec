@@ -12,10 +12,13 @@
   |                       [BERT4REC](models/rank/bert4rec/)                       |  [jinweiluo](https://github.com/jinweiluo)  |    https://github.com/PaddlePaddle/PaddleRec/pull/624    | 论文复现赛第四期 |
   |                       [FAT_DeepFFM](models/rank/fat_deepffm/)                       |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/651    | 论文复现赛第四期 |
   |                       [DeepRec](models/rank/deeprec/)                       |  [chenjiyan2001](https://github.com/chenjiyan2001)  |    https://github.com/PaddlePaddle/PaddleRec/pull/647    | 论文复现赛第五期 |
-  |                       [ENSFM](models/recal/ensfm/)                       |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/618    | 论文复现赛第五期 |
-  |                       [TiSAS](models/recal/tisas/)                       |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/625    | 论文复现赛第五期 |
+  |                       [ENSFM](models/recall/ensfm/)                       |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/618    | 论文复现赛第五期 |
+  |                       [TiSAS](models/recall/tisas/)                       |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/625    | 论文复现赛第五期 |
   |                       [AutoFIS](models/rank/autofis/)                       |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/660    | 论文复现赛第五期 |
   |                       [Dselect_K](models/multitask/dselect_k/)                       |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/671    | 论文复现赛第五期 |
   |                     [MIND](models/recall/mind/)                     |  [duyiqi17 ](https://github.com/duyiqi17)  |    https://github.com/PaddlePaddle/PaddleRec/pull/398   | 其他 |
+  |                     [FLEN](models/rank/flen/)                     |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/685   | 论文复现赛第五期 |
+  |                     [MHCN](models/recall/mhcn/)                     |  [Andy1314Chen](https://github.com/Andy1314Chen)  |    https://github.com/PaddlePaddle/PaddleRec/pull/679   | 论文复现赛第五期 |
+  |                     [DCN_V2](models/rank/dcn_v2/)                     |  [LinJayan](https://github.com/LinJayan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/677   | 论文复现赛第五期 |
 
 </div> 
