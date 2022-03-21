@@ -94,7 +94,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 * [Serving](doc/serving.md)
 * [Python Inference](doc/inference.md)
 * [Benchmark](doc/benchmark.md)
-* [List of Latest Industrial Recommendation System Papers](paper/readme.md)
+* [The latest reserch trends of RS](paper/readme.md)
 
 ### FAQ
 * [Common Problem FAQ](doc/faq.md)
