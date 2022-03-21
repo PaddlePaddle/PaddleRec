@@ -32,7 +32,7 @@ runner:
 
 hyper_parameters:
   dp_drop_prob: 0.0
-  layer_sizes: [1000, 16, 8]
+  layer_sizes: [50, 16, 8]
   optimizer:
     class: SGD
     learning_rate: 0.05

@@ -14,21 +14,21 @@
 
 
 runner:
-  train_data_dir: "data/Netflix/NF_TRAIN"
+  train_data_dir: "../../../datasets/Netflix_deeprec/Netflix/NF_TRAIN"
   train_reader_path: "netflix_reader" # importlib format
   reader_batch_size: 128
   use_gpu: True
   mode: "train" # control the return of the create_feeds function
   epochs: 60
   print_interval: 1000
-  model_save_path: "output_model_deeprec"
+  model_save_path: "output_model_deeprec_all"
 
-  test_data_dir: "data/Netflix/NF_TEST"
+  test_data_dir: "../../../datasets/Netflix_deeprec/Netflix/NF_TEST"
   infer_reader_path: "netflix_reader" # importlib format
-  infer_load_path: "output_model_deeprec"
+  infer_load_path: "output_model_deeprec_all"
   infer_start_epoch: 30
-  infer_batch_size: 128
   infer_end_epoch: 39
+  infer_batch_size: 128
 
 hyper_parameters:
   dp_drop_prob: 0.8

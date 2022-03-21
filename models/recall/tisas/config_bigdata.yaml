@@ -16,7 +16,7 @@ runner:
   train_data_dir: "../../../datasets/ml-1m_tisas/data/all_data/"
   train_reader_path: "movielens_reader"  # importlib format
   train_batch_size: 128
-  model_save_path: "output_model_tisas"
+  model_save_path: "output_model_tisas_all"
   mode: "train"
   #use_gpu: True
   use_gpu: False
@@ -26,7 +26,7 @@ runner:
   test_data_dir: "../../../datasets/ml-1m_tisas/data/all_data/"
   infer_reader_path: "movielens_reader"  # importlib format
   infer_batch_size: 1
-  infer_load_path: "output_model_tisas"
+  infer_load_path: "output_model_tisas_all"
   infer_start_epoch: 100
   infer_end_epoch: 101
 
