@@ -20,7 +20,7 @@ runner:
   use_gpu: True
   train_batch_size: 1
   data_batch_size: 256
-  epochs: 10
+  epochs: 50
   print_interval: 100
 
   model_save_path: "output_model_bert4rec_all"
@@ -28,8 +28,8 @@ runner:
   infer_reader_path: "data_reader" # importlib format
   infer_batch_size: 1
   infer_load_path: "output_model_bert4rec_all"
-  infer_start_epoch: 9
-  infer_end_epoch: 10
+  infer_start_epoch: 49
+  infer_end_epoch: 50
 
 
 # hyper parameters of user-defined network
