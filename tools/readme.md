@@ -21,4 +21,5 @@
  |  to_static.py  |  动态图保存下来的模型模型转化为静态图进行inference  |  可以支持在linux环境下启动  |  具体用法见[python端预测库推理](../doc/inference.md)  |
  |  webserver.py  |  使用web方式启动serving服务端  |  可以支持在linux环境下启动  |  具体用法见[在线Serving部署](../doc/serving.md)  |
  |  onoff_diff  |  在线离线一致性检查  |  可以在linux环境下从任意目录通过相对路径启动  |  具体用法见[在线离线一致性检查](../doc/onoff_diff.md)  |
+ |  task_relation_analyse.py |  多任务相关性分析  |  可以在linux环境下从任意目录通过相对路径启动  |  具体用法见[多任务相关性分析工具](../doc/task_relation_analyse.md)  |
  
