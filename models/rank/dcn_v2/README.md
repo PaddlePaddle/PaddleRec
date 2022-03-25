@@ -4,9 +4,7 @@
 
 ```
 ├── data # 样例数据
-    ├── sample_data # 样例数据
-        ├── train
-            ├── sample_train.txt # 训练数据样例
+    ├── sample_train.txt # 训练数据样例
 ├── __init__.py
 ├── README.md # 文档
 ├── config.yaml # sample数据配置

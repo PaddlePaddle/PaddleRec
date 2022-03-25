@@ -59,7 +59,7 @@ class PreDataset(object):
         self.min_threshold = self.config.get("runner.min_threshold")
         self.feature_map_cache = self.config.get("runner.feature_map_cache")
 
-        # self.filled_raw()
+        self.filled_raw()
 
         self.init()
 

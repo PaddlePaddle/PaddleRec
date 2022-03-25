@@ -6,10 +6,6 @@
 
 ```
 ├── data # 样例数据
-    ├── train
-        ├── train.txt
-    ├── test
-        ├── test.txt
     ├── ratings.txt
     ├── trusts.txt
 ├── __init__.py
