@@ -88,6 +88,7 @@ class DeepCroLayer(nn.Layer):
             if acts[i] == 'relu':
                 act = paddle.nn.ReLU()
                 self.add_sublayer('act_%d' % i, act)
+                self._mlp_layers.append(act)
 
         self.fc = paddle.nn.Linear(
             in_features=self.layer_sizes[-1] + self.sparse_num_field *
