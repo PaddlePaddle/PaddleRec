@@ -14,7 +14,7 @@
 
 
 runner:
-  train_data_dir: "./data/sample_data/dataset"
+  train_data_dir: "./data/sample_data/train"
   train_reader_path: "avazu_reader" # importlib format
   use_gpu: False
   use_auc: True
@@ -25,7 +25,7 @@ runner:
 
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_flen"
-  test_data_dir:  "./data/sample_data/dataset" #"../../../../data/test"
+  test_data_dir:  "./data/sample_data/train" #"../../../../data/test"
   infer_reader_path: "avazu_reader" # importlib format
   infer_batch_size: 3 #512
   infer_load_path: "output_model_flen"
@@ -41,7 +41,7 @@ hyper_parameters:
     learning_rate: 0.04
     strategy: async
   # user-defined <key, value> pairs
-  sparse_inputs_slots: 23
+  sparse_inputs_slots: 22
   sparse_feature_number: 20 #1544488
   sparse_num_field: 3
   sparse_feature_dim: 32
