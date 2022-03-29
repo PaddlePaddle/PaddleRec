@@ -5,17 +5,19 @@
 ```
 ├── data #样例数据
     ├── sample_data #样例数据
-        ├── train
-            ├── train_x.npy #训练数据样例
-            ├── train_y.npy #训练数据样例
+        ├── sample_train_x.txt #训练数据样例
+        ├── sample_train_y.txt #训练数据样例
 ├── __init__.py
-├── README.md #文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据配置
-├── net.py # 模型核心组网
 ├── criteo_reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
+├── metrics.py # 自定义评估指标
+├── net.py # 模型核心组网
+├── optimizer.py # 自定义优化器
 ├── trainer.py # 训练脚本
+├── README.md #文档
+├── trainer.py #训练入口
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -54,7 +56,7 @@ os : windows/linux/macos
 # cd models/rank/autofis # 在任意目录均可运行
 # 动态图训练
 python trainer.py -m config.yaml # stage0：自动搜索最佳特征组合 全量数据运行config_bigdata.yaml
-python trainer.py -m config.yaml -o stage=1 # stage1：训练最终模 全量数据运行config_bigdata.yaml型
+python trainer.py -m config.yaml -o stage=1 # stage1：训练最终模型 全量数据运行config_bigdata.yaml
 
 # 动态图预测
 python -u ../../../tools/infer.py -m config.yaml -o stage=1 # 全量数据运行config_bigdata.yaml
