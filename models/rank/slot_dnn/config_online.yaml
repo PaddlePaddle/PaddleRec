@@ -58,7 +58,7 @@ table_parameters:
     table_class: "MemorySparseTable"
     shard_num: 10
     accessor:
-      accessor_class: "CtrCommonAccessor"
+      accessor_class: "SparseAccessor"
       fea_dim: 11
       embedx_dim: 8
       embedx_threshold: 10
