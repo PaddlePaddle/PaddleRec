@@ -77,7 +77,7 @@ ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An E�
 <img align="center" src="../../../doc/imgs/esmm.png">
 <p>
 
-### 效果复现
+## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。 
 在全量数据下模型的训练指标如下：
 | 模型 | auc_ctr | batch_size | epoch_num | Time of each epoch |
