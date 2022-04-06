@@ -15,4 +15,5 @@
 
 
 wget https://paddlerec.bj.bcebos.com/datasets/ml-m1-tisasrec/ml-1m.txt
-mv ml-1m.txt data
+mkdir -p data/all_data
+mv ml-1m.txt data/all_data
