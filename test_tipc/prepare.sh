@@ -272,6 +272,7 @@ elif [ ${model_name} == "tisas" ]; then
         cp -r ./models/recall/tisas/data/sample_data/* ./test_tipc/data/train
         cp -r ./models/recall/tisas/data/sample_data/* ./test_tipc/data/infer
         echo "demo data ready"
+    fi
 
 elif [ ${model_name} == "dselect_k" ]; then
     mkdir -p ./test_tipc/data/train
@@ -300,5 +301,4 @@ elif [ ${model_name} == "dselect_k" ]; then
         cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/train
         cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
     fi
-
 fi
