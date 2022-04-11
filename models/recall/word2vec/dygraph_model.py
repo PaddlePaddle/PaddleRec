@@ -85,7 +85,6 @@ class DygraphModel():
     # construct train forward phase  
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         input_word, true_word, neg_word = self.create_feeds(batch_data, config)
-
         true_logits, neg_logits = dy_model.forward(
             [input_word, true_word, neg_word])
         loss = self.create_loss(true_logits, neg_logits, config)
