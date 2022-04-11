@@ -16,7 +16,7 @@ from __future__ import print_function
 import numpy as np
 import io
 import six
-
+import time
 from paddle.io import IterableDataset
 
 
@@ -35,7 +35,7 @@ class NumpyRandomInt(object):
             self.idx = 0
 
         result = self.buffer[self.idx]
-        self.idx += 1
+        self.idx = self.idx + 1
         return result
 
 
@@ -52,7 +52,9 @@ class RecDataset(IterableDataset):
         self.neg_num = self.config.get("hyper_parameters.neg_num")
         self.with_shuffle_batch = self.config.get(
             "hyper_parameters.with_shuffle_batch")
-        self.random_generator = NumpyRandomInt(1, self.window_size + 1)
+        #self.random_generator = NumpyRandomInt(1, self.window_size + 1)
+        np.random.seed(12345)
+        self.random_generator = np.random.randint(1, self.window_size + 1)
         self.batch_size = self.config.get("runner.batch_size")
 
         self.cs = None
@@ -78,7 +80,7 @@ class RecDataset(IterableDataset):
         idx: input word index
         window_size: window size
         """
-        target_window = self.random_generator()
+        target_window = self.random_generator
         # if (idx - target_window) > 0 else 0
         start_point = idx - target_window
         if start_point < 0:
@@ -103,8 +105,9 @@ class RecDataset(IterableDataset):
                             output.append(
                                 np.array([int(context_id)]).astype('int64'))
                             np.random.seed(12345)
-                            neg_array = self.cs.searchsorted(
-                                np.random.sample(self.neg_num))
+                            tmp = np.random.sample(self.neg_num)
+                            time.sleep(0.0001)
+                            neg_array = self.cs.searchsorted(tmp)
                             output.append(
                                 np.array([int(str(i))
                                           for i in neg_array]).astype('int64'))
