@@ -110,9 +110,8 @@ class RecDataset(IterableDataset):
                             random.seed(12345)
                             for i in range(self.neg_num):
                                 tmp.append(random.random())
-                            #tmp = np.array([0.92961609, 0.31637555, 0.18391881, 0.20456028, 0.56772503])
                             neg_array = self.cs.searchsorted(tmp)
-                            #tmp = []
+
                             output.append(
                                 np.array([int(i)
                                           for i in neg_array]).astype('int64'))
