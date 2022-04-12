@@ -61,6 +61,7 @@ class RecDataset(IterableDataset):
                 item_list = self.graph[user_id]
                 if len(item_list) <= 4:
                     continue
+                random.seed(12345)
                 k = random.choice(range(4, len(item_list)))
                 item_id = item_list[k]
 
