@@ -17,7 +17,7 @@ import numpy as np
 import io
 import six
 import time
-import paddle
+import random
 from paddle.io import IterableDataset
 
 
@@ -105,13 +105,16 @@ class RecDataset(IterableDataset):
                                 np.array([int(target_id)]).astype('int64'))
                             output.append(
                                 np.array([int(context_id)]).astype('int64'))
-                            np.random.seed(12345)
-                            tmp = np.random.sample(self.neg_num)
-                            np.random.seed(12345)
-                            neg_array = self.cs.searchsorted(tmp)
+
                             tmp = []
+                            random.seed(12345)
+                            for i in range(self.neg_num):
+                                tmp.append(random.random())
+                            #tmp = np.array([0.92961609, 0.31637555, 0.18391881, 0.20456028, 0.56772503])
+                            neg_array = self.cs.searchsorted(tmp)
+                            #tmp = []
                             output.append(
-                                np.array([int(str(i))
+                                np.array([int(i)
                                           for i in neg_array]).astype('int64'))
                             yield output
 
