@@ -69,6 +69,7 @@ python -u infer.py -m config.yaml
 | 模型 | click auc | purchase auc |batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------ | :------| :------ | 
 | aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
+详细日志见log文件夹
 
 1. 确认您当前所在目录为PaddleRec/models/rank/aitm
 2. 下载数据，解压到到data文件下
