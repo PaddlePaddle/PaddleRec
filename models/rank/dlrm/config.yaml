@@ -37,6 +37,10 @@ runner:
   split_file_list: False
   thread_num: 1
 
+   # use inference save model
+  inference: True  # 静态图训练时保存为inference model
+  save_inference_feed_varnames: ["C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","dense_input"] # inference model 的feed参数的名字
+  save_inference_fetch_varnames: ["sigmoid_0.tmp_0"] # inference model 的fetch参数的名字
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -51,5 +55,5 @@ hyper_parameters:
   bot_layer_sizes: [512, 256, 64, 16]
   sparse_feature_number: 1000001
   sparse_feature_dim: 16
-  top_layer_sizes: [512, 256, 2]
+  top_layer_sizes: [512, 256, 1]
   num_field: 26
