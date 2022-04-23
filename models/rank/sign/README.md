@@ -6,7 +6,7 @@
 
 ```shell
 ├── data    # sample数据
-    ├── ml-tag-128k.data
+    ├── ml-tag-sample.data
 ├── __init__.py 
 ├── README.md   # README
 ├── config.yaml   # sample数据配置
