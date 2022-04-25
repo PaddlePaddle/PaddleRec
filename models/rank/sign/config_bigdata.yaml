@@ -38,7 +38,7 @@ runner:
 hyper_parameters:
   pred_edges: 1 # !=0: use edges in dataset, 0: predict edges using L_0
   dim: 8 # dimension of entity and relation embeddings
-  hidden_layer: 32 # neural hidden layer 64
+  hidden_layer: 32 # neural hidden layer 32
   l0_para: [0.66, -0.1, 1.1] # l0 parameters, which are beta (temprature), zeta (interval_min) and gama (interval_max).
   l0_weight: 0.001 # weight of the l0 regularization term
   l2_weight: 0.001 # weight of the l2 regularization term
