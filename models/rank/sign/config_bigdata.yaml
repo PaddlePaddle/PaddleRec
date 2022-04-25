@@ -27,8 +27,8 @@ runner:
   infer_batch_size: 1024
   infer_reader_path: "sign_reader" # importlib format
   infer_load_path: "output_model_sign_all"
-  infer_start_epoch: 0
-  infer_end_epoch: 5
+  infer_start_epoch: 38
+  infer_end_epoch: 40
   #use inference save model
   use_inference: False
   save_inference_feed_varnames: ["input"]
