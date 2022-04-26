@@ -1,6 +1,6 @@
 ===========================train_params===========================
 model_name:tisas
-python:python3
+python:python3.7
 gpu_list:0|-1
 runner.use_gpu:True|False
 auto_cast:False
