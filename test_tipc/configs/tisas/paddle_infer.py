@@ -23,7 +23,7 @@ import re
 from importlib import import_module
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../tools')))
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
@@ -107,7 +107,7 @@ def create_data_loader(args):
     sys.path.append(reader_path)
     # sys.path.append(os.path.abspath("."))
     reader_class = import_module(reader_file)
-    config = load_yaml('./models/recall/tisas/config_test.yaml')
+    config = load_yaml('./models/recall/tisas/config.yaml')
     dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batchsize, places=place, drop_last=True)
