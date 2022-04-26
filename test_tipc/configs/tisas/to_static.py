@@ -22,7 +22,7 @@ import importlib
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 # sys.path.append(__dir__)
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../tools')))
 
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
 from utils.save_load import load_model, save_model, save_jit_model
