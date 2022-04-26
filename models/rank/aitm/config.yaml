@@ -19,16 +19,16 @@ runner:
   train_reader_path: "reader" # importlib format
   use_gpu: True
   train_batch_size: 10
-  epochs: 5
+  epochs: 2
   print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_aitm/test"
+  model_save_path: "output_model_aitm_test/"
   test_data_dir: "./data/sample_data/test"
   infer_reader_path: "reader" # importlib format
   infer_batch_size: 10
-  infer_load_path: "output_model_aitm"
+  infer_load_path: "output_model_aitm_test/"
   infer_start_epoch: 0
-  infer_end_epoch: 5
+  infer_end_epoch: 2
 
 # hyper parameters of user-defined network
 hyper_parameters:

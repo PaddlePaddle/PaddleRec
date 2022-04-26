@@ -65,7 +65,7 @@ class DygraphModel():
     # multi-task need to define multi metric
     def create_metrics(self):
         metrics_list_name = ["click_auc", "purchase_auc"]
-        metrics_list = [paddle.metric.Auc("ROC"), paddle.metric.Auc("ROC", num_thresholds=100000)]
+        metrics_list = [paddle.metric.Auc("ROC", num_thresholds=100000), paddle.metric.Auc("ROC", num_thresholds=100000)]
         return metrics_list, metrics_list_name
 
     # construct train forward phase  
