@@ -16,7 +16,7 @@ from __future__ import print_function
 import numpy as np
 import io
 import six
-
+import os
 from paddle.io import IterableDataset
 
 
@@ -29,6 +29,9 @@ class RecDataset(IterableDataset):
 
     def init(self):
         dict_path = self.config.get("runner.word_id_dict_path")
+        pwd = str(os.getcwd())
+        if pwd[-8:] != 'word2vec':
+            dict_path = os.path.join(pwd, 'models/recall/word2vec', dict_path)
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:
