@@ -21,9 +21,10 @@ import logging
 import sys
 import re
 from importlib import import_module
-
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../tools')))
+
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
@@ -48,7 +49,6 @@ def parse_args():
     parser.add_argument("--benchmark", type=str, default="True")
     parser.add_argument("--save_log_path", type=str, default="./output")
     parser.add_argument("--precision", type=str)
-
     args = parser.parse_args()
     args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
     args.enable_mkldnn = (True
@@ -105,13 +105,12 @@ def create_data_loader(args):
     place = args.place
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
     sys.path.append(reader_path)
-    # sys.path.append(os.path.abspath("."))
+    #sys.path.append(os.path.abspath("."))
     reader_class = import_module(reader_file)
-    config = load_yaml('./models/recall/tisas/config_test.yaml')
+    config = {"runner.inference": True}
     dataset = reader_class.RecDataset(file_list, config=config)
     loader = DataLoader(
         dataset, batch_size=batchsize, places=place, drop_last=True)
-
     return loader
 
 
@@ -121,6 +120,8 @@ def main(args):
     args.place = place
     input_names = predictor.get_input_names()
     output_names = predictor.get_output_names()
+    print(input_names)
+    print(output_names)
     test_dataloader = create_data_loader(args)
 
     if args.benchmark:
@@ -139,14 +140,13 @@ def main(args):
             time_keys=[
                 'preprocess_time', 'inference_time', 'postprocess_time'
             ])
+
     for batch_id, batch_data in enumerate(test_dataloader):
-        name_data_pair = dict(zip(input_names, batch_data))
+        click, purchase, inputs = batch_data
         if args.benchmark:
             autolog.times.start()
-        for name in input_names:
-            input_tensor = predictor.get_input_handle(name)
-            input_tensor.copy_from_cpu(name_data_pair[name].numpy())
-
+        input_tensor = predictor.get_input_handle(input_names[0])
+        input_tensor.copy_from_cpu(np.array([x.numpy() for x in inputs]))
         if args.benchmark:
             autolog.times.stamp()
         predictor.run()
