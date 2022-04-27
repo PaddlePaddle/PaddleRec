@@ -4,11 +4,11 @@ python:python3.7
 gpu_list:0|-1
 runner.use_gpu:True|False
 auto_cast:False
-runner.epochs:lite_train_lite_infer=4|whole_train_whole_infer=4|whole_infer=4|lite_train_whole_infer=4
+runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=4|whole_infer=4|lite_train_whole_infer=4
 runner.model_save_path
 runner.train_batch_size:lite_train_lite_infer=50|whole_train_whole_infer=512|whole_infer=50|lite_train_whole_infer=50
 runner.infer_load_path:null
-train_model_name:lite_train_lite_infer=3|whole_train_whole_infer=3|whole_infer=3|lite_train_whole_infer=3
+train_model_name:lite_train_lite_infer=0|whole_train_whole_infer=3|whole_infer=3|lite_train_whole_infer=3
 runner.test_data_dir:test_tipc/data/infer
 runner.train_data_dir:../../../test_tipc/data/train
 ##
@@ -27,7 +27,7 @@ null:null
 ===========================infer_params===========================
 runner.model_save_path:
 runner.model_init_path:
-norm_export:-u ./test_tipc/configs/dsin/to_static.py -m ./models/rank/dsin/config.yaml -o runner.CE=true
+norm_export:-u test_tipc/configs/dsin/to_static.py -m ./models/rank/dsin/config.yaml -o runner.CE=true
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -37,11 +37,11 @@ null:null
 infer_model:test_tipc/save_dsin_model
 infer_export:null
 infer_quant:False
-inference:-u tools/paddle_infer.py --model_name=dsin --reader_file=models/rank/dsin/dsin_reader.py
+inference:-u test_tipc/configs/dsin/paddle_infer.py --model_name=dsin --reader_file=models/rank/dsin/dsin_reader.py
 --use_gpu:True|False
 --enable_mkldnn:True|False
 --cpu_threads:1|6
---batchsize:10
+--batchsize:1
 --enable_tensorRT:True|False
 --precision:fp32
 --model_dir:
