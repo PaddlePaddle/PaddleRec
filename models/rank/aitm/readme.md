@@ -58,7 +58,7 @@ os : windows/linux/macos
 # 进入模型目录
 # cd models/rank/aitm # 在任意目录均可运行
 # 动态图训练
-python -u trainer.py -m config.yaml
+python -u ../../../trainer.py -m config.yaml
 
 # 动态图预测
 python -u ../../../tools/infer.py -m config.yaml
@@ -72,7 +72,7 @@ python -u ../../../tools/infer.py -m config.yaml
 详细日志见log文件夹
 
 1. 确认您当前所在目录为PaddleRec/models/rank/aitm
-2. 下载数据，解压到到data文件下
+2. 下载数据，放到data文件下
 3. 执行命令运行全量数据
 
 ``` bash
@@ -81,7 +81,7 @@ bash process_data.sh
 ```bash
 cd - # 切回模型目录
 # 动态图训练
-python -u trainer.py -m config_bigdata.yaml 
+python -u ../../../trainer.py -m config_bigdata.yaml 
 python -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 ## 进阶使用

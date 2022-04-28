@@ -26,12 +26,14 @@ class Tower(nn.Layer):
         super(Tower, self).__init__()
         self.dims = dims
         self.drop_prob = drop_prob
-        self.layer = nn.Sequential(nn.Linear(input_dim, dims[0]), nn.ReLU(),
-                                   nn.Dropout(drop_prob[0]),
-                                   nn.Linear(dims[0], dims[1]), nn.ReLU(),
-                                   nn.Dropout(drop_prob[1]),
-                                   nn.Linear(dims[1], dims[2]), nn.ReLU(),
-                                   nn.Dropout(drop_prob[2]))
+        self.layer = nn.Sequential(
+            nn.Linear(input_dim, dims[0]),
+            nn.ReLU(),
+            nn.Dropout(drop_prob[0]),
+            nn.Linear(dims[0], dims[1]),
+            nn.ReLU(),
+            nn.Dropout(drop_prob[1]),
+            nn.Linear(dims[1], dims[2]), nn.ReLU(), nn.Dropout(drop_prob[2]))
 
     def forward(self, x):
         x = paddle.flatten(x, 1)
@@ -40,6 +42,8 @@ class Tower(nn.Layer):
 
 
 class Attention(nn.Layer):
+    """Self-attention layer for click and purchase"""
+
     def __init__(self, dim=32):
         super(Attention, self).__init__()
         self.dim = dim
@@ -52,7 +56,7 @@ class Attention(nn.Layer):
         Q = self.q_layer(inputs)
         K = self.k_layer(inputs)
         V = self.v_layer(inputs)
-        a = (Q*K).sum(-1) / (self.dim **0.5)
+        a = (Q * K).sum(-1) / (self.dim**0.5)
         a = self.softmax(a)
         outputs = (a.unsqueeze(-1) * V).sum(1)
         return outputs
@@ -73,24 +77,22 @@ class AITM(nn.Layer):
 
         self.tower_input_size = len(feature_vocabulary) * embedding_size
         self.click_tower = Tower(self.tower_input_size, tower_dims, drop_prob)
-        self.conversion_tower = Tower(self.tower_input_size, tower_dims, drop_prob)
+        self.conversion_tower = Tower(self.tower_input_size, tower_dims,
+                                      drop_prob)
         self.attention_layer = Attention(tower_dims[-1])
 
-        self.info_layer = nn.Sequential(nn.Linear(tower_dims[-1], 32), nn.ReLU(),
-                                        nn.Dropout(drop_prob[-1]))
+        self.info_layer = nn.Sequential(
+            nn.Linear(tower_dims[-1], 32),
+            nn.ReLU(), nn.Dropout(drop_prob[-1]))
 
-        self.click_layer = nn.Sequential(nn.Linear(tower_dims[-1], 1),
-                                         nn.Sigmoid())
-        self.conversion_layer = nn.Sequential(nn.Linear(tower_dims[-1], 1),
-                                              nn.Sigmoid())
+        self.click_layer = nn.Sequential(
+            nn.Linear(tower_dims[-1], 1), nn.Sigmoid())
+        self.conversion_layer = nn.Sequential(
+            nn.Linear(tower_dims[-1], 1), nn.Sigmoid())
 
     def __init_weight(self, ):
         for name, size in self.feature_vocabulary.items():
             emb = nn.Embedding(size, self.embedding_size)
-            # emb.weight.set_value(
-            #     paddle.create_parameter(emb.weight.shape, 'float32',
-            #                             default_initializer=nn.initializer.Normal(std=0.01))
-            # )
             self.embedding_dict.append(emb)
 
     def forward(self, x):
@@ -98,9 +100,7 @@ class AITM(nn.Layer):
         for i in range(len(x)):
             embed = self.embedding_dict[i](x[i])
             feature_embedding.append(embed)
-        # for name in self.feature_names:
-        #     embed = self.embedding_dict[name](x[name])
-        #     feature_embedding.append(embed)
+
         feature_embedding = paddle.concat(feature_embedding, 1)
         tower_click = self.click_tower(feature_embedding)
 
@@ -115,4 +115,3 @@ class AITM(nn.Layer):
         conversion = paddle.squeeze(self.conversion_layer(ait), 1)
 
         return click, conversion
-

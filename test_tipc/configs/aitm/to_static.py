@@ -73,8 +73,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-            format(use_gpu, train_data_dir, epochs, print_interval,
-                   model_save_path))
+        format(use_gpu, train_data_dir, epochs, print_interval,
+               model_save_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -86,7 +86,8 @@ def main(args):
     # example dnn model forward
     dy_model = paddle.jit.to_static(
         dy_model,
-        input_spec=[paddle.static.InputSpec(shape=[None, 1], dtype='int64')] * 18)
+        input_spec=[paddle.static.InputSpec(
+            shape=[None, 1], dtype='int64')] * 18)
     save_jit_model(dy_model, model_save_path, prefix='tostatic')
 
 

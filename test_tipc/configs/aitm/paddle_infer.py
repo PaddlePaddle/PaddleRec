@@ -120,8 +120,6 @@ def main(args):
     args.place = place
     input_names = predictor.get_input_names()
     output_names = predictor.get_output_names()
-    print(input_names)
-    print(output_names)
     test_dataloader = create_data_loader(args)
 
     if args.benchmark:
@@ -142,11 +140,13 @@ def main(args):
             ])
 
     for batch_id, batch_data in enumerate(test_dataloader):
-        click, purchase, inputs = batch_data
+        _, _, batch_data = batch_data
+        name_data_pair = dict(zip(input_names, batch_data))
         if args.benchmark:
             autolog.times.start()
-        input_tensor = predictor.get_input_handle(input_names[0])
-        input_tensor.copy_from_cpu(np.array([x.numpy() for x in inputs]))
+        for name in input_names:
+            input_tensor = predictor.get_input_handle(name)
+            input_tensor.copy_from_cpu(name_data_pair[name].numpy())
         if args.benchmark:
             autolog.times.stamp()
         predictor.run()
