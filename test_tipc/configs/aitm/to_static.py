@@ -22,7 +22,7 @@ import importlib
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 # sys.path.append(__dir__)
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../tools')))
 
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
 from utils.save_load import load_model, save_model, save_jit_model
@@ -86,8 +86,10 @@ def main(args):
     # example dnn model forward
     dy_model = paddle.jit.to_static(
         dy_model,
-        input_spec=[paddle.static.InputSpec(
-            shape=[None, 1], dtype='int64')] * 18)
+        input_spec=[[
+            paddle.static.InputSpec(
+                shape=[None], dtype='int64') for i in range(18)
+        ]])
     save_jit_model(dy_model, model_save_path, prefix='tostatic')
 
 
