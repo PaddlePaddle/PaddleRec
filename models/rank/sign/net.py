@@ -17,6 +17,7 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 import pgl
 import numpy as np
+from graph import Graph
 
 
 class L0_SIGN(nn.Layer):
@@ -37,21 +38,29 @@ class L0_SIGN(nn.Layer):
         self.g = paddle.nn.Linear(self.dim, 2)
         self.feature_emb = nn.Embedding(self.n_feature, self.dim)
 
-    def forward(self, graph, is_training=True):
+    def forward(self,
+                edges,
+                node_feat,
+                edge_feat,
+                segment_ids,
+                is_training=True):
         # does not conduct link prediction, use all interactions
         # graph: pgl.Graph object
         # graph.node_feat['node_attr']: [bacth_size*3, 1]
         # graph.edge_feat['edge_attr']: [bact_size*6, 2]
         # graph.edges: [bact_size*6, 2]
 
+        graph = Graph(
+            edges=edges,
+            node_feat={"node_attr": node_feat},
+            edge_feat={"edge_attr": edge_feat}).tensor()
+
         x, edge_index, sr = graph.node_feat[
             'node_attr'], graph.edges, graph.edge_feat['edge_attr']
-        segment_ids = graph.graph_node_id
+        _x = self.feature_emb(paddle.cast(x, 'int32'))
+        _x = _x.squeeze(1)
 
-        x = self.feature_emb(x)
-        x = x.squeeze(1)
-
-        graph.node_feat['node_attr'] = x
+        graph.node_feat['node_attr'] = _x
 
         if self.pred_edges:
             sr = paddle.transpose(sr, perm=[1, 0])
@@ -59,8 +68,8 @@ class L0_SIGN(nn.Layer):
             pred_edge_index, pred_edge_weight = self.construct_pred_edge(
                 edge_index, s)
 
-            sub_graph = pgl.Graph(
-                edges=pred_edge_index, node_feat={'node_attr': x})
+            sub_graph = Graph(
+                edges=pred_edge_index, node_feat={'node_attr': _x})
             updated_nodes = self.sign(sub_graph, pred_edge_weight)
         else:
             updated_nodes = self.sign(graph, sr)
@@ -72,7 +81,7 @@ class L0_SIGN(nn.Layer):
             updated_nodes = paddle.concat(
                 [
                     updated_nodes, paddle.to_tensor(
-                        np.zeros((1, self.dim)), dtype='float32')
+                        paddle.zeros((1, self.dim)), dtype='float32')
                 ],
                 0)
 
@@ -90,7 +99,7 @@ class L0_SIGN(nn.Layer):
 
         construct the predicted edge set and corresponding edge weights
         """
-        s = paddle.squeeze(s)
+        s = s[:, 0]
 
         fe_index = paddle.transpose(fe_index, perm=[1, 0])
 
@@ -180,8 +189,10 @@ class LinkPred(nn.Layer):
 
     def forward(self, sender_receiver, is_training):
         # Construct permutation input
-        sender_emb = self.feature_emb_edge(sender_receiver[0, :])
-        receiver_emb = self.feature_emb_edge(sender_receiver[1, :])
+        sender_emb = self.feature_emb_edge(
+            paddle.cast(sender_receiver[0, :], 'int32'))
+        receiver_emb = self.feature_emb_edge(
+            paddle.cast(sender_receiver[1, :], 'int32'))
 
         _input = paddle.multiply(sender_emb, receiver_emb)
         h_relu = self.dropout(self.relu(self.linear1(_input)))
