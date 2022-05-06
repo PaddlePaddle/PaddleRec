@@ -1,3 +1,16 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 '''
 process the Ali-CCP (Alibaba Click and Conversion Prediction) dataset.
 https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408
@@ -16,24 +29,10 @@ common_feat_path = 'data/common_features_{}.csv'
 enum_path = 'data/ctrcvr_enum.pkl'
 write_path = 'data/ctr_cvr'
 use_columns = [
-    '101',
-    '121',
-    '122',
-    '124',
-    '125',
-    '126',
-    '127',
-    '128',
-    '129',
-    '205',
-    '206',
-    '207',
-    '216',
-    '508',
-    '509',
-    '702',
-    '853',
-    '301']
+    '101', '121', '122', '124', '125', '126', '127', '128', '129', '205',
+    '206', '207', '216', '508', '509', '702', '853', '301'
+]
+
 
 class process(object):
     def __init__(self):
@@ -55,7 +54,8 @@ class process(object):
                     print(c)
         print('join feats...')
         c = 0
-        vocabulary = dict(zip(use_columns, [{}  for _ in range(len(use_columns))]))
+        vocabulary = dict(
+            zip(use_columns, [{} for _ in range(len(use_columns))]))
         with open(data_path.format('train') + '.tmp', 'w') as fw:
             fw.write('click,purchase,' + ','.join(use_columns) + '\n')
             with open(data_path.format('train'), 'r') as fr:
