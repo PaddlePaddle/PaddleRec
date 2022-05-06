@@ -15,7 +15,6 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import math
 import net
 
 
@@ -26,12 +25,8 @@ class DygraphModel():
         tower_dims = config.get("hyper_parameters.dims")
         drop_prob = config.get('hyper_parameters.drop_prob')
         feature_vocabulary = dict(feature_vocabulary)
-        model = net.AITM(
-            feature_vocabulary,
-            embedding_size,
-            tower_dims,
-            drop_prob
-        )
+        model = net.AITM(feature_vocabulary, embedding_size, tower_dims,
+                         drop_prob)
         return model
 
     # define feeds which convert numpy of batch data to paddle.tensor 
@@ -40,9 +35,15 @@ class DygraphModel():
         return click.astype('float32'), conversion.astype('float32'), features
 
     # define loss function by predicts and label
-    def create_loss(self, click_pred, conversion_pred, click_label, conversion_label, constraint_weight=0.6):
+    def create_loss(self,
+                    click_pred,
+                    conversion_pred,
+                    click_label,
+                    conversion_label,
+                    constraint_weight=0.6):
         click_loss = F.binary_cross_entropy(click_pred, click_label)
-        conversion_loss = F.binary_cross_entropy(conversion_pred, conversion_label)
+        conversion_loss = F.binary_cross_entropy(conversion_pred,
+                                                 conversion_label)
 
         label_constraint = paddle.maximum(conversion_pred - click_pred,
                                           paddle.zeros_like(click_label))
@@ -57,15 +58,17 @@ class DygraphModel():
         optimizer = paddle.optimizer.Adam(
             learning_rate=lr,
             parameters=dy_model.parameters(),
-            weight_decay=1e-6
-        )
+            weight_decay=1e-6)
         return optimizer
 
     # define metrics such as auc/acc
     # multi-task need to define multi metric
     def create_metrics(self):
         metrics_list_name = ["click_auc", "purchase_auc"]
-        metrics_list = [paddle.metric.Auc("ROC", num_thresholds=100000), paddle.metric.Auc("ROC", num_thresholds=100000)]
+        metrics_list = [
+            paddle.metric.Auc("ROC", num_thresholds=100000),
+            paddle.metric.Auc("ROC", num_thresholds=100000)
+        ]
         return metrics_list, metrics_list_name
 
     # construct train forward phase  
