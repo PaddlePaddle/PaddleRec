@@ -301,7 +301,6 @@ elif [ ${model_name} == "dselect_k" ]; then
         cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/train
         cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
     fi
-
 elif [ ${model_name} == "aitm" ]; then
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
