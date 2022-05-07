@@ -25,13 +25,12 @@ class RecDataset(IterableDataset):
         super(RecDataset, self).__init__()
         self.file_list = file_list
         self.config = config
+        self.config_abs_dir = config.get("config_abs_dir", None)
         self.init()
 
     def init(self):
         dict_path = self.config.get("runner.word_id_dict_path")
-        pwd = str(os.getcwd())
-        if pwd[-8:] != 'word2vec':
-            dict_path = os.path.join(pwd, 'models/recall/word2vec', dict_path)
+        dict_path = os.path.join(self.config_abs_dir, dict_path)
         self.word_to_id = dict()
         self.id_to_word = dict()
         with io.open(dict_path, 'r', encoding='utf-8') as f:

@@ -46,13 +46,12 @@ class RecDataset(IterableDataset):
         super(RecDataset, self).__init__()
         self.file_list = file_list
         self.config = config
+        self.config_abs_dir = config.get("config_abs_dir", None)
         self.init()
 
     def init(self):
         dict_path = self.config.get("runner.word_count_dict_path")
-        pwd = str(os.getcwd())
-        if pwd[-8:] != 'word2vec':
-            dict_path = os.path.join(pwd, 'models/recall/word2vec', dict_path)
+        dict_path = os.path.join(self.config_abs_dir, dict_path)
         self.window_size = self.config.get("hyper_parameters.window_size")
         self.neg_num = self.config.get("hyper_parameters.neg_num")
         self.with_shuffle_batch = self.config.get(
