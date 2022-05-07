@@ -42,7 +42,7 @@ inference:-u test_tipc/configs/tisas/paddle_infer.py --model_name=tisas --reader
 --enable_mkldnn:True|False
 --cpu_threads:1|6
 --batchsize:1
---enable_tensorRT:False
+--enable_tensorRT:True|False
 --precision:fp32
 --model_dir:
 --data_dir:test_tipc/data/infer
