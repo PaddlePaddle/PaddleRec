@@ -51,3 +51,6 @@ hyper_parameters:
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
   distributed_embedding: 0
+
+loader:
+  num_workers: 0

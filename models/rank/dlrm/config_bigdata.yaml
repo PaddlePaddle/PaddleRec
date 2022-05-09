@@ -54,3 +54,6 @@ hyper_parameters:
   sparse_feature_dim: 16
   top_layer_sizes: [512, 256, 2]
   num_field: 26
+
+loader:
+  num_workers: 0
