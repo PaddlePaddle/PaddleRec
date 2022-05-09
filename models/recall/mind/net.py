@@ -196,7 +196,7 @@ class Mind_Capsual_Layer(nn.Layer):
         for i in range(self.iters - 1):
             B_mask = paddle.where(mask, B, pad)
             # print(B_mask)
-            W = F.softmax(B_mask, axis=-1)
+            W = F.softmax(B_mask, axis=1)
             high_capsule_tmp = paddle.matmul(W, low_capsule_new_nograd)
             high_capsule = self.squash(high_capsule_tmp)
             B_delta = paddle.matmul(
@@ -207,7 +207,7 @@ class Mind_Capsual_Layer(nn.Layer):
                 paddle.ones_like(B_delta))
 
         B_mask = paddle.where(mask, B, pad)
-        W = F.softmax(B_mask, axis=-1)
+        W = F.softmax(B_mask, axis=1)
         # paddle.static.Print(W)
         high_capsule_tmp = paddle.matmul(W, low_capsule_new)
         # high_capsule_tmp.stop_gradient = False
