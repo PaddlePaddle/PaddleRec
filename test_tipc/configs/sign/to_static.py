@@ -62,6 +62,7 @@ def main(args):
 
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
+    config["runner.train_data_dir"] = "../../../test_tipc/data/train"
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
     print_interval = config.get("runner.print_interval", None)
