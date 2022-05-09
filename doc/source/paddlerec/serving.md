@@ -1,6 +1,6 @@
 # 在线Serving部署
 PaddleRec训练出来的模型可以使用[Serving](https://github.com/PaddlePaddle/Serving)部署在服务端。  
-本教程以[wide_deep](../models/rank/wide_deep/README.md)模型使用demo数据为例进行部署  
+本教程以[wide_deep](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/wide_deep)模型使用demo数据为例进行部署  
 
 ## 首先使用save_inference_model接口保存模型
 1. 首先需要在模型的yaml配置中，加入use_inference参数，并把值设置成True。use_inference决定是否使用save_inference_model接口保存模型，默认为否。  
@@ -24,7 +24,7 @@ python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行co
 ```
 
 ## 安装 paddle serving
-强烈建议您在我们提供的Docker内构建Paddle Serving，请查看[如何在Docker中运行PaddleServing](https://github.com/PaddlePaddle/Serving/blob/develop/doc/RUN_IN_DOCKER_CN.md)
+强烈建议您在我们提供的Docker内构建Paddle Serving，请查看[如何在Docker中运行PaddleServing](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
 ```bash
 # 安装 paddle-serving-client
 pip install paddle-serving-client -i https://mirror.baidu.com/pypi/simple
