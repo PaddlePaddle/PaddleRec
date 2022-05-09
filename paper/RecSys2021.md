@@ -64,7 +64,7 @@ Author(Institute): Chia-Jung Lee(Amazon二作); Longqi Yang(Microsoft三作)
 KeyWords: User Behavior; User Goals; Web Browser Session Modeling; Goal Representation Learning  
 Dataset: GoWeB  
 
-14. [Accordion: A Trainable Simulator for Long-Term Interactive Systems](https://www.cs.columbia.edu/~jebara/papers/recsys2021.pdf)  
+14. [Accordion: A Trainable Simulator for Long-Term Interactive Systems](http://www.cs.columbia.edu/~jebara/papers/recsys2021.pdf)  
 Author(Institute): James McInerney(Netflix);  
 KeyWords: Poisson Process; Deep Learning; Simulation  
 Dataset: ContentWise impressions  
