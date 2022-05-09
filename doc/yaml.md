@@ -29,6 +29,7 @@
 |             reader_type         |    string    |                      QueueDataset/DataLoader/CustomizeDataLoader                    |    否    |                     指定使用的reader类型                     |
 |             model_init_path         |    string    |                      任意                      |    否    |                     指定是否使用热启动，在训练初期加载初始化模型                     |
 
+|             num_workers            |    int    |                           >= 0                           |    否    |                       用于加载数据的子进程个数                        |
 
 ## hyper_parameters变量
 |          名称           |  类型  |       取值       | 是否必须 |          作用描述           |

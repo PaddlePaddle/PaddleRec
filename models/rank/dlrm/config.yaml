@@ -37,6 +37,7 @@ runner:
   sync_mode: "async"
   split_file_list: False
   thread_num: 1
+  num_workers: 0
 
    # use inference save model
   inference: False  # 静态图训练时保存为inference model
@@ -58,6 +59,3 @@ hyper_parameters:
   sparse_feature_dim: 16
   top_layer_sizes: [512, 256, 2]
   num_field: 26
-
-loader:
-  num_workers: 0

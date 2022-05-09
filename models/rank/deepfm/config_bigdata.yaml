@@ -31,6 +31,7 @@ runner:
   infer_load_path: "output_model_all_deepfm"
   infer_start_epoch: 0
   infer_end_epoch: 1
+  num_workers: 0
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -46,6 +47,3 @@ hyper_parameters:
   dense_input_dim: 13
   fc_sizes: [400, 400, 400]
   distributed_embedding: 0
-
-loader:
-  num_workers: 0

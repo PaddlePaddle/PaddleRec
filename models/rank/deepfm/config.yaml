@@ -36,6 +36,7 @@ runner:
   save_inference_fetch_varnames: ["sigmoid_0.tmp_0"]
   # use fleet
   use_fleet: False
+  num_workers: 0
   
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -51,6 +52,3 @@ hyper_parameters:
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
   distributed_embedding: 0
-
-loader:
-  num_workers: 0
