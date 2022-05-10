@@ -24,7 +24,7 @@ python -u ../../../tools/static_trainer.py -m config.yaml # 全量数据运行co
 ```
 
 ## 安装 paddle serving
-强烈建议您在我们提供的Docker内构建Paddle Serving，请查看[如何在Docker中运行PaddleServing](https://github.com/PaddlePaddle/Serving/blob/develop/doc/RUN_IN_DOCKER_CN.md)
+强烈建议您在我们提供的Docker内构建Paddle Serving，请查看[如何在Docker中运行PaddleServing](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
 ```bash
 # 安装 paddle-serving-client
 pip install paddle-serving-client -i https://mirror.baidu.com/pypi/simple

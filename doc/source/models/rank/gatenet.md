@@ -1,6 +1,6 @@
 # gatenet (GateNet: Gating-Enhanced Deep Network for Click-Through Rate Prediction)
 
-代码请参考：[gatenet](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/gateDnn)  
+代码请参考：[gatenet](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/gatenet)  
 如果我们的代码对您有用，还请点个star啊~  
 
 ## 内容

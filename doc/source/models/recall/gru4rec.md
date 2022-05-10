@@ -27,9 +27,9 @@ session-based推荐应用场景非常广泛，比如用户的商品浏览、新�
 
 本项目支持功能
 
-训练：单机CPU、单机单卡GPU、本地模拟参数服务器训练、增量训练，配置请参考 [启动训练](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/train.md)   
+训练：单机CPU、单机单卡GPU、本地模拟参数服务器训练、增量训练，配置请参考 [启动训练](https://github.com/PaddlePaddle/PaddleRec/blob/release/1.8.5/doc/train.md)   
 
-预测：单机CPU、单机单卡GPU；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/master/doc/predict.md) 
+预测：单机CPU、单机单卡GPU；配置请参考[PaddleRec 离线预测](https://github.com/PaddlePaddle/PaddleRec/blob/release/1.8.5/doc/predict.md) 
 
 ## 数据处理
 本示例中数据处理共包含三步：

@@ -1,7 +1,7 @@
 # 排序模型库
 
 ## 简介
-我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 包括动态图和静态图的单机训练&预测效果指标。实现的排序模型包括 [logistic regression](logistic_regression)、[多层神经网络](dnn)、[FM](fm)、[gateDnn](gateDnn)、[DeepFM](deepfm)、[Wide&Deep](wide_deep)、[naml](naml)。
+我们提供了常见的排序任务中使用的模型算法的PaddleRec实现, 包括动态图和静态图的单机训练&预测效果指标。实现的排序模型包括 [logistic regression](logistic_regression)、[多层神经网络](dnn)、[FM](fm)、[gatenet](gatenet)、[DeepFM](deepfm)、[Wide&Deep](wide_deep)、[naml](naml)。
 
 模型算法库在持续添加中，欢迎关注。
 
