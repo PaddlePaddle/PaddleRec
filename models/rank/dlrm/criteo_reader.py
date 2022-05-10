@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 import numpy as np
-
+import paddle
 from paddle.io import IterableDataset
 
 
