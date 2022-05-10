@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 import numpy as np
-
+import paddle
 from paddle.io import IterableDataset
 
 
@@ -22,6 +22,25 @@ class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
         self.file_list = file_list
+        if config:
+            use_fleet = config.get("runner.use_fleet", False)
+            self.inference = config.get("runner.inference", False)
+        else:
+            use_fleet = False
+        if use_fleet:
+            worker_id = paddle.distributed.get_rank()
+            worker_num = paddle.distributed.get_world_size()
+            file_num = len(file_list)
+            if file_num < worker_num:
+                raise ValueError(
+                    "The number of data files is less than the number of workers"
+                )
+            blocksize = int(file_num / worker_num)
+            self.file_list = file_list[worker_id * blocksize:(worker_id + 1) *
+                                       blocksize]
+            remainder = file_num - (blocksize * worker_num)
+            if worker_id < remainder:
+                self.file_list.append(file_list[-(worker_id + 1)])
         self.init()
 
     def init(self):
@@ -78,4 +97,8 @@ class RecDataset(IterableDataset):
                     output_list.append(
                         np.array(output[-1][1]).astype("float32"))
                     # list
-                    yield output_list
+                    #yield output_list
+                    if self.inference:
+                        yield output_list[1:]
+                    else:
+                        yield output_list

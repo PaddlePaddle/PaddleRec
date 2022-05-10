@@ -359,7 +359,7 @@ else
                     #run inference
                     eval $env
                     save_infer_path="${save_log}"
-                    if [ ${inference_dir} != "null" ] && [ ${inference_dir} != '##' ]; then
+                    if [ "${inference_dir}" != "null" ] && [ "${inference_dir}" != '##' ]; then
                         infer_model_dir="${save_infer_path}/${inference_dir}"
                     else
                         infer_model_dir=${save_infer_path}
