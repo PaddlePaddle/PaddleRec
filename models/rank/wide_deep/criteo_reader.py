@@ -82,7 +82,7 @@ class RecDataset(IterableDataset):
                             if i in self.dense_slots:
                                 output[self.slot2index[i]][1].extend(
                                     [self.padding] *
-                                    self.dense_slots_shape[self.slot2index[i]])
+                                    self.dense_slots_shape[0])
                             else:
                                 output[self.slot2index[i]][1].extend(
                                     [self.padding])
