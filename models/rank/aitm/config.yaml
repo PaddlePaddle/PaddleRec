@@ -16,8 +16,8 @@
 
 runner:
   train_data_dir: "./data/sample_data/train"
-  train_reader_path: "reader" # importlib format
-  use_gpu: True
+  train_reader_path: "aitm_reader" # importlib format
+  use_gpu: False
   train_batch_size: 10
   epochs: 2
   print_interval: 10
