@@ -15,8 +15,6 @@
 ├── reader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
 ├── net.py # 模型核心组网
-├── process_data.sh # 数据预处理脚本
-├── process_public_data.py # 数据预处理程序
 ├── trainer.py # 训练脚本
 ├── infer.py # 训练脚本
 ├── readme.md #文档
@@ -71,13 +69,12 @@ python -u ../../../tools/infer.py -m config.yaml
 | aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/aitm
-2. 下载数据:[地址](https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408) ，放到data文件下
+2. 进入Paddlerec/datasets/ali-cpp/aitm
 3. 执行命令运行全量数据
 
 ``` bash
-cd data # 进入数据目录
-bash process_data.sh # 数据处理
-cd ..
+cd ../../../datasets/ali-cpp/aitm
+sh run.sh
 ```
 ```bash
 cd - # 切回模型目录
