@@ -69,8 +69,10 @@ python -u infer.py -m config.yaml
 
 ## 模型组网
 DeepRec是一个自编码器, 由encoder和decoder组成, 在encoder和decoder之间加入了一个drop概率很大的dropout层, 使用selu作为激活函数。模型的主要组网结构如下：
-[DeepRec](../../../doc/imgs/AutoEncoder.png)
 
+<p align="center">
+<img align="center" src="../../../doc/imgs/AutoEncoder.png">
+<p>
 
 ## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。 
