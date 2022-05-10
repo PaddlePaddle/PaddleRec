@@ -69,11 +69,11 @@ python -u ../../../tools/infer.py -m config.yaml
 | aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/aitm
-2. 进入Paddlerec/datasets/ali-cpp/aitm
+2. 进入Paddlerec/datasets/ali-cpp_aitm
 3. 执行命令运行全量数据
 
 ``` bash
-cd ../../../datasets/ali-cpp/aitm
+cd ../../../datasets/ali-cpp_aitm
 sh run.sh
 ```
 ```bash
