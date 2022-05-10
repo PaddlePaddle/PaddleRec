@@ -20,4 +20,3 @@ echo "preprocessing data......"
 python process_public_data.py
 mv data/ctr_cvr.train data/whole_data/train
 mv data/ctr_cvr.test data/whole_data/test
-
