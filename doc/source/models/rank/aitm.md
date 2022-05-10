@@ -48,13 +48,12 @@ python -u ../../../tools/infer.py -m config.yaml
 | aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/aitm
-2. 下载数据:[地址](https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408) ，放到data文件下
+2. 进入Paddlerec/datasets/ali-cpp_aitm
 3. 执行命令运行全量数据
 
 ``` bash
-cd data # 进入数据目录
-bash process_data.sh # 数据处理
-cd ..
+cd ../../../datasets/ali-cpp_aitm
+sh run.sh
 ```
 ```bash
 cd - # 切回模型目录
