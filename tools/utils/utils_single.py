@@ -91,12 +91,11 @@ def create_data_loader(config, place, mode="train"):
         data_dir = config.get("runner.train_data_dir", None)
         batch_size = config.get('runner.train_batch_size', None)
         reader_path = config.get('runner.train_reader_path', 'reader')
-        num_workers = config.get('runner.num_workers', 0)
     else:
         data_dir = config.get("runner.test_data_dir", None)
         batch_size = config.get('runner.infer_batch_size', None)
         reader_path = config.get('runner.infer_reader_path', 'reader')
-        num_workers = config.get('runner.num_workers', 0)
+    num_workers = config.get('runner.num_workers', 0)
     config_abs_dir = config.get("config_abs_dir", None)
     data_dir = os.path.join(config_abs_dir, data_dir)
     file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
