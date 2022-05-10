@@ -24,10 +24,10 @@ import re
 import random
 random.seed(2020)
 np.random.seed(2020)
-data_path = 'sample_skeleton_{}.csv'
-common_feat_path = 'common_features_{}.csv'
-enum_path = 'ctrcvr_enum.pkl'
-write_path = 'ctr_cvr'
+data_path = 'data/sample_skeleton_{}.csv'
+common_feat_path = 'data/common_features_{}.csv'
+enum_path = 'data/ctrcvr_enum.pkl'
+write_path = 'data/ctr_cvr'
 use_columns = [
     '101', '121', '122', '124', '125', '126', '127', '128', '129', '205',
     '206', '207', '216', '508', '509', '702', '853', '301'
