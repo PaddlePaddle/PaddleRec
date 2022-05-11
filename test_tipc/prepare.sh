@@ -301,4 +301,33 @@ elif [ ${model_name} == "dselect_k" ]; then
         cp -r ./models/multitask/dselect_k/data/* ./test_tipc/data/train
         cp -r ./datasets/Multi_MNIST_DselectK/test/* ./test_tipc/data/infer
     fi
+
+elif [ ${model_name} == "aitm" ]; then
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/rank/aitm/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./models/rank/aitm/data/sample_data/test/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/ali-cpp_aitm
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/ali-cpp_aitm/whole_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/ali-cpp_aitm/whole_data/test/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/ali-cpp_aitm
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/ali-cpp_aitm/whole_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/ali-cpp_aitm/whole_data/test/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/ali-cpp_aitm
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/ali-cpp_aitm/whole_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/ali-cpp_aitm/whole_data/test/* ./test_tipc/data/infer
+    fi
+
 fi
