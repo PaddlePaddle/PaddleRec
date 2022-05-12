@@ -31,6 +31,7 @@ runner:
   infer_load_path: "output_model_dnn_all"
   infer_start_epoch: 0
   infer_end_epoch: 4
+  num_workers: 0
 
   #thread_num: 5
   #reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
