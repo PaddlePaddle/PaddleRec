@@ -24,7 +24,7 @@ runner:
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_aitm_test/"
   test_data_dir: "./data/sample_data/test"
-  infer_reader_path: "reader" # importlib format
+  infer_reader_path: "aitm_reader" # importlib format
   infer_batch_size: 10
   infer_load_path: "output_model_aitm_test/"
   infer_start_epoch: 0
