@@ -54,7 +54,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在aitm模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/rank/aitm # 在任意目录均可运行
+# cd models/multitask/aitm # 在任意目录均可运行
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml
 
@@ -68,7 +68,7 @@ python -u ../../../tools/infer.py -m config.yaml
 | :------| :------ | :------ | :------ | :------| :------ | 
 | aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
 
-1. 确认您当前所在目录为PaddleRec/models/rank/aitm
+1. 确认您当前所在目录为PaddleRec/models/multitask/aitm
 2. 进入Paddlerec/datasets/ali-cpp_aitm
 3. 执行命令运行全量数据
 
