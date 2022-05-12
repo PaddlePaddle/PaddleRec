@@ -23,6 +23,7 @@
 | share_bottom | A Knowledge-Based Source of Inductive Bias | [ICML 1993][Multitask Learning: A Knowledge-Based Source of Inductive Bias](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=F45CA386897E5A6EBCF74D5DBAC85A13?doi=10.1.1.57.3196&rep=rep1&type=pdf) |
 | ple | Progressive Layered Extraction | [ACM 2020][Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations](https://dl.acm.org/doi/abs/10.1145/3383313.3412236) |
 | maml | Model-Agnostic Meta-Learning | [LCML 2017][Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/pdf/1703.03400.pdf) |
+|        aitm         |      aitm       |                             [KDD][Modeling the Sequential Dependence among Audience Multi-step Conversions withMulti-task Learning in Targeted Display Advertising](https://arxiv.org/pdf/2105.08489v2.pdf)                              |
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
 
@@ -68,7 +69,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 |          census     |    share_bottom       |       --        |      0.99          |
 |          census     |    ple       |       --        |      0.99          |
 |          omniglot     |    maml       |       --        |      0.98          |
-
+|        Ali-CCP       |        aitm         |   --    | 0.6186 / 0.6525 |  
 ### 效果复现
 您需要进入PaddleRec/datasets目录下的对应数据集中运行脚本获取全量数据集，然后在模型目录下使用全量数据的参数运行。  
 每个模型下的readme中都有详细的效果复现的教程，您可以进入模型的目录中详细查看。  

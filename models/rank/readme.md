@@ -35,7 +35,7 @@
 |         dmr         |       dmr       |[Deep Match to Rank Model for Personalized Click-Through Rate Prediction](https://github.com/lvze92/DMR/blob/master/%5BDMR%5D%20Deep%20Match%20to%20Rank%20Model%20for%20Personalized%20Click-Through%20Rate%20Prediction-AAAI20.pdf)|
 |         ffm         |       ffm       |                                                             [Field-aware factorization machines for CTR prediction](https://www.csie.ntu.edu.tw/~cjlin/papers/ffm.pdf)                                                              |
 |       xdeepfm       |     xdeepfm     |                                                   [xdeepfm: Combining explicit and implicit feature interactions for recommender systems](https://arxiv.org/pdf/1803.05170v3.pdf)                                                   |
-|        aitm         |      aitm       |                             [Modeling the Sequential Dependence among Audience Multi-step Conversions withMulti-task Learning in Targeted Display Advertising](https://arxiv.org/pdf/2105.08489v2.pdf)                              |
+
 
 
 下面是每个模型的简介（注：图片引用自链接中的论文）
@@ -90,7 +90,7 @@ python -u ../../../tools/static_infer.py -m config.yaml
 | Ali_Display_Ad_Click |         dmr         |   --    |     0.6434      |    --     |
 |        criteo        |         ffm         |   --    |      0.79       |    --     |
 |        criteo        |       xDeepFM       |   --    |      0.79       |    --     |
-|        Ali-CCP       |        aitm         |   --    | 0.6186 / 0.6525 |    --     |
+
 
 ### 效果复现
 您需要进入PaddleRec/datasets目录下的对应数据集中运行脚本获取全量数据集，然后在模型目录下使用全量数据的参数运行。  
