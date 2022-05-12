@@ -31,6 +31,7 @@ runner:
   infer_load_path: "output_model_dnn"
   infer_start_epoch: 0
   infer_end_epoch: 3
+  num_workers: 0
 
   # distribute_config
   sync_mode: "async"
