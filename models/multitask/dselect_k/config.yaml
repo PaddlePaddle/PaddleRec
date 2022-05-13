@@ -13,7 +13,7 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "data/sample_data.pickle"
+  train_data_dir: "data"
   train_reader_path: "multiMNIST_reader" # importlib format
   use_gpu: False
   use_auc: True
@@ -22,7 +22,7 @@ runner:
   print_interval: 2
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_dselect_k"
-  test_data_dir: "data/sample_data.pickle"
+  test_data_dir: "data"
   infer_batch_size: 8
   infer_reader_path: "multiMNIST_reader" # importlib format
   infer_load_path: "output_model_dselect_k"
