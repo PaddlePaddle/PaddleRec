@@ -26,8 +26,8 @@ runner:
   infer_reader_path: "reader"  # importlib format
   infer_batch_size: 256
   infer_load_path: "output_model_iprec_all"
-  infer_start_epoch: 0
-  infer_end_epoch: 1
+  infer_start_epoch: 1
+  infer_end_epoch: 5
 
 hyper_parameters:
   optimizer:
