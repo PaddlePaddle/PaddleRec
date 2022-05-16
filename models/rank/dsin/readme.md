@@ -36,7 +36,7 @@
 - [FAQ](#FAQ)
 
 ## 模型简介
-模型主要聚焦于用户的历史会话行为，通过Self-Attention和BiLSTM对历史会话行为进行学习，最后通过Activation Unit得到最终的session表征向量，再结合其他特征送入MLP计算最后的ctr score。[Deep Session Interest Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1905.06482v1.pdf)文章通过 Transformer 和 BiLSTM 来学习用户的 Session Interest Interacting，提升模型的表达能力。
+模型主要聚焦于用户的历史会话行为，通过Self-Attention和BiLSTM对历史会话行为进行学习，最后通过Activation Unit得到最终的session表征向量，再结合其他特征送入MLP计算最后的ctr score。[Deep Session Interest Network for Click-Through Rate Prediction](https://arxiv.org/pdf/1905.06482v1.pdf)文章通过 Transformer 和 BiLSTM 来学习用户的 Session Interest Interacting，提升模型的表达能力。[知乎解析看这里](https://zhuanlan.zhihu.com/p/514780690)
 
 ## 数据准备
 本模型使用论文中的数据集Alimama Dataset，参考[原文作者的数据预处理过程](https://github.com/shenweichen/DSIN/tree/master/code)对数据进行处理。
