@@ -66,7 +66,7 @@ python -u ../../../tools/infer.py -m config.yaml
 在全量数据下模型的指标如下：  
 | 模型 | click auc | purchase auc |batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------ | :------| :------ | 
-| aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
+| aitm | 0.6130 |0.6166 | 2000 | 6| 约3小时 |
 
 1. 确认您当前所在目录为PaddleRec/models/multitask/aitm
 2. 进入Paddlerec/datasets/ali-cpp_aitm
