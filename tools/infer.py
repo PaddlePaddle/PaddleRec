@@ -158,6 +158,7 @@ def main(args):
                             tag="infer/" + metric_list_name[metric_id],
                             step=step_num,
                             value=metric_list[metric_id].accumulate())
+                    metric_list[metric_id].reset()
                 logger.info(
                     "epoch: {}, batch_id: {}, ".format(
                         epoch_id, batch_id) + metric_str + tensor_print_str +
