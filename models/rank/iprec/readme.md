@@ -1,4 +1,4 @@
-# TiSASRec-paddle召回模型
+# iprec排序模型
 
 以下是本例的简要目录结构及说明： 
 
@@ -52,7 +52,7 @@ os : windows/linux/macos
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
-python -u infer.py -m config.yaml 
+python -u ../../../tools/infer.py -m config.yaml 
 ```
 ## 模型组网
 模型整体结构如下：
@@ -63,7 +63,7 @@ python -u infer.py -m config.yaml
 
 | 模型    | auc    | batch_size | epoch_num| Time of each epoch |
 |:------|:-------| :------ | :------| :------ | |
-| iprec | 0.7116 | 256 | 5 | 100s |
+| iprec | 0.6934 | 256 | 1 | 100s |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/iprec
 2. 进入Paddlerec/datasets/iprec
@@ -83,7 +83,7 @@ python -u infer.py -m config.yaml
 
 ```bash
 cd - # 切回模型目录
-python -u trainer.py -m config_bigdata.yaml
+python -u ../../tools/trainer.py -m config_bigdata.yaml
 python -u ../../tools/infer.py -m config_bigdata.yaml
 ```
 
