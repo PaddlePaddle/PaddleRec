@@ -1,9 +1,17 @@
-from hypers import *
-
 import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+
+MAX_SENTENCE = 30
+MAX_ALL = 50
+MAX_SENT_LENGTH = MAX_SENTENCE
+MAX_SENTS = MAX_ALL
+max_entity_num = 10
+num = 100
+num1 = 200
+num2 = 100
+npratio = 4
 
 
 def time_distributed(x, layer):
@@ -87,7 +95,7 @@ class GraphCoAttNet(nn.Layer):
         self.dense1 = nn.Linear(input_dim, 100)
         self.dense2 = nn.Linear(input_dim, 100)
         self.dense3 = nn.Linear(input_dim, 100)
-        self.dense4 = nn.Linear(input_dim, 100)
+        # self.dense4 = nn.Linear(input_dim, 100)
         self.dense5 = nn.Linear(input_dim, 1)
 
     def forward(self, entity_input):
@@ -99,11 +107,10 @@ class GraphCoAttNet(nn.Layer):
 
         entity_self_att = self.dense3(entity_vecs)
 
-        candidate_co_att = self.dense4(candidate_emb)
+        # candidate_co_att = self.dense4(candidate_emb)
         entity_co_att = paddle.matmul(S, candidate_emb)
         entity_att = entity_self_att + entity_co_att
         entity_att = F.tanh(entity_att)  # bz,num,100
-        # entity_att = keras.layers.Reshape((num,))(Dense(1)(entity_att))
         entity_att = self.dense5(entity_att)
         entity_vec = paddle.sum(entity_vecs * entity_att, axis=-2)  # bz,100
         return entity_vec
@@ -134,12 +141,6 @@ class ContextEncoder(nn.Layer):
         return self.dropout(word_rep1 + word_rep2)
 
 
-def agg(vec_input):
-    vecs1 = vec_input[...:, :MAX_SENT_LENGTH, :]
-    vec2 = vec_input[..., MAX_SENT_LENGTH:, :]
-    return (vecs1 * vec2).sum(-2)
-
-
 class EntityEncoder(nn.Layer):
     def __init__(self, dropout=0.2):
         super().__init__()
@@ -156,7 +157,6 @@ class PairPair(nn.Layer):
     def __init__(self, max_entity_num):
         super().__init__()
         self.max_entity_num = max_entity_num
-        num = max_entity_num * (max_entity_num + 1)
         self.entity_encoder = EntityEncoder()
         self.gat_fuse = nn.Linear(200, 100)
         self.gcat = GraphCoAttNet(max_entity_num)
@@ -194,10 +194,7 @@ class PairPair(nn.Layer):
         user_entity_onehop = paddle.concat([user_entity_onehop, news_can], -2)  # bz,max_entity_num,max_entity_num*2,100
         news_entity_onehop = paddle.concat([news_entity_onehop, user_can], -2)  # bz,max_entity_num,max_entity_num*2,100
 
-        # user_entity_onehop = self.gcat(user_entity_onehop)  # b
-        # news_entity_onehop = self.gcat(news_entity_onehop)
-
-        user_entity_onehop = time_distributed(user_entity_onehop, self.gcat)  # b
+        user_entity_onehop = time_distributed(user_entity_onehop, self.gcat)
         news_entity_onehop = time_distributed(news_entity_onehop, self.gcat)
 
         user_entity_vecs = paddle.concat([user_entity_zerohop, user_entity_onehop], -1)
@@ -264,8 +261,6 @@ class PairModel(nn.Layer):
         cross_att_click = cross_att_click.transpose((0, 1, 3, 2))  # (bz,50,30,30)
         clicked_title_att_re = clicked_title_att.reshape((-1, MAX_SENTS, 1, MAX_SENTENCE))  # (bz,50,1,30,)
 
-        # cross_att_click_vecs = paddle.concat([cross_att_click, clicked_title_att_re], -2)  # (bz,50,31,30)
-        # cross_att_click = agg(cross_att_click_vecs) * 0.001  # (bz,50, 30)
         cross_att_click = (cross_att_click * clicked_title_att_re).sum(-2) * 0.001
 
         candi_title_att = candi_title_att + cross_att_click
@@ -274,8 +269,7 @@ class PairModel(nn.Layer):
         candi_title_vecs = paddle.matmul(candi_title_att, candi_title_word_vecs)  # (bz,50,400)
 
         clicked_title_att = (clicked_title_att).reshape((-1, MAX_SENTS, MAX_SENTENCE, 1))  # (bz, 50, 30, 1)
-        # clicked_title_word_vecs_att = paddle.concat([clicked_title_word_vecs, clicked_title_att], -1)  # (bz,50,30,401)
-        # clicked_title_vecs = TimeDistributed(get_context_aggergator())(clicked_title_word_vecs_att)
+
         clicked_title_vecs = (clicked_title_word_vecs * clicked_title_att).sum(-2)  # (bz, 50, 30)
 
         clicked_onehop = clicked_one_hop_input.reshape([-1, MAX_SENTS, max_entity_num * max_entity_num, 100])
@@ -291,8 +285,6 @@ class PairModel(nn.Layer):
         entity_emb = paddle.concat([clicked_entity, news_entity], -2)  # [16, 50, 220, 100]
         entity_vecs = time_distributed(entity_emb, self.pair_graph)
 
-        # user_entity_vecs = keras.layers.Lambda(lambda x: x[:, :, :100])(entity_vecs)
-        # news_entity_vecs = keras.layers.Lambda(lambda x: x[:, :, 100:])(entity_vecs)
         user_entity_vecs, news_entity_vecs = entity_vecs.split(2, -1)
 
         user_vecs = paddle.concat([clicked_title_vecs, user_entity_vecs], -1)
@@ -367,15 +359,3 @@ class KIMLayer(nn.Layer):
             doc_score.append(score)
         doc_score = paddle.concat(doc_score, -1)
         return doc_score
-
-
-if __name__ == '__main__':
-    import pandas as pd
-
-    x = pd.read_pickle('x.pkl')
-
-    model = KIMLayer(42055, 300)
-    x = [paddle.to_tensor(y) for y in x]
-
-    score = model(*x)
-    print(score[0])

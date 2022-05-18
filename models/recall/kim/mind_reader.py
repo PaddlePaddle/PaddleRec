@@ -1,4 +1,3 @@
-from hypers import *
 from datetime import datetime
 import time
 from nltk.tokenize import word_tokenize
@@ -13,7 +12,7 @@ class RecDataset(Dataset):
     def __init__(self, file_list, config):
         KG_root_path = embedding_path = data_root_path = config['runner.train_data_dir']
         news, news_index, category_dict, subcategory_dict, word_dict = read_news(data_root_path, 'docs.tsv')
-        print(len(word_dict))
+        max_entity_num = config
         news_title, news_vert, news_subvert = get_doc_input(news, news_index, category_dict, subcategory_dict,
                                                             word_dict)
         graph, EntityId2Index, EntityIndex2Id, entity_embedding = load_entity_metadata(KG_root_path)
@@ -37,6 +36,7 @@ class RecDataset(Dataset):
             test_docids, test_userids, test_labels, test_bound = get_test_input(news_index, test_session)
             self.dataset = TestDataset(test_docids, test_userids, news_title, news_entity_index, one_hop_entity,
                                        entity_embedding, test_user['click'], 64)
+            self.test_bound = test_bound
 
     def __len__(self):
         return len(self.dataset)
