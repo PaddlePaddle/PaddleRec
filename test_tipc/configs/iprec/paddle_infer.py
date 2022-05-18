@@ -140,7 +140,7 @@ def main(args):
             ])
 
     for batch_id, batch_data in enumerate(test_dataloader):
-        _, _, batch_data = batch_data
+        *batch_data, label = batch_data
         name_data_pair = dict(zip(input_names, batch_data))
         if args.benchmark:
             autolog.times.start()
