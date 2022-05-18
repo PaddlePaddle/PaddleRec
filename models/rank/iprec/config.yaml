@@ -13,19 +13,19 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "./data/sample/train"
+  train_data_dir: "./data/sample_data/train"
   train_reader_path: "reader"  # importlib format
-  train_batch_size: 10
-  model_save_path: "output_model_iprec_all"
+  train_batch_size: 5
+  model_save_path: "output_model_iprec"
   mode: "train"
-  use_gpu: True
+  use_gpu: False
   epochs: 1
-  print_interval: 10
+  print_interval: 1
 
-  test_data_dir: "./data/whole_data/test"
+  test_data_dir: "./data/sample_data/test"
   infer_reader_path: "reader"  # importlib format
-  infer_batch_size: 10
-  infer_load_path: "output_model_iprec_all"
+  infer_batch_size: 5
+  infer_load_path: "output_model_iprec"
   infer_start_epoch: 0
   infer_end_epoch: 1
 
