@@ -26,12 +26,12 @@ class RecDataset(Dataset):
         self.data = [json.loads(x) for x in open(file_list[0])]
         seed = config.get("hyper_parameters.seed")
         np.random.seed(2021)
-        self.f_max_len = config.get("hyper_parameters.f_max_len")
-        self.u_max_i = config.get("hyper_parameters.u_max_i")
-        self.u_max_f = config.get("hyper_parameters.u_max_f")
-        self.u_max_pack = config.get("hyper_parameters.u_max_pack")
-        self.pack_max_nei_b = config.get("hyper_parameters.pack_max_nei_b")
-        self.pack_max_nei_f = config.get("hyper_parameters.pack_max_nei_f")
+        self.f_max_len = config.get("hyper_parameters.f_max_len", 20)
+        self.u_max_i = config.get("hyper_parameters.u_max_i", 99)
+        self.u_max_f = config.get("hyper_parameters.u_max_f", 220)
+        self.u_max_pack = config.get("hyper_parameters.u_max_pack", 50)
+        self.pack_max_nei_b = config.get("hyper_parameters.pack_max_nei_b", 20)
+        self.pack_max_nei_f = config.get("hyper_parameters.pack_max_nei_f", 20)
 
     def __getitem__(self, idx):
         data = self.data[idx]
@@ -40,28 +40,35 @@ class RecDataset(Dataset):
         user = paddle.to_tensor(user)
         item = paddle.to_tensor(item)
         biz = paddle.to_tensor(biz)
-        friends = paddle.to_tensor(sequence_padding_1d_list(friends, self.f_max_len))
-        user_items = paddle.to_tensor(sequence_padding_1d_list(user_items[:273], self.u_max_i))
-        user_bizs = paddle.to_tensor(sequence_padding_1d_list(user_bizs[:273], self.u_max_i))
-        user_friends = paddle.to_tensor(sequence_padding_1d_list(user_friends[:289], self.u_max_f))
+        friends = paddle.to_tensor(
+            sequence_padding_1d_list(friends, self.f_max_len))
+        user_items = paddle.to_tensor(
+            sequence_padding_1d_list(user_items[:273], self.u_max_i))
+        user_bizs = paddle.to_tensor(
+            sequence_padding_1d_list(user_bizs[:273], self.u_max_i))
+        user_friends = paddle.to_tensor(
+            sequence_padding_1d_list(user_friends[:289], self.u_max_f))
         user_packages = sequence_padding_2d(
-            np.array(user_packages, dtype=np.int64).reshape([-1, self.f_max_len + 2])[:50],
-            length=self.u_max_pack
-        )
+            np.array(
+                user_packages,
+                dtype=np.int64).reshape([-1, self.f_max_len + 2])[:50],
+            length=self.u_max_pack)
         user_packages = paddle.to_tensor(user_packages)
         pack_neighbors_b = sequence_padding_2d(
-            np.array(pack_neighbors_b, dtype=np.int64).reshape([-1, self.f_max_len + 2]),
-            length=self.pack_max_nei_b
-        )
+            np.array(
+                pack_neighbors_b,
+                dtype=np.int64).reshape([-1, self.f_max_len + 2]),
+            length=self.pack_max_nei_b)
         pack_neighbors_b = paddle.to_tensor(pack_neighbors_b)
         pack_neighbors_f = sequence_padding_2d(
-            np.array(pack_neighbors_f, dtype=np.int64).reshape([-1, self.f_max_len + 2]),
-            length=self.pack_max_nei_f
-        )
+            np.array(
+                pack_neighbors_f,
+                dtype=np.int64).reshape([-1, self.f_max_len + 2]),
+            length=self.pack_max_nei_f)
         pack_neighbors_f = paddle.to_tensor(pack_neighbors_f)
         label1 = paddle.to_tensor(label1)
-        return (user, item, biz, friends, user_items, user_bizs, user_friends, user_packages,
-                pack_neighbors_b, pack_neighbors_f, label1)
+        return (user, item, biz, friends, user_items, user_bizs, user_friends,
+                user_packages, pack_neighbors_b, pack_neighbors_f, label1)
 
     def __len__(self):
         return len(self.data)
@@ -73,5 +80,8 @@ def sequence_padding_1d_list(inputs, length):
 
 def sequence_padding_2d(inputs, length):
     padding_width = [[0, length - inputs.shape[0]], [0, 0]]
-    inputs = np.pad(inputs[:length], padding_width, 'constant', constant_values=0)
+    inputs = np.pad(inputs[:length],
+                    padding_width,
+                    'constant',
+                    constant_values=0)
     return inputs

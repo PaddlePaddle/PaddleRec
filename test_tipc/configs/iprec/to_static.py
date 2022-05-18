@@ -73,8 +73,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-            format(use_gpu, train_data_dir, epochs, print_interval,
-                   model_save_path))
+        format(use_gpu, train_data_dir, epochs, print_interval,
+               model_save_path))
     logger.info("**************common.configs**********")
 
     place = paddle.set_device('gpu' if use_gpu else 'cpu')
@@ -84,15 +84,15 @@ def main(args):
         model_save_path = os.path.join(model_save_path, str(end_epoch - 1))
     load_model(model_init_path, dy_model)
     # example dnn model forward
-    input_shapes = (
-        [None, 1], [None, 1], [None, 1], [None, 20], [None, 99], [None, 99], [None, 220], [None, 50, 22],
-        [None, 20, 22], [None, 20, 22]
-    )
+    input_shapes = ([None, 1], [None, 1], [None, 1], [None, 20], [None, 99],
+                    [None, 99], [None, 220], [None, 50, 22], [None, 20, 22],
+                    [None, 20, 22])
     dy_model = paddle.jit.to_static(
         dy_model,
-        input_spec=[paddle.static.InputSpec(shape=shape, dtype='int64') for i in range(18)
-                    for shape in input_shapes]
-    )
+        input_spec=[
+            paddle.static.InputSpec(
+                shape=shape, dtype='int64') for shape in input_shapes
+        ])
     save_jit_model(dy_model, model_save_path, prefix='tostatic')
 
 
