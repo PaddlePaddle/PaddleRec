@@ -79,8 +79,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, use_xpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-            format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
-                   start_epoch, end_epoch, print_interval, model_load_path))
+        format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
+               start_epoch, end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
@@ -133,7 +133,7 @@ def main(args):
                     "epoch: {}, batch_id: {}, ".format(epoch_id, batch_id) +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
                     format(infer_reader_cost / print_interval, (
-                            infer_reader_cost + infer_run_cost) / print_interval,
+                        infer_reader_cost + infer_run_cost) / print_interval,
                            infer_batch_size, print_interval * infer_batch_size
                            / (time.time() - interval_begin)))
                 interval_begin = time.time()
@@ -143,19 +143,18 @@ def main(args):
             reader_start = time.time()
         y_true = np.concatenate(y_true, 0)
         y_pred = np.concatenate(y_pred, 0)
-        AUC, MRR, nDCG5, nDCG10 = evaluate(y_pred, y_true, test_dataloader.dataset.test_bound)
+        AUC, MRR, nDCG5, nDCG10 = evaluate(y_pred, y_true,
+                                           test_dataloader.dataset.test_bound)
 
-        metric_str = "AUC@5 : {:.4f},".format(
-            AUC) + " MRR : {:.4f},".format(
-            MRR) + "nDCG5 : {:.4f},".format(
-            nDCG5) + "nDCG10 : {:.4f},".format(
-            nDCG10)
+        metric_str = "AUC@5 : {:.4f},".format(AUC) + " MRR : {:.4f},".format(
+            MRR) + "nDCG5 : {:.4f},".format(nDCG5) + "nDCG10 : {:.4f},".format(
+                nDCG10)
 
         tensor_print_str = ""
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     tensor_print_str + " epoch time: {:.2f} s".format(
-            time.time() - epoch_begin))
+                        time.time() - epoch_begin))
         epoch_begin = time.time()
 
 

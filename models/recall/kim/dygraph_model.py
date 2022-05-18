@@ -65,7 +65,7 @@ class DygraphModel():
     # construct train forward phase  
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         *inputs, labels = self.create_feeds(batch_data)
-        labels = labels.argmax(-1,keepdim=True)
+        labels = labels.argmax(-1, keepdim=True)
         prediction = dy_model.forward(*inputs)
         loss = self.create_loss(prediction, labels)
         # update metrics
@@ -79,7 +79,5 @@ class DygraphModel():
 
         prediction = dy_model.forward(*inputs)
         # update metrics
-        print_dict = {
-            "y_pred": F.softmax(prediction, -1),
-        }
+        print_dict = {"y_pred": F.softmax(prediction, -1), }
         return metrics_list, print_dict
