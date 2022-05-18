@@ -33,19 +33,10 @@ class DygraphModel():
         pack_max_nei_f = config.get("hyper_parameters.pack_max_nei_f")
         dropout_rate = config.get("hyper_parameters.dropout_rate")
 
-        enc_fm_model = net.IPRECLayer(
-            num_users,
-            num_items,
-            num_bizs,
-            hidden_units,
-            f_max_len,
-            k,
-            u_max_i,
-            u_max_f,
-            u_max_pack,
-            pack_max_nei_b,
-            pack_max_nei_f,
-            dropout_rate)
+        enc_fm_model = net.IPRECLayer(num_users, num_items, num_bizs,
+                                      hidden_units, f_max_len, k, u_max_i,
+                                      u_max_f, u_max_pack, pack_max_nei_b,
+                                      pack_max_nei_f, dropout_rate)
         return enc_fm_model
 
     # define feeds which convert numpy of batch data to paddle.tensor 
@@ -63,8 +54,7 @@ class DygraphModel():
         optimizer = paddle.optimizer.Adam(
             parameters=dy_model.parameters(),
             learning_rate=lr,
-            weight_decay=1e-5,
-        )
+            weight_decay=1e-5, )
         return optimizer
 
     def create_metrics(self):
