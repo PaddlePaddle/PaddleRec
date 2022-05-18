@@ -22,16 +22,16 @@ import net
 class DygraphModel():
     # define model
     def create_model(self, config):
-        max_sentence = config.get('hyper_parameters.max_sentence', 50)
-        max_all = config.get('hyper_parameters.max_all', 50)
-        max_sent_length = config.get('hyper_parameters.max_sent_length', 50)
-        max_sents = config.get('hyper_parameters.max_sents', 50)
-        max_entity_num = config.get('hyper_parameters.max_entity_num', 50)
-        num = config.get('hyper_parameters.num', 100)
-        num1 = config.get('hyper_parameters.num1', 100)
-        num2 = config.get('hyper_parameters.num2', 100)
-        npratio = config.get('hyper_parameters.npratio', 0.5)
-        hidden_size = config.get('hyper_parameters.hidden_size', 100)
+        # max_sentence = config.get('hyper_parameters.max_sentence', 50)
+        # max_all = config.get('hyper_parameters.max_all', 50)
+        # max_sent_length = config.get('hyper_parameters.max_sent_length', 50)
+        # max_sents = config.get('hyper_parameters.max_sents', 50)
+        # max_entity_num = config.get('hyper_parameters.max_entity_num', 50)
+        # num = config.get('hyper_parameters.num', 100)
+        # num1 = config.get('hyper_parameters.num1', 100)
+        # num2 = config.get('hyper_parameters.num2', 100)
+        # npratio = config.get('hyper_parameters.npratio', 0.5)
+        # hidden_size = config.get('hyper_parameters.hidden_size', 100)
         embedding_size = config.get('hyper_parameters.embedding_size', 100)
         vocab_size = config.get('hyper_parameters.vocab_size', 100)
         kim_model = net.KIMLayer(vocab_size, embedding_size)
@@ -80,7 +80,6 @@ class DygraphModel():
         prediction = dy_model.forward(*inputs)
         # update metrics
         print_dict = {
-            "user": inputs[0],
-            "prediction": prediction[0],
+            "y_pred": F.softmax(prediction, -1),
         }
         return metrics_list, print_dict
