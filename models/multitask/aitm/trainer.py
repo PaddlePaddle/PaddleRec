@@ -116,8 +116,8 @@ def main(args):
 
     logger.info("read data")
     train_dataloader = create_data_loader(config=config, place=place)
-    train_dataloader = paddle.io.DataLoader(train_dataloader.dataset, batch_size=train_batch_size, shuffle=True)
-
+    train_dataloader = paddle.io.DataLoader(
+        train_dataloader.dataset, batch_size=train_batch_size, shuffle=True)
 
     last_epoch_id = config.get("last_epoch", -1)
     step_num = 0
