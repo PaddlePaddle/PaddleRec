@@ -370,8 +370,8 @@ elif [ ${model_name} == "iprec" ]; then
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
     if [ ${MODE} = "lite_train_lite_infer" ];then
-        cp -r ./models/rank/aitm/data/sample_data/train/* ./test_tipc/data/train
-        cp -r ./models/rank/aitm/data/sample_data/test/* ./test_tipc/data/infer
+        cp -r ./models/rank/iprec/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./models/rank/iprec/data/sample_data/test/* ./test_tipc/data/infer
         echo "demo data ready"
     elif [ ${MODE} = "whole_train_whole_infer" ];then
         cd ./datasets/iprec
