@@ -28,14 +28,15 @@ class MMoELayer(nn.Layer):
         self.gate_num = gate_num
 
         self._param_expert = []
+        expert_init = [pow(10, -i) for i in range(1, self.expert_num + 1)]
         for i in range(0, self.expert_num):
             linear = self.add_sublayer(
                 name='expert_' + str(i),
                 sublayer=nn.Linear(
                     feature_size,
                     expert_size,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each expert respectly
+                    weight_attr=nn.initializer.Constant(value=expert_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     #bias_attr=paddle.ParamAttr(learning_rate=1.0),
                     name='expert_' + str(i)))
@@ -44,14 +45,15 @@ class MMoELayer(nn.Layer):
         self._param_gate = []
         self._param_tower = []
         self._param_tower_out = []
+        gate_init = [pow(10, -i) for i in range(1, self.gate_num + 1)]
         for i in range(0, self.gate_num):
             linear = self.add_sublayer(
                 name='gate_' + str(i),
                 sublayer=nn.Linear(
                     feature_size,
                     expert_num,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize every gate respectly
+                    weight_attr=nn.initializer.Constant(value=gate_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     #bias_attr=paddle.ParamAttr(learning_rate=1.0),
                     name='gate_' + str(i)))
@@ -62,8 +64,8 @@ class MMoELayer(nn.Layer):
                 sublayer=nn.Linear(
                     expert_size,
                     tower_size,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each gate respectly
+                    weight_attr=nn.initializer.Constant(value=gate_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     #bias_attr=paddle.ParamAttr(learning_rate=1.0),
                     name='tower_' + str(i)))
@@ -74,8 +76,8 @@ class MMoELayer(nn.Layer):
                 sublayer=nn.Linear(
                     tower_size,
                     2,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each gate respectly
+                    weight_attr=nn.initializer.Constant(value=gate_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name='tower_out_' + str(i)))
             self._param_tower_out.append(linear)
