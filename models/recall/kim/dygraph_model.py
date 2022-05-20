@@ -48,9 +48,8 @@ class DygraphModel():
     # define optimizer 
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.00005)
-        optimizer = paddle.optimizer.Adagrad(
+        optimizer = paddle.optimizer.Adam(
             learning_rate=lr,
-            initial_accumulator_value=1e-8,
             parameters=dy_model.parameters())
         return optimizer
 
@@ -62,10 +61,11 @@ class DygraphModel():
         metrics_list = [paddle.metric.Accuracy()]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         *inputs, labels = self.create_feeds(batch_data)
-        labels = labels.argmax(-1, keepdim=True)
+        labels = labels.argmax(-1,keepdim=True)
+
         prediction = dy_model.forward(*inputs)
         loss = self.create_loss(prediction, labels)
         # update metrics
@@ -76,8 +76,9 @@ class DygraphModel():
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         inputs = self.create_feeds(batch_data)
-
         prediction = dy_model.forward(*inputs)
         # update metrics
-        print_dict = {"y_pred": F.softmax(prediction, -1), }
+        print_dict = {
+            "y_pred": prediction,
+        }
         return metrics_list, print_dict
