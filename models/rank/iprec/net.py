@@ -23,6 +23,8 @@ initializer = nn.initializer
 
 
 class GateAttention(paddle.nn.Layer):
+    '''gate attention to aggregate historical interacted packages'''
+
     def __init__(self, hidden_size):
         super().__init__()
         self.w1 = nn.Linear(
@@ -290,6 +292,8 @@ class IPRECLayer(paddle.nn.Layer):
 
         inputs = self.dropout(F.relu(self.w_a(inputs)))
 
+        # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
+        #  the shape of `v` is (BN,F,D)*(D,A)=(BN,F,A), where A=attention_size
         v = F.tanh(self.w_omega(inputs))
 
         vu = paddle.matmul(v, self.u_omega)  # BN*F
@@ -297,6 +301,7 @@ class IPRECLayer(paddle.nn.Layer):
         att = F.softmax(vu, -1)
         f_emb = (f_K_emb * att.unsqueeze(-1)).sum(1)
 
+        # interaction
         pack = paddle.stack([
             f_emb, item_emb, biz_emb, f_emb * item_emb, f_emb * biz_emb,
             item_emb * biz_emb, f_emb * item_emb * biz_emb
@@ -310,6 +315,7 @@ class IPRECLayer(paddle.nn.Layer):
         return pack_emb, att
 
     def dual_aggregate(self, user_emb, items, bizs, friends):
+        '''dual_aggregate for modeling user feature'''
         friends_emb = self.user_emb(friends)  # B*M*D
         items_emb = self.item_emb(items)  # B*N*D
         bizs_emb = self.biz_emb(bizs)
@@ -335,3 +341,4 @@ class IPRECLayer(paddle.nn.Layer):
         user_emb = F.relu(
             self.w_self(paddle.concat([_user_emb, user_emb], -1)))
         return user_emb, att1, att1, att1
+
