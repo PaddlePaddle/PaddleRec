@@ -7,50 +7,47 @@ import json
 import random
 from paddle.io import Dataset
 
+MAX_SENTENCE = 30
+MAX_ALL = 50
+MAX_SENT_LENGTH = MAX_SENTENCE
+MAX_SENTS = MAX_ALL
+max_entity_num = 10
+num = 100
+num1 = 200
+num2 = 100
+npratio = 4
+
 
 class RecDataset(Dataset):
     def __init__(self, file_list, config):
-        KG_root_path = embedding_path = data_root_path = config[
-            'runner.train_data_dir']
-        news, news_index, category_dict, subcategory_dict, word_dict = read_news(
-            data_root_path, 'docs.tsv')
-        max_entity_num = config
-        news_title, news_vert, news_subvert = get_doc_input(
-            news, news_index, category_dict, subcategory_dict, word_dict)
-        graph, EntityId2Index, EntityIndex2Id, entity_embedding = load_entity_metadata(
-            KG_root_path)
+        KG_root_path = embedding_path = data_root_path = config['runner.train_data_dir']
+        max_entity_num = config['hyper_parameters.max_entity_num']
+        news, news_index, category_dict, subcategory_dict, word_dict = read_news(data_root_path, 'docs.tsv')
+        news_title, news_vert, news_subvert = get_doc_input(news, news_index, category_dict, subcategory_dict,
+                                                            word_dict)
+        graph, EntityId2Index, EntityIndex2Id, entity_embedding = load_entity_metadata(KG_root_path)
         news_entity = load_news_entity(news, EntityId2Index, data_root_path)
-        news_entity_index = parse_zero_hop_entity(EntityId2Index, news_entity,
-                                                  news_index, max_entity_num)
-        one_hop_entity = parse_one_hop_entity(EntityId2Index, EntityIndex2Id,
-                                              news_entity_index, graph,
-                                              news_index, max_entity_num)
+        news_entity_index = parse_zero_hop_entity(EntityId2Index, news_entity, news_index, max_entity_num)
+        one_hop_entity = parse_one_hop_entity(EntityId2Index, EntityIndex2Id, news_entity_index, graph, news_index,
+                                              max_entity_num)
         mode = config.get('mode', 'train')
         if mode == 'train':
-            train_session = read_clickhistory(data_root_path, news_index,
-                                              'train.tsv')
+            train_session = read_clickhistory(data_root_path, news_index, 'train.tsv')
             train_user = parse_user(news_index, train_session)
-            train_sess, train_user_id, train_label = get_train_input(
-                news_index, train_session)
-            self.dataset = TrainDataset(news_title, news_entity_index,
-                                        one_hop_entity, entity_embedding,
-                                        train_user['click'], train_user_id,
-                                        train_sess, train_label, 16)
-            title_word_embedding_matrix, have_word = load_matrix(
-                embedding_path, word_dict)
-            self.title_word_embedding_matrix = title_word_embedding_matrix.astype(
-                'float32')
+            train_sess, train_user_id, train_label = get_train_input(news_index, train_session)
+            self.dataset = TrainDataset(news_title, news_entity_index, one_hop_entity, entity_embedding,
+                                        train_user['click'], train_user_id, train_sess, train_label, 16)
+            title_word_embedding_matrix, have_word = load_matrix(embedding_path, word_dict)
+            self.title_word_embedding_matrix = title_word_embedding_matrix.astype('float32')
 
         elif mode == 'test':
-            test_session = read_clickhistory(data_root_path, news_index,
-                                             'test.tsv')
+            test_session = read_clickhistory(data_root_path, news_index, 'test.tsv')
             test_user = parse_user(news_index, test_session)
-            test_docids, test_userids, test_labels, test_bound = get_test_input(
-                news_index, test_session)
-            self.dataset = TestDataset(
-                test_docids, test_userids, news_title, news_entity_index,
-                one_hop_entity, entity_embedding, test_user['click'], 64)
+            test_docids, test_userids, test_labels, test_bound = get_test_input(news_index, test_session)
+            self.dataset = TestDataset(test_docids, test_userids, news_title, news_entity_index, one_hop_entity,
+                                       entity_embedding, test_user['click'], 64)
             self.test_bound = test_bound
+            self.test_labels = test_labels
 
     def __len__(self):
         return len(self.dataset)
@@ -60,9 +57,8 @@ class RecDataset(Dataset):
 
 
 class TrainDataset(Dataset):
-    def __init__(self, news_title, news_entity_index, one_hop_entity,
-                 entity_embedding, clicked_news, user_id, news_id, label,
-                 batch_size):
+    def __init__(self, news_title, news_entity_index, one_hop_entity, entity_embedding, clicked_news, user_id, news_id,
+                 label, batch_size):
         self.title = news_title
 
         self.clicked_news = clicked_news
@@ -102,8 +98,7 @@ class TrainDataset(Dataset):
         user_ids = self.user_id[start:ed]
         clicked_ids = self.clicked_news[user_ids]
 
-        user_title, user_entity_embedding, user_one_hop = self.__get_news(
-            clicked_ids)
+        user_title, user_entity_embedding, user_one_hop = self.__get_news(clicked_ids)
 
         label = self.label[start:ed]
 
@@ -111,8 +106,8 @@ class TrainDataset(Dataset):
 
 
 class TestDataset(Dataset):
-    def __init__(self, docids, userids, news_title, news_entity_index,
-                 one_hop_entity, entity_embedding, clicked_news, batch_size):
+    def __init__(self, docids, userids, news_title, news_entity_index, one_hop_entity, entity_embedding, clicked_news,
+                 batch_size):
         self.docids = docids
         self.userids = userids
 
@@ -151,19 +146,13 @@ class TestDataset(Dataset):
         clicked_ids = self.clicked_news[userisd]
 
         title, entity_embedding, one_hop_embedding = self.__get_news(docids)
-        user_title, user_entity_embedding, user_one_hop = self.__get_news(
-            clicked_ids)
+        user_title, user_entity_embedding, user_one_hop = self.__get_news(clicked_ids)
 
-        return [
-            title, entity_embedding, one_hop_embedding, user_title,
-            user_entity_embedding, user_one_hop
-        ]
+        return title, entity_embedding, one_hop_embedding, user_title, user_entity_embedding, user_one_hop
 
 
 def trans2tsp(timestr):
-    return int(
-        time.mktime(
-            datetime.strptime(timestr, '%m/%d/%Y %I:%M:%S %p').timetuple()))
+    return int(time.mktime(datetime.strptime(timestr, '%m/%d/%Y %I:%M:%S %p').timetuple()))
 
 
 def newsample(nnn, ratio):
@@ -229,8 +218,8 @@ def read_news(path, filenames):
 def get_doc_input(news, news_index, category, subcategory, word_dict):
     news_num = len(news) + 1
     news_title = np.zeros((news_num, MAX_SENTENCE), dtype='int32')
-    news_vert = np.zeros((news_num, ), dtype='int32')
-    news_subvert = np.zeros((news_num, ), dtype='int32')
+    news_vert = np.zeros((news_num,), dtype='int32')
+    news_subvert = np.zeros((news_num,), dtype='int32')
     for key in news:
         vert, subvert, title = news[key]
         doc_index = news_index[key]
@@ -254,10 +243,8 @@ def load_entity_metadata(KG_root_path):
         EntityId2Index[eid] = int(eindex)
         EntityIndex2Id[int(eindex)] = eid
 
-    entity_embedding = np.load(
-        os.path.join(KG_root_path, 'entity_embedding.npy'))
-    entity_embedding = np.concatenate(
-        [entity_embedding, np.zeros((1, 100))], axis=0)
+    entity_embedding = np.load(os.path.join(KG_root_path, 'entity_embedding.npy'))
+    entity_embedding = np.concatenate([entity_embedding, np.zeros((1, 100))], axis=0)
 
     with open(os.path.join(KG_root_path, 'KGGraph.json')) as f:
         s = f.read()
@@ -286,13 +273,8 @@ def load_news_entity(news, EntityId2Index, data_root_path):
     return news_entity
 
 
-def parse_zero_hop_entity(EntityId2Index,
-                          news_entity,
-                          news_index,
-                          max_entity_num=5):
-    news_entity_index = np.zeros(
-        (len(news_index) + 1, max_entity_num),
-        dtype='int32') + len(EntityId2Index)
+def parse_zero_hop_entity(EntityId2Index, news_entity, news_index, max_entity_num=5):
+    news_entity_index = np.zeros((len(news_index) + 1, max_entity_num), dtype='int32') + len(EntityId2Index)
     for newsid in news_index:
         index = news_index[newsid]
         entities = news_entity[newsid]
@@ -303,15 +285,9 @@ def parse_zero_hop_entity(EntityId2Index,
     return news_entity_index
 
 
-def parse_one_hop_entity(EntityId2Index,
-                         EntityIndex2Id,
-                         news_entity_index,
-                         graph,
-                         news_index,
-                         max_entity_num=5):
-    one_hop_entity = np.zeros(
-        (len(news_index) + 1, max_entity_num, max_entity_num),
-        dtype='int32') + len(EntityId2Index)
+def parse_one_hop_entity(EntityId2Index, EntityIndex2Id, news_entity_index, graph, news_index, max_entity_num=5):
+    one_hop_entity = np.zeros((len(news_index) + 1, max_entity_num, max_entity_num), dtype='int32') + len(
+        EntityId2Index)
     for newsid in news_index:
         index = news_index[newsid]
         entities = news_entity_index[index]
@@ -436,7 +412,8 @@ def get_test_input(news_index, session):
     count = 0
     for sess_id in range(len(session)):
         _, poss, negs = session[sess_id]
-        imp = {'labels': [], 'docs': []}
+        imp = {'labels': [],
+               'docs': []}
         start = count
         for i in range(len(poss)):
             docid = news_index[poss[i]]

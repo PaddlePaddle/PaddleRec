@@ -24,6 +24,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 # sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 sys.path.append('../../../tools')
+sys.path.append('./tools')
 
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
 from utils.save_load import load_model, save_model
@@ -112,12 +113,8 @@ def main(args):
         dy_model = fleet.distributed_model(dy_model)
 
     logger.info("read data")
-    # train_dataloader = create_data_loader(config=config, place=place)
-    import pandas as pd
-    # pd.to_pickle(train_dataloader.dataset, 'data.pkl')
-    dataset = pd.read_pickle('data.pkl')
-    train_dataloader = paddle.io.DataLoader(dataset, batch_size=train_batch_size, shuffle=True)
-
+    train_dataloader = create_data_loader(config=config, place=place)
+    train_dataloader = paddle.io.DataLoader(train_dataloader.dataset, batch_size=train_batch_size, shuffle=True)
     word_emb = train_dataloader.dataset.title_word_embedding_matrix
     dy_model.model.context_encoder.title_word_embedding.weight.set_value(word_emb)
     last_epoch_id = config.get("last_epoch", -1)
@@ -191,7 +188,7 @@ def main(args):
             metric_str += (
                 metric_list_name[metric_id] +
                 ": {:.6f},".format(metric_list[metric_id].accumulate()))
-            metric_list_name[metric_id].reset()
+            metric_list[metric_id].accumulate()
         tensor_print_str = ""
         if tensor_print_dict is not None:
             for var_name, var in tensor_print_dict.items():

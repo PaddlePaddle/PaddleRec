@@ -19,13 +19,14 @@ import time
 import logging
 import sys
 import importlib
-from utils import evaluate
+from eval_utils import evaluate
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 sys.path.append('../../../tools')
 
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model, create_data_loader
-from tools.utils.save_load import save_model, load_model
+from utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 import numpy as np
@@ -79,8 +80,8 @@ def main(args):
     logger.info("**************common.configs**********")
     logger.info(
         "use_gpu: {}, use_xpu: {}, use_visual: {}, infer_batch_size: {}, test_data_dir: {}, start_epoch: {}, end_epoch: {}, print_interval: {}, model_load_path: {}".
-        format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
-               start_epoch, end_epoch, print_interval, model_load_path))
+            format(use_gpu, use_xpu, use_visual, infer_batch_size, test_data_dir,
+                   start_epoch, end_epoch, print_interval, model_load_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
@@ -100,15 +101,14 @@ def main(args):
     # optimizer = dy_model_class.create_optimizer(dy_model, config)
 
     logger.info("read data")
-    print(config)
     test_dataloader = create_data_loader(config, place)
-
+    test_dataloader = paddle.io.DataLoader(test_dataloader.dataset, batch_size=1, num_workers=4, use_shared_memory=True)
     epoch_begin = time.time()
     interval_begin = time.time()
 
     metric_list, metric_list_name = dy_model_class.create_metrics()
     step_num = 0
-    dataset = test_dataloader.dataset
+    print(len(test_dataloader))
 
     for epoch_id in range(start_epoch, end_epoch):
         logger.info("load model epoch {}".format(epoch_id))
@@ -118,13 +118,13 @@ def main(args):
         infer_reader_cost = 0.0
         infer_run_cost = 0.0
         reader_start = time.time()
-        y_true, y_pred = [], []
+        y_pred = []
         for batch_id, batch in enumerate(test_dataloader):
             infer_reader_cost += time.time() - reader_start
             infer_start = time.time()
-            metric_list, tensor_print_dict = dy_model_class.infer_forward(
-                dy_model, metric_list, batch, config)
-            y_true.append(batch[-1].cpu().numpy())
+            with paddle.no_grad():
+                metric_list, tensor_print_dict = dy_model_class.infer_forward(
+                    dy_model, metric_list, batch, config)
             y_pred.append(tensor_print_dict['y_pred'].cpu().numpy())
             infer_run_cost += time.time() - infer_start
 
@@ -133,7 +133,7 @@ def main(args):
                     "epoch: {}, batch_id: {}, ".format(epoch_id, batch_id) +
                     " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.2f} ins/s".
                     format(infer_reader_cost / print_interval, (
-                        infer_reader_cost + infer_run_cost) / print_interval,
+                            infer_reader_cost + infer_run_cost) / print_interval,
                            infer_batch_size, print_interval * infer_batch_size
                            / (time.time() - interval_begin)))
                 interval_begin = time.time()
@@ -141,20 +141,21 @@ def main(args):
                 infer_run_cost = 0.0
 
             reader_start = time.time()
-        y_true = np.concatenate(y_true, 0)
         y_pred = np.concatenate(y_pred, 0)
-        AUC, MRR, nDCG5, nDCG10 = evaluate(y_pred, y_true,
+        AUC, MRR, nDCG5, nDCG10 = evaluate(y_pred, test_dataloader.dataset.test_labels,
                                            test_dataloader.dataset.test_bound)
 
-        metric_str = "AUC@5 : {:.4f},".format(AUC) + " MRR : {:.4f},".format(
-            MRR) + "nDCG5 : {:.4f},".format(nDCG5) + "nDCG10 : {:.4f},".format(
-                nDCG10)
+        metric_str = "AUC : {:.4f}, ".format(
+            AUC) + " MRR : {:.4f}, ".format(
+            MRR) + "nDCG5 : {:.4f}, ".format(
+            nDCG5) + "nDCG10 : {:.4f}".format(
+            nDCG10)
 
         tensor_print_str = ""
 
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     tensor_print_str + " epoch time: {:.2f} s".format(
-                        time.time() - epoch_begin))
+            time.time() - epoch_begin))
         epoch_begin = time.time()
 
 

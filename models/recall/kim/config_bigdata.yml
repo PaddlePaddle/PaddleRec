@@ -20,7 +20,7 @@ runner:
   use_gpu: True
   use_auc: False
   train_batch_size: 1
-  epochs: 7
+  epochs: 8
   print_interval: 50
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_kim_all"
@@ -28,8 +28,8 @@ runner:
   infer_reader_path: "mind_reader" # importlib format
   infer_batch_size: 1
   infer_load_path: "output_model_autofis_all"
-  infer_start_epoch: 0
-  infer_end_epoch: 7
+  infer_start_epoch: 6
+  infer_end_epoch: 8
 
 # hyper parameters of user-defined network
 hyper_parameters:
