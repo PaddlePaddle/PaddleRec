@@ -13,16 +13,16 @@
 # limitations under the License.
 
 runner:
-  train_data_dir: "./data/whole_data/train"
+  train_data_dir: "../../../datasets/iprec/whole_data/train"
   train_reader_path: "reader"  # importlib format
   train_batch_size: 256
   model_save_path: "output_model_iprec_all"
-  mode: "train"
+  use_auc: True
   use_gpu: True
   epochs: 5
   print_interval: 500
   
-  test_data_dir: "./data/whole_data/test"
+  test_data_dir: "../../../datasets/iprec/whole_data/test"
   infer_reader_path: "reader"  # importlib format
   infer_batch_size: 256
   infer_load_path: "output_model_iprec_all"
