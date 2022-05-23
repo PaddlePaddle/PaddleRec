@@ -21,6 +21,7 @@ import numpy as np
 class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
     """SampledSoftmaxLoss with LogUniformSampler
     """
+
     def __init__(self,
                  num_classes,
                  n_sample,
@@ -83,13 +84,13 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
         sample_b = all_b[-n_sample:]
 
         # [B, D] * [B, 1,D]
-        true_logist = paddle.sum(paddle.multiply(
-            true_w, inputs.unsqueeze(1)), axis=-1) + true_b
+        true_logist = paddle.sum(paddle.multiply(true_w, inputs.unsqueeze(1)),
+                                 axis=-1) + true_b
         # print(true_logist)
-   
+
         sample_logist = paddle.matmul(
-            inputs, sample_w, transpose_y=True)  + sample_b
-      
+            inputs, sample_w, transpose_y=True) + sample_b
+
         if self.remove_accidental_hits:
             hit = (paddle.equal(labels[:, :], neg_samples))
             padding = paddle.ones_like(sample_logist) * -1e30
@@ -115,6 +116,7 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
 class Mind_Capsual_Layer(nn.Layer):
     """Mind_Capsual_Layer
     """
+
     def __init__(self,
                  input_units,
                  output_units,
@@ -189,11 +191,13 @@ class Mind_Capsual_Layer(nn.Layer):
 
         low_capsule_new_tile = paddle.tile(low_capsule_new, [1, 1, self.k_max])
         low_capsule_new_tile = paddle.reshape(
-            low_capsule_new_tile, [-1, self.maxlen, self.k_max, self.output_units])
-        low_capsule_new_tile = paddle.transpose(
-            low_capsule_new_tile, [0, 2, 1, 3])
+            low_capsule_new_tile,
+            [-1, self.maxlen, self.k_max, self.output_units])
+        low_capsule_new_tile = paddle.transpose(low_capsule_new_tile,
+                                                [0, 2, 1, 3])
         low_capsule_new_tile = paddle.reshape(
-            low_capsule_new_tile, [-1, self.k_max, self.maxlen, self.output_units])
+            low_capsule_new_tile,
+            [-1, self.k_max, self.maxlen, self.output_units])
         low_capsule_new_nograd = paddle.assign(low_capsule_new_tile)
         low_capsule_new_nograd.stop_gradient = True
 
@@ -209,8 +213,9 @@ class Mind_Capsual_Layer(nn.Layer):
             high_capsule_tmp = paddle.matmul(W, low_capsule_new_nograd)
             # print(low_capsule_new_nograd.shape)
             high_capsule = self.squash(high_capsule_tmp)
-            B_delta = paddle.matmul(low_capsule_new_nograd,
-                                    paddle.transpose(high_capsule, [0, 1, 3, 2]))
+            B_delta = paddle.matmul(
+                low_capsule_new_nograd,
+                paddle.transpose(high_capsule, [0, 1, 3, 2]))
             B_delta = paddle.reshape(
                 B_delta, shape=[-1, self.k_max, self.maxlen])
             B += B_delta
@@ -220,8 +225,8 @@ class Mind_Capsual_Layer(nn.Layer):
         W = paddle.unsqueeze(W, axis=2)
         interest_capsule = paddle.matmul(W, low_capsule_new_tile)
         interest_capsule = self.squash(interest_capsule)
-        high_capsule = paddle.reshape(
-            interest_capsule, [-1, self.k_max, self.output_units])
+        high_capsule = paddle.reshape(interest_capsule,
+                                      [-1, self.k_max, self.output_units])
 
         high_capsule = F.relu(self.relu_layer(high_capsule))
         return high_capsule, W, seq_len
@@ -277,12 +282,16 @@ class MindLayer(nn.Layer):
     def label_aware_attention(self, keys, query):
         """label_aware_attention
         """
-        weight = paddle.matmul(keys, paddle.reshape(query, [-1, paddle.shape(query)[-1], 1])) #[B, K, dim] * [B, dim, 1] == [B, k, 1]
+        weight = paddle.matmul(keys,
+                               paddle.reshape(query, [
+                                   -1, paddle.shape(query)[-1], 1
+                               ]))  #[B, K, dim] * [B, dim, 1] == [B, k, 1]
         weight = paddle.squeeze(weight, axis=-1)
         weight = paddle.pow(weight, self.pow_p)  # [x,k_max]
-        weight = F.softmax(weight) #[x, k_max]
-        weight = paddle.unsqueeze(weight, 1) #[B, 1, k_max]
-        output = paddle.matmul(weight, keys) #[B, 1, k_max] * [B, k_max, dim] => [B, 1, dim]
+        weight = F.softmax(weight)  #[x, k_max]
+        weight = paddle.unsqueeze(weight, 1)  #[B, 1, k_max]
+        output = paddle.matmul(
+            weight, keys)  #[B, 1, k_max] * [B, k_max, dim] => [B, 1, dim]
         return output.squeeze(1), weight
 
     def forward(self, hist_item, seqlen, labels=None):
