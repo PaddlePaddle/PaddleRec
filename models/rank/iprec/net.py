@@ -341,4 +341,3 @@ class IPRECLayer(paddle.nn.Layer):
         user_emb = F.relu(
             self.w_self(paddle.concat([_user_emb, user_emb], -1)))
         return user_emb, att1, att1, att1
-
