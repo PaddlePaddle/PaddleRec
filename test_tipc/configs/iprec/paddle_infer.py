@@ -86,7 +86,7 @@ def init_predictor(args):
         if args.enable_tensorRT:
             config.enable_tensorrt_engine(
                 max_batch_size=args.batchsize,
-                min_subgraph_size=9,
+                min_subgraph_size=100,
                 precision_mode=paddle.inference.PrecisionType.Float32)
     else:
         config.disable_gpu()
