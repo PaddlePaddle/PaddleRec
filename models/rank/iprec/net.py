@@ -229,9 +229,12 @@ class IPRECLayer(paddle.nn.Layer):
             user_emb,
             paddle.reshape(_friends, [-1, self.f_max_len]),
             paddle.reshape(_items, [-1]), paddle.reshape(_bizs, [-1]))
+        # intra_packages = paddle.reshape(intra_packages,
+        #                                 [batch_size, -1, self.hidden_units])
+        # att = paddle.reshape(att, [batch_size, -1, 7])
         intra_packages = paddle.reshape(intra_packages,
-                                        [batch_size, -1, self.hidden_units])
-        att = paddle.reshape(att, [batch_size, -1, 7])
+                                        [-1, 91, self.hidden_units])
+        att = att.reshape([-1, 91, 7])
         tar_pack, u_packs, pb_packs, pf_packs = paddle.split(
             intra_packages,
             [1, self.u_max_pack, self.pack_max_nei_b, self.pack_max_nei_f],
@@ -240,13 +243,14 @@ class IPRECLayer(paddle.nn.Layer):
             att,
             [1, self.u_max_pack, self.pack_max_nei_b, self.pack_max_nei_f],
             axis=1)
+
         tar_pack = paddle.reshape(tar_pack, [batch_size, self.hidden_units])
         tar_att = paddle.reshape(tar_att, [batch_size, 7])
-        u_packs = paddle.reshape(u_packs, [batch_size, -1, self.hidden_units])
-        pb_packs = paddle.reshape(pb_packs,
-                                  [batch_size, -1, self.hidden_units])
-        pf_packs = paddle.reshape(pf_packs,
-                                  [batch_size, -1, self.hidden_units])
+        # u_packs = paddle.reshape(u_packs, [batch_size, -1, self.hidden_units])
+        # pb_packs = paddle.reshape(pb_packs,
+        #                           [batch_size, -1, self.hidden_units])
+        # pf_packs = paddle.reshape(pf_packs,
+        #                           [batch_size, -1, self.hidden_units])
 
         # gate_attention
         pack_emb = tar_pack + self.biz_gate(tar_pack, pb_packs, pb_mask).sum(1) + \
