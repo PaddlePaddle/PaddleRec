@@ -167,8 +167,10 @@ class Mind_Capsual_Layer(nn.Layer):
         batch_size = paddle.shape(lengths)[0]
         if maxlen is None:
             maxlen = lengths.max()
-        row_vector = paddle.arange(0, maxlen, 1).unsqueeze(0).expand(
-            shape=(batch_size, maxlen)).reshape((batch_size, -1, maxlen))
+        row_vector = paddle.arange(
+            0, maxlen,
+            1).unsqueeze(0).expand(shape=(batch_size, maxlen)).reshape(
+                (batch_size, -1, maxlen))
         lengths = lengths.unsqueeze(-1)
         mask = row_vector < lengths
         return mask.astype(dtype)
