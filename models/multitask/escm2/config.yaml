@@ -1,0 +1,56 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+runner:
+  train_data_dir: "data/train"
+  train_reader_path: "escm_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  auc_num: 2
+  train_batch_size: 2
+  epochs: 3
+  print_interval: 2
+  #model_init_path: "output_model_esmm/2" # init model
+  model_save_path: "output_model_esmm"
+  test_data_dir: "data/train"
+  infer_batch_size: 2
+  infer_reader_path: "esmm_reader" # importlib format
+  infer_load_path: "output_model_esmm"
+  infer_start_epoch: 0
+  infer_end_epoch: 3
+  counterfact_mode: "DR"
+  #use inference save model
+  use_inference: False
+  save_inference_feed_varnames: ["field_0", "field_1", "field_2", "field_3", "field_4", "field_5", "field_6", "field_7", "field_8", "field_9", "field_10", "field_11", "field_12", "field_13", "field_14", "field_15", "field_16", "field_17", "field_18", "field_19", "field_20", "field_21", "field_22"]
+  save_inference_fetch_varnames: ["softmax_0.tmp_0", "concat_1.tmp_0"]
+
+hyper_parameters:
+  sparse_feature_number: 737946
+  sparse_feature_dim: 12
+  num_field: 23
+  ctr_fc_sizes: [256, 64]
+  cvr_fc_sizes: [256, 64]
+  global_w: 1.0
+  counterfactual_w: 0.01
+  feature_size: 276 
+  expert_num: 8
+  gate_num: 3
+  expert_size: 16
+  tower_size: 8
+
+  optimizer:
+    class: adam
+    learning_rate: 0.001
+    strategy: async
