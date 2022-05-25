@@ -48,3 +48,6 @@
 [fat_deepffm](https://paddlerec.readthedocs.io/en/latest/models/rank/fat_deepffm.html)  
 [deeprec](https://paddlerec.readthedocs.io/en/latest/models/rank/deeprec.html)  
 [autofis](https://paddlerec.readthedocs.io/en/latest/models/rank/autofis.html)  
+[aitm](https://paddlerec.readthedocs.io/en/latest/models/rank/aitm.html)  
+[dsin](https://paddlerec.readthedocs.io/en/latest/models/rank/dsin.html)  
+[sign](https://paddlerec.readthedocs.io/en/latest/models/rank/sign.html)  

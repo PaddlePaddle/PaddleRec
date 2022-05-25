@@ -20,6 +20,7 @@ runner:
   train_data_dir: "data/sample_data/train"
   train_reader_path: "criteo_reader" # importlib format
   use_gpu: False
+  use_xpu: False   # Enable this option only if you have an xpu device
   use_auc: True
   train_batch_size: 2
   epochs: 3
@@ -36,6 +37,7 @@ runner:
   sync_mode: "async"
   split_file_list: False
   thread_num: 1
+  num_workers: 0
 
    # use inference save model
   inference: False  # 静态图训练时保存为inference model
