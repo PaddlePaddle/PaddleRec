@@ -127,7 +127,7 @@ pip install pgl
 cd - # 切回模型目录
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行
-python -u .././../tools/infer.py -m config_bigdata.yaml # 全量数据预测
+python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据预测
 ```
 
 ## 进阶使用
