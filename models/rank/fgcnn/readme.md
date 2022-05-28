@@ -89,6 +89,8 @@ python -u ../../../tools/infer.py -m config.yaml
 cd ./PaddleRec/datasets/criteo-fgcnn
 sh download.sh
 cd ../..
+mkdir ./models/rank/fgcnn/data/train
+mkdir ./models/rank/fgcnn/data/test
 cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/train.h5 ./models/rank/fgcnn/data/train
 cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/valid.h5 ./models/rank/fgcnn/data/test
 ```
