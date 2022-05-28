@@ -86,7 +86,7 @@ python -u ../../../tools/infer.py -m config.yaml
 - 处理好的原始数据集下载，解压并复制到工作目录的参考命令如下：
 
 ```bash
-cd ./PaddleRec/datasets/criteo-fgcnn
+cd ./PaddleRec/datasets/criteo_fgcnn
 sh download.sh
 cd ../..
 mkdir ./models/rank/fgcnn/data/train
@@ -94,7 +94,7 @@ mkdir ./models/rank/fgcnn/data/test
 cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/train.h5 ./models/rank/fgcnn/data/train
 cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/valid.h5 ./models/rank/fgcnn/data/test
 ```
-注意，如果项目中没有./models/rank/fgcnn/data/train或者./models/rank/fgcnn/data/test可以新建对应文件夹
+注意，如果项目中存在./models/rank/fgcnn/data/train与./models/rank/fgcnn/data/test文件夹，跳过执行两个mkdir命令
 
 ### 模型训练及效果复现
 在全量数据下模型的指标如下： 
