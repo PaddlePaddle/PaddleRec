@@ -48,7 +48,6 @@ def main(args):
     paddle.seed(12345)
     # load config
     config = load_yaml(args.config_yaml)
-    print('config:',config)
     dy_model_class = load_dy_model_class(args.abs_dir)
     config["config_abs_dir"] = args.abs_dir
     # modify config from command
