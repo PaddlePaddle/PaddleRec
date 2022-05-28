@@ -39,7 +39,7 @@ hyper_parameters:
   # optimizer config
   optimizer:
     class: Adam
-    learning_rate: 0.005
+    learning_rate: 0.001
     # strategy: async
   # user-defined <key, value> pairs
   item_count: 367983
