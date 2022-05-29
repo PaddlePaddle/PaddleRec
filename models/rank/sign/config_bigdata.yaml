@@ -1,0 +1,48 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runner:
+  train_data_dir: "../../../datasets/sign/train"
+  train_reader_path: "sign_reader" # importlib format
+  use_gpu: False
+  use_auc: True
+  is_train: True # is train
+  train_batch_size: 1024
+  epochs: 40
+  print_interval: 500
+  #model_init_path: "output_model_sign_all/0" # init model
+  model_save_path: "output_model_sign_all"
+  test_data_dir: "../../../datasets/sign/test"
+  infer_batch_size: 1024
+  infer_reader_path: "sign_reader" # importlib format
+  infer_load_path: "output_model_sign_all"
+  infer_start_epoch: 38
+  infer_end_epoch: 40
+  #use inference save model
+  use_inference: False
+  save_inference_feed_varnames: ["input"]
+  save_inference_fetch_varnames: ["slice_0.tmp_0", "slice_1.tmp_0"]
+
+
+hyper_parameters:
+  pred_edges: 1 # !=0: use edges in dataset, 0: predict edges using L_0
+  dim: 8 # dimension of entity and relation embeddings
+  hidden_layer: 32 # neural hidden layer 32
+  l0_para: [0.66, -0.1, 1.1] # l0 parameters, which are beta (temprature), zeta (interval_min) and gama (interval_max).
+  l0_weight: 0.001 # weight of the l0 regularization term
+  l2_weight: 0.001 # weight of the l2 regularization term
+  optimizer: 
+    class: adam
+    learning_rate: 0.05
+    strategy: async

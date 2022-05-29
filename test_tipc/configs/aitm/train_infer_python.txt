@@ -13,7 +13,7 @@ runner.test_data_dir:test_tipc/data/infer
 runner.train_data_dir:../../../test_tipc/data/train
 ##
 trainer:norm_train
-norm_train:-u tools/trainer.py -m ./models/rank/aitm/config.yaml -o runner.print_interval=2
+norm_train:-u tools/trainer.py -m ./models/multitask/aitm/config.yaml -o runner.print_interval=2
 quant_train:null
 fpgm_train:null
 distill_train:null
@@ -27,7 +27,7 @@ null:null
 ===========================infer_params===========================
 runner.model_save_path:
 runner.model_init_path:
-norm_export:-u test_tipc/configs/aitm/to_static.py -m ./models/rank/aitm/config.yaml -o runner.CE=true
+norm_export:-u test_tipc/configs/aitm/to_static.py -m ./models/multitask/aitm/config.yaml -o runner.CE=true
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -37,7 +37,7 @@ null:null
 infer_model:test_tipc/save_aitm_model
 infer_export:null
 infer_quant:False
-inference:-u test_tipc/configs/aitm/paddle_infer.py --model_name=aitm --reader_file=./models/rank/aitm/reader.py
+inference:-u test_tipc/configs/aitm/paddle_infer.py --model_name=aitm --reader_file=./models/multitask/aitm/aitm_reader.py
 --use_gpu:True|False
 --enable_mkldnn:True|False
 --cpu_threads:1|6
