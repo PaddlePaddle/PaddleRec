@@ -76,6 +76,7 @@ PaddleRec 模型库
    rank/naml.md
    rank/wide_deep.md
    rank/xdeepfm.md
+   rank/rank.md
 
 
 重排序
