@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#the weight randly Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,14 +52,15 @@ class PLELayer(nn.Layer):
         # task tower
         self._param_tower = []
         self._param_tower_out = []
+        task_init = [pow(10, -i) for i in range(1, self.task_num + 1)]
         for i in range(0, self.task_num):
             linear = self.add_sublayer(
                 name='tower_' + str(i),
                 sublayer=nn.Linear(
                     expert_size,
                     tower_size,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each task respectly
+                    weight_attr=nn.initializer.Constant(value=task_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     #bias_attr=paddle.ParamAttr(learning_rate=1.0),
                     name='tower_' + str(i)))
@@ -70,8 +71,8 @@ class PLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     tower_size,
                     2,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each task respectly
+                    weight_attr=nn.initializer.Constant(value=task_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name='tower_out_' + str(i)))
             self._param_tower_out.append(linear)
@@ -113,19 +114,23 @@ class SinglePLELayer(nn.Layer):
 
         self._param_expert = []
         # task-specific expert part
+        step = self.exp_per_task
         for i in range(0, self.task_num):
+            exp_init = [
+                pow(10, -k) for k in range(1 + i * step, step * (i + 1) + 1)
+            ]
             for j in range(0, self.exp_per_task):
                 linear = self.add_sublayer(
                     name=level_name + "_exp_" + str(i) + "_" + str(j),
                     sublayer=nn.Linear(
                         input_feature_size,
                         expert_size,
-                        #initialize the weight randly
-                        weight_attr=nn.initializer.XavierUniform(),
+                        #initialize each expert respectly
+                        weight_attr=nn.initializer.Constant(value=exp_init[j]),
                         bias_attr=nn.initializer.Constant(value=0.1),
                         name=level_name + "_exp_" + str(i) + "_" + str(j)))
                 self._param_expert.append(linear)
-
+        shared_exp_init = [pow(10, -i) for i in range(1, self.shared_num + 1)]
         # shared expert part
         for i in range(0, self.shared_num):
             linear = self.add_sublayer(
@@ -133,8 +138,9 @@ class SinglePLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     input_feature_size,
                     expert_size,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each shared expert respectly  
+                    weight_attr=nn.initializer.Constant(
+                        value=shared_exp_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_exp_shared_" + str(i)))
             self._param_expert.append(linear)
@@ -142,14 +148,15 @@ class SinglePLELayer(nn.Layer):
         # task gate part
         self._param_gate = []
         cur_expert_num = self.exp_per_task + self.shared_num
+        gate_init = [pow(10, -i) for i in range(1, self.task_num + 1)]
         for i in range(0, self.task_num):
             linear = self.add_sublayer(
                 name=level_name + "_gate_" + str(i),
                 sublayer=nn.Linear(
                     input_feature_size,
                     cur_expert_num,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    #initialize each gate respectly
+                    weight_attr=nn.initializer.Constant(value=gate_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_gate_" + str(i)))
             self._param_gate.append(linear)
@@ -162,8 +169,7 @@ class SinglePLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     input_feature_size,
                     cur_expert_num,
-                    #initialize the weight randly
-                    weight_attr=nn.initializer.XavierUniform(),
+                    weight_attr=nn.initializer.Constant(value=0.1),
                     bias_attr=nn.initializer.Constant(value=0.1),
                     name=level_name + "_gate_shared_"))
             self._param_gate_shared = linear
