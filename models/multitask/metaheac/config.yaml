@@ -1,0 +1,50 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+runner:
+  train_data_dir: "./data/train"
+  train_reader_path: "reader_train" # importlib format
+  use_gpu: True
+  use_auc: True
+#   train_batch_size: 32
+  epochs: 1
+  print_interval: 100
+  #model_init_path: "output_model_esmm/2" # init model
+  model_save_path: "output_model_esmm"
+  test_data_dir: "./data/test"
+#   infer_batch_size: 32
+  infer_reader_path: "reader_infer" # importlib format
+  infer_load_path: "output_model_esmm"
+  infer_start_epoch: 0
+  infer_end_epoch: 1
+  #use inference save model
+  use_inference: False
+  infer_train_epoch: 2
+
+hyper_parameters:
+  max_idxs: [[3, 2, 855, 5, 7, 2, 1], [124, 82, 12, 263312, 49780, 10002, 9984], [78, 137, 14, 39,32,3]]
+  embed_dim: 64
+  mlp_dims: [64, 64]
+  local_lr: 0.0002
+  num_expert: 8
+  num_output: 5
+  task_count: 5
+  batch_size: 4
+
+  optimizer:
+    class: adam
+    global_learning_rate: 0.001
+    local_test_learning_rate: 0.001
+    strategy: async
