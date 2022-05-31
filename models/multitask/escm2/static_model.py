@@ -65,39 +65,43 @@ class StaticModel():
         PS = paddle.multiply(
             ctr_out_one, paddle.cast(
                 ctr_num, dtype="float32"))
-        PS = paddle.multiply(PS, paddle.cast(ctr_num, dtype="float32"))
         min_v = paddle.full_like(PS, 0.000001)
         PS = paddle.maximum(PS, min_v)
         IPS = paddle.reciprocal(PS)
-        #batch_shape = paddle.full_like(O, 1)
-        #batch_size = paddle.sum(paddle.cast(batch_shape, dtype="float32"), axis=0)
+        batch_shape = paddle.full_like(O, 1)
+        batch_size = paddle.sum(paddle.cast(
+            batch_shape, dtype="float32"),
+                                axis=0)
         #TODO this shoud be a hyparameter
         IPS = paddle.clip(IPS, min=-15, max=15)  #online trick 
-        #IPS = paddle.multiply(IPS, batch_size)
+        IPS = paddle.multiply(IPS, batch_size)
         IPS.stop_gradient = True
         loss_cvr = paddle.multiply(loss_cvr, IPS)
         loss_cvr = paddle.multiply(loss_cvr, O)
-        return loss_cvr
+        return paddle.mean(loss_cvr)
 
-    def counterfact_dr(self, loss_cvr, ctr_num, O, ctr_out_one, imp_out):
+    def counterfact_dr(self, loss_cvr, O, ctr_out_one, imp_out):
         #dr error part
-        loss_error_first = imp_out
         e = paddle.subtract(loss_cvr, imp_out)
 
         min_v = paddle.full_like(ctr_out_one, 0.000001)
         ctr_out_one = paddle.maximum(ctr_out_one, min_v)
+        IPS = paddle.divide(paddle.cast(O, dtype="float32"), ctr_out_one)
 
-        loss_error_second = paddle.multiply(O, e)
-        loss_error_second = paddle.divide(loss_error_second, ctr_out_one)
+        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick 
+        IPS.stop_gradient = True
 
-        loss_error = loss_error_first + loss_error_second
+        loss_error_second = paddle.multiply(e, IPS)
+
+        loss_error = imp_out + loss_error_second
 
         #dr imp part
         loss_imp = paddle.square(e)
-        loss_imp = paddle.multiply(loss_imp, O)
-        loss_imp = paddle.divide(loss_imp, ctr_out_one)
+        loss_imp = paddle.multiply(loss_imp, IPS)
 
-        return loss_error + loss_imp
+        loss_dr = loss_error + loss_imp
+
+        return paddle.mean(loss_dr)
 
     def net(self, inputs, is_infer=False):
 
@@ -138,7 +142,7 @@ class StaticModel():
             input=cvr_out_one, label=paddle.cast(
                 ctcvr_buy, dtype="float32"))
         if self.counterfact_mode == "DR":
-            loss_cvr = self.counterfact_dr(loss_cvr, ctr_num, O, ctr_out_one,
+            loss_cvr = self.counterfact_dr(loss_cvr, O, ctr_out_one,
                                            out_list[6])
         else:
             loss_cvr = self.counterfact_ipw(loss_cvr, ctr_num, O, ctr_out_one)

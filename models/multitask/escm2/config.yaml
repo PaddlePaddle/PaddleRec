@@ -22,12 +22,12 @@ runner:
   train_batch_size: 2
   epochs: 3
   print_interval: 2
-  #model_init_path: "output_model_esmm/2" # init model
-  model_save_path: "output_model_esmm"
+  #model_init_path: "output_model_escm/2" # init model
+  model_save_path: "output_model_escm"
   test_data_dir: "data/train"
   infer_batch_size: 2
-  infer_reader_path: "esmm_reader" # importlib format
-  infer_load_path: "output_model_esmm"
+  infer_reader_path: "escm_reader" # importlib format
+  infer_load_path: "output_model_escm"
   infer_start_epoch: 0
   infer_end_epoch: 3
   counterfact_mode: "DR"
