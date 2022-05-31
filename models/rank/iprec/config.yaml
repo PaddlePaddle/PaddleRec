@@ -17,11 +17,10 @@ runner:
   train_reader_path: "reader"  # importlib format
   train_batch_size: 5
   model_save_path: "output_model_iprec"
-  mode: "train"
+  use_auc: True
   use_gpu: False
   epochs: 1
   print_interval: 1
-
   test_data_dir: "./data/sample_data/test"
   infer_reader_path: "reader"  # importlib format
   infer_batch_size: 5
