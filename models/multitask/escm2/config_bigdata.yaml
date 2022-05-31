@@ -23,11 +23,11 @@ runner:
   epochs: 10
   print_interval: 10
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_esmm_all"
+  model_save_path: "output_model_escm_all"
   test_data_dir: "../../../datasets/ali-ccp/test_data"
   infer_batch_size: 1024
-  infer_reader_path: "esmm_reader" # importlib format
-  infer_load_path: "output_model_esmm_all"
+  infer_reader_path: "escm_reader" # importlib format
+  infer_load_path: "output_model_escm_all"
   infer_start_epoch: 0
   infer_end_epoch: 10
   counterfact_mode: "DR"
