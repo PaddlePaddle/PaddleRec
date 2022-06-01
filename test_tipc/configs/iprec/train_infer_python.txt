@@ -42,7 +42,7 @@ inference:-u test_tipc/configs/iprec/paddle_infer.py --model_name=iprec --reader
 --enable_mkldnn:True|False
 --cpu_threads:1|6
 --batchsize:1
---enable_tensorRT:False|True
+--enable_tensorRT:False
 --precision:fp32
 --model_dir:
 --data_dir:test_tipc/data/infer
