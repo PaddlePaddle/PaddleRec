@@ -24,7 +24,7 @@ null:null
 eval:null
 null:null
 ##
-===========================infer_params===========================
+===========================infer_params==========================
 runner.model_save_path:
 runner.model_init_path:
 norm_export:-u test_tipc/configs/fgcnn/to_static.py -m ./models/rank/fgcnn/config.yaml -o runner.CE=true
