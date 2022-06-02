@@ -367,6 +367,7 @@ elif [ ${model_name} == "sign" ]; then
         cp -r ./models/rank/sign/data/* ./test_tipc/data/train
         cp -r ./datasets/sign/test/* ./test_tipc/data/infer
     fi
+    
 elif [ ${model_name} == "fgcnn" ]; then
     rm -rf ./test_tipc/data/*
     mkdir -p ./test_tipc/data/train
