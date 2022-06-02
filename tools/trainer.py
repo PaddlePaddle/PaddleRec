@@ -65,6 +65,7 @@ def main(args):
 
     # tools.vars
     use_gpu = config.get("runner.use_gpu", True)
+    use_auc = config.get("runner.use_auc", False)
     use_npu = config.get("runner.use_npu", False)
     use_xpu = config.get("runner.use_xpu", False)
     use_visual = config.get("runner.use_visual", False)
@@ -191,6 +192,8 @@ def main(args):
             metric_str += (
                 metric_list_name[metric_id] +
                 ": {:.6f},".format(metric_list[metric_id].accumulate()))
+            if use_auc:
+                metric_list[metric_id].reset()
 
         tensor_print_str = ""
         if tensor_print_dict is not None:
