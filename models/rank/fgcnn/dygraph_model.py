@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,20 +23,25 @@ class DygraphModel():
     def create_model(self, config):
         sparse_input_slot = config.get('hyper_parameters.sparse_inputs_slots')
         dense_input_slot = config.get('hyper_parameters.dense_inputs_slots')
-        sparse_feature_size = config.get("hyper_parameters.sparse_feature_size")
+        sparse_feature_size = config.get(
+            "hyper_parameters.sparse_feature_size")
         feature_name = config.get("hyper_parameters.feature_name")
         feature_dim = config.get("hyper_parameters.feature_dim", 20)
-        conv_kernel_width = config.get("hyper_parameters.conv_kernel_width", (7, 7, 7, 7))
-        conv_filters = config.get("hyper_parameters.conv_filters", (14, 16, 18, 20))
+        conv_kernel_width = config.get("hyper_parameters.conv_kernel_width",
+                                       (7, 7, 7, 7))
+        conv_filters = config.get("hyper_parameters.conv_filters",
+                                  (14, 16, 18, 20))
         new_maps = config.get("hyper_parameters.new_maps", (3, 3, 3, 3))
-        pooling_width = config.get("hyper_parameters.pooling_width", (2, 2, 2, 2))
-        stride = config.get("hyper_parameters.stride", (1,1))
-        dnn_hidden_units = config.get("hyper_parameters.dnn_hidden_units", (128,))
+        pooling_width = config.get("hyper_parameters.pooling_width",
+                                   (2, 2, 2, 2))
+        stride = config.get("hyper_parameters.stride", (1, 1))
+        dnn_hidden_units = config.get("hyper_parameters.dnn_hidden_units",
+                                      (128, ))
         dnn_dropout = config.get("hyper_parameters.dnn_dropout", 0.0)
-        fgcnn_model = net.FGCNN(sparse_input_slot, sparse_feature_size,
-                                feature_name, feature_dim,dense_input_slot,
-                                conv_kernel_width, conv_filters, new_maps,
-                                pooling_width, stride, dnn_hidden_units, dnn_dropout)
+        fgcnn_model = net.FGCNN(
+            sparse_input_slot, sparse_feature_size, feature_name, feature_dim,
+            dense_input_slot, conv_kernel_width, conv_filters, new_maps,
+            pooling_width, stride, dnn_hidden_units, dnn_dropout)
 
         return fgcnn_model
 
@@ -47,9 +52,9 @@ class DygraphModel():
         inputs = batch_data[0]
         label = batch_data[1]
         return label, inputs
-        
 
-    # define loss function by predicts and label
+# define loss function by predicts and label
+
     def create_loss(self, y_pred, label):
         loss = nn.functional.log_loss(
             y_pred, label=paddle.cast(
@@ -61,8 +66,7 @@ class DygraphModel():
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 1e-3)
         optimizer = paddle.optimizer.Adam(
-            parameters=dy_model.parameters(),
-            learning_rate=lr)
+            parameters=dy_model.parameters(), learning_rate=lr)
         return optimizer
 
     def create_metrics(self):

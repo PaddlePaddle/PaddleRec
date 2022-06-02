@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#   Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import paddle
 from paddle.io import IterableDataset
 import h5py
 
+
 class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super(RecDataset, self).__init__()
@@ -34,4 +35,3 @@ class RecDataset(IterableDataset):
                 output_list.append(l[0:39].astype('int64'))
                 output_list.append(l[39:].astype('int64'))
                 yield output_list
-
