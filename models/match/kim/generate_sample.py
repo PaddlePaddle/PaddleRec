@@ -11,26 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 import pandas as pd
 import json
 import numpy as n
 
-base = '/home/xianglingyang/project/paddle_family/paddle_reproduction/PaddleRec/models/recall/kim/data/whole_data/'
-base2 = '/home/xianglingyang/project/paddle_family/paddle_reproduction/PaddleRec/models/recall/kim/data/sample_data/'
+base = '/home/aistudio/paddlrec/datasets/kim/data/whole_data/'
+base2 = '/home/aistudio/paddlrec/datasets/kim/data/sample_data/'
+os.makedirs(base2, exist_ok=True)
 KGGraph = base + 'KGGraph.json'
 
-doc = pd.read_csv(
-    '/home/xianglingyang/project/paddle_family/paddle_reproduction/PaddleRec/models/recall/kim/data/whole_data/docs.tsv',
-    sep='\t',
-    header=None)
+doc = pd.read_csv(base + 'docs.tsv', sep='\t', header=None)
 
 doc_names = doc[0].tolist()
-train_file = '/home/xianglingyang/project/paddle_family/paddle_reproduction/PaddleRec/models/recall/kim/data/sample_data/train.tsv'
+train_file = base2 + 'train.tsv'
 train = pd.read_csv(train_file, sep='\t', header=None)
 train = train.dropna()
 train.to_csv(train_file, sep='\t', header=None, index=None)
-test_file = '/home/xianglingyang/project/paddle_family/paddle_reproduction/PaddleRec/models/recall/kim/data/sample_data/test.tsv'
+test_file = base2 + 'test.tsv'
 test = pd.read_csv(test_file, sep='\t', header=None)
 test = test.dropna()
 test.to_csv(test_file, sep='\t', header=None, index=None)

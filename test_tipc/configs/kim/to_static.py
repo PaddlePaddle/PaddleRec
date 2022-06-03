@@ -84,12 +84,13 @@ def main(args):
         model_save_path = os.path.join(model_save_path, str(end_epoch - 1))
     load_model(model_init_path, dy_model)
     # example dnn model forward
-    dy_model = paddle.jit.to_static(
-        dy_model,
-        input_spec=[[
-            paddle.static.InputSpec(
-                shape=[None], dtype='int64') for i in range(18)
-        ]])
+    shape_and_dtype = [
+        [(None, 30), 'int32'], [(None, 10, 100), 'float32'],
+        [(None, 10, 10, 100), 'float32'], [(None, 50, 30), 'int32'],
+        [(None, 50, 10, 100), 'float32'], [(None, 50, 10, 10, 100), 'float32']
+    ]
+    input_spec = [paddle.static.InputSpec(*x) for x in shape_and_dtype]
+    dy_model = paddle.jit.to_static(dy_model, input_spec=input_spec)
     save_jit_model(dy_model, model_save_path, prefix='tostatic')
 
 

@@ -19,7 +19,7 @@ runner:
   train_reader_path: "mind_reader" # importlib format
   use_gpu: False
   use_auc: False
-  train_batch_size: 2
+  train_batch_size: 1
   epochs: 1
   print_interval: 1
   #model_init_path: "output_model/0" # init model
@@ -30,6 +30,7 @@ runner:
   infer_load_path: "output_model_kim"
   infer_start_epoch: 0
   infer_end_epoch: 1
+  random_emb: false
 
 # hyper parameters of user-defined network
 hyper_parameters:

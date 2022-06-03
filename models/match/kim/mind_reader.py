@@ -33,6 +33,7 @@ npratio = 4
 
 class RecDataset(Dataset):
     def __init__(self, file_list, config):
+        random_emb = config.get('runner.random_emb', False)
         KG_root_path = embedding_path = data_root_path = config[
             'runner.train_data_dir']
         max_entity_num = config['hyper_parameters.max_entity_num']
@@ -41,7 +42,7 @@ class RecDataset(Dataset):
         news_title, news_vert, news_subvert = get_doc_input(
             news, news_index, category_dict, subcategory_dict, word_dict)
         graph, EntityId2Index, EntityIndex2Id, entity_embedding = load_entity_metadata(
-            KG_root_path)
+            KG_root_path, random_emb=random_emb)
         news_entity = load_news_entity(news, EntityId2Index, data_root_path)
         news_entity_index = parse_zero_hop_entity(EntityId2Index, news_entity,
                                                   news_index, max_entity_num)
@@ -266,7 +267,7 @@ def get_doc_input(news, news_index, category, subcategory, word_dict):
     return news_title, news_vert, news_subvert
 
 
-def load_entity_metadata(KG_root_path):
+def load_entity_metadata(KG_root_path, random_emb=False):
     # Entity Table
     with open(os.path.join(KG_root_path, 'entity2id.txt')) as f:
         lines = f.readlines()
@@ -277,9 +278,11 @@ def load_entity_metadata(KG_root_path):
         eid, eindex = lines[i].strip('\n').split('\t')
         EntityId2Index[eid] = int(eindex)
         EntityIndex2Id[int(eindex)] = eid
-
-    entity_embedding = np.load(
-        os.path.join(KG_root_path, 'entity_embedding.npy'))
+    if random_emb:
+        entity_embedding = np.random.randn(4150, 100)
+    else:
+        entity_embedding = np.load(
+            os.path.join(KG_root_path, 'entity_embedding.npy'))
     entity_embedding = np.concatenate(
         [entity_embedding, np.zeros((1, 100))], axis=0)
 
