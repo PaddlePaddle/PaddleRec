@@ -424,7 +424,6 @@ class KIMLayer(nn.Layer):
             title_inputs, entity_inputs, one_hop_inputs, clicked_title_input,
             clicked_entity_input, clicked_one_hop_input
         ]
-        print([y.shape for y in x])
         if self.training:
             doc_score = []
             for i in range(5):
