@@ -367,4 +367,29 @@ elif [ ${model_name} == "sign" ]; then
         cp -r ./models/rank/sign/data/* ./test_tipc/data/train
         cp -r ./datasets/sign/test/* ./test_tipc/data/infer
     fi
+    elif [ ${model_name} == "kim" ]; then
+    rm -rf ./test_tipc/data/*
+    mkdir -p ./test_tipc/data/
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/match/kim/data/* ./test_tipc/data/
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/kim
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/kim/data/* ./test_tipc/data/
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/kim
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/kim/data/* ./test_tipc/data/
+        echo "whole data ready"
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/kim
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/kim/data/* ./test_tipc/data/
+        echo "whole data ready"
+    fi
 fi
