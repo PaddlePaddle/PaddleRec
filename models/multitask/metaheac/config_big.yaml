@@ -14,7 +14,7 @@
 
 
 runner:
-  train_data_dir: "../../../../data/data137870/Lookalike_data/train"
+  train_data_dir: "../../../datasets/Lookalike/train_data"
   train_reader_path: "reader_train" # importlib format
   use_gpu: True
   use_auc: True
@@ -23,8 +23,8 @@ runner:
   print_interval: 100
   #model_init_path: "output_model_esmm/2" # init model
   model_save_path: "output_model_esmm"
-#   test_data_dir: "../../../../data/data137870/Lookalike_data/infer_hot"
-  test_data_dir: "../../../../data/data137870/Lookalike_data/infer_cold"
+#   test_data_dir: "../../../datasets/Lookalike/test_hot_data"
+  test_data_dir: "../../../datasets/Lookalike/test_cold_data"
 #   infer_batch_size: 32
   infer_reader_path: "reader_infer" # importlib format
   infer_load_path: "output_model_esmm"
