@@ -32,11 +32,11 @@ npratio = 4
 
 
 class RecDataset(Dataset):
-    def __init__(self, file_list, config):
-        random_emb = config.get('runner.random_emb', False)
-        KG_root_path = embedding_path = data_root_path = config[
-            'runner.train_data_dir']
-        max_entity_num = config['hyper_parameters.max_entity_num']
+    def __init__(self, file_list, config, mode=None):
+        random_emb = config.get('runner.random_emb', True)
+        KG_root_path = embedding_path = data_root_path = os.path.dirname(
+            file_list[0])
+        max_entity_num = config.get('hyper_parameters.max_entity_num', 10)
         news, news_index, category_dict, subcategory_dict, word_dict = read_news(
             data_root_path, 'docs.tsv')
         news_title, news_vert, news_subvert = get_doc_input(
@@ -49,9 +49,9 @@ class RecDataset(Dataset):
         one_hop_entity = parse_one_hop_entity(EntityId2Index, EntityIndex2Id,
                                               news_entity_index, graph,
                                               news_index, max_entity_num)
-        mode = config.get('mode', 'train')
+        mode = mode or config.get('mode', 'train')
         if mode == 'train':
-            batch_size = config.get('runner.train_batch_size', 16)
+            batch_size = config.get('runner.train_batch_size', 1)
             train_session = read_clickhistory(data_root_path, news_index,
                                               'train.tsv')
             train_user = parse_user(news_index, train_session)
@@ -67,7 +67,7 @@ class RecDataset(Dataset):
                 'float32')
 
         elif mode == 'test':
-            batch_size = config.get('runner.train_batch_size', 64)
+            batch_size = config.get('runner.test_batch_size', 1)
             test_session = read_clickhistory(data_root_path, news_index,
                                              'test.tsv')
             test_user = parse_user(news_index, test_session)

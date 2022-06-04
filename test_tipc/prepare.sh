@@ -369,27 +369,27 @@ elif [ ${model_name} == "sign" ]; then
     fi
     elif [ ${model_name} == "kim" ]; then
     rm -rf ./test_tipc/data/*
-    mkdir -p ./test_tipc/data/
+    mkdir -p ./test_tipc/data/train
     if [ ${MODE} = "lite_train_lite_infer" ];then
-        cp -r ./models/match/kim/data/* ./test_tipc/data/
+        cp -r ./models/match/kim/data/sample_data/* ./test_tipc/data/train
         echo "demo data ready"
     elif [ ${MODE} = "whole_train_whole_infer" ];then
         cd ./datasets/kim
         bash run.sh
         cd ../..
-        cp -r ./datasets/kim/data/* ./test_tipc/data/
+        cp -r ./datasets/kim/data/whole_data/* ./test_tipc/data/train
         echo "whole data ready"
     elif [ ${MODE} = "whole_infer" ];then
         cd ./datasets/kim
         bash run.sh
         cd ../..
-        cp -r ./datasets/kim/data/* ./test_tipc/data/
+        cp -r ./datasets/kim/data/whole_data/* ./test_tipc/data/train
         echo "whole data ready"
     elif [ ${MODE} = "lite_train_whole_infer" ];then
         cd ./datasets/kim
         bash run.sh
         cd ../..
-        cp -r ./datasets/kim/data/* ./test_tipc/data/
+        cp -r ./datasets/kim/data/whole_data/* ./test_tipc/data/train
         echo "whole data ready"
     fi
 fi
