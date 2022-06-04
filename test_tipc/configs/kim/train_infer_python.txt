@@ -38,7 +38,7 @@ infer_model:test_tipc/save_kim_model
 infer_export:null
 infer_quant:False
 inference:-u test_tipc/configs/kim/paddle_infer.py --model_name=kim --reader_file=./models/match/kim/mind_reader.py
---use_gpu:True|False
+--use_gpu:True
 --enable_mkldnn:True|False
 --cpu_threads:1|6
 --batchsize:1
