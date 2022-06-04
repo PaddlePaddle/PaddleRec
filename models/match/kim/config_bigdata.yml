@@ -30,6 +30,7 @@ runner:
   infer_load_path: "output_model_kim_all"
   infer_start_epoch: 6
   infer_end_epoch: 8
+  random_emb: false
 
 # hyper parameters of user-defined network
 hyper_parameters:
