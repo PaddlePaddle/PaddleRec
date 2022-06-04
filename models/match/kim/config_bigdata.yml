@@ -15,7 +15,7 @@
 # global settings
 
 runner:
-  train_data_dir: "./data/whole_data"
+  train_data_dir: "../../../datasets/kim/data/whole_data"
   train_reader_path: "mind_reader" # importlib format
   use_gpu: True
   use_auc: False
@@ -24,7 +24,7 @@ runner:
   print_interval: 50
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_kim_all"
-  test_data_dir: "./data/whole_data"
+  test_data_dir: "../../../datasets/kim/data/whole_data"
   infer_reader_path: "mind_reader" # importlib format
   infer_batch_size: 64
   infer_load_path: "output_model_kim_all"
