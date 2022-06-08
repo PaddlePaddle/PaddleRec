@@ -44,7 +44,7 @@
 ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate》](  https://arxiv.org/abs/1804.07931  )文章基于 Multi-Task Learning 的思路，提出一种新的CVR预估模型——ESMM，有效解决了真实场景中CVR预估面临的数据稀疏以及样本选择偏差这两个关键问题
 
 ## 数据准备
-我们在开源数据集[Ali-CCP：Alibaba Click and Conversion Prediction](  https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408  )上验证模型效果。在模型目录的data目录下为您准备了快速运行的示例数据，若需要使用全量数据可以参考下方[效果复现](#效果复现)部分。
+我们在开源数据集[Ali-CCP：Alibaba Click and Conversion Prediction](https://tianchi.aliyun.com/datalab/dataSet.html?dataId=408)上验证模型效果。在模型目录的data目录下为您准备了快速运行的示例数据，若需要使用全量数据可以参考下方[效果复现](#效果复现)部分。
 数据格式参见demo数据：data/train
 
 ## 运行环境
@@ -77,7 +77,7 @@ ESMM是发表在 SIGIR’2018 的论文[《Entire Space Multi-Task Model: An E�
 <img align="center" src="../../../doc/imgs/esmm.png">
 <p>
 
-### 效果复现
+## 效果复现
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。 
 在全量数据下模型的训练指标如下：
 | 模型 | auc_ctr | batch_size | epoch_num | Time of each epoch |

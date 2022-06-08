@@ -254,7 +254,7 @@ class Main(object):
             logger.info("training a new day {}, end_day = {}".format(
                 day, self.end_day))
             if last_day != -1 and int(day) < last_day:
-                day = int(get_next_day(day))
+                day = get_next_day(day)
                 continue
             # base_model_saved = False
             for pass_id in range(1, 1 + len(self.online_intervals)):
@@ -409,18 +409,24 @@ class Main(object):
                                 monitor_data=metric_str)
                 fleet.barrier_worker()
 
+            logger.info("shrink table")
+            begin = time.time()
+            fleet.shrink()
+            end = time.time()
+            logger.info("shrink table done, cost %s min" % (
+                (end - begin) / 60.0))
+
             if fleet.is_first_worker():
                 last_base_day, last_base_path, last_base_key = get_last_save_xbox_base(
                     self.save_model_path, self.hadoop_client)
                 logger.info(
                     "one epoch finishes, get_last_save_xbox, last_base_day = {}, last_base_path = {}, last_base_key = {}".
                     format(last_base_day, last_base_path, last_base_key))
-                next_day = int(get_next_day(day))
-                if next_day <= last_base_day:
+                next_day = get_next_day(day)
+                if int(next_day) <= last_base_day:
                     logger.info("batch model/base xbox model exists")
                 else:
                     xbox_base_key = int(time.time())
-                    fleet.shrink()
                     save_xbox_model(self.save_model_path, next_day, -1,
                                     self.exe, self.inference_feed_vars,
                                     self.inference_target_var,
