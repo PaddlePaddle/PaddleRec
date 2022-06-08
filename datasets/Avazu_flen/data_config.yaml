@@ -14,7 +14,7 @@
 
 
 runner:
-  raw_file_dir: "path"  # raw_data dir
+  raw_file_dir: "raw_file/train"  # raw_data dir
   raw_filled_file_dir: "./raw_data" # raw_data_filled dir
   train_data_dir: "./train_data_full"  # train datasets
   test_data_dir:  "./test_data_full"  # test datasets

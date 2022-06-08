@@ -20,7 +20,7 @@
 ## [deepfm (DeepFM: A Factorization-Machine based Neural Network for CTR Prediction)](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/deepfm)
 ## [logistic_regression ( - )](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/logistic_regression)
 ## [wide&deep (Wide & Deep Learning for Recommender Systems)](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/wide_deep)
-## [gatenet (GateNet: Gating-Enhanced Deep Network for Click-Through Rate Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/gateDnn)
+## [gatenet (GateNet: Gating-Enhanced Deep Network for Click-Through Rate Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/gatenet)
 ## [naml (Neural News Recommendation with Attentive Multi-View Learning)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/naml)
 ## [bst (Behavior Sequence Transformer for E-commerce Recommendation in Alibaba)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/bst)
 ## [dcn (Deep & Cross Network for Ad Click Predictions)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dcn)

@@ -270,7 +270,7 @@ score_pairs {
 python3 -u ../../../tools/static_trainer.py -m recall/movie.yaml
 python3 -u ../../../tools/static_trainer.py -m recall/user.yaml
 ```
-训练好的user/movie模型首先需要参照[Paddle保存的预测模型转为Paddle Serving格式可部署的模型](https://github.com/PaddlePaddle/Serving/blob/develop/doc/SAVE_CN.md)
+训练好的user/movie模型首先需要参照[Paddle保存的预测模型转为Paddle Serving格式可部署的模型](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Save_CN.md)
 
 2. 获得用于milvus建库的电影向量文件
 `movie.yaml`训练所保存的模型可以用于生成全库的电影向量。需要将数据 movie.dat 复制一份到 get_movie_vector.py 同一目录下，在运行的时候需要直接读取数据集。此外 serving_service 也需要和 get_movie_vector.py 放在同一级目录。运行
