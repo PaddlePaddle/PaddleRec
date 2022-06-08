@@ -55,7 +55,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在kim模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/match/match-pyramid # 在任意目录均可运行
+# cd models/match/kim # 在任意目录均可运行
 # 动态图训练
 python -u trainer.py -m config.yaml -o mode=train # 全量数据运行config_bigdata.yaml 
 # 动态图预测
@@ -87,10 +87,10 @@ python -u infer.py -m config.yaml -o mode=test
 cd ../../../datasets/kim
 bash run.sh
 ```
-3. 切回模型目录f
+3. 切回模型目录
 ```bash
-python -u trainer.py -m config_bigdata.yml -o mode=train
-python -u infer.py -m config_bigdata.yml -o mode=test
+python -u trainer.py -m config_bigdata.yaml -o mode=train
+python -u infer.py -m config_bigdata.yaml -o mode=test
 ```
 
 ## 进阶使用
