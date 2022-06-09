@@ -378,23 +378,23 @@ elif [ ${model_name} == "fgcnn" ]; then
         echo "demo data ready"
     elif [ ${MODE} = "whole_train_whole_infer" ];then
         cd ./datasets/criteo_fgcnn
-        bash download.sh
+        bash run.sh
         cd ../..
-        cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/train.h5 ./test_tipc/data/train
-        cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/valid.h5 ./test_tipc/data/infer
+        cp -r ./datasets/criteo_fgcnn/train/train.h5 ./test_tipc/data/train
+        cp -r ./datasets/criteo_fgcnn/test/valid.h5 ./test_tipc/data/infer
         echo "whole data ready"
     elif [ ${MODE} = "whole_infer" ];then
         cd ./datasets/criteo_fgcnn
-        bash download.sh
+        bash run.sh
         cd ../..
-        cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/train.h5 ./test_tipc/data/train
-        cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/valid.h5 ./test_tipc/data/infer
+        cp -r ./datasets/criteo_fgcnn/train/train.h5 ./test_tipc/data/train
+        cp -r ./datasets/criteo_fgcnn/test/valid.h5 ./test_tipc/data/infer
         echo "whole data ready"
     elif [ ${MODE} = "lite_train_whole_infer" ];then
         cd ./datasets/criteo_fgcnn
-        bash download.sh
+        bash run.sh
         cd ../..
         cp -r ./models/rank/fgcnn/data/trainlite/* ./test_tipc/data/train
-        cp -r ./datasets/criteo_fgcnn/criteo_x4_5c863b0f_c15c45a1/valid.h5 ./test_tipc/data/infer
+        cp -r ./datasets/criteo_fgcnn/test/valid.h5 ./test_tipc/data/infer
     fi
 fi

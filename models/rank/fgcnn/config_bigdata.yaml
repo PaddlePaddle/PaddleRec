@@ -15,7 +15,7 @@
 # global settings 
 
 runner:
-  train_data_dir: "data/train"
+  train_data_dir: "../../../datasets/criteo_fgcnn/train"
   train_reader_path: "reader" # importlib format
   use_gpu: True
   use_auc: True
@@ -24,7 +24,7 @@ runner:
   print_interval: 2000
   # model_init_path: "output_model_all_fgcnn/1" # init model
   model_save_path: "output_model_all_fgcnn"
-  test_data_dir: "data/test"
+  test_data_dir: "../../../datasets/criteo_fgcnn/test"
   infer_reader_path: "reader" # importlib format
   infer_batch_size: 5000
   infer_load_path: "output_model_all_fgcnn"
