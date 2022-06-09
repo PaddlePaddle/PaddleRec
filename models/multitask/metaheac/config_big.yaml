@@ -21,13 +21,12 @@ runner:
 #   train_batch_size: 32
   epochs: 1
   print_interval: 100
-  #model_init_path: "output_model_esmm/2" # init model
-  model_save_path: "output_model_esmm"
-#   test_data_dir: "../../../datasets/Lookalike/test_hot_data"
-  test_data_dir: "../../../datasets/Lookalike/test_cold_data"
+  model_save_path: "output_model_metaheac_all"
+  test_data_dir: "../../../datasets/Lookalike/test_hot_data"
+#   test_data_dir: "../../../datasets/Lookalike/test_cold_data"
 #   infer_batch_size: 32
   infer_reader_path: "reader_infer" # importlib format
-  infer_load_path: "output_model_esmm"
+  infer_load_path: "output_model_metaheac_all"
   infer_start_epoch: 0
   infer_end_epoch: 1
   #use inference save model
