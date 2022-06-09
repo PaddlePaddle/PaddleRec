@@ -91,6 +91,7 @@
    models/multitask/ple.md
    models/multitask/share_bottom.md
    models/multitask/dselect_k.md
+   models/multitask/metaheac.md
    
 .. toctree::
    :maxdepth: 1

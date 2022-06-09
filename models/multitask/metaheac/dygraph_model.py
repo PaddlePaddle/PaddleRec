@@ -79,8 +79,8 @@ class DygraphModel():
 
     # construct train forward phase
     def train_forward(self, dy_model, metric_list, batch, config):
-        # print(len(batch))
-        # exit(0)
+        # x_spt.shape = x_qry.shape = [task_count,batchsize,7+50+7+6]
+        # y_spt.shape = y_qry.shape = [task_count,batchsize,1]
         x_spt, y_spt, x_qry, y_qry = self.create_feeds(batch, config)
 
         task_count = config.get("hyper_parameters.task_count", 5)
@@ -116,7 +116,7 @@ class DygraphModel():
             query_set_y_pred = dy_model(x_qry[i])
             label = paddle.squeeze(y_qry[i].astype('float32'))
             loss_q = criterion(query_set_y_pred, label)
-            losses_q.append(loss_q)
+            losses_q.append(loss_q)  # Save the loss on the subtask dataset
 
         loss_average = paddle.stack(losses_q).mean(0)
         print_dict = {'loss': loss_average}
