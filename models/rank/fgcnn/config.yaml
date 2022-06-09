@@ -17,7 +17,7 @@
 runner:
   train_data_dir: "data/trainlite"
   train_reader_path: "reader" # importlib format
-  use_gpu: True
+  use_gpu: False
   use_auc: True
   train_batch_size: 10
   epochs: 1
@@ -41,11 +41,11 @@ hyper_parameters:
   sparse_feature_size: 1000000
   feature_name: ['I1','I2','I3','I4','I5','I6','I7','I8','I9','I10','I11','I12','I13','C1','C2','C3','C4','C5','C6','C7','C8','C9','C10','C11','C12','C13','C14','C15','C16','C17', 'C18','C19', 'C20', 'C21', 'C22','C23', 'C24', 'C25', 'C26']
   dense_inputs_slots: 13
-  feature_dim: 20
-  conv_kernel_width: [ 9, 9, 9, 9]
-  conv_filters: [38, 40, 42, 44]
-  new_maps: [3, 3, 3, 3]
-  pooling_width: [2, 2, 2, 2]
+  feature_dim: 5
+  conv_kernel_width: [ 3, 3, 3]
+  conv_filters: [10, 12, 14]
+  new_maps: [3, 3, 3]
+  pooling_width: [2, 2, 2]
   stride: [1, 1]
-  dnn_hidden_units: [100, 100, 100]
+  dnn_hidden_units: [3, 3, 3]
   dnn_dropout: 0.0

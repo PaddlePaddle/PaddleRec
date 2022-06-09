@@ -47,7 +47,6 @@ class DygraphModel():
 
     # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
-        # print(len(batch_data))
         inputs = paddle.to_tensor(np.array(batch_data[0]).astype('int64'))
         inputs = batch_data[0]
         label = batch_data[1]
@@ -77,7 +76,6 @@ class DygraphModel():
 
     # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
-        # 稠密向量
         label, inputs = self.create_feeds(batch_data, config)
         pred = dy_model.forward(inputs)
         loss = self.create_loss(pred, label)
@@ -89,10 +87,8 @@ class DygraphModel():
         return loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
-        # label, sparse_tensor = self.create_feeds(batch_data, config)
         label, inputs = self.create_feeds(batch_data, config)
         pred = dy_model.forward(inputs)
-        # pred = dy_model.forward(sparse_tensor)
         loss = self.create_loss(pred, label)
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)

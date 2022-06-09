@@ -74,6 +74,7 @@
    models/rank/dlrm.md
    models/rank/dmr.md
    models/rank/dnn.md
+   models/rank/fgcnn.md
    models/rank/ffm.md
    models/rank/fm.md
    models/rank/gatenet.md

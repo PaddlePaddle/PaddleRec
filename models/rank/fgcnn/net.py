@@ -73,8 +73,6 @@ class FGCNN(nn.Layer):
                 in_features=dnn_hidden_units[-1], out_features=1))
 
     def forward(self, inputs):
-        # print('*************************************')
-        # print(type(inputs))
         inputs = paddle.to_tensor(inputs)
         fg_input_list = []
         origin_input_list = []
@@ -121,6 +119,7 @@ class FGCNNLayer(nn.Layer):
         self.pooling_width = pooling_width
         self.stride = stride
         self.init()
+        # CNN network using tanh activation function and pooling layer
         self.conv_pooling = nn.LayerList([
             nn.Sequential(
                 nn.Conv2D(
@@ -136,6 +135,7 @@ class FGCNNLayer(nn.Layer):
                     stride=(self.pooling_width[i], 1)), )
             for i in range(len(self.filters))
         ])
+        # fully connected layer to combine all the local features
         self.recombination = nn.LayerList([
             nn.Sequential(
                 nn.Linear(
@@ -144,16 +144,18 @@ class FGCNNLayer(nn.Layer):
                     out_features=self.pooling_shape[i] * self.embedding_size *
                     self.new_maps[i],
                     name='fgcnn_linear_%d' % i),
-                nn.Tanh()
-                # nn.ReLU()
-            ) for i in range(len(self.filters))
+                nn.Tanh()) for i in range(len(self.filters))
         ])
 
     def forward(self, inputs):
+        # inputs shape: [batch_size, feature_num_field, embedding_size]
         feature = inputs.unsqueeze(1)
+        # feature shape: [batch_size, 1, feature_num_field, embedding_size]
         new_feature_list = []
         for i in range(0, len(self.filters)):
+            # use convolution layer to get new local feature
             feature = self.conv_pooling[i](feature)
+            # use recombination layer to get new important features
             result = self.recombination[i](paddle.flatten(
                 feature, start_axis=1))
             new_feature_list.append(
@@ -162,6 +164,7 @@ class FGCNNLayer(nn.Layer):
                     shape=(-1, self.pooling_shape[i] * self.new_maps[i],
                            self.embedding_size)))
         new_features = paddle.concat(new_feature_list, axis=1)
+        # new_features shape: [batch_size, new_feature_num, embedding_size]
         return new_features
 
     def init(self):
