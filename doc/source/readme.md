@@ -51,4 +51,5 @@
 [autofis](https://paddlerec.readthedocs.io/en/latest/models/rank/autofis.html)  
 [aitm](https://paddlerec.readthedocs.io/en/latest/models/rank/aitm.html)  
 [dsin](https://paddlerec.readthedocs.io/en/latest/models/rank/dsin.html)  
-[sign](https://paddlerec.readthedocs.io/en/latest/models/rank/sign.html)  
+[sign](https://paddlerec.readthedocs.io/en/latest/models/rank/sign.html)
+[iprec](https://paddlerec.readthedocs.io/en/latest/models/rank/iprec.html)
