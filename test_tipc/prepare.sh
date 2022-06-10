@@ -394,6 +394,7 @@ elif [ ${model_name} == "fgcnn" ]; then
         cd ../..
         cp -r ./models/rank/fgcnn/data/trainlite/* ./test_tipc/data/train
         cp -r ./datasets/criteo_fgcnn/test/valid.h5 ./test_tipc/data/infer
+    fi
 elif [ ${model_name} == "iprec" ]; then
     mkdir -p ./test_tipc/data/train
     mkdir -p ./test_tipc/data/infer
