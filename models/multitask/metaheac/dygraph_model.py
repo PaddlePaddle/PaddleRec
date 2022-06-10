@@ -33,8 +33,6 @@ class DygraphModel():
 
         meta_model = net.WideAndDeepModel(max_idxs, embed_dim, mlp_dims,
                                           num_expert, num_output)
-        # model_state_dict = paddle.load('paddle.pkl')
-        # meta_model.set_dict(model_state_dict)
 
         return meta_model
 
@@ -117,6 +115,10 @@ class DygraphModel():
             label = paddle.squeeze(y_qry[i].astype('float32'))
             loss_q = criterion(query_set_y_pred, label)
             losses_q.append(loss_q)  # Save the loss on the subtask dataset
+
+            pred = paddle.unsqueeze(query_set_y_pred, 1)
+            pred = paddle.concat([1 - pred, pred], 1)
+            metric_list[0].update(preds=pred.numpy(), labels=label.numpy())
 
         loss_average = paddle.stack(losses_q).mean(0)
         print_dict = {'loss': loss_average}
