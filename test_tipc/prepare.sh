@@ -338,7 +338,6 @@ elif [ ${model_name} == "aitm" ]; then
         cp -r ./datasets/ali-cpp_aitm/whole_data/train/* ./test_tipc/data/train
         cp -r ./datasets/ali-cpp_aitm/whole_data/test/* ./test_tipc/data/infer
     fi
-
 elif [ ${model_name} == "sign" ]; then
     rm -rf ./test_tipc/data/*
     mkdir -p ./test_tipc/data/train
@@ -367,7 +366,6 @@ elif [ ${model_name} == "sign" ]; then
         cp -r ./models/rank/sign/data/* ./test_tipc/data/train
         cp -r ./datasets/sign/test/* ./test_tipc/data/infer
     fi
-    
 elif [ ${model_name} == "fgcnn" ]; then
     rm -rf ./test_tipc/data/*
     mkdir -p ./test_tipc/data/train
@@ -396,5 +394,31 @@ elif [ ${model_name} == "fgcnn" ]; then
         cd ../..
         cp -r ./models/rank/fgcnn/data/trainlite/* ./test_tipc/data/train
         cp -r ./datasets/criteo_fgcnn/test/valid.h5 ./test_tipc/data/infer
+elif [ ${model_name} == "iprec" ]; then
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/rank/iprec/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./models/rank/iprec/data/sample_data/test/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/iprec
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/iprec/whole_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/iprec/whole_data/test/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/iprec
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/iprec/whole_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/iprec/whole_data/test/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/iprec
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/iprec/whole_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/iprec/whole_data/test/* ./test_tipc/data/infer
     fi
 fi
