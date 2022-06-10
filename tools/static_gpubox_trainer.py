@@ -123,7 +123,10 @@ class Main(object):
         gpus_env = os.getenv("FLAGS_selected_gpus")
         self.PSGPU = paddle.fluid.core.PSGPU()
         gpuslot = [int(i) for i in range(1, self.model.sparse_inputs_slots)]
+        gpu_mf_sizes = [self.model.sparse_feature_dim - 1] * (
+            self.model.sparse_inputs_slots - 1)
         self.PSGPU.set_slot_vector(gpuslot)
+        self.PSGPU.set_slot_dim_vector(gpu_mf_sizes)
         self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
         opt_info = paddle.fluid.default_main_program()._fleet_opt
         if use_auc is True:
@@ -139,7 +142,6 @@ class Main(object):
             if sync_mode == "heter":
                 self.heter_train_loop(epoch)
             elif sync_mode == "gpubox":
-                self.reader._set_use_ps_gpu(1)
                 self.dataset_train_loop(epoch)
             elif reader_type == "QueueDataset":
                 self.dataset_train_loop(epoch)
@@ -171,6 +173,7 @@ class Main(object):
                     "Epoch: {}, using time {} second, ips {} {}/sec.".format(
                         epoch, epoch_time, epoch_speed, self.count_method))
             self.train_result_dict["speed"].append(epoch_speed)
+            self.PSGPU.end_pass()
 
             model_dir = "{}/{}".format(save_model_path, epoch)
             if fleet.is_first_worker(
@@ -181,7 +184,6 @@ class Main(object):
                     self.inference_target_var)
             fleet.barrier_worker()
             self.reader.release_memory()
-            self.PSGPU.end_pass()
             logger.info("finish {} epoch training....".format(epoch))
         self.PSGPU.finalize()
 

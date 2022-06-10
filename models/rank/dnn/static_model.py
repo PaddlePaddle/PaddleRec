@@ -51,9 +51,15 @@ class StaticModel():
             shape=[None, self.dense_input_dim],
             dtype="float32")
 
+        # sparse_input_ids = [
+        #     paddle.static.data(
+        #         name="C" + str(i), shape=[None, 1], dtype="int64")
+        #     for i in range(1, self.sparse_inputs_slots)
+        # ]
+
         sparse_input_ids = [
             paddle.static.data(
-                name="C" + str(i), shape=[None, 1], dtype="int64")
+                name=str(i), shape=[None, 1], dtype="int64")
             for i in range(1, self.sparse_inputs_slots)
         ]
 
@@ -77,8 +83,15 @@ class StaticModel():
             self.fc_sizes,
             sync_mode=self.sync_mode)
 
+        self.cast_label = paddle.cast(self.label_input, dtype='float32')
+        ones = paddle.fluid.layers.fill_constant_batch_size_like(
+            input=self.label_input, shape=[-1, 1], dtype="float32", value=1)
+        show_click = paddle.cast(
+            paddle.concat(
+                [ones, self.cast_label], axis=1), dtype='float32')
+        show_click.stop_gradient = True
         raw_predict_2d = dnn_model.forward(self.sparse_inputs,
-                                           self.dense_input)
+                                           self.dense_input, show_click)
 
         predict_2d = paddle.nn.functional.softmax(raw_predict_2d)
 
