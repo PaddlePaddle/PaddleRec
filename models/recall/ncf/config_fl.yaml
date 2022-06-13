@@ -1,0 +1,50 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runner:
+  sync_mode: "async" # 可选, string: sync/async/geo
+  #geo_step: 400 # 可选, int, 在geo模式下控制本地的迭代次数
+  split_file_list: True # 可选, bool, 若每个节点上都拥有全量数据，则需设置为True
+  thread_num: 1 # 多线程配置
+
+  # reader类型，分布式下推荐QueueDataset
+  reader_type: "QueueDataset" # DataLoader / QueueDataset / RecDataset
+  pipe_command: "python queuedataset_reader.py" # QueueDataset 模式下的数据pipe命令
+  dataset_debug: False # QueueDataset 模式下 Profiler 开关
+
+  train_data_dir: "../../../datasets/movielens_pinterest_NCF/fl_data/fl_train_data"
+  train_reader_path: "movielens_reader"  # importlib format
+  train_batch_size: 256
+  model_save_path: "output_model_ncf"
+
+  use_gpu: False
+  epochs: 1
+  print_interval: 50
+  
+  test_data_dir: "../../../datasets/movielens_pinterest_NCF/fl_data/fl_test_data"
+  infer_reader_path: "movielens_reader"  # importlib format
+  infer_batch_size: 1
+  infer_load_path: "output_model_ncf"
+  infer_start_epoch: 2
+  infer_end_epoch: 3
+
+hyper_parameters:
+  optimizer: 
+    class: adam
+    learning_rate: 0.001
+  num_users: 6040
+  num_items: 3706
+  mf_dim: 8
+  mode: "NCF_MLP"  # optional: NCF_NeuMF, NCF_GMF, NCF_MLP
+  fc_layers: [64, 32, 16, 8]
