@@ -144,9 +144,7 @@ class Main(object):
         for epoch in range(epochs):
             epoch_start_time = time.time()
 
-            if sync_mode == "heter":
-                self.heter_train_loop(epoch)
-            elif reader_type == "QueueDataset":
+            if reader_type == "QueueDataset":
                 self.dataset_train_loop(epoch)
             elif reader_type == "InmemoryDataset":
                 self.dataset_train_loop(epoch)
@@ -218,48 +216,6 @@ class Main(object):
             fetch_info=fetch_info,
             print_period=print_step,
             debug=debug)
-
-    def heter_train_loop(self, epoch):
-        logger.info(
-            "Epoch: {}, Running Begin. Check running metrics at heter_log".
-            format(epoch))
-        reader_type = self.config.get("runner.reader_type")
-        if reader_type == "QueueDataset":
-            self.exe.train_from_dataset(
-                program=paddle.static.default_main_program(),
-                dataset=self.reader,
-                debug=config.get("runner.dataset_debug"))
-        elif reader_type == "DataLoader":
-            batch_id = 0
-            train_run_cost = 0.0
-            total_examples = 0
-            self.reader.start()
-            while True:
-                try:
-                    train_start = time.time()
-                    # --------------------------------------------------- #
-                    self.exe.run(program=paddle.static.default_main_program())
-                    # --------------------------------------------------- #
-                    train_run_cost += time.time() - train_start
-                    total_examples += self.config.get("runner.batch_size")
-                    batch_id += 1
-                    print_step = int(config.get("runner.print_period"))
-                    if batch_id % print_step == 0:
-                        profiler_string = ""
-                        profiler_string += "avg_batch_cost: {} sec, ".format(
-                            format((train_run_cost) / print_step, '.5f'))
-                        profiler_string += "avg_samples: {}, ".format(
-                            format(total_examples / print_step, '.5f'))
-                        profiler_string += "ips: {} {}/sec ".format(
-                            format(total_examples / (train_run_cost), '.5f'),
-                            self.count_method)
-                        logger.info("Epoch: {}, Batch: {}, {}".format(
-                            epoch, batch_id, profiler_string))
-                        train_run_cost = 0.0
-                        total_examples = 0
-                except paddle.core.EOFException:
-                    self.reader.reset()
-                    break
 
     def record_result(self):
         logger.info("train_result_dict: {}".format(self.train_result_dict))
