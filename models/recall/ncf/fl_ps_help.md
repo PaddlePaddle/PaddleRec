@@ -13,5 +13,9 @@
     * 打印训练指标
 4. pdc
 
+# 样本处理
+* 在 PaddleRec/datasets/movielens_pinterest_NCF/fl_data 目录中执行：python gen_heter_data.py
+    * 总样本数 4970844（按 1:4 补充负样本）：0 - 518095，1 - 520165，2 - 373605，3 - 315550，4 - 483779，5 - 495635，6 - 402810，7 - 354590，8 - 262710，9 - 1243905
+    
 # 运行命令
 * 在当前目录下执行：fleetrun --worker_num=1 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml
