@@ -4,13 +4,15 @@
     * worker 数 1 个
     * worker 数 多个 - 样本复制
     * worker 数 多个 - 样本切分
-    * 打印训练指标
+    * 打印训练指标（loss、auc）
+    * 推理
 3. 单机模拟分布式：geo-ps
     * worker 数 1 个
     * worker 数 多个
     * 构造 worker 上异构样本数据
     * heter-aware ps
-    * 打印训练指标
+    * 打印训练指标（loss、auc）
+    * 推理
 4. pdc
 
 # 样本处理
