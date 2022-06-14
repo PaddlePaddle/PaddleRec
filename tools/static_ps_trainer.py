@@ -134,7 +134,7 @@ class Main(object):
         if save_model_path and (not os.path.exists(save_model_path)):
             os.makedirs(save_model_path)
 
-        reader_type = self.config.get("runner.reader_type", None)
+        reader_type = self.config.get("runner.reader_type", "QueueDataset")
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
 
@@ -150,10 +150,6 @@ class Main(object):
                 self.dataset_train_loop(epoch)
             elif reader_type == "InmemoryDataset":
                 self.dataset_train_loop(epoch)
-            elif reader_type == "DataLoader":
-                self.dataloader_train_loop(epoch)
-            elif reader_type == None or reader_type == "RecDataset":
-                self.recdataset_train_loop(epoch)
 
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
@@ -182,6 +178,8 @@ class Main(object):
     def init_reader(self):
         if fleet.is_server():
             return
+        self.config["runner.reader_type"] = self.config.get(
+            "runner.reader_type", "QueueDataset")
         self.reader, self.file_list = get_reader(self.input_data, config)
         self.example_nums = 0
         self.count_method = self.config.get("runner.example_count_method",
@@ -221,91 +219,6 @@ class Main(object):
             fetch_info=fetch_info,
             print_period=print_step,
             debug=debug)
-
-    def dataloader_train_loop(self, epoch):
-        logger.info("Epoch: {}, Running DataLoader Begin.".format(epoch))
-        batch_id = 0
-        train_run_cost = 0.0
-        total_examples = 0
-        self.reader.start()
-        while True:
-            try:
-                train_start = time.time()
-                # --------------------------------------------------- #
-                fetch_var = self.exe.run(
-                    program=paddle.static.default_main_program(),
-                    fetch_list=[var for _, var in self.metrics.items()])
-                # --------------------------------------------------- #
-                train_run_cost += time.time() - train_start
-                total_examples += (self.config.get("runner.train_batch_size"))
-                batch_id += 1
-                print_step = int(config.get("runner.print_interval"))
-                if batch_id % print_step == 0:
-                    metrics_string = ""
-                    for var_idx, var_name in enumerate(self.metrics):
-                        metrics_string += "{}: {}, ".format(
-                            var_name, fetch_var[var_idx]
-                            if var_name != "LOSS" or not config['pure_bf16']
-                            else bf16_to_fp32(fetch_var[var_idx][0]))
-                    profiler_string = ""
-                    profiler_string += "avg_batch_cost: {} sec, ".format(
-                        format((train_run_cost) / print_step, '.5f'))
-                    profiler_string += "avg_samples: {}, ".format(
-                        format(total_examples / print_step, '.5f'))
-                    profiler_string += "ips: {} {}/sec ".format(
-                        format(total_examples / (train_run_cost), '.5f'),
-                        self.count_method)
-                    logger.info("Epoch: {}, Batch: {}, {} {}".format(
-                        epoch, batch_id, metrics_string, profiler_string))
-                    train_run_cost = 0.0
-                    total_examples = 0
-            except paddle.fluid.core.EOFException:
-                self.reader.reset()
-                break
-
-    def recdataset_train_loop(self, epoch):
-        logger.info("Epoch: {}, Running RecDatast Begin.".format(epoch))
-
-        input_data_names = [var.name for var in self.input_data]
-        batch_size = config.get("runner.train_batch_size", None)
-        print_interval = config.get("runner.print_interval", None)
-
-        batch_id = 0
-        train_run_cost = 0.0
-        train_reader_cost = 0.0
-        total_samples = 0
-        reader_start = time.time()
-        for batch_id, batch_data in enumerate(self.reader()):
-            train_reader_cost += time.time() - reader_start
-            train_start = time.time()
-            # --------------------------------------------------- #
-            fetch_batch_var = self.exe.run(
-                program=paddle.static.default_main_program(),
-                feed=dict(zip(input_data_names, batch_data)),
-                fetch_list=[var for _, var in self.metrics.items()])
-            # --------------------------------------------------- #
-            train_run_cost += time.time() - train_start
-            total_samples += batch_size
-            if batch_id % print_interval == 0:
-                metric_str = ""
-                for var_idx, var_name in enumerate(self.metrics):
-                    metric_str += "{}: {}, ".format(
-                        var_name, fetch_batch_var[var_idx]
-                        if var_name != "LOSS" or config['pure_bf16'] is False
-                        else bf16_to_fp32(fetch_batch_var[var_idx][0]))
-                logger.info(
-                    "Epoch: {}, Batch_id: {}, ".format(epoch,
-                                                       batch_id) + metric_str +
-                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec"
-                    .format(train_reader_cost / print_interval, (
-                        train_reader_cost + train_run_cost) / print_interval,
-                            total_samples / print_interval, total_samples / (
-                                train_reader_cost + train_run_cost),
-                            self.count_method))
-                train_reader_cost = 0.0
-                train_run_cost = 0.0
-                total_samples = 0
-            reader_start = time.time()
 
     def heter_train_loop(self, epoch):
         logger.info(
