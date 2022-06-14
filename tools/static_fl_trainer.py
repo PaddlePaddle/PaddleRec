@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from __future__ import print_function
-from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
+from utils.static_ps.reader_helper import get_reader, get_infer_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
@@ -71,7 +71,8 @@ class Main(object):
         self.metrics = {}
         self.config = config
         self.input_data = None
-        self.reader = None
+        self.train_dataset = None
+        self.test_dataset = None
         self.exe = None
         self.train_result_dict = {}
         self.train_result_dict["speed"] = []
@@ -139,15 +140,12 @@ class Main(object):
         sync_mode = self.config.get("runner.sync_mode")
 
         if reader_type == "InmemoryDataset":
-            self.reader.load_into_memory()
+            self.train_dataset.load_into_memory()
 
         for epoch in range(epochs):
             epoch_start_time = time.time()
 
-            if reader_type == "QueueDataset":
-                self.dataset_train_loop(epoch)
-            elif reader_type == "InmemoryDataset":
-                self.dataset_train_loop(epoch)
+            self.dataset_train_loop(epoch)
 
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
@@ -166,32 +164,48 @@ class Main(object):
             self.dataset_online_infer(epoch)
 
         if reader_type == "InmemoryDataset":
-            self.reader.release_memory()
+            self.train_dataset.release_memory()
 
     def init_reader(self):
         if fleet.is_server():
             return
         self.config["runner.reader_type"] = self.config.get(
             "runner.reader_type", "QueueDataset")
-        self.reader, self.file_list = get_reader(self.input_data,
-                                                 config)  ##### 改造这里！！！
+        self.train_dataset, self.train_file_list = get_reader(self.input_data,
+                                                              config)
+        self.test_dataset, self.test_file_list = get_infer_reader(
+            self.input_data, config)
+
         self.example_nums = 0
         self.count_method = self.config.get("runner.example_count_method",
                                             "example")
         if self.count_method == "example":
-            self.example_nums = get_example_num(self.file_list)
+            self.example_nums = get_example_num(self.train_file_list)
         elif self.count_method == "word":
-            self.example_nums = get_word_num(self.file_list)
+            self.example_nums = get_word_num(self.train_file_list)
         else:
             raise ValueError(
                 "Set static_benchmark.example_count_method for example / word for example count."
             )
 
     def dataset_online_infer(self, epoch):
-        pass
+        logger.info("Epoch: {}, Running Infer Begin.".format(epoch))
+        fetch_info = [
+            "Epoch {} Var {}".format(epoch, var_name)
+            for var_name in self.metrics
+        ]
+        fetch_vars = [var for _, var in self.metrics.items()]
+        print_step = int(config.get("runner.print_interval"))
+        self.exe.infer_from_dataset(
+            program=paddle.static.default_main_program(),
+            dataset=self.test_dataset,
+            fetch_list=fetch_vars,
+            fetch_info=fetch_info,
+            print_period=print_step,
+            debug=False)
 
     def dataset_train_loop(self, epoch):
-        logger.info("Epoch: {}, Running Dataset Begin.".format(epoch))
+        logger.info("Epoch: {}, Running Train Begin.".format(epoch))
         fetch_info = [
             "Epoch {} Var {}".format(epoch, var_name)
             for var_name in self.metrics
@@ -211,7 +225,7 @@ class Main(object):
         #print(paddle.static.default_main_program()._fleet_opt)
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
-            dataset=self.reader,
+            dataset=self.train_dataset,
             fetch_list=fetch_vars,
             fetch_info=fetch_info,
             print_period=print_step,
