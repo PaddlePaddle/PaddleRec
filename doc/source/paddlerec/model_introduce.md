@@ -29,6 +29,7 @@
 ## [din (Deep Interest Network for Click-Through Rate Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/din)
 ## [dlrm (Deep Learning Recommendation Model for Personalization and Recommendation Systems)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dlrm)
 ## [dmr (Deep Match to Rank Model for Personalized Click-Through Rate Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dmr)
+## [fgcnn (Feature Generation by Convolutional Neural Network for Click-Through Rate Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/fgcnn)
 ## [ffm (Field-aware Factorization Machines for CTR Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/ffm)
 ## [difm (A Dual Input-aware Factorization Machine for CTR Prediction)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/difm)
 ## [xdeepfm (xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems)](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/xdeepfm)
