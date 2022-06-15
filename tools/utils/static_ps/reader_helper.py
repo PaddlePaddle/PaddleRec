@@ -261,10 +261,12 @@ class InmemoryDatset(object):
         self.fs_name = self.config.get("runner.fs_name", "")
         self.fs_ugi = self.config.get("runner.fs_ugi", "")
         print("hdfs config:", self.fs_name, self.fs_ugi)
+        self.use_gpu = self.config.get("runner.use_gpu", False)
 
     def get_reader(self):
         logger.info("Get InmemoryDataset")
         dataset = paddle.distributed.InMemoryDataset()
+        dataset._set_use_ps_gpu(self.use_gpu)
         dataset.init(
             use_var=self.input_var,
             pipe_command=self.pipe_command,
