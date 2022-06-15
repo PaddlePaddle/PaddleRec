@@ -27,6 +27,7 @@ import os
 import warnings
 import logging
 from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+import profiler
 fleet_util = FleetUtil()
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
@@ -45,12 +46,19 @@ def parse_args():
         type=str,
         required=True,
         help='config file path')
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help='The option of profiler, which should be in format \"key1=value1;key2=value2;key3=value3\".'
+    )
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
     config = yaml_helper.load_yaml(args.config_yaml)
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
+    config["profiler_options"] = args.profiler_options
     yaml_helper.print_yaml(config)
     return config
 
@@ -59,6 +67,7 @@ class Main(object):
     def __init__(self, config):
         self.metrics = {}
         self.config = config
+        self.profiler_options = config.get("profiler_options")
         self.input_data = None
         self.reader = None
         self.exe = None
@@ -221,6 +230,7 @@ class Main(object):
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
+        profiler.add_profiler_step(self.profiler_options)
         self.exe.train_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=self.reader,
@@ -235,6 +245,7 @@ class Main(object):
         while True:
             try:
                 train_start = time.time()
+                profiler.add_profiler_step(self.profiler_options)
                 # --------------------------------------------------- #
                 fetch_var = self.exe.run(
                     program=paddle.static.default_main_program(),
@@ -280,6 +291,7 @@ class Main(object):
         for batch_id, batch_data in enumerate(self.reader()):
             train_reader_cost += time.time() - reader_start
             train_start = time.time()
+            profiler.add_profiler_step(self.profiler_options)
             # --------------------------------------------------- #
             fetch_batch_var = self.exe.run(
                 program=paddle.static.default_main_program(),
@@ -325,6 +337,7 @@ class Main(object):
             while True:
                 try:
                     train_start = time.time()
+                    profiler.add_profiler_step(self.profiler_options)
                     # --------------------------------------------------- #
                     self.exe.run(program=paddle.static.default_main_program())
                     # --------------------------------------------------- #
