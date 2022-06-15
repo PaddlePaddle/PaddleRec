@@ -45,6 +45,7 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
         self.new_prob = paddle.assign(self.prob.astype("float32"))
         self.log_q = paddle.log(-(paddle.exp((-paddle.log1p(self.new_prob) * 2
                                               * n_sample)) - 1.0))
+        self.loss = nn.CrossEntropyLoss(soft_label=True)
 
     def sample(self, labels):
         """Random sample neg_samples
@@ -65,6 +66,7 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
         # weights.stop_gradient = False
         embedding_dim = paddle.shape(weights)[-1]
         true_log_probs, samp_log_probs, neg_samples = self.sample(labels)
+        # print(neg_samples)
         n_sample = neg_samples.shape[0]
 
         b1 = paddle.shape(labels)[0]
@@ -82,22 +84,22 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
         sample_b = all_b[-n_sample:]
 
         # [B, D] * [B, 1,D]
-        true_logist = paddle.matmul(
-            true_w, inputs.unsqueeze(1), transpose_y=True).squeeze(1) + true_b
+        true_logist = paddle.sum(paddle.multiply(true_w, inputs.unsqueeze(1)),
+                                 axis=-1) + true_b
+        # print(true_logist)
 
         sample_logist = paddle.matmul(
-            inputs.unsqueeze(1), sample_w, transpose_y=True) + sample_b
+            inputs, sample_w, transpose_y=True) + sample_b
+
+        if self.remove_accidental_hits:
+            hit = (paddle.equal(labels[:, :], neg_samples))
+            padding = paddle.ones_like(sample_logist) * -1e30
+            sample_logist = paddle.where(hit, padding, sample_logist)
 
         if self.subtract_log_q:
             true_logist = true_logist - true_log_probs.unsqueeze(1)
             sample_logist = sample_logist - samp_log_probs
 
-        if self.remove_accidental_hits:
-            hit = (paddle.equal(labels[:, :], neg_samples)).unsqueeze(1)
-            padding = paddle.ones_like(sample_logist) * -1e30
-            sample_logist = paddle.where(hit, padding, sample_logist)
-
-        sample_logist = sample_logist.squeeze(1)
         out_logist = paddle.concat([true_logist, sample_logist], axis=1)
         out_label = paddle.concat(
             [
@@ -105,10 +107,10 @@ class Mind_SampledSoftmaxLoss_Layer(nn.Layer):
                 paddle.zeros_like(sample_logist)
             ],
             axis=1)
+        out_label.stop_gradient = True
 
-        sampled_loss = F.softmax_with_cross_entropy(
-            logits=out_logist, label=out_label, soft_label=True)
-        return sampled_loss, out_logist, out_label
+        loss = self.loss(out_logist, out_label)
+        return loss, out_logist, out_label
 
 
 class Mind_Capsual_Layer(nn.Layer):
@@ -148,6 +150,7 @@ class Mind_Capsual_Layer(nn.Layer):
                 name="bilinear_mapping_matrix", trainable=True),
             default_initializer=nn.initializer.Normal(
                 mean=0.0, std=self.init_std))
+        self.relu_layer = nn.Linear(self.output_units, self.output_units)
 
     def squash(self, Z):
         """squash
@@ -164,8 +167,10 @@ class Mind_Capsual_Layer(nn.Layer):
         batch_size = paddle.shape(lengths)[0]
         if maxlen is None:
             maxlen = lengths.max()
-        row_vector = paddle.arange(0, maxlen, 1).unsqueeze(0).expand(
-            shape=(batch_size, maxlen)).reshape((batch_size, -1, maxlen))
+        row_vector = paddle.arange(
+            0, maxlen,
+            1).unsqueeze(0).expand(shape=(batch_size, maxlen)).reshape(
+                (batch_size, -1, maxlen))
         lengths = lengths.unsqueeze(-1)
         mask = row_vector < lengths
         return mask.astype(dtype)
@@ -182,39 +187,50 @@ class Mind_Capsual_Layer(nn.Layer):
 
         mask = self.sequence_mask(seq_len_tile, self.maxlen)
         pad = paddle.ones_like(mask, dtype="float32") * (-2**32 + 1)
-
         # S*e
         low_capsule_new = paddle.matmul(item_his_emb,
                                         self.bilinear_mapping_matrix)
 
-        low_capsule_new_nograd = paddle.assign(low_capsule_new)
+        low_capsule_new_tile = paddle.tile(low_capsule_new, [1, 1, self.k_max])
+        low_capsule_new_tile = paddle.reshape(
+            low_capsule_new_tile,
+            [-1, self.maxlen, self.k_max, self.output_units])
+        low_capsule_new_tile = paddle.transpose(low_capsule_new_tile,
+                                                [0, 2, 1, 3])
+        low_capsule_new_tile = paddle.reshape(
+            low_capsule_new_tile,
+            [-1, self.k_max, self.maxlen, self.output_units])
+        low_capsule_new_nograd = paddle.assign(low_capsule_new_tile)
         low_capsule_new_nograd.stop_gradient = True
 
         B = paddle.tile(self.routing_logits,
                         [paddle.shape(item_his_emb)[0], 1, 1])
+        B.stop_gradient = True
 
         for i in range(self.iters - 1):
             B_mask = paddle.where(mask, B, pad)
             # print(B_mask)
             W = F.softmax(B_mask, axis=1)
+            W = paddle.unsqueeze(W, axis=2)
             high_capsule_tmp = paddle.matmul(W, low_capsule_new_nograd)
+            # print(low_capsule_new_nograd.shape)
             high_capsule = self.squash(high_capsule_tmp)
             B_delta = paddle.matmul(
-                high_capsule, low_capsule_new_nograd, transpose_y=True)
-            B += B_delta / paddle.maximum(
-                paddle.norm(
-                    B_delta, p=2, axis=-1, keepdim=True),
-                paddle.ones_like(B_delta))
+                low_capsule_new_nograd,
+                paddle.transpose(high_capsule, [0, 1, 3, 2]))
+            B_delta = paddle.reshape(
+                B_delta, shape=[-1, self.k_max, self.maxlen])
+            B += B_delta
 
         B_mask = paddle.where(mask, B, pad)
         W = F.softmax(B_mask, axis=1)
-        # paddle.static.Print(W)
-        high_capsule_tmp = paddle.matmul(W, low_capsule_new)
-        # high_capsule_tmp.stop_gradient = False
+        W = paddle.unsqueeze(W, axis=2)
+        interest_capsule = paddle.matmul(W, low_capsule_new_tile)
+        interest_capsule = self.squash(interest_capsule)
+        high_capsule = paddle.reshape(interest_capsule,
+                                      [-1, self.k_max, self.output_units])
 
-        high_capsule = self.squash(high_capsule_tmp)
-        # high_capsule.stop_gradient = False
-
+        high_capsule = F.relu(self.relu_layer(high_capsule))
         return high_capsule, W, seq_len
 
 
@@ -246,6 +262,7 @@ class MindLayer(nn.Layer):
                 name="item_emb",
                 initializer=nn.initializer.XavierUniform(
                     fan_in=item_count, fan_out=embedding_dim)))
+        # print(self.item_emb.weight)
         self.embedding_bias = self.create_parameter(
             shape=(item_count, ),
             is_bias=True,
@@ -267,11 +284,17 @@ class MindLayer(nn.Layer):
     def label_aware_attention(self, keys, query):
         """label_aware_attention
         """
-        weight = paddle.sum(keys * query, axis=-1, keepdim=True)
-        weight = paddle.pow(weight, self.pow_p)  # [x,k_max,1]
-        weight = F.softmax(weight, axis=1)
-        output = paddle.sum(keys * weight, axis=1)
-        return output, weight
+        weight = paddle.matmul(keys,
+                               paddle.reshape(query, [
+                                   -1, paddle.shape(query)[-1], 1
+                               ]))  #[B, K, dim] * [B, dim, 1] == [B, k, 1]
+        weight = paddle.squeeze(weight, axis=-1)
+        weight = paddle.pow(weight, self.pow_p)  # [x,k_max]
+        weight = F.softmax(weight)  #[x, k_max]
+        weight = paddle.unsqueeze(weight, 1)  #[B, 1, k_max]
+        output = paddle.matmul(
+            weight, keys)  #[B, 1, k_max] * [B, k_max, dim] => [B, 1, dim]
+        return output.squeeze(1), weight
 
     def forward(self, hist_item, seqlen, labels=None):
         """forward
@@ -281,7 +304,7 @@ class MindLayer(nn.Layer):
             seqlen : [B, 1]
             target : [B, 1]
         """
-
+        # print(hist_item)
         hit_item_emb = self.item_emb(hist_item)  # [B, seqlen, embed_dim]
         user_cap, cap_weights, cap_mask = self.capsual_layer(hit_item_emb,
                                                              seqlen)
