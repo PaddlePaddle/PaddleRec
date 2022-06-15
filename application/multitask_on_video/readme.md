@@ -6,8 +6,7 @@
 
 本项目主要介绍如何使用飞桨大规模推荐算法库[PaddleRec](https://github.com/PaddlePaddle/PaddleRec) ，仅以短视频推荐场景为例，说明多任务技术的应用方法和收益，但多任务技术不仅仅可以使用于视频推荐中，也可以在比如电商场景的点击&转化(购买)，信息流推荐场景的点击&点赞(评论，关注等一系列后续行为)，搜索广告场景下的点击&再点击（相关广告，相关搜索，猜你喜欢等等）等场景下使用。
 
-另有高级研发工程师直播视频讲解，欢迎扫码关注：
-<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/aistudio_micro_video.png"/></p>
+另有高级研发工程师直播视频讲解，欢迎扫码关注：<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/aistudio_micro_video.png"/></p>
 ## 2. 什么是多任务学习
 ### 2.2 多任务学习的概念
 多任务学习(multitask)的定义和形式有很多种。我觉得比较直观的理解是和单任务学习相对的一种机器学习方法。    

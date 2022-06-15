@@ -12,7 +12,7 @@
 
 <h2 align="center">最新动态<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
 
-* [2022/6/15] 重磅福利：短视频推荐场景下的多任务学习应用实战，欢迎扫码关注：<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/aistudio_micro_video.png"/></p>
+* [2022/6/15] 重磅福利：短视频推荐场景下的多任务学习应用实战视频直播课，欢迎扫码关注：<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/aistudio_micro_video.png"/></p>
 * [2022/6/15] 新增3个前沿算法：[ESCM2](models/multitask/escm2),[MetaHeac](models/multitask/metaheac),[KIM](models/match/kim)
 * [2022/5/18] 新增3个前沿算法：[AITM](models/multitask/aitm),[SIGN](models/rank/sign),[DSIN](models/rank/dsin)
 * [2022/3/21] 新增[paper](./paper)目录，发布我们对21年的推荐顶会论文的分析，以及工业界的推荐论文列表，供大家参考。  

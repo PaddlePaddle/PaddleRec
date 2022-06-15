@@ -8,8 +8,7 @@
 
 <h2 align="center">News<img src="./doc/imgs/rec_new_icon.png" width="40"/></h2>
 
-* [2022/6/15] Excellent course about multi-task learning application under short video recommendation scenarios，welcome to scan the code and follow：
-<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/aistudio_micro_video.png"/></p>
+* [2022/6/15] Excellent course about multi-task learning application under short video recommendation scenarios，welcome to scan the code and follow：<p align="center"><img width="200" height="200" margin="500" src="./doc/imgs/aistudio_micro_video.png"/></p>
 * [2022/6/15] Add 3 algorithms：[ESCM2](models/multitask/escm2),[MetaHeac](models/multitask/metaheac),[KIM](models/match/kim)
 * [2022/5/18] Add 3 algorithms:：[AITM](models/multitask/aitm),[SIGN](models/rank/sign),[DSIN](models/rank/dsin)
 * [2022/3/21] Add a new [paper](./paper) directory , show our analysis of the top meeting papers of the recommendation system in 2021 years and the list of recommendation system papers in the industry for your reference.  
