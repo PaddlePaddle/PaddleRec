@@ -69,6 +69,7 @@ PaddleRec 模型库
    rank/dlrm.md
    rank/dmr.md
    rank/dnn.md
+   rank/fgcnn.md
    rank/ffm.md
    rank/fm.md
    rank/gatenet.md

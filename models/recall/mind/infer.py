@@ -110,6 +110,7 @@ def main(args):
                                                         batch_data, config)
 
             user_embs = user_embs.numpy()
+            # print(user_embs)
             target_items = np.squeeze(batch_data[-1].numpy(), axis=1)
 
             if len(user_embs.shape) == 2:
@@ -119,8 +120,9 @@ def main(args):
                     dcg = 0.0
                     item_list = set(I[i])
                     iid_list = list(filter(lambda x: x != 0, list(iid_list)))
-                    for no, iid in enumerate(iid_list):
-                        if iid in item_list:
+                    true_item_set = set(iid_list)
+                    for no, iid in enumerate(I[i]):
+                        if iid in true_item_set:
                             recall += 1
                             dcg += 1.0 / math.log(no + 2, 2)
                     idcg = 0.0
@@ -138,6 +140,7 @@ def main(args):
                     recall = 0
                     dcg = 0.0
                     item_list_set = set()
+                    item_cor_list = []
                     item_list = list(
                         zip(
                             np.reshape(I[i * ni:(i + 1) * ni], -1),
@@ -147,13 +150,15 @@ def main(args):
                         if item_list[j][0] not in item_list_set and item_list[
                                 j][0] != 0:
                             item_list_set.add(item_list[j][0])
+                            item_cor_list.append(item_list[j][0])
                             if len(item_list_set) >= args.top_n:
                                 break
                     iid_list = list(filter(lambda x: x != 0, list(iid_list)))
-                    for no, iid in enumerate(iid_list):
+                    true_item_set = set(iid_list)
+                    for no, iid in enumerate(item_cor_list):
                         if iid == 0:
                             break
-                        if iid in item_list_set:
+                        if iid in true_item_set:
                             recall += 1
                             dcg += 1.0 / math.log(no + 2, 2)
                     idcg = 0.0
