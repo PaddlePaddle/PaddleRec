@@ -46,6 +46,16 @@
 
 - **[AI Studio在线运行示例](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**  
 
+### 使用Docker快速体验
+
+> 如果您没有Docker运行环境，请参考[Docker 官网](https://www.docker.com/)进行安装，如果您准备使用GPU版本镜像，还需安装[nvidia-docker](https://github.com/NVIDIA/nvidia-docker)。 
+
+我们提供了包含最新PaddleRec代码的docker镜像，并预先安装好了所有的环境和库依赖，您只需要**拉取并运行docker镜像**，无需其他任何额外操作，即可开始享用PaddleRec的所有功能。
+
+在[Docker Hub](https://hub.docker.com/repository/docker/paddlecloud/paddlerec)中获取这些镜像及相应的使用指南，包括CPU、GPU、ROCm版本。
+
+如果您对自动化制作docker镜像感兴趣，或有自定义需求，请访问[PaddlePaddle/PaddleCloud](https://github.com/PaddlePaddle/PaddleCloud/tree/main/tekton)做进一步了解。
+
 ### 环境要求
 * Python 2.7.15 / 3.5 / 3.6 / 3.7, 推荐使用python3.7，示例中的python默认表示python3.7
 * PaddlePaddle >=2.0 
