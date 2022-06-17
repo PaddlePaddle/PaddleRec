@@ -164,6 +164,16 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  Training wit
 
 - **[AI Studio Online Running](https://aistudio.baidu.com/aistudio/projectdetail/3240640)**
 
+### Quick start with Docker
+
+> If you  do not have a Docker environment, please refer to [Docker](https://www.docker.com/). If you will use GPU version, you also need to install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
+
+We provide docker images containing the latest PaddleRec code, and all environment and package dependencies are pre-installed. All you have to do is to **pull and run the docker image**. Then you can enjoy PaddleRec without any extra steps.
+
+Get these images and guidance in [docker hub](https://hub.docker.com/repository/docker/paddlecloud/paddlerec), including CPU, GPU, ROCm environment versions. 
+
+If you have some customized requirements about automatic building docker images, you can get it in github repo [PaddlePaddle/PaddleCloud](https://github.com/PaddlePaddle/PaddleCloud/tree/main/tekton).
+
 ### Environmental requirements
 * Python 2.7/ 3.5 / 3.6 / 3.7 , Python 3.7 is recommended ,Python in example represents Python 3.7 by default
 * PaddlePaddle >=2.0 
