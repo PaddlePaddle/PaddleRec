@@ -23,5 +23,9 @@
   |                     [SIGN](models/rank/sign/)                     |  [BamLubi](https://github.com/BamLubi)  |    https://github.com/PaddlePaddle/PaddleRec/pull/748   | 论文复现赛第六期 |
   |                     [MetaHeac](models/multitask/metaheac/)                     |  [simuler](https://github.com/simuler)  |    https://github.com/PaddlePaddle/PaddleRec/pull/788   | 论文复现赛第六期 |
   |                     [FGCNN](models/rank/fgcnn/)                     |  [yoreG123 chenjiyan2001](https://github.com/yoreG123)  |    https://github.com/PaddlePaddle/PaddleRec/pull/784   | 论文复现赛第六期 |
+  |                     [DSIN](models/rank/dsin/)                     |  [Li-fAngyU](https://github.com/Li-fAngyU)  |    https://github.com/PaddlePaddle/PaddleRec/pull/750   | 论文复现赛第六期 |
+  |                     [AITM](models/multitask/aitm/)                     |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/756   | 论文复现赛第六期 |
+  |                     [IPRec](models/rank/iprec/)                     |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/774   | 论文复现赛第六期 |
+  |                     [KIM](models/match/kim/)                     |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/790   | 论文复现赛第六期 |
 
 </div> 
