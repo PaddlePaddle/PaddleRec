@@ -200,6 +200,7 @@ python -u tools/static_trainer.py -m models/rank/dnn/config.yaml #  静态图训
 <p>
 
 ### 版本历史
+- 2022.06.20 - PaddleRec v2.3.0
 - 2021.11.19 - PaddleRec v2.2.0
 - 2021.05.19 - PaddleRec v2.1.0
 - 2021.01.29 - PaddleRec v2.0.0
