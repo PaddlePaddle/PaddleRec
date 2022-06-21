@@ -48,7 +48,7 @@ def parse_args():
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
-    config = yaml_helper.load_yaml(args.config_yaml)
+    config = yaml_helper.load_yaml(args.config_yaml, ["table_parameters"])
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
     yaml_helper.print_yaml(config)
@@ -120,14 +120,7 @@ class Main(object):
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
 
-        gpus_env = os.getenv("FLAGS_selected_gpus")
         self.PSGPU = paddle.fluid.core.PSGPU()
-        gpuslot = [int(i) for i in range(1, self.model.sparse_inputs_slots)]
-        gpu_mf_sizes = [self.model.sparse_feature_dim - 1] * (
-            self.model.sparse_inputs_slots - 1)
-        self.PSGPU.set_slot_vector(gpuslot)
-        self.PSGPU.set_slot_dim_vector(gpu_mf_sizes)
-        self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
         opt_info = paddle.fluid.default_main_program()._fleet_opt
         if use_auc is True:
             opt_info['stat_var_names'] = [

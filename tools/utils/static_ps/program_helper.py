@@ -52,7 +52,7 @@ def get_strategy(config):
     elif sync_mode == "gpubox":
         print("sync_mode = {}".format(sync_mode))
         strategy = paddle.distributed.fleet.DistributedStrategy()
-        strategy.a_sync = True
+        strategy.a_sync = False
         strategy.a_sync_configs = {"use_ps_gpu": 1}
 
     strategy.trainer_desc_configs = {
