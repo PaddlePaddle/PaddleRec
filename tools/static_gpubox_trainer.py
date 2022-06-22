@@ -85,7 +85,7 @@ class Main(object):
         elif fleet.is_worker():
             self.run_worker()
             fleet.stop_worker()
-            self.record_result()
+            #self.record_result()
         logger.info("Run Success, Exit.")
         logger.info("-" * 100)
 
@@ -111,12 +111,12 @@ class Main(object):
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
 
-        with open("./{}_worker_main_program.prototxt".format(
-                fleet.worker_index()), 'w+') as f:
-            f.write(str(paddle.static.default_main_program()))
-        with open("./{}_worker_startup_program.prototxt".format(
-                fleet.worker_index()), 'w+') as f:
-            f.write(str(paddle.static.default_startup_program()))
+        #with open("./{}_worker_main_program.prototxt".format(
+        #        fleet.worker_index()), 'w+') as f:
+        #    f.write(str(paddle.static.default_main_program()))
+        #with open("./{}_worker_startup_program.prototxt".format(
+        #        fleet.worker_index()), 'w+') as f:
+        #    f.write(str(paddle.static.default_startup_program()))
 
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()
