@@ -235,7 +235,7 @@ if [ ${MODE} = "benchmark_train" ]; then
 		cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
 		echo "PADDLE WILL START PSERVER "$cur_port
 		export PADDLE_PORT=${cur_port}
-		python3.7 -u $SC &> ./log/pserver.$i.log &
+		python3.7 -u $SC 
 	done
 
 	# run trainer
@@ -244,7 +244,7 @@ if [ ${MODE} = "benchmark_train" ]; then
 	do
 		echo "PADDLE WILL START Trainer "$i
 		export PADDLE_TRAINER_ID=$i
-		python3.7 -u $SC &> ./log/worker.$i.log
+		python3.7 -u $SC 
 	done
 fi
 if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
@@ -378,7 +378,7 @@ else
                         cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
                         echo "PADDLE WILL START PSERVER "$cur_port
                         export PADDLE_PORT=${cur_port}
-                        cmd="${python} ${SC} &> ./log/pserver.$i.log &"
+                        cmd="${python} ${SC}"
                         eval "unset CUDA_VISIBLE_DEVICES"
                         eval $cmd
                         status_check $? "${cmd}" "${status_log}"
@@ -390,7 +390,7 @@ else
                     do
                         echo "PADDLE WILL START Trainer "$i
                         export PADDLE_TRAINER_ID=$i
-                        cmd="${python} ${SC} &> ./log/worker.$i.log &"
+                        cmd="${python} ${SC}"
                         eval "unset CUDA_VISIBLE_DEVICES"
                         eval $cmd
                         status_check $? "${cmd}" "${status_log}"
