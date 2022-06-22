@@ -174,7 +174,7 @@ class Main(object):
                 fleet_util.set_zero(self.model.batch_stat_neg.name,
                                     paddle.fluid.global_scope())
                 logger.info(
-                    "Epoch: {}, using time {} second, ips {} {}/sec. auc: {}".
+                    "Epoch: {}, using time: {} second, ips: {} {}/sec. auc: {}".
                     format(epoch, epoch_time, epoch_speed, self.count_method,
                            global_auc))
             else:

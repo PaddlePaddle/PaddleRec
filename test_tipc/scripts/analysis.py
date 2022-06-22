@@ -25,39 +25,62 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--filename", type=str, help="The name of log which need to analysis.")
+    parser.add_argument("--speed_log_file", type=str, help="json file")
     parser.add_argument(
-        "--speed_log_file", type=str, help="json file")
-    parser.add_argument(
-        "--log_with_profiler", type=str, help="The path of train log with profiler")
+        "--log_with_profiler",
+        type=str,
+        help="The path of train log with profiler")
     parser.add_argument(
         "--profiler_path", type=str, help="The path of profiler timeline log.")
     parser.add_argument(
         "--keyword", type=str, help="Keyword to specify analysis data")
     parser.add_argument(
-        "--separator", type=str, default=None, help="Separator of different field in log")
+        "--separator",
+        type=str,
+        default=None,
+        help="Separator of different field in log")
     parser.add_argument(
-        '--position', type=int, default=None, help='The position of data field')
+        '--position',
+        type=int,
+        default=None,
+        help='The position of data field')
     parser.add_argument(
-        '--range', type=str, default="", help='The range of data field to intercept')
+        '--range',
+        type=str,
+        default="",
+        help='The range of data field to intercept')
     parser.add_argument(
-        '--skip_steps', type=int, default=0, help='The number of steps to be skipped')
+        '--skip_steps',
+        type=int,
+        default=0,
+        help='The number of steps to be skipped')
     parser.add_argument(
-        '--model_mode', type=int, default=-1, help='Analysis mode, default value is -1')
+        '--model_mode',
+        type=int,
+        default=-1,
+        help='Analysis mode, default value is -1')
 
     parser.add_argument(
-        '--model_name', type=str, default="model_name", help='training model_name, transformer_base')
+        '--model_name',
+        type=str,
+        default="model_name",
+        help='training model_name, transformer_base')
     parser.add_argument(
         '--base_batch_size', type=int, help='base_batch size on gpu')
+    parser.add_argument('--fp_item', type=str, help='fp_item:fp16|fp32')
+    parser.add_argument('--run_mode', type=str, default="DP", help='DP|MP|PP')
     parser.add_argument(
-        '--fp_item', type=str, help='fp_item:fp16|fp32')
-    parser.add_argument(
-        '--run_mode', type=str, default="DP", help='DP|MP|PP')
-    parser.add_argument(
-        '--convergence_key', type=str, default="", help="Keyword to specify loss data")
+        '--convergence_key',
+        type=str,
+        default="",
+        help="Keyword to specify loss data")
     parser.add_argument(
         '--speed_unit', type=str, default="images/s", help='IPS unit')
     parser.add_argument(
-        '--device_num', type=str, default='N1C1', help='device_num:N1C1|N1C8|N4C32')
+        '--device_num',
+        type=str,
+        default='N1C1',
+        help='device_num:N1C1|N1C8|N4C32')
     args = parser.parse_args()
     args.separator = None if args.separator == "None" else args.separator
     return args
@@ -73,7 +96,12 @@ def _is_number(num):
 
 
 class TimeAnalyzer(object):
-    def __init__(self, filename, keyword=None, separator=None, position=None, range="-1"):
+    def __init__(self,
+                 filename,
+                 keyword=None,
+                 separator=None,
+                 position=None,
+                 range="-1"):
         if filename is None:
             raise Exception("Please specify the filename!")
 
@@ -100,7 +128,8 @@ class TimeAnalyzer(object):
 
                     # Distil the string from a line.
                     line = line.strip()
-                    line_words = line.split(self.separator) if self.separator else line.split()
+                    line_words = line.split(
+                        self.separator) if self.separator else line.split()
                     if args.position:
                         result = line_words[self.position]
                     else:
@@ -114,17 +143,25 @@ class TimeAnalyzer(object):
                     if not self.range:
                         result = result[0:]
                     elif _is_number(self.range):
-                        result = result[0: int(self.range)]
+                        result = result[0:int(self.range)]
                     else:
-                        result = result[int(self.range.split(":")[0]): int(self.range.split(":")[1])]
+                        result = result[int(self.range.split(":")[0]):int(
+                            self.range.split(":")[1])]
                     self.records.append(float(result))
                 except Exception as exc:
-                    print("line is: {}; separator={}; position={}".format(line, self.separator, self.position))
+                    print("line is: {}; separator={}; position={}".format(
+                        line, self.separator, self.position))
 
-        print("Extract {} records: separator={}; position={}".format(len(self.records), self.separator, self.position))
+        print("Extract {} records: separator={}; position={}".format(
+            len(self.records), self.separator, self.position))
 
-    def _get_fps(self, mode, base_batch_size, gpu_num, avg_of_records, unit=None):
-        if mode == -1 :
+    def _get_fps(self,
+                 mode,
+                 base_batch_size,
+                 gpu_num,
+                 avg_of_records,
+                 unit=None):
+        if mode == -1:
             assert unit, "Please set the unit when mode is -1."
             fps = gpu_num * avg_of_records
         elif mode == 0:
@@ -152,12 +189,19 @@ class TimeAnalyzer(object):
 
         return fps, unit
 
-    def analysis(self, base_batch_size, gpu_num=1, skip_steps=0, mode=-1, unit=None):
+    def analysis(self,
+                 base_batch_size,
+                 gpu_num=1,
+                 skip_steps=0,
+                 mode=-1,
+                 unit=None):
         if base_batch_size <= 0:
             print("base_batch_size should larger than 0.")
             return 0, ''
 
-        if len(self.records) <= skip_steps:  # to address the condition which item of log equals to skip_steps
+        if len(
+                self.records
+        ) <= skip_steps:  # to address the condition which item of log equals to skip_steps
             print("no records")
             return 0, ''
 
@@ -177,16 +221,20 @@ class TimeAnalyzer(object):
                     skip_max = self.records[i]
 
         avg_of_records = sum_of_records / float(count)
-        avg_of_records_skipped = sum_of_records_skipped / float(count - skip_steps)
+        avg_of_records_skipped = sum_of_records_skipped / float(count -
+                                                                skip_steps)
 
-        fps, fps_unit = self._get_fps(mode, base_batch_size, gpu_num, avg_of_records, unit)
-        fps_skipped, _ = self._get_fps(mode, base_batch_size, gpu_num, avg_of_records_skipped, unit)
+        fps, fps_unit = self._get_fps(mode, base_batch_size, gpu_num,
+                                      avg_of_records, unit)
+        fps_skipped, _ = self._get_fps(mode, base_batch_size, gpu_num,
+                                       avg_of_records_skipped, unit)
         if mode == -1:
             print("average ips of %d steps, skip 0 step:" % count)
             print("\tAvg: %.3f %s" % (avg_of_records, fps_unit))
             print("\tFPS: %.3f %s" % (fps, fps_unit))
             if skip_steps > 0:
-                print("average ips of %d steps, skip %d steps:" % (count, skip_steps))
+                print("average ips of %d steps, skip %d steps:" %
+                      (count, skip_steps))
                 print("\tAvg: %.3f %s" % (avg_of_records_skipped, fps_unit))
                 print("\tMin: %.3f %s" % (skip_min, fps_unit))
                 print("\tMax: %.3f %s" % (skip_max, fps_unit))
@@ -196,7 +244,8 @@ class TimeAnalyzer(object):
             print("\tAvg: %.3f steps/s" % avg_of_records)
             print("\tFPS: %.3f %s" % (fps, fps_unit))
             if skip_steps > 0:
-                print("average latency of %d steps, skip %d steps:" % (count, skip_steps))
+                print("average latency of %d steps, skip %d steps:" %
+                      (count, skip_steps))
                 print("\tAvg: %.3f steps/s" % avg_of_records_skipped)
                 print("\tMin: %.3f steps/s" % skip_min)
                 print("\tMax: %.3f steps/s" % skip_max)
@@ -206,7 +255,8 @@ class TimeAnalyzer(object):
             print("\tAvg: %.3f s/step" % avg_of_records)
             print("\tFPS: %.3f %s" % (fps, fps_unit))
             if skip_steps > 0:
-                print("average latency of %d steps, skip %d steps:" % (count, skip_steps))
+                print("average latency of %d steps, skip %d steps:" %
+                      (count, skip_steps))
                 print("\tAvg: %.3f s/step" % avg_of_records_skipped)
                 print("\tMin: %.3f s/step" % skip_min)
                 print("\tMax: %.3f s/step" % skip_max)
@@ -240,7 +290,8 @@ class LossAnalyzer(object):
                 try:
                     result_loss = 0
                     line = line.strip()
-                    line_words = line.split(self.separator) if self.separator else line.split()
+                    line_words = line.split(
+                        self.separator) if self.separator else line.split()
                     for i in range(len(line_words) - 1):
                         if line_words[i] == self.convergence_key:
                             result_loss = line_words[i + 1]
@@ -280,10 +331,11 @@ if __name__ == "__main__":
     print("-----gpu_num:", gpu_num)
     if "pwgan" in args.model_name:
         print("------analysis ", args.model_name)
-        args.keyword="avg_ips:"
+        args.keyword = "avg_ips:"
 
     try:
-        analyzer = TimeAnalyzer(args.filename, args.keyword, args.separator, args.position, args.range)
+        analyzer = TimeAnalyzer(args.filename, args.keyword, args.separator,
+                                args.position, args.range)
         run_info["ips"], run_info["speed_unit"] = analyzer.analysis(
             base_batch_size=args.base_batch_size,
             gpu_num=gpu_num,
@@ -295,6 +347,7 @@ if __name__ == "__main__":
             run_info["convergence_value"] = loss_analyzer.get_loss()
     except Exception:
         traceback.print_exc()
-    print("{}".format(json.dumps(run_info)))  # it's required, for the log file path  insert to the database
+    print("{}".format(json.dumps(run_info))
+          )  # it's required, for the log file path  insert to the database
     with open(args.speed_log_file, "w") as f:
         f.write(json.dumps(run_info))
