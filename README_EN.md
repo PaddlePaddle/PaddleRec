@@ -400,6 +400,7 @@ You can also communicate with us in the following ways：
 <p>
 
 ### Version history
+- 2022.06.20 - PaddleRec v2.3.0
 - 2021.11.19 - PaddleRec v2.2.0
 - 2021.05.19 - PaddleRec v2.1.0
 - 2021.01.29 - PaddleRec v2.0.0
