@@ -40,6 +40,7 @@ logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train script")
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     parser.add_argument(
         '-m',
         '--config_yaml',
@@ -56,6 +57,19 @@ def parse_args():
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
     config = yaml_helper.load_yaml(args.config_yaml)
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            if type(config.get(key)) is int:
+                value = int(value)
+            if type(config.get(key)) is float:
+                value = float(value)
+            if type(config.get(key)) is bool:
+                value = (True if value.lower() == "true" else False)
+            config[key] = value
+
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
     config["profiler_options"] = args.profiler_options
@@ -85,7 +99,7 @@ class Main(object):
         elif fleet.is_worker():
             self.run_worker()
             fleet.stop_worker()
-            #self.record_result()
+            self.record_result()
         logger.info("Run Success, Exit.")
         logger.info("-" * 100)
 
@@ -111,12 +125,12 @@ class Main(object):
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
 
-        #with open("./{}_worker_main_program.prototxt".format(
-        #        fleet.worker_index()), 'w+') as f:
-        #    f.write(str(paddle.static.default_main_program()))
-        #with open("./{}_worker_startup_program.prototxt".format(
-        #        fleet.worker_index()), 'w+') as f:
-        #    f.write(str(paddle.static.default_startup_program()))
+        with open("./{}_worker_main_program.prototxt".format(
+                fleet.worker_index()), 'w+') as f:
+            f.write(str(paddle.static.default_main_program()))
+        with open("./{}_worker_startup_program.prototxt".format(
+                fleet.worker_index()), 'w+') as f:
+            f.write(str(paddle.static.default_startup_program()))
 
         self.exe.run(paddle.static.default_startup_program())
         fleet.init_worker()

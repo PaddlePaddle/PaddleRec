@@ -223,11 +223,12 @@ if [ ${MODE} = "benchmark_train" ]; then
 	export PADDLE_PSERVER_PORT_ARRAY=(29011)
 
 	# set gpu numbers according to your device
-	export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
+	#export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
+	export FLAGS_selected_gpus=${gpu_list}
 
 	# set your model yaml
 	SC="tools/static_gpubox_trainer.py -m models/rank/dnn/config_gpubox.yaml"
-
+    BATCH="-o runner.train_batch_size="$train_batch_value
 	# run pserver
 	export TRAINING_ROLE=PSERVER
 	for((i=0;i<$PADDLE_PSERVER_NUMS;i++))
@@ -235,7 +236,8 @@ if [ ${MODE} = "benchmark_train" ]; then
 		cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
 		echo "PADDLE WILL START PSERVER "$cur_port
 		export PADDLE_PORT=${cur_port}
-		python3.7 -u $SC 
+        cmd="${python} ${SC} ${BATCH}"
+        eval $cmd
 	done
 
 	# run trainer
@@ -244,10 +246,10 @@ if [ ${MODE} = "benchmark_train" ]; then
 	do
 		echo "PADDLE WILL START Trainer "$i
 		export PADDLE_TRAINER_ID=$i
-		python3.7 -u $SC 
+        cmd="${python} ${SC} ${BATCH}"
+        eval $cmd
 	done
-fi
-if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
+elif [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     GPUID=$3
     if [ ${#GPUID} -le 0 ];then
         env=" "
