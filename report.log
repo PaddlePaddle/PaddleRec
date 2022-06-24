@@ -1,0 +1,32 @@
+2022-06-24 07:35:58 - utils.py:27 - WARNING - models/rank/dcn/static_model.py:113 remove "import paddle.distributed.fleet as fleet"
+2022-06-24 07:35:58 - utils.py:23 - INFO - models/rank/dcn/static_model.py:114 fleet -> paddle.distributed.fleet
+
+#################### STATISTIC ####################
+filename: models/rank/dcn/static_model.py
+WARNING: models/rank/dcn/static_model.py:113 remove "import paddle.distributed.fleet as fleet"
+---------------------------------------------------
+###################################################
+2022-06-24 07:38:01 - utils.py:27 - WARNING - models/rank/deepfefm/static_model.py:105 remove "import paddle.distributed.fleet as fleet"
+2022-06-24 07:38:01 - utils.py:23 - INFO - models/rank/deepfefm/static_model.py:106 fleet -> paddle.distributed.fleet
+
+#################### STATISTIC ####################
+filename: models/rank/deepfefm/static_model.py
+WARNING: models/rank/deepfefm/static_model.py:105 remove "import paddle.distributed.fleet as fleet"
+---------------------------------------------------
+###################################################
+2022-06-24 07:38:32 - utils.py:27 - WARNING - models/rank/deepfm/static_model.py:105 remove "import paddle.distributed.fleet as fleet"
+2022-06-24 07:38:32 - utils.py:23 - INFO - models/rank/deepfm/static_model.py:106 fleet -> paddle.distributed.fleet
+
+#################### STATISTIC ####################
+filename: models/rank/deepfm/static_model.py
+WARNING: models/rank/deepfm/static_model.py:105 remove "import paddle.distributed.fleet as fleet"
+---------------------------------------------------
+###################################################
+2022-06-24 07:39:06 - utils.py:27 - WARNING - models/rank/deepfm/static_model.py:105 remove "import paddle.distributed.fleet as fleet"
+2022-06-24 07:39:06 - utils.py:23 - INFO - models/rank/deepfm/static_model.py:106 fleet -> paddle.distributed.fleet
+
+#################### STATISTIC ####################
+filename: models/rank/deepfm/static_model.py
+WARNING: models/rank/deepfm/static_model.py:105 remove "import paddle.distributed.fleet as fleet"
+---------------------------------------------------
+###################################################
