@@ -21,7 +21,6 @@ import math
 import numpy as np
 import six
 import ast
-import paddle.fluid as fluid
 import paddle
 import collections
 if six.PY2:
@@ -64,45 +63,48 @@ def parse_args():
 
 
 def infer_network(vocab_size, emb_size, pure_bf16=False):
-    analogy_a = fluid.data(name="analogy_a", shape=[None], dtype='int64')
-    analogy_b = fluid.data(name="analogy_b", shape=[None], dtype='int64')
-    analogy_c = fluid.data(name="analogy_c", shape=[None], dtype='int64')
-    all_label = fluid.data(name="all_label", shape=[vocab_size], dtype='int64')
+    analogy_a = paddle.static.data(
+        name="analogy_a", shape=[None], dtype='int64')
+    analogy_b = paddle.static.data(
+        name="analogy_b", shape=[None], dtype='int64')
+    analogy_c = paddle.static.data(
+        name="analogy_c", shape=[None], dtype='int64')
+    all_label = paddle.static.data(
+        name="all_label", shape=[vocab_size], dtype='int64')
     dtype = 'uint16' if pure_bf16 else 'float32'
-    emb_all_label = fluid.embedding(
+    emb_all_label = paddle.static.nn.embedding(
         input=all_label,
         size=[vocab_size, emb_size],
         param_attr="emb",
         dtype=dtype)
 
-    emb_a = fluid.embedding(
+    emb_a = paddle.static.nn.embedding(
         input=analogy_a,
         size=[vocab_size, emb_size],
         param_attr="emb",
         dtype=dtype)
-    emb_b = fluid.embedding(
+    emb_b = paddle.static.nn.embedding(
         input=analogy_b,
         size=[vocab_size, emb_size],
         param_attr="emb",
         dtype=dtype)
-    emb_c = fluid.embedding(
+    emb_c = paddle.static.nn.embedding(
         input=analogy_c,
         size=[vocab_size, emb_size],
         param_attr="emb",
         dtype=dtype)
 
     if pure_bf16:
-        emb_all_label = fluid.layers.cast(emb_all_label, "float32")
-        emb_a = fluid.layers.cast(emb_a, "float32")
-        emb_b = fluid.layers.cast(emb_b, "float32")
-        emb_c = fluid.layers.cast(emb_c, "float32")
+        emb_all_label = paddle.cast(emb_all_label, "float32")
+        emb_a = paddle.cast(emb_a, "float32")
+        emb_b = paddle.cast(emb_b, "float32")
+        emb_c = paddle.cast(emb_c, "float32")
 
-    target = fluid.layers.elementwise_add(
-        fluid.layers.elementwise_sub(emb_b, emb_a), emb_c)
+    target = paddle.add(paddle.subtract(emb_b, emb_a), emb_c)
 
     emb_all_label_l2 = fluid.layers.l2_normalize(x=emb_all_label, axis=1)
-    dist = fluid.layers.matmul(x=target, y=emb_all_label_l2, transpose_y=True)
-    values, pred_idx = fluid.layers.topk(input=dist, k=4)
+    dist = paddle.matmul(x=target, y=emb_all_label_l2, transpose_y=True)
+    values, pred_idx = paddle.topk(x=dist, k=4)
     return values, pred_idx
 
 
@@ -126,8 +128,8 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     epoch_model_path_list.sort()
     print("Save model len {}".format(len(epoch_model_path_list)))
 
-    place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
-    exe = fluid.Executor(place)
+    place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
+    exe = paddle.static.Executor(place)
     emb_size = args.emb_size
     batch_size = args.batch_size
     pure_bf16 = args.pure_bf16
@@ -135,9 +137,9 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
     result_dict = {}
     result_dict["result"] = {}
 
-    with fluid.scope_guard(fluid.Scope()):
-        main_program = fluid.Program()
-        with fluid.program_guard(main_program):
+    with paddle.static.scope_guard(paddle.static.Scope()):
+        main_program = paddle.static.Program()
+        with paddle.static.program_guard(main_program):
             values, pred = infer_network(vocab_size, emb_size, pure_bf16)
             for epoch, model_path in enumerate(epoch_model_path_list):
                 print("Begin infer model: {}".format(model_path))
@@ -222,9 +224,9 @@ def check_version(with_shuffle_batch=False):
 
     try:
         if with_shuffle_batch:
-            fluid.require_version('1.7.0')
+            paddle.utils.require_version('1.7.0')
         else:
-            fluid.require_version('1.6.0')
+            paddle.utils.require_version('1.6.0')
     except Exception as e:
         logger.error(err)
         sys.exit(1)
