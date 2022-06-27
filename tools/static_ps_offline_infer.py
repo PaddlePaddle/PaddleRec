@@ -25,7 +25,6 @@ import paddle
 import os
 import warnings
 import logging
-import paddle.fluid as fluid
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 print(os.path.abspath(os.path.join(__dir__, '..')))

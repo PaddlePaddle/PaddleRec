@@ -121,14 +121,14 @@ class Main(object):
         sync_mode = self.config.get("runner.sync_mode")
 
         gpus_env = os.getenv("FLAGS_selected_gpus")
-        self.PSGPU = paddle.fluid.core.PSGPU()
+        self.PSGPU = paddle.framework.core.PSGPU()
         gpuslot = [int(i) for i in range(1, self.model.sparse_inputs_slots)]
         gpu_mf_sizes = [self.model.sparse_feature_dim - 1] * (
             self.model.sparse_inputs_slots - 1)
         self.PSGPU.set_slot_vector(gpuslot)
         self.PSGPU.set_slot_dim_vector(gpu_mf_sizes)
         self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
-        opt_info = paddle.fluid.default_main_program()._fleet_opt
+        opt_info = paddle.static.default_main_program()._fleet_opt
         if use_auc is True:
             opt_info['stat_var_names'] = [
                 self.model.stat_pos.name, self.model.stat_neg.name
@@ -154,16 +154,16 @@ class Main(object):
             epoch_speed = self.example_nums / epoch_time
             if use_auc is True:
                 global_auc = auc(self.model.stat_pos, self.model.stat_neg,
-                                 paddle.fluid.global_scope(), fleet.util)
+                                 paddle.static.global_scope(), fleet.util)
                 self.train_result_dict["auc"].append(global_auc)
                 fleet_util.set_zero(self.model.stat_pos.name,
-                                    paddle.fluid.global_scope())
+                                    paddle.static.global_scope())
                 fleet_util.set_zero(self.model.stat_neg.name,
-                                    paddle.fluid.global_scope())
+                                    paddle.static.global_scope())
                 fleet_util.set_zero(self.model.batch_stat_pos.name,
-                                    paddle.fluid.global_scope())
+                                    paddle.static.global_scope())
                 fleet_util.set_zero(self.model.batch_stat_neg.name,
-                                    paddle.fluid.global_scope())
+                                    paddle.static.global_scope())
                 logger.info(
                     "Epoch: {}, using time {} second, ips {} {}/sec. auc: {}".
                     format(epoch, epoch_time, epoch_speed, self.count_method,
@@ -261,7 +261,7 @@ class Main(object):
                         epoch, batch_id, metrics_string, profiler_string))
                     train_run_cost = 0.0
                     total_examples = 0
-            except paddle.fluid.core.EOFException:
+            except paddle.framework.core.EOFException:
                 self.reader.reset()
                 break
 
