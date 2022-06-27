@@ -27,7 +27,6 @@ import paddle
 import os
 import warnings
 import logging
-import paddle.fluid as fluid
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 print(os.path.abspath(os.path.join(__dir__, '..')))
@@ -110,7 +109,8 @@ class Main(object):
         fleet.run_server()
 
     def wait_and_prepare_dataset(self):
-        dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
+        dataset = paddle.fluid.DatasetFactory().create_dataset(
+            "InMemoryDataset")
         dataset.set_use_var(self.input_data)
         train_data_dir = self.config.get("runner.data_dir", "")
         dataset.set_batch_size(int(config.get("runner.batch_size", "1")))
@@ -172,10 +172,10 @@ class Main(object):
             fetch_info=fetch_info,
             print_period=print_step,
             debug=config.get("runner.dataset_debug", False))
-        baseline_auc = get_global_auc(fluid.global_scope(),
+        baseline_auc = get_global_auc(paddle.static.global_scope(),
                                       self.model.auc_stat_list[2].name,
                                       self.model.auc_stat_list[3].name)
-        clear_metrics(fluid.global_scope(), self.metric_list,
+        clear_metrics(paddle.static.global_scope(), self.metric_list,
                       self.metric_types)
         logger.info("baseline auc: {}".format(baseline_auc))
         slots_shuffle_list = config.get("runner.shots_shuffle_list", [])
@@ -192,7 +192,7 @@ class Main(object):
                 debug=config.get("runner.dataset_debug", False))
 
             shuffle_auc = get_global_auc()
-            clear_metrics(fluid.global_scope(), self.metric_list,
+            clear_metrics(paddle.static.global_scope(), self.metric_list,
                           self.metric_types)
             logger.info("slots {} shuffle, auc: {}".format(slots_list,
                                                            shuffle_auc))
