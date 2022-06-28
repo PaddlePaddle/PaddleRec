@@ -156,9 +156,12 @@ class StaticModel(object):
             self.config.get("hyper_parameters.optimizer.decay_steps"))
 
         # single
-        scheduler = paddle.optimizer.lr.ExponentialDecay(
-            learning_rate=lr, gamma=decay_rate, verbose=True)
-        optimizer = paddle.optimizer.SGD(learning_rate=scheduler)
+        optimizer = paddle.optimizer.SGD(
+            learning_rate=paddle.static.exponential_decay(
+                learning_rate=lr,
+                decay_steps=decay_steps,
+                decay_rate=decay_rate,
+                staircase=True))
 
         if strategy != None:
             sync_mode = self.config.get("runner.sync_mode")
@@ -167,7 +170,7 @@ class StaticModel(object):
             if sync_mode == "geo":
                 decay_steps = int(decay_steps / fleet.worker_num())
                 optimizer = paddle.optimizer.SGD(
-                    learning_rate=fluid.layers.exponential_decay(
+                    learning_rate=paddle.static.exponential_decay(
                         learning_rate=lr,
                         decay_steps=decay_steps,
                         decay_rate=decay_rate,
