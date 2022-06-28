@@ -123,18 +123,18 @@ exe.train_from_dataset(main_program, dataset)
 在 wide and deep 模型中，输入层被分为三组，如下所示
 
 ```python
-dense_input = fluid.layers.data(name="dense_input",
+dense_input = paddle.static.data(name="dense_input",
                      shape=[params.dense_feature_dim],
                      dtype="float32")
 
 sparse_input_ids = [
-   fluid.layers.data(name="C" + str(i),
+   paddle.static.data(name="C" + str(i),
                      shape=[1],
                      lod_level=1,
                      dtype="int64") for i in range(1, sparse_feature_num)
    ]
 
-label = fluid.layers.data(name="label", shape=[1], dtype="int64")
+label = paddle.static.layers.data(name="label", shape=[1], dtype="int64")
 
 model.inputs = [dense_input] + sparse_input_ids + [label]
 ```
