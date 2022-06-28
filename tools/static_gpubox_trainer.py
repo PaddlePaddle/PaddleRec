@@ -26,7 +26,7 @@ import paddle
 import os
 import warnings
 import logging
-from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
+from paddle.incubate.fleet.utils.fleet_util import FleetUtil
 fleet_util = FleetUtil()
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))

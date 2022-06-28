@@ -14,7 +14,6 @@
 
 import math
 import paddle
-import paddle.fluid as fluid
 
 from net import BenchmarkDNNLayer
 
@@ -78,7 +77,7 @@ class StaticModel():
 
         auc, batch_auc_var, auc_stat_list = paddle.static.auc(
             input=predict_2d, label=self.label_input, slide_steps=0)
-        metric_list = fluid.contrib.layers.ctr_metric_bundle(
+        metric_list = paddle.static.ctr_metric_bundle(
             self.predict, paddle.cast(
                 x=self.label_input, dtype='float32'))
 
