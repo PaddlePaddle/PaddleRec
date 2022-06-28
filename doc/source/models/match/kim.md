@@ -1,32 +1,7 @@
-# kim文本匹配模型
+# kim (Personalized News Recommendation with Knowledge-aware Interactive Matching) 
+代码请参考：[KIM](https://paddlerec.readthedocs.io/en/latest/models/match/kim.html) 
+如果我们的代码对您有用，还请点个star啊~  
 
-
-以下是本例的简要目录结构及说明： 
-
-```
-├── data #样例数据
-    ├── sample_data #样例数据
-        ├── docs.tsv #新闻文本
-        ├── entity2id.txt #实体映射表
-        ├── glove.840B.300d.txt #glove词向量
-        ├── KGGraph #知识图谱关系
-        ├── KGGraph #知识图谱关系
-        ├── train.tsv #训练数据样例
-        ├── test.txt #测试数据样例
-├── __init__.py
-├── README.md #文档
-├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据配置
-├── dygraph_model.py # 构建动态图
-├── net.py # 模型核心组网（动静统一）
-├── mind_reader.py #数据读取程序
-├── eval_utils #评估函数
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)  
-[kim](https://paddlerec.readthedocs.io/en/latest/models/match/kim.html)  
 
 ## 内容
 
@@ -55,7 +30,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在kim模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/match/match-pyramid # 在任意目录均可运行
+# cd models/match/kim # 在任意目录均可运行
 # 动态图训练
 python -u trainer.py -m config.yaml -o mode=train # 全量数据运行config_bigdata.yaml 
 # 动态图预测
@@ -87,10 +62,10 @@ python -u infer.py -m config.yaml -o mode=test
 cd ../../../datasets/kim
 bash run.sh
 ```
-3. 切回模型目录f
+3. 切回模型目录
 ```bash
-python -u trainer.py -m config_bigdata.yml -o mode=train
-python -u infer.py -m config_bigdata.yml -o mode=test
+python -u trainer.py -m config_bigdata.yaml -o mode=train
+python -u infer.py -m config_bigdata.yaml -o mode=test
 ```
 
 ## 进阶使用
