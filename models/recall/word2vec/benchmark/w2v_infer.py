@@ -102,7 +102,10 @@ def infer_network(vocab_size, emb_size, pure_bf16=False):
 
     target = paddle.add(paddle.subtract(emb_b, emb_a), emb_c)
 
-    emb_all_label_l2 = fluid.layers.l2_normalize(x=emb_all_label, axis=1)
+    # replace l2_normlize
+    emb_all_label_de = paddle.linalg.norm(emb_all_label, axis=1)
+    emb_all_label_de = paddle.clip(emb_all_label_de, min=1e-06)
+    emb_all_label_l2 = paddle.divide(emb_all_label, emb_all_label_de)
     dist = paddle.matmul(x=target, y=emb_all_label_l2, transpose_y=True)
     values, pred_idx = paddle.topk(x=dist, k=4)
     return values, pred_idx
@@ -144,7 +147,7 @@ def infer_epoch(args, vocab_size, test_reader, use_cuda, i2w):
             for epoch, model_path in enumerate(epoch_model_path_list):
                 print("Begin infer model: {}".format(model_path))
                 copy_program = main_program.clone()
-                fluid.io.load_vars(
+                paddle.static.load_vars(
                     executor=exe, dirname=model_path, predicate=_load_emb)
                 accum_num = 0
                 accum_num_sum = 0.0
