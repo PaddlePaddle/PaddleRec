@@ -83,7 +83,7 @@ DR部分优化函数为：
 | :------| :------ | :------ | :------| :------ | 
 | ESCM2 | 0.82 | 1024 | 10 | 约3分钟 |
 
-1. 确认您当前所在目录为PaddleRec/models/multitask/esmm  
+1. 确认您当前所在目录为PaddleRec/models/multitask/escm2  
 2. 进入paddlerec/datasets/ali-ccp目录下，执行该脚本，会从国内源的服务器上下载我们预处理完成的ali-ccp全量数据集，并解压到指定文件夹。
 ``` bash
 cd ../../../datasets/ali-ccp
