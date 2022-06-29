@@ -1,4 +1,4 @@
-# DSIN (Deep Session Interest Network for Click-Through Rate Prediction)
+# dsin (Deep Session Interest Network for Click-Through Rate Prediction)
 
 代码请参考：[DSIN](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/dsin)  
 如果我们的代码对您有用，还请点个star啊~  
