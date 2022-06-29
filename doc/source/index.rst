@@ -57,6 +57,7 @@
    models/match/dssm.md
    models/match/match-pyramid.md
    models/match/multiview-simnet.md
+   models/match/kim.md
    models/recall/gru4rec.md
    models/recall/deepwalk.md
    models/recall/mind.md
@@ -86,12 +87,18 @@
    models/rank/fat_deepffm.md
    models/rank/deeprec.md
    models/rank/autofis.md
+   models/rank/sign.md
+   models/rank/dsin.md
+   models/rank/iprec.md
    models/multitask/esmm.md
    models/multitask/maml.md
    models/multitask/mmoe.md
    models/multitask/ple.md
    models/multitask/share_bottom.md
    models/multitask/dselect_k.md
+   models/multitask/metaheac.md
+   models/multitask/escm2.md
+   models/multitask/aitm.md
    models/multitask/metaheac.md
    
 .. toctree::
