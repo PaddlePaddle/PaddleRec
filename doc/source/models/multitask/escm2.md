@@ -1,4 +1,3 @@
-# ESCM2
 # escm2 (ESCM2: Entire Space Counterfactual Multi-Task Model for Post-Click Conversion Rate Estimation)
 
 代码请参考：[ESCM2](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/escm2)  
