@@ -14,7 +14,6 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import paddle.fluid as fluid
 import paddle.distributed.fleet as fleet
 import math
 import numpy as np
@@ -69,86 +68,78 @@ class StaticModel(object):
     def net(self, inputs, is_infer=False):
         init_width = 0.5 / self.sparse_feature_dim
 
-        input_emb = fluid.layers.embedding(
+        input_emb = paddle.static.nn.embedding(
             input=inputs[0],
             is_sparse=True,
             size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name='emb',
-                initializer=fluid.initializer.Uniform(-init_width,
-                                                      init_width)))
+                initializer=paddle.initializer.Uniform(-init_width,
+                                                       init_width)))
 
-        true_emb_w = fluid.layers.embedding(
+        true_emb_w = paddle.static.nn.embedding(
             input=inputs[1],
             is_sparse=True,
             size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name='emb_w',
-                initializer=fluid.initializer.Constant(value=0.0)))
+                initializer=paddle.initializer.Constant(value=0.0)))
 
-        true_emb_b = fluid.layers.embedding(
+        true_emb_b = paddle.static.nn.embedding(
             input=inputs[1],
             is_sparse=True,
             size=[self.sparse_feature_number, 1],
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name='emb_b',
-                initializer=fluid.initializer.Constant(value=0.0)))
+                initializer=paddle.initializer.Constant(value=0.0)))
 
-        neg_word_reshape = fluid.layers.reshape(inputs[2], shape=[-1, 1])
+        neg_word_reshape = paddle.reshape(inputs[2], shape=[-1, 1])
         neg_word_reshape.stop_gradient = True
 
-        neg_emb_w = fluid.layers.embedding(
+        neg_emb_w = paddle.static.nn.embedding(
             input=neg_word_reshape,
             is_sparse=True,
             size=[self.sparse_feature_number, self.sparse_feature_dim],
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name='emb_w', learning_rate=1.0))
 
-        neg_emb_w_re = fluid.layers.reshape(
+        neg_emb_w_re = paddle.reshape(
             neg_emb_w, shape=[-1, self.neg_num, self.sparse_feature_dim])
 
-        neg_emb_b = fluid.layers.embedding(
+        neg_emb_b = paddle.static.nn.embedding(
             input=neg_word_reshape,
             is_sparse=True,
             size=[self.sparse_feature_number, 1],
-            param_attr=fluid.ParamAttr(
+            param_attr=paddle.ParamAttr(
                 name='emb_b', learning_rate=1.0))
 
-        neg_emb_b_vec = fluid.layers.reshape(
-            neg_emb_b, shape=[-1, self.neg_num])
+        neg_emb_b_vec = paddle.reshape(neg_emb_b, shape=[-1, self.neg_num])
 
-        true_logits = fluid.layers.elementwise_add(
-            fluid.layers.reduce_sum(
-                fluid.layers.elementwise_mul(input_emb, true_emb_w),
-                dim=1,
-                keep_dim=True),
-            true_emb_b)
+        true_logits = paddle.add(paddle.sum(
+            paddle.multiply(input_emb, true_emb_w), dim=1, keep_dim=True),
+                                 true_emb_b)
 
-        input_emb_re = fluid.layers.reshape(
+        input_emb_re = paddle.reshape(
             input_emb, shape=[-1, 1, self.sparse_feature_dim])
 
-        neg_matmul = fluid.layers.matmul(
+        neg_matmul = paddle.matmul(
             input_emb_re, neg_emb_w_re, transpose_y=True)
-        neg_matmul_re = fluid.layers.reshape(
-            neg_matmul, shape=[-1, self.neg_num])
-        neg_logits = fluid.layers.elementwise_add(neg_matmul_re, neg_emb_b_vec)
+        neg_matmul_re = paddle.reshape(neg_matmul, shape=[-1, self.neg_num])
+        neg_logits = paddle.add(neg_matmul_re, neg_emb_b_vec)
         # nce loss
 
-        label_ones = fluid.layers.fill_constant_batch_size_like(
-            true_logits, shape=[-1, 1], value=1.0, dtype='float32')
-        label_zeros = fluid.layers.fill_constant_batch_size_like(
-            true_logits, shape=[-1, self.neg_num], value=0.0, dtype='float32')
+        label_ones = paddle.full_like(
+            true_logits, fill_value=1.0, dtype='float32')
+        label_zeros = paddle.full_like(
+            true_logits, fill_value=0.0, dtype='float32')
 
-        true_xent = fluid.layers.sigmoid_cross_entropy_with_logits(true_logits,
-                                                                   label_ones)
-        neg_xent = fluid.layers.sigmoid_cross_entropy_with_logits(neg_logits,
-                                                                  label_zeros)
-        cost = fluid.layers.elementwise_add(
-            fluid.layers.reduce_sum(
-                true_xent, dim=1),
-            fluid.layers.reduce_sum(
-                neg_xent, dim=1))
-        avg_cost = fluid.layers.reduce_mean(cost)
+        true_xent = paddle.nn.functional.binary_cross_entropy(true_logits,
+                                                              label_ones)
+        neg_xent = paddle.nn.functional.binary_cross_entropy(neg_logits,
+                                                             label_zeros)
+        cost = paddle.add(paddle.sum(true_xent, dim=1),
+                          paddle.sum(neg_xent, dim=1))
+        avg_cost = paddle.mean(cost)
 
         self.inference_target_var = avg_cost
         self.cost = avg_cost
@@ -165,8 +156,8 @@ class StaticModel(object):
             self.config.get("hyper_parameters.optimizer.decay_steps"))
 
         # single
-        optimizer = fluid.optimizer.SGD(
-            learning_rate=fluid.layers.exponential_decay(
+        optimizer = paddle.optimizer.SGD(
+            learning_rate=paddle.static.exponential_decay(
                 learning_rate=lr,
                 decay_steps=decay_steps,
                 decay_rate=decay_rate,
@@ -178,8 +169,8 @@ class StaticModel(object):
             # geo
             if sync_mode == "geo":
                 decay_steps = int(decay_steps / fleet.worker_num())
-                optimizer = fluid.optimizer.SGD(
-                    learning_rate=fluid.layers.exponential_decay(
+                optimizer = paddle.optimizer.SGD(
+                    learning_rate=paddle.static.exponential_decay(
                         learning_rate=lr,
                         decay_steps=decay_steps,
                         decay_rate=decay_rate,
@@ -190,7 +181,7 @@ class StaticModel(object):
                 print("decay_steps: {}".format(decay_steps))
                 scheduler = paddle.optimizer.lr.ExponentialDecay(
                     learning_rate=lr, gamma=decay_rate, verbose=True)
-                optimizer = fluid.optimizer.SGD(scheduler)
+                optimizer = paddle.optimizer.SGD(scheduler)
                 strategy.a_sync_configs = {"lr_decay_steps": decay_steps}
 
             optimizer = fleet.distributed_optimizer(optimizer, strategy)
