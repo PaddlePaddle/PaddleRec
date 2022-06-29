@@ -16,7 +16,6 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import math
-import paddle.fluid as fluid
 
 
 class BenchmarkDNNLayer(nn.Layer):
@@ -69,9 +68,8 @@ class BenchmarkDNNLayer(nn.Layer):
 
             self.inference_feed_vars.append(emb)
 
-            bow = paddle.fluid.layers.sequence_pool(input=emb, pool_type='sum')
+            bow = paddle.static.nn.sequence_pool(input=emb, pool_type='sum')
             self.all_vars.append(bow)
-            #paddle.fluid.layers.Print(bow)
             embs.append(bow)
 
         y_dnn = paddle.concat(x=embs, axis=1)

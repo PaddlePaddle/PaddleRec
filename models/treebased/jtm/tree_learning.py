@@ -14,8 +14,6 @@
 
 import paddle
 from paddle.distributed.fleet.dataset import TreeIndex
-import paddle.fluid as fluid
-from paddle.fluid.framework import Program
 import numpy as np
 import random
 import os

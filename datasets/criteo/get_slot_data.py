@@ -13,13 +13,11 @@
 # limitations under the License.	
 
 import os
-import paddle.fluid.incubate.data_generator as dg
+import paddle.distributed.fleet.data_generator as dg
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-import paddle.fluid.incubate.data_generator as dg
 
 
 class Reader(dg.MultiSlotDataGenerator):

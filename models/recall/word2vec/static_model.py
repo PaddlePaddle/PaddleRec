@@ -96,11 +96,6 @@ class StaticModel(object):
     def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.SGD(learning_rate=self.learning_rate)
         optimizer.minimize(self._cost)
-        #            learning_rate=paddle.fluid.layers.exponential_decay(
-        #                learning_rate=self.learning_rate,
-        #                decay_steps=self.decay_steps,
-        #                decay_rate=self.decay_rate,
-        #                staircase=True))
         if strategy != None:
             import paddle.distributed.fleet as fleet
             optimizer = fleet.distributed_optimizer(optimizer, strategy)

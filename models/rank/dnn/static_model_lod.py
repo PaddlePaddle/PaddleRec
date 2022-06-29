@@ -70,28 +70,28 @@ class StaticModel():
 
         def embedding_layer(input):
             if self.distributed_embedding:
-                emb = fluid.contrib.layers.sparse_embedding(
+                emb = paddle.static.nn.sparse_embedding(
                     input=input,
                     size=[
                         self.sparse_feature_number, self.sparse_feature_dim
                     ],
-                    param_attr=fluid.ParamAttr(
+                    param_attr=paddle.ParamAttr(
                         name="SparseFeatFactors",
-                        initializer=fluid.initializer.Uniform()))
+                        initializer=paddle.nn.initializer.Uniform()))
             else:
                 paddle.static.Print(input)
 
-                emb = paddle.fluid.layers.embedding(
+                emb = paddle.static.nn.embedding(
                     input=input,
                     is_sparse=True,
                     is_distributed=self.is_distributed,
                     size=[
                         self.sparse_feature_number, self.sparse_feature_dim
                     ],
-                    param_attr=paddle.fluid.ParamAttr(
+                    param_attr=paddle.ParamAttr(
                         name="SparseFeatFactors",
-                        initializer=paddle.fluid.initializer.Uniform()))
-            emb_sum = paddle.fluid.layers.sequence_pool(
+                        initializer=paddle.initializer.Uniform()))
+            emb_sum = paddle.static.nn.sequence_pool(
                 input=emb, pool_type='sum')
             return emb_sum
 
