@@ -202,7 +202,7 @@ for batch_size in ${batch_size_list[*]}; do
                         --skip_steps 2 \
                         --device_num ${device_num} \
                         --speed_unit samples/s \
-                        --convergence_key loss: "
+                        --convergence_key auc: "
                 echo $cmd
                 eval $cmd
                 last_status=${PIPESTATUS[0]}
@@ -239,7 +239,7 @@ for batch_size in ${batch_size_list[*]}; do
                         --skip_steps 2 \
                         --device_num ${device_num} \
                         --speed_unit samples/s \
-                        --convergence_key loss: "
+                        --convergence_key auc: "
                 echo $cmd
                 eval $cmd
                 last_status=${PIPESTATUS[0]}
