@@ -1,27 +1,30 @@
 # sign (Detecting Beneficial Feature Interactions for Recommender Systems)
 
-代码请参考：[sign](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/sign)  
+代码请参考：[SIGN](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/rank/sign)  
 如果我们的代码对您有用，还请点个star啊~  
 
 ## 内容
 
-- [模型简介](#模型简介)
-- [数据准备](#数据准备)
-- [运行环境](#运行环境)
-- [快速开始](#快速开始)
-- [模型组网](#模型组网)
-- [效果复现](#效果复现)
-- [进阶使用](#进阶使用)
-- [FAQ](#FAQ)
+- [Detecting Beneficial Feature Interactions for Recommender Systems](#detecting-beneficial-feature-interactions-for-recommender-systems)
+  - [内容](#内容)
+  - [模型简介](#模型简介)
+  - [数据准备](#数据准备)
+  - [运行环境](#运行环境)
+  - [快速开始](#快速开始)
+  - [模型组网](#模型组网)
+  - [效果复现](#效果复现)
+  - [进阶使用](#进阶使用)
+  - [FAQ](#faq)
 
 ## 模型简介
+
 特征交叉通过将两个或多个特征相乘，来实现样本空间的非线性变换，提高模型的非线性能力，其在推荐系统领域中可以显著提高准确率。以往的研究考虑了所有特征之间的交叉，但是某些特征交叉与推荐结果的相关性不大，其引入的噪声会降低模型的准确率。因此论文[《Detecting Beneficial Feature Interactions for Recommender Systems》]( https://arxiv.org/pdf/2008.00404v6.pdf )中提出了一种利用图神经网络自动发现有意义特征交叉的模型L0-SIGN。
 
 作者使用图神经网络建模每个样本的特征，将特征交叉与图中的边相联系，用GNN的关系推理能力对特征交叉进行建模。使用L0正则化的边预测来限制图中检测的边的数量，以此进行有意义特征交叉的检测。
 
 本模型实现了下述论文中的 SIGN 模型：
 
-```text
+```
 @inproceedings{su2021detecting,
   title={Detecting Beneficial Feature Interactions for Recommender Systems},
   author={Su, Yixin and Zhang, Rui and Erfani, Sarah and Xu, Zhenghua},
@@ -40,29 +43,33 @@
 0.0 24 25 26
 1.0 62 63 64
 ```
+
 ## 运行环境
+
 PaddlePaddle>=2.0
 
 pgl>=2.2.0
 
 python 2.7/3.5/3.6/3.7
 
-os : windows/linux/macos 
+os : windows/linux/macos
 
 ## 快速开始
-本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在sign模型目录的快速执行命令如下： 
+
+本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在sign模型目录的快速执行命令如下：
+
 ```bash
 # 准备环境: 安装pgl
 pip install pgl
 
 # 进入模型目录
-cd PaddleRec/models/rank/sign	# 在任意目录均可运行
+cd PaddleRec/models/rank/sign # 在任意目录均可运行
 # 动态图训练
-python -u ../../../tools/trainer.py -m config.yaml			# sample数据运行
-python -u ../../../tools/trainer.py -m config_bigdata.yaml	# 全量数据运行
+python -u ../../../tools/trainer.py -m config.yaml   # sample数据运行
+python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行
 # 动态图预测
-python -u ../../../tools/infer.py -m config.yaml			# sample数据预测
-python -u ../../../tools/infer.py -m config_bigdata.yaml	# 全量数据预测
+python -u ../../../tools/infer.py -m config.yaml   # sample数据预测
+python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据预测
 ```
 
 ## 模型组网
@@ -70,7 +77,7 @@ python -u ../../../tools/infer.py -m config_bigdata.yaml	# 全量数据预测
 L0-SIGN模型有两个模块，一个是L0边预估模块，通过矩阵分解图的邻接矩阵进行边的预估，一个是图分类SIGN模块。模型的主要组网结构如图1所示，与 `net.py` 中的代码一一对应 ：
 
 <p align="center">
-<img align="center" src="../../../imgs/sign.png">
+<img align="center" src="../../../doc/imgs/sign.png">
 <p>
 
 ## 效果复现
@@ -78,9 +85,9 @@ L0-SIGN模型有两个模块，一个是L0边预估模块，通过矩阵分解�
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。如果需要复现readme中的效果,请按如下步骤依次操作即可。
 在全量数据下模型的指标如下：
 
-| 模型 | auc    | acc    | batch_size | epoch_num | Time of each epoch |
-| :--- | :----- | :----- | :--------- | :-------- | :----------------- |
-| SIGN | 0.9418 | 0.8927 | 1024       | 40        | 约18分钟           |
+| 模型 | auc   | acc   | batch_size | epoch_num | Time of each epoch |
+| :------| :------ | :------ | :------| :------ | :------ |
+| SIGN | 0.9418 | 0.8927 | 1024 | 40 | 约18分钟 |
 
 1. 确认您当前所在目录为PaddleRec/models/rank/sign
 2. 进入PaddleRec/datasets/sign目录下，执行`run.sh`脚本，会从国内源的服务器上下载sign全量数据集，并解压到指定文件夹。
@@ -103,7 +110,7 @@ pip install pgl
 cd - # 切回模型目录
 # 动态图训练
 python -u ../../../tools/trainer.py -m config_bigdata.yaml # 全量数据运行
-python -u .././../tools/infer.py -m config_bigdata.yaml # 全量数据预测
+python -u ../../../tools/infer.py -m config_bigdata.yaml # 全量数据预测
 ```
 
 ## 进阶使用

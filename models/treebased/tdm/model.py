@@ -14,7 +14,6 @@
 
 import numpy as np
 import paddle
-import paddle.fluid as fluid
 import math
 
 
@@ -59,7 +58,7 @@ def middle_transform(output_dim, x, y):
                 size = layer_list[idx],
                 activation = act_list[idx],
                 weight_attr=paddle.ParamAttr(name="relu.w" + str(idx)),
-                bias_attr=fluid.ParamAttr(name="relu.b" + str(idx)))
+                bias_attr=paddle.ParamAttr(name="relu.b" + str(idx)))
     '''
     #paddle.static.Print(hiddens_, summarize=-1)
     hiddens_ = paddle.static.nn.fc(
@@ -69,26 +68,23 @@ def middle_transform(output_dim, x, y):
         activation='relu',
         weight_attr=paddle.ParamAttr(
             name="relu.w",
-            initializer=paddle.fluid.initializer.NormalInitializer(seed=1)),
-        bias_attr=fluid.ParamAttr(
+            initializer=paddle.initializer.NormalInitializer(seed=1)),
+        bias_attr=paddle.ParamAttr(
             name="relu.b",
-            initializer=paddle.fluid.initializer.ConstantInitializer(
-                value=0.1)))
+            initializer=paddle.initializer.ConstantInitializer(value=0.1)))
     #hiddens_ = paddle.nn.functional.dropout(hiddens_, 0.1)
 
     #paddle.static.Print(hiddens_, summarize=-1)
-    #hiddens_ = paddle.fluid.layers.dropout(hiddens_, 0.1, seed=1)
     hiddens_ = paddle.static.nn.fc(
         x=hiddens_,
         size=2,
         activation=None,
-        weight_attr=paddle.fluid.ParamAttr(
+        weight_attr=paddle.ParamAttr(
             name="cos_sim.w",
-            initializer=paddle.fluid.initializer.NormalInitializer(seed=1)),
-        bias_attr=fluid.ParamAttr(
+            initializer=paddle.initializer.NormalInitializer(seed=1)),
+        bias_attr=paddle.ParamAttr(
             name="cos_sim.b",
-            initializer=paddle.fluid.initializer.ConstantInitializer(
-                value=0.1)))
+            initializer=paddle.initializer.ConstantInitializer(value=0.1)))
     return hiddens_
 
 

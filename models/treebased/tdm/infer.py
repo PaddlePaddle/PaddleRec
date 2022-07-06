@@ -16,7 +16,6 @@ import json
 from model_infer import dnn_model_define
 import paddle
 import math
-import paddle.fluid as fluid
 import os
 import time
 import numpy as np
@@ -192,11 +191,10 @@ def infer(filelist, process_idx, init_model_path, id_code_map, code_id_map,
     with open("main_program", 'w') as f:
         f.write(str(paddle.static.default_main_program()))
 
-    exe = paddle.static.Executor(fluid.CPUPlace())
+    exe = paddle.static.Executor(paddle.CPUPlace())
     exe.run(paddle.static.default_startup_program())
 
     print("begin to load parameters")
-    #fluid.io.load_persistables(exe, dirname=init_model_path)
     paddle.static.load(paddle.static.default_main_program(),
                        init_model_path + '/rec_static')
     print("end load parameters")
