@@ -1,9 +1,7 @@
-# iprec模型
-代码请参考：[AITM](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/iprec)  
+# iprec (Package Recommendation with Intra- and Inter-Package Attention Networks) 
+代码请参考：[IPRec](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/iprec)  
 如果我们的代码对您有用，还请点个star啊~  
-注：在阅读该示例前，建议您先了解以下内容：
 
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
 
 ## 内容
 

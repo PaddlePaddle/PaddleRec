@@ -1,26 +1,8 @@
-# MetaHeac
+# metaheac (Learning to Expand Audience via Meta Hybrid Experts and Critics for Recommendation and Advertising) 
 
-以下是本例的简要目录结构及说明：
+代码请参考：[MetaHeac](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/metaheac)  
+如果我们的代码对您有用，还请点个star啊~ 
 
-```
-├── data #样例数据
-    ├── train #训练数据
-        ├── train_stage1.pkl
-    ├── test #测试数据
-        ├── test_stage1.pkl
-        ├── test_stage2.pkl
-├── net.py # 核心模型组网
-├── config.yaml # sample数据配置
-├── config_big.yaml # 全量数据配置
-├── dygraph_model.py # 构建动态图
-├── reader_train.py # 训练数据读取程序
-├── reader_test.py # infer数据读取程序
-├── readme.md #文档
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
 
 ## 内容
 

@@ -1,7 +1,8 @@
-# AITM模型的点击率预估模型
+# aitm (Modeling the Sequential Dependence among Audience Multi-step Conversions with Multi-task Learning in Targeted Display Advertising)
 
-代码请参考：[AITM](https://github.com/PaddlePaddle/PaddleRec/tree/master/models/rank/aitm)  
-如果我们的代码对您有用，还请点个star啊~  
+代码请参考：[MMOE](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/aitm)  
+如果我们的代码对您有用，还请点个star啊~ 
+
 
 ## 内容
 
@@ -33,7 +34,7 @@ os : windows/linux/macos
 本文提供了样例数据可以供您快速体验，在任意目录下均可执行。在aitm模型目录的快速执行命令如下： 
 ```bash
 # 进入模型目录
-# cd models/rank/aitm # 在任意目录均可运行
+# cd models/multitask/aitm # 在任意目录均可运行
 # 动态图训练
 python -u ../../../tools/trainer.py -m config.yaml
 
@@ -45,9 +46,9 @@ python -u ../../../tools/infer.py -m config.yaml
 在全量数据下模型的指标如下：  
 | 模型 | click auc | purchase auc |batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------ | :------| :------ | 
-| aitm | 0.6186 |0.6525 | 2000 | 6| 约3小时 |
+| aitm | 0.6130 |0.6166 | 2000 | 6| 约3小时 |
 
-1. 确认您当前所在目录为PaddleRec/models/rank/aitm
+1. 确认您当前所在目录为PaddleRec/models/multitask/aitm
 2. 进入Paddlerec/datasets/ali-cpp_aitm
 3. 执行命令运行全量数据
 
