@@ -18,7 +18,6 @@ import paddle.nn.functional as F
 import math
 import numpy as np
 import os
-import paddle.fluid as fluid
 
 
 class TagspaceLayer(nn.Layer):

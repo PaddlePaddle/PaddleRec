@@ -5,3 +5,4 @@ paddlepaddle>=1.8
 zmq
 sphinx-markdown-tables
 recommonmark
+jinja2<3.1

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import paddle
-import paddle.fluid as fluid
 import numpy as np
 import io
 import sys
@@ -24,30 +23,29 @@ paddle.enable_static()
 
 
 def get_emb_numpy(tree_node_num, node_emb_size, init_model_path=""):
-    all_nodes = fluid.layers.data(
+    all_nodes = paddle.static.data(
         name="all_nodes",
         shape=[-1, 1],
         dtype="int64",
         lod_level=1, )
 
-    output = fluid.layers.embedding(
+    output = paddle.static.nn.embedding(
         input=all_nodes,
         is_sparse=True,
         size=[tree_node_num, node_emb_size],
-        param_attr=fluid.ParamAttr(
+        param_attr=paddle.ParamAttr(
             name="tdm.bw_emb.weight",
-            initializer=paddle.fluid.initializer.UniformInitializer()))
+            initializer=paddle.initializer.UniformInitializer()))
 
-    place = fluid.CPUPlace()
-    exe = fluid.Executor(place)
+    place = paddle.CPUPlace()
+    exe = paddle.static.Executor(place)
 
-    exe.run(fluid.default_startup_program())
+    exe.run(paddle.static.default_startup_program())
     if init_model_path != "":
-        #fluid.io.load_persistables(exe, init_model_path)
         paddle.static.load(paddle.static.default_main_program(),
                            init_model_path + '/rec_static')
 
-    return np.array(fluid.global_scope().find_var("tdm.bw_emb.weight")
+    return np.array(paddle.static.global_scope().find_var("tdm.bw_emb.weight")
                     .get_tensor())
 
 

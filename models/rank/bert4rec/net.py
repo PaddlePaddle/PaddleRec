@@ -243,10 +243,10 @@ class NormalizeLayer(nn.Layer):
 
     def forward(self, out):
         out_dtype = out.dtype
-        if out_dtype == paddle.fluid.core.VarDesc.VarType.FP16:
+        if out_dtype == paddle.framework.core.VarDesc.VarType.FP16:
             out = paddle.cast(x=out, dtype="float32")
         out = self.LayerNormal(out)
-        if out_dtype == paddle.fluid.core.VarDesc.VarType.FP16:
+        if out_dtype == paddle.framework.core.VarDesc.VarType.FP16:
             out = paddle.cast(x=out, dtype="float16")
         return out
 
@@ -269,10 +269,10 @@ class NormalizeDropLayer(nn.Layer):
 
     def forward(self, out):
         out_dtype = out.dtype
-        if out_dtype == paddle.fluid.core.VarDesc.VarType.FP16:
+        if out_dtype == paddle.framework.core.VarDesc.VarType.FP16:
             out = paddle.cast(x=out, dtype="float32")
         out = self.LayerNormal(out)
-        if out_dtype == paddle.fluid.core.VarDesc.VarType.FP16:
+        if out_dtype == paddle.framework.core.VarDesc.VarType.FP16:
             out = paddle.cast(x=out, dtype="float16")
         if self.dropout_rate:
             out = self.dropout(out)
@@ -301,10 +301,10 @@ class DropResidualNormalizeLayer(nn.Layer):
         if prev_out is not None:
             out = out + prev_out
         out_dtype = out.dtype
-        if out_dtype == paddle.fluid.core.VarDesc.VarType.FP16:
+        if out_dtype == paddle.framework.core.VarDesc.VarType.FP16:
             out = paddle.cast(x=out, dtype="float32")
         out = self.LayerNormal(out)
-        if out_dtype == paddle.fluid.core.VarDesc.VarType.FP16:
+        if out_dtype == paddle.framework.core.VarDesc.VarType.FP16:
             out = paddle.cast(x=out, dtype="float16")
         return out
 
