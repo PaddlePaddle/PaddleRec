@@ -81,8 +81,9 @@ class StaticModel():
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        auc, batch_auc_var, _ = paddle.static.metric_op.auc(
-            input=predict_2d, label=self.label_input, slide_steps=0)
+        auc, batch_auc_var, _ = paddle.static.auc(input=predict_2d,
+                                                  label=self.label_input,
+                                                  slide_steps=0)
 
         self.inference_target_var = auc
         if is_infer:
