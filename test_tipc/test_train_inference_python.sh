@@ -229,6 +229,7 @@ if [ ${MODE} = "benchmark_train" ]; then
 	# set your model yaml
 	SC="tools/static_gpubox_trainer.py -m models/rank/dnn/config_gpubox.yaml"
     BATCH="-o runner.train_batch_size="$train_batch_value
+    EPOCH="-o runner.epochs="$epoch_num
 	# run pserver
 	export TRAINING_ROLE=PSERVER
 	for((i=0;i<$PADDLE_PSERVER_NUMS;i++))
@@ -236,7 +237,7 @@ if [ ${MODE} = "benchmark_train" ]; then
 		cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
 		echo "PADDLE WILL START PSERVER "$cur_port
 		export PADDLE_PORT=${cur_port}
-        cmd="${python} ${SC} ${BATCH}"
+        cmd="${python} ${SC} ${BATCH} ${EPOCH}"
         eval $cmd
 	done
 
@@ -246,7 +247,7 @@ if [ ${MODE} = "benchmark_train" ]; then
 	do
 		echo "PADDLE WILL START Trainer "$i
 		export PADDLE_TRAINER_ID=$i
-        cmd="${python} ${SC} ${BATCH}"
+        cmd="${python} ${SC} ${BATCH} ${EPOCH}"
         eval $cmd
 	done
 elif [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
