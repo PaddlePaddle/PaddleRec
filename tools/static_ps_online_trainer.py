@@ -28,7 +28,6 @@ import paddle
 import os
 import warnings
 import logging
-import paddle.fluid as fluid
 from paddle.distributed.fleet.utils.fs import LocalFS, HDFSClient
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
@@ -146,7 +145,7 @@ class Main(object):
 
     def wait_and_prepare_dataset(self, day, pass_index):
         train_data_path = self.config.get("runner.train_data_dir", [])
-        dataset = fluid.DatasetFactory().create_dataset(self.reader_type)
+        dataset = paddle.DatasetFactory().create_dataset(self.reader_type)
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size', 1))
         dataset.set_thread(self.config.get('runner.train_thread_num', 1))
@@ -188,7 +187,7 @@ class Main(object):
 
     def wait_and_prepare_infer_dataset(self, day, pass_index):
         test_data_path = self.config.get("runner.infer_data_dir", [])
-        dataset = fluid.DatasetFactory().create_dataset(self.reader_type)
+        dataset = paddle.DatasetFactory().create_dataset(self.reader_type)
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.infer_batch_size', 1))
         dataset.set_thread(self.config.get('runner.infer_thread_num', 1))
@@ -312,12 +311,12 @@ class Main(object):
                     logger.info("Infering Dataset Done, using time {} mins.".
                                 format(infer_cost))
                     begin = time.time()
-                    metric_str = get_global_metrics_str(fluid.global_scope(),
-                                                        self.metric_list, "")
+                    metric_str = get_global_metrics_str(
+                        paddle.static.global_scope(), self.metric_list, "")
                     logger.info("Day:{}, Pass: {}, Infer Global Metric: {}".
                                 format(day, pass_id, metric_str))
-                    clear_metrics(fluid.global_scope(), self.metric_list,
-                                  self.metric_types)
+                    clear_metrics(paddle.static.global_scope(),
+                                  self.metric_list, self.metric_types)
                     end = time.time()
                     infer_metric_cost = (end - begin) / 60.0
 
@@ -340,11 +339,11 @@ class Main(object):
                 release_cost = (end - begin) / 60.0
 
                 begin = time.time()
-                metric_str = get_global_metrics_str(fluid.global_scope(),
-                                                    self.metric_list, "")
+                metric_str = get_global_metrics_str(
+                    paddle.static.global_scope(), self.metric_list, "")
                 logger.info("Day:{}, Pass: {}, Train Global Metric: {}".format(
                     day, pass_id, metric_str))
-                clear_metrics(fluid.global_scope(), self.metric_list,
+                clear_metrics(paddle.static.global_scope(), self.metric_list,
                               self.metric_types)
                 end = time.time()
                 metric_cost = (end - begin) / 60

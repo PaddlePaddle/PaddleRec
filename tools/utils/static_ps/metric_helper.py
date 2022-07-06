@@ -20,7 +20,6 @@ import logging
 import numpy as np
 import math
 import paddle
-import paddle.fluid as fluid
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
 __dir__ = os.path.dirname(os.path.abspath(__file__))
@@ -32,14 +31,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_global_auc(scope=fluid.global_scope(),
+def get_global_auc(scope=paddle.static.global_scope(),
                    stat_pos="_generated_var_2",
                    stat_neg="_generated_var_3"):
     """
         Get global auc of all distributed workers.
 
         Args:
-            scope(Scope): Scope object, default is fluid.global_scope()
+            scope(Scope): Scope object, default is paddle.static.global_scope()
             stat_pos(str): name of auc pos bucket Variable
             stat_neg(str): name of auc neg bucket Variable
 
@@ -100,7 +99,7 @@ def get_global_auc(scope=fluid.global_scope(),
     return auc_value
 
 
-def get_global_metrics(scope=fluid.global_scope(),
+def get_global_metrics(scope=paddle.static.global_scope(),
                        stat_pos_name="_generated_var_2",
                        stat_neg_name="_generated_var_3",
                        sqrerr_name="sqrerr",
@@ -259,16 +258,16 @@ def get_global_metrics_str(scope, metric_list, prefix):
 
 
 def set_zero(var_name,
-             scope=fluid.global_scope(),
-             place=fluid.CPUPlace(),
+             scope=paddle.static.global_scope(),
+             place=paddle.CPUPlace(),
              param_type="int64"):
     """
     Set tensor of a Variable to zero.
 
     Args:
         var_name(str): name of Variable
-        scope(Scope): Scope object, default is fluid.global_scope()
-        place(Place): Place object, default is fluid.CPUPlace()
+        scope(Scope): Scope object, default is paddle.static.global_scope()
+        place(Place): Place object, default is paddle.CPUPlace()
         param_type(str): param data type, default is int64
 
     Examples:

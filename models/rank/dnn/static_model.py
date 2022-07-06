@@ -84,8 +84,8 @@ class StaticModel():
             sync_mode=self.sync_mode)
 
         self.cast_label = paddle.cast(self.label_input, dtype='float32')
-        ones = paddle.fluid.layers.fill_constant_batch_size_like(
-            input=self.label_input, shape=[-1, 1], dtype="float32", value=1)
+        ones = paddle.full_like(
+            self.label_input, fill_value=1, dtype="float32")
         show_click = paddle.cast(
             paddle.concat(
                 [ones, self.cast_label], axis=1), dtype='float32')

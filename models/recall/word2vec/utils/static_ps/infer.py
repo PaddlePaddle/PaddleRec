@@ -98,8 +98,8 @@ class Main(object):
 
     def run_infer(self, model_path, model_name):
         [inference_program, feed_target_names, fetch_targets] = (
-            paddle.fluid.io.load_inference_model(
-                dirname=model_path, executor=self.exe))
+            paddle.static.load_inference_model(
+                path_prefix=model_path, executor=self.exe))
 
         self.reset_auc()
 

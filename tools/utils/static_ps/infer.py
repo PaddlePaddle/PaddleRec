@@ -105,8 +105,8 @@ class Main(object):
         model_path = model_path + "/dnn_plugin"
         print("load model:", model_path)
         [inference_program, feed_target_names, fetch_targets] = (
-            paddle.fluid.io.load_inference_model(
-                dirname=model_path, executor=self.exe))
+            paddle.static.io.load_inference_model(
+                path_prefix=model_path, executor=self.exe))
 
         self.reset_auc()
         infer_res = []

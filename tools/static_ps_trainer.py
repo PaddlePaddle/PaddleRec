@@ -166,7 +166,7 @@ class Main(object):
                         [feed.name for feed in self.inference_feed_var],
                         self.inference_target_var)
                 else:
-                    paddle.fluid.io.save_inference_model(
+                    paddle.static.save_inference_model(
                         model_dir,
                         [feed.name for feed in self.inference_feed_var],
                         [self.inference_target_var], self.exe)

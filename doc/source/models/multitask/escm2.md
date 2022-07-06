@@ -1,27 +1,9 @@
-# ESCM2
+# escm2 (ESCM2: Entire Space Counterfactual Multi-Task Model for Post-Click Conversion Rate Estimation)
+
+代码请参考：[ESCM2](https://github.com/PaddlePaddle/PaddleRec/blob/master/models/multitask/escm2)  
+如果我们的代码对您有用，还请点个star啊~ 
 
 
-以下是本例的简要目录结构及说明： 
-
-```
-├── data # 文档
-    ├── train #训练数据
-        ├──small.txt
-    ├── test  #测试数据
-		    ├── small.txt
-├── __init__.py 
-├── readme.md #文档
-├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据配置
-├── escm_reader.py # 数据读取程序
-├── net.py # 模型核心组网（动静统一）
-├── static_model.py # 构建静态图
-├── dygraph_model.py # 构建动态图
-```
-
-注：在阅读该示例前，建议您先了解以下内容：
-
-[paddlerec入门教程](https://github.com/PaddlePaddle/PaddleRec/blob/master/README.md)
 
 ## 内容
 
