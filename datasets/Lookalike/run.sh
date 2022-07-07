@@ -1,6 +1,6 @@
 
-wget https://paddlerec.bj.bcebos.com/datasets/lookalike/Lookalike_data.rar
-rar e Lookalike_data.rar
+wget https://paddlerec.bj.bcebos.com/datasets/lookalike/metaheac_data.zip
+unzip metaheac_data.zip
 
 mkdir train_data
 mkdir test_cold_data
