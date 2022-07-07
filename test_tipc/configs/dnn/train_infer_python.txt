@@ -50,6 +50,8 @@ inference:-u tools/paddle_infer.py --model_name=dnn --reader_file=models/rank/dn
 --benchmark:True
 null:null
 ===========================train_benchmark_params=========================== 
-batchsize:2048
-epochs:12
+batch_size:2048
+epoch:50
 --profiler_options="batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile"
+run_mode:PSGPU
+fp_items:null

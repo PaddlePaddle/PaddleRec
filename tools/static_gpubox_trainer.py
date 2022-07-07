@@ -152,6 +152,7 @@ class Main(object):
         self.PSGPU.set_slot_vector(gpuslot)
         self.PSGPU.set_slot_dim_vector(gpu_mf_sizes)
         self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
+        gpu_num = len(gpus_env.split(","))
         opt_info = paddle.static.default_main_program()._fleet_opt
         if use_auc is True:
             opt_info['stat_var_names'] = [
@@ -176,6 +177,7 @@ class Main(object):
 
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
+            epoch_speed = epoch_speed / gpu_num
             if use_auc is True:
                 global_auc = auc(self.model.stat_pos, self.model.stat_neg,
                                  paddle.static.global_scope(), fleet.util)
