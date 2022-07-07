@@ -201,7 +201,7 @@ for batch_size in ${batch_size_list[*]}; do
                         --keyword ips: \
                         --skip_steps 2 \
                         --device_num ${device_num} \
-                        --speed_unit samples/s \
+                        --speed_unit example/s \
                         --convergence_key auc: "
                 echo $cmd
                 eval $cmd
@@ -238,7 +238,7 @@ for batch_size in ${batch_size_list[*]}; do
                         --keyword ips: \
                         --skip_steps 2 \
                         --device_num ${device_num} \
-                        --speed_unit samples/s \
+                        --speed_unit example/s \
                         --convergence_key auc: "
                 echo $cmd
                 eval $cmd
