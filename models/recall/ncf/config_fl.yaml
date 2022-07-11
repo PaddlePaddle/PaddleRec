@@ -14,6 +14,7 @@
 
 runner:
   sync_mode: "geo" # 可选, string: sync/async/geo
+  with_coodinator: 1
   geo_step: 100 # 可选, int, 在geo模式下控制本地的迭代次数
   split_file_list: True # 可选, bool, 若每个节点上都拥有全量数据，则需设置为True
   thread_num: 1 # 多线程配置
@@ -25,11 +26,11 @@ runner:
 
   train_data_dir: "../../../datasets/movielens_pinterest_NCF/fl_data/fl_train_data"
   train_reader_path: "movielens_reader"  # importlib format
-  train_batch_size: 256
+  train_batch_size: 512
   model_save_path: "output_model_ncf"
 
   use_gpu: False
-  epochs: 1
+  epochs: 2
   print_interval: 50
   
   test_data_dir: "../../../datasets/movielens_pinterest_NCF/fl_data/fl_test_data"
