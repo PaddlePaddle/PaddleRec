@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and	
 # limitations under the License.	
 
-import paddle.fluid.incubate.data_generator as dg
-
+import paddle.distributed.fleet.data_generator as dg
 cont_min_ = [0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 cont_max_ = [20, 600, 100, 50, 64000, 500, 100, 50, 500, 10, 10, 10, 50]
 cont_diff_ = [20, 603, 100, 50, 64000, 500, 100, 50, 500, 10, 10, 10, 50]

@@ -16,7 +16,6 @@ from paddle.nn import Conv1D
 import paddle
 import paddle.nn as nn
 import math
-import paddle.fluid as fluid
 import numpy as np
 
 

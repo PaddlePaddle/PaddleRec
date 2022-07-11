@@ -75,8 +75,8 @@ class DNNLayer(nn.Layer):
                         self.sparse_feature_number, self.sparse_feature_dim + 2
                     ],
                     param_attr=paddle.ParamAttr(name="embedding"))
-                emb = paddle.static.nn.continuous_value_model(
-                    emb, show_click, False)
+                emb = paddle.static.nn.continuous_value_model(emb, show_click,
+                                                              False)
             else:
                 emb = self.embedding(s_input)
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])

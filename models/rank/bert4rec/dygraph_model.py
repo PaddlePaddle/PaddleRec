@@ -120,8 +120,8 @@ class DygraphModel():
         self.test_count += 1
         for i in range(batch_size):
             pred_ratings.append(
-                paddle.fluid.layers.gather(prediction[
-                    i], paddle.to_tensor(candiate[0][i])).numpy())
+                paddle.gather(prediction[i], paddle.to_tensor(candiate[0][i]))
+                .numpy())
         evaluate_rec_ndcg_mrr_batch(
             pred_ratings, self.results, top_k=10, row_target_position=0)
         if self.test_count == self.num_test_batch:

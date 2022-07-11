@@ -16,7 +16,6 @@ import os
 import sys
 import six
 import numpy as np
-import paddle.fluid as fluid
 import paddle.distributed.fleet as fleet
 
 
@@ -129,8 +128,8 @@ class Reader(fleet.MultiSlotDataGenerator):
                     for line in f:
                         word_ids = [int(w) for w in line.split()]
                         for idx, target_id in enumerate(word_ids):
-                            context_word_ids = self.get_context_words(
-                                word_ids, idx)
+                            context_word_ids = self.get_context_words(word_ids,
+                                                                      idx)
                             for context_id in context_word_ids:
                                 yield [target_id], [context_id]
 
@@ -143,25 +142,23 @@ class Reader(fleet.MultiSlotDataGenerator):
                     if len(result[0]) == self.batch_size:
                         tensor_result = []
                         for tensor in result:
-                            t = fluid.Tensor()
                             dat = np.array(tensor, dtype='int64')
                             if len(dat.shape) > 2:
                                 dat = dat.reshape((dat.shape[0], dat.shape[2]))
                             elif len(dat.shape) == 1:
                                 dat = dat.reshape((-1, 1))
-                            t.set(dat, fluid.CPUPlace())
+                            t = paddle.to_tensor(dat, place=paddle.CPUPlace())
                             tensor_result.append(t)
                         if self.with_shuffle_batch:
                             yield tensor_result
                         else:
-                            tt = fluid.Tensor()
                             neg_array = self.cs.searchsorted(
                                 np.random.sample(self.neg_num))
                             neg_array = np.tile(neg_array, self.batch_size)
-                            tt.set(
+                            tt = paddle.to_tensor(
                                 neg_array.reshape(
                                     (self.batch_size, self.neg_num)),
-                                fluid.CPUPlace())
+                                place=paddle.CPUPlace())
                             tensor_result.append(tt)
                             yield tensor_result
                         result = [[], []]
@@ -181,11 +178,11 @@ class Reader(fleet.MultiSlotDataGenerator):
                             yield [self.word_to_id[line[0]]
                                    ], [self.word_to_id[line[1]]], [
                                        self.word_to_id[line[2]]
-                            ], [self.word_to_id[line[3]]], [
+                                   ], [self.word_to_id[line[3]]], [
                                        self.word_to_id[line[0]],
                                        self.word_to_id[line[1]],
                                        self.word_to_id[line[2]]
-                            ]
+                                   ]
 
         if self.is_infer:
             return infer_reader

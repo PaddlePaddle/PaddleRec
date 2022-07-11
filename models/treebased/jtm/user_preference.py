@@ -14,21 +14,20 @@
 
 import numpy as np
 import paddle
-import paddle.fluid as fluid
 import math
 import sys
 import os
 tdm_path = os.path.abspath(os.path.join(os.path.dirname(os.getcwd()), "tdm"))
 sys.path.append(tdm_path)
 from model import dnn_model_define
-from paddle.fluid.framework import Program
+from paddle.static import Program
 
 
 class UserPreferenceModel:
     def __init__(self, init_model_path, tree_node_num, node_emb_size):
         self.init_model_path = init_model_path
-        self.place = fluid.CPUPlace()
-        self.exe = fluid.Executor(self.place)
+        self.place = paddle.CPUPlace()
+        self.exe = paddle.static.Executor(self.place)
 
         self.node_emb_size = node_emb_size
         self.create_embedding_lookup_model(tree_node_num)
@@ -92,21 +91,21 @@ class UserPreferenceModel:
         self.embedding_lookup_program = Program()
         startup = Program()
 
-        with paddle.fluid.framework.program_guard(
+        with paddle.static.framework.program_guard(
                 self.embedding_lookup_program, startup):
-            all_nodes = fluid.layers.data(
+            all_nodes = paddle.static.data(
                 name="all_nodes",
                 shape=[-1, 1],
                 dtype="int64",
                 lod_level=1, )
 
-            output = fluid.layers.embedding(
+            output = paddle.static.nn.embedding(
                 input=all_nodes,
                 is_sparse=True,
                 size=[tree_node_num, self.node_emb_size],
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name="tdm.bw_emb.weight",
-                    initializer=paddle.fluid.initializer.UniformInitializer()))
+                    initializer=paddle.initializer.UniformInitializer()))
 
             self.embedding_fetch_var_names = [output.name]
             self.exe.run(startup)
@@ -115,15 +114,14 @@ class UserPreferenceModel:
         self.prediction_model = Program()
         startup = Program()
 
-        with paddle.fluid.framework.program_guard(self.prediction_model,
-                                                  startup):
+        with paddle.static.program_guard(self.prediction_model, startup):
             user_input = [
-                fluid.layers.data(
+                paddle.static.data(
                     name="user_emb_{}".format(i),
                     shape=[-1, 1, self.node_emb_size],
                     dtype="float32", ) for i in range(69)
             ]
-            unit_id_emb = fluid.layers.data(
+            unit_id_emb = paddle.static.data(
                 name="unit_id_emb",
                 shape=[-1, 1, self.node_emb_size],
                 dtype="float32")
