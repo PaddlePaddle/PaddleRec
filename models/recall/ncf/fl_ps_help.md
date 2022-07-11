@@ -32,7 +32,7 @@
 5) make -j 
 6）python -m pip install python/dist/paddlepaddle-0.0.0-cp37-cp37m-linux_x86_64.whl -U
 ```
-2. 用户二次开发模块
+3. 用户二次开发模块
 * Paddle：
     * Paddle/python/paddle/distributed/ps/coordinator.py
     * PaddleRec/tools/static_fl_trainer_with_coordinator.py: run_worker 函数
@@ -41,8 +41,8 @@
     * 数据集：如果 PaddleRec 中已经有的，直接在对应目录下新增 fl_test_data 和 fl_test_train 目录；如果 PaddleRec 中没有，用户在 PaddleRec/datasets 中新增
     * 用户自定义异构数据集构造，参考 gen_heter_data.py
     * 构造模型输入请参考：PaddleRec/models/recall/ncf/queuedataset_reader.py
-3. 编码规范
-* 风格检查：pip install pre-commit && 在git根目录下执行：pre-commit install
+4. 编码规范
+* 风格检查：pip install pre-commit && 在 git 根目录下执行：pre-commit install
 * 遵循已有风格
 
 
