@@ -23,6 +23,15 @@
 1. 代码 repo
 * Paddle: https://github.com/ziyoujiyi/Paddle/tree/fl_ps
 * PaddleRec：https://github.com/ziyoujiyi/PaddleRec/tree/fl-rec
+2. 编译、安装
+```
+1）去 https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/develop/install/compile/linux-compile.html 找到 develop/Linux/源码编译/CPU/ 的开发镜像，在 docker 中开发
+2）在 Paddle 根目录下，新建 build 目录
+3）cd build
+4）cmake .. -DPY_VERSION=3.7 -DWITH_GPU=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_DISTRIBUTE=ON -DWITH_PSCORE=ON -WITH_AVX=OFF -DWITH_TESTING=OFF -DWITH_FLPS=ON
+5) make -j 
+6）python -m pip install python/dist/paddlepaddle-0.0.0-cp37-cp37m-linux_x86_64.whl -U
+```
 2. 用户二次开发模块
 * Paddle：
     * Paddle/python/paddle/distributed/ps/coordinator.py
