@@ -13,9 +13,10 @@
     
 # 3、运行命令
 1. 不带 coordinator 版本
-* 在本文件所在的目录下执行：fleetrun --worker_num=1 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml
+* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml
 2. 带 coordinator 版本
-* 在本文件所在的目录下执行：fleetrun --worker_num=1 --server_num=1 --coordinator_num=1 ../../../tools/static_fl_trainer_with_coordinator.py -m config_fl.yaml
+* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 --coordinator_num=1 ../../../tools/static_fl_trainer_with_coordinator.py -m config_fl.yaml
+（可参考 fl_run.sh 文件）
 
 # 4、二次开发
 ## 系统层面
@@ -46,3 +47,4 @@
 3. 知识蒸馏
 * 用户训练 student 模型，打印 logits 结果，并上传到 coordinator，coordinator 端进行 teacher 模型训练
 * coordinator 下发全局软目标
+4. 模型压缩
