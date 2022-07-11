@@ -19,6 +19,7 @@
 runner:
   train_data_dir: "data/"
   train_reader_path: "criteo_reader" # importlib format
+  sync_mode: "async"
   use_gpu: False
   use_auc: True
   train_batch_size: 2

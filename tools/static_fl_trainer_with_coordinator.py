@@ -21,6 +21,7 @@ import time
 import sys
 import paddle.distributed.fleet as fleet
 import paddle.distributed.fleet.base.role_maker as role_maker
+from paddle.distributed.ps.coordinator import FlClient
 import paddle
 import os
 import warnings
@@ -78,6 +79,7 @@ class Main(object):
         self.train_result_dict["speed"] = []
         self.model = None
         self.pure_bf16 = self.config['pure_bf16']
+        self.role = None
 
     def run(self):
         self.init_fleet_with_gloo()
@@ -88,13 +90,16 @@ class Main(object):
             self.run_worker()
             fleet.stop_worker()
             self.record_result()
+        elif fleet.is_coordinator():
+            self.run_coordinator()
+
         logger.info("Run Success, Exit.")
 
-    def init_fleet_with_gloo(use_gloo=True):
+    def init_fleet_with_gloo(self, use_gloo=True):
         if use_gloo:
             os.environ["PADDLE_WITH_GLOO"] = "1"
-            role = role_maker.PaddleCloudRoleMaker()
-            fleet.init(role)
+            self.role = role_maker.PaddleCloudRoleMaker()
+            fleet.init(self.role)
         else:
             fleet.init()
 
@@ -107,6 +112,11 @@ class Main(object):
         self.inference_target_var = self.model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
         self.model.create_optimizer(get_strategy(self.config))
+
+    def run_coordinator(self):
+        logger.info("Run Coordinator Begin")
+        fleet.init_coordinator()
+        fleet.make_fl_strategy()
 
     def run_server(self):
         logger.info("Run Server Begin")
@@ -130,7 +140,10 @@ class Main(object):
         if self.pure_bf16:
             self.model.optimizer.amp_init(self.exe.place)
         fleet.init_worker()
-
+        if self.role is not None:
+            self.fl_client = FlClient(self.role)
+        else:
+            raise ValueError("self.role is none")
         save_model_path = self.config.get("runner.model_save_path")
         if save_model_path and (not os.path.exists(save_model_path)):
             os.makedirs(save_model_path)
@@ -161,6 +174,11 @@ class Main(object):
                 else:
                     raise ValueError("it is not distributed env")
             fleet.barrier_worker()
+
+            dict_msg = {"client id": 0, "auc": 0.9, "epoch": 0}
+            self.fl_client.push_fl_state_sync(dict_msg)
+            self.fl_client.get_fl_strategy()
+
             self.dataset_online_infer(epoch)
 
         if reader_type == "InmemoryDataset":

@@ -44,7 +44,11 @@ def get_strategy(config):
     elif sync_mode == "geo":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
-        strategy.a_sync_configs = {"k_steps": config.get("runner.geo_step")}
+        strategy.is_with_coordinator = True if config.get(
+            "runner.with_coordinator") == 1 else False
+        a_sync_configs = strategy.a_sync_configs
+        a_sync_configs["k_steps"] = config.get("runner.geo_step")
+        strategy.a_sync_configs = a_sync_configs
     elif sync_mode == "heter":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
