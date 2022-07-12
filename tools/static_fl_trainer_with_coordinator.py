@@ -175,9 +175,11 @@ class Main(object):
                     raise ValueError("it is not distributed env")
             fleet.barrier_worker()
 
-            dict_msg = {"client id": 0, "auc": 0.9, "epoch": 0}
-            self.fl_client.push_fl_state_sync(dict_msg)
-            self.fl_client.get_fl_strategy()
+            state_info = {"client id": 0, "auc": 0.9, "epoch": 0}
+            self.fl_client.push_fl_client_info_sync(state_info)
+            strategy_dict = self.fl_client.pull_fl_strategy()
+            print("received fl strategy: {}".format(strategy_dict))
+            # ......... to implement ...... #
 
             self.dataset_online_infer(epoch)
 
