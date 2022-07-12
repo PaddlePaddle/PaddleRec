@@ -45,7 +45,6 @@ def parse_args():
 
 
 def main(args):
-    paddle.seed(12345)
     # load config
     config = load_yaml(args.config_yaml)
     dy_model_class = load_dy_model_class(args.abs_dir)
@@ -76,6 +75,8 @@ def main(args):
     model_save_path = config.get("runner.model_save_path", "model_output")
     model_init_path = config.get("runner.model_init_path", None)
     use_fleet = config.get("runner.use_fleet", False)
+    seed = config.get("runner.seed", 12345)
+    paddle.seed(seed)
 
     logger.info("**************common.configs**********")
     logger.info(
