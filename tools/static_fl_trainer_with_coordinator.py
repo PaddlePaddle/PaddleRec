@@ -21,7 +21,7 @@ import time
 import sys
 import paddle.distributed.fleet as fleet
 import paddle.distributed.fleet.base.role_maker as role_maker
-from paddle.distributed.ps.coordinator import FlClient
+from paddle.distributed.ps.coordinator import FLClient
 import paddle
 import os
 import warnings
@@ -67,35 +67,39 @@ def bf16_to_fp32(val):
     return np.float32(struct.unpack('<f', struct.pack('<I', val << 16))[0])
 
 
-class Main(object):
+class MyFLClient(FLClient):
+    def __init__(self):
+        pass
+
+
+class Trainer(object):
     def __init__(self, config):
         self.metrics = {}
         self.config = config
         self.input_data = None
         self.train_dataset = None
         self.test_dataset = None
-        self.exe = None
-        self.train_result_dict = {}
-        self.train_result_dict["speed"] = []
         self.model = None
         self.pure_bf16 = self.config['pure_bf16']
+        self.use_cuda = int(self.config.get("runner.use_gpu"))
+        self.place = paddle.CUDAPlace(0) if self.use_cuda else paddle.CPUPlace(
+        )
         self.role = None
 
     def run(self):
-        self.init_fleet_with_gloo()
-        self.network()
+        self.init_fleet()
+        self.init_network()
         if fleet.is_server():
             self.run_server()
         elif fleet.is_worker():
+            self.init_reader()
             self.run_worker()
-            fleet.stop_worker()
-            self.record_result()
         elif fleet.is_coordinator():
             self.run_coordinator()
 
         logger.info("Run Success, Exit.")
 
-    def init_fleet_with_gloo(self, use_gloo=True):
+    def init_fleet(self, use_gloo=True):
         if use_gloo:
             os.environ["PADDLE_WITH_GLOO"] = "1"
             self.role = role_maker.PaddleCloudRoleMaker()
@@ -103,15 +107,44 @@ class Main(object):
         else:
             fleet.init()
 
-    def network(self):
+    def init_network(self):
         self.model = get_model(self.config)
         self.input_data = self.model.create_feeds()
-        self.inference_feed_var = self.model.create_feeds(is_infer=False)
-        self.init_reader()
         self.metrics = self.model.net(self.input_data)
-        self.inference_target_var = self.model.inference_target_var
-        logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
         self.model.create_optimizer(get_strategy(self.config))
+        if self.pure_bf16:
+            self.model.optimizer.amp_init(self.place)
+
+    def init_reader(self):
+        self.train_dataset, self.train_file_list = get_reader(self.input_data,
+                                                              config)
+        self.test_dataset, self.test_file_list = get_infer_reader(
+            self.input_data, config)
+
+        if self.role is not None:
+            self.fl_client = MyFLClient()
+            self.fl_client.set_basic_config(self.role, self.config,
+                                            self.metrics)
+        else:
+            raise ValueError("self.role is none")
+
+        self.fl_client.set_train_dataset_info(self.train_dataset,
+                                              self.train_file_list)
+        self.fl_client.set_test_dataset_info(self.test_dataset,
+                                             self.test_file_list)
+
+        example_nums = 0
+        self.count_method = self.config.get("runner.example_count_method",
+                                            "example")
+        if self.count_method == "example":
+            example_nums = get_example_num(self.train_file_list)
+        elif self.count_method == "word":
+            example_nums = get_word_num(self.train_file_list)
+        else:
+            raise ValueError(
+                "Set static_benchmark.example_count_method for example / word for example count."
+            )
+        self.fl_client.set_train_example_num(example_nums)
 
     def run_coordinator(self):
         logger.info("Run Coordinator Begin")
@@ -125,141 +158,12 @@ class Main(object):
 
     def run_worker(self):
         logger.info("Run Worker Begin")
-        use_cuda = int(config.get("runner.use_gpu"))
-        place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
-        self.exe = paddle.static.Executor(place)
-
-        with open("./{}_worker_main_program.prototxt".format(
-                fleet.worker_index()), 'w+') as f:
-            f.write(str(paddle.static.default_main_program()))
-        with open("./{}_worker_startup_program.prototxt".format(
-                fleet.worker_index()), 'w+') as f:
-            f.write(str(paddle.static.default_startup_program()))
-
-        self.exe.run(paddle.static.default_startup_program())
-        if self.pure_bf16:
-            self.model.optimizer.amp_init(self.exe.place)
-        fleet.init_worker()
-        if self.role is not None:
-            self.fl_client = FlClient(self.role)
-        else:
-            raise ValueError("self.role is none")
-        save_model_path = self.config.get("runner.model_save_path")
-        if save_model_path and (not os.path.exists(save_model_path)):
-            os.makedirs(save_model_path)
-
-        reader_type = self.config.get("runner.reader_type", "QueueDataset")
-        epochs = int(self.config.get("runner.epochs"))
-        sync_mode = self.config.get("runner.sync_mode")
-
-        if reader_type == "InmemoryDataset":
-            self.train_dataset.load_into_memory()
-
-        for epoch in range(epochs):
-            epoch_start_time = time.time()
-
-            self.dataset_train_loop(epoch)
-
-            epoch_time = time.time() - epoch_start_time
-            epoch_speed = self.example_nums / epoch_time
-            logger.info(
-                "Epoch: {}, using time {} second, ips {} {}/sec.".format(
-                    epoch, epoch_time, epoch_speed, self.count_method))
-            self.train_result_dict["speed"].append(epoch_speed)
-
-            model_dir = "{}/{}".format(save_model_path, epoch)
-            if fleet.is_first_worker() and save_model_path:
-                if is_distributed_env():
-                    fleet.save_persistables(self.exe, model_dir)
-                else:
-                    raise ValueError("it is not distributed env")
-            fleet.barrier_worker()
-
-            state_info = {"client id": 0, "auc": 0.9, "epoch": 0}
-            self.fl_client.push_fl_client_info_sync(state_info)
-            strategy_dict = self.fl_client.pull_fl_strategy()
-            print("received fl strategy: {}".format(strategy_dict))
-            # ......... to implement ...... #
-
-            self.dataset_online_infer(epoch)
-
-        if reader_type == "InmemoryDataset":
-            self.train_dataset.release_memory()
-
-    def init_reader(self):
-        if fleet.is_server():
-            return
-        self.config["runner.reader_type"] = self.config.get(
-            "runner.reader_type", "QueueDataset")
-        self.train_dataset, self.train_file_list = get_reader(self.input_data,
-                                                              config)
-        self.test_dataset, self.test_file_list = get_infer_reader(
-            self.input_data, config)
-
-        self.example_nums = 0
-        self.count_method = self.config.get("runner.example_count_method",
-                                            "example")
-        if self.count_method == "example":
-            self.example_nums = get_example_num(self.train_file_list)
-        elif self.count_method == "word":
-            self.example_nums = get_word_num(self.train_file_list)
-        else:
-            raise ValueError(
-                "Set static_benchmark.example_count_method for example / word for example count."
-            )
-
-    def dataset_online_infer(self, epoch):
-        logger.info("Epoch: {}, Running Infer Begin.".format(epoch))
-        fetch_info = [
-            "Epoch {} Var {}".format(epoch, var_name)
-            for var_name in self.metrics
-        ]
-        fetch_vars = [var for _, var in self.metrics.items()]
-        print_step = int(config.get("runner.print_interval"))
-        self.exe.infer_from_dataset(
-            program=paddle.static.default_main_program(),
-            dataset=self.test_dataset,
-            fetch_list=fetch_vars,
-            fetch_info=fetch_info,
-            print_period=print_step,
-            debug=False)
-
-    def dataset_train_loop(self, epoch):
-        logger.info("Epoch: {}, Running Train Begin.".format(epoch))
-        fetch_info = [
-            "Epoch {} Var {}".format(epoch, var_name)
-            for var_name in self.metrics
-        ]
-        fetch_vars = [var for _, var in self.metrics.items()]
-        print_step = int(config.get("runner.print_interval"))
-
-        debug = config.get("runner.dataset_debug", False)
-        if config.get("runner.need_dump"):
-            debug = True
-            dump_fields_path = "{}/{}".format(
-                config.get("runner.dump_fields_path"), epoch)
-            set_dump_config(paddle.static.default_main_program(), {
-                "dump_fields_path": dump_fields_path,
-                "dump_fields": config.get("runner.dump_fields")
-            })
-        #print(paddle.static.default_main_program()._fleet_opt)
-        self.exe.train_from_dataset(
-            program=paddle.static.default_main_program(),
-            dataset=self.train_dataset,
-            fetch_list=fetch_vars,
-            fetch_info=fetch_info,
-            print_period=print_step,
-            debug=debug)
-
-    def record_result(self):
-        logger.info("train_result_dict: {}".format(self.train_result_dict))
-        with open("./train_result_dict.txt", 'w+') as f:
-            f.write(str(self.train_result_dict))
+        self.fl_client.run()
 
 
 if __name__ == "__main__":
     paddle.enable_static()
     config = parse_args()
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num"))
-    benchmark_main = Main(config)
-    benchmark_main.run()
+    trainer = Trainer(config)
+    trainer.run()
