@@ -13,7 +13,7 @@
     
 # 3、运行命令
 1. 不带 coordinator 版本
-* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml
+* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml 或者 使用 static_fl_trainer_with_coordinator 脚本（不带 coordinator 参数）
 2. 带 coordinator 版本
 * 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 --coordinator_num=1 ../../../tools/static_fl_trainer_with_coordinator.py -m config_fl.yaml
 （可参考 fl_run.sh 文件）
@@ -35,8 +35,6 @@
 3. 用户二次开发模块
 * Paddle：
     * Paddle/python/paddle/distributed/ps/coordinator.py
-    * PaddleRec/tools/static_fl_trainer_with_coordinator.py: run_worker 函数
-    * PaddleRec/tools/static_fl_trainer: run_worker 函数
     * 模型组网文件参考：PaddleRec/models/recall/ncf/net.py，用户如果新增组网文件，用前缀 "fl_" 标识
     * 数据集：如果 PaddleRec 中已经有的，直接在对应目录下新增 fl_test_data 和 fl_test_train 目录；如果 PaddleRec 中没有，用户在 PaddleRec/datasets 中新增
     * 用户自定义异构数据集构造，参考 gen_heter_data.py
