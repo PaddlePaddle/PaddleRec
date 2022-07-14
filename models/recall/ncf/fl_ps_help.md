@@ -13,9 +13,9 @@
     
 # 3、运行命令
 1. 不带 coordinator 版本
-* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml 或者 使用 static_fl_trainer_with_coordinator 脚本（不带 coordinator 参数）
+* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml
 2. 带 coordinator 版本
-* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 --coordinator_num=1 ../../../tools/static_fl_trainer_with_coordinator.py -m config_fl.yaml
+* 在本文件所在的目录下执行：fleetrun --worker_num=10 --server_num=1 --coordinator_num=1 ../../../tools/static_fl_trainer.py -m config_fl.yaml
 （可参考 fl_run.sh 文件）
 
 # 4、二次开发
