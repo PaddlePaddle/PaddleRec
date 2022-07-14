@@ -14,7 +14,6 @@
 
 import pandas as pd
 import numpy as np
-import paddle.fluid as fluid
 from args import *
 
 

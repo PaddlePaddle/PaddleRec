@@ -915,7 +915,7 @@ class Graph(object):
 
         """
 
-        assert isinstance(feature, paddle.Tensor) or isinstance(feature, paddle.fluid.framework.Variable), \
+        assert isinstance(feature, paddle.Tensor) or isinstance(feature, paddle.static.framework.Variable), \
             "The input of send_recv method should be Tensor."
 
         assert reduce_func in ['sum', 'mean', 'max', 'min'], \

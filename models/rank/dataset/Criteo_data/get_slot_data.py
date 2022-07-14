@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from paddlerec.core.utils import envs
-import paddle.fluid.incubate.data_generator as dg
+import paddle.distributed.fleet.data_generator as dg
 try:
     import cPickle as pickle
 except ImportError:
