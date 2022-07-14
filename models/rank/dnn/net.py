@@ -64,17 +64,19 @@ class DNNLayer(nn.Layer):
                 self.add_sublayer('act_%d' % i, act)
                 self._mlp_layers.append(act)
 
-    def forward(self, sparse_inputs, dense_inputs):
+    def forward(self, sparse_inputs, dense_inputs, show_click=None):
 
         sparse_embs = []
         for s_input in sparse_inputs:
             if self.sync_mode == "gpubox":
-                emb = paddle.fluid.contrib.sparse_embedding(
+                emb = paddle.static.nn.sparse_embedding(
                     input=s_input,
                     size=[
-                        self.sparse_feature_number, self.sparse_feature_dim
+                        self.sparse_feature_number, self.sparse_feature_dim + 2
                     ],
                     param_attr=paddle.ParamAttr(name="embedding"))
+                emb = paddle.static.nn.continuous_value_model(emb, show_click,
+                                                              False)
             else:
                 emb = self.embedding(s_input)
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])

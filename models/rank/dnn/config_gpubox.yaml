@@ -27,7 +27,7 @@ runner:
   model_save_path: "output_model_dnn_queue"
 
   sync_mode: "gpubox"
-  thread_num: 16
+  thread_num: 30
   reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
   pipe_command: "python3.7 models/rank/dnn/queuedataset_reader.py"
   dataset_debug: False
@@ -49,7 +49,7 @@ hyper_parameters:
   # user-defined <key, value> pairs
   sparse_inputs_slots: 27
   sparse_feature_number: 1024
-  sparse_feature_dim: 11
+  sparse_feature_dim: 9
   dense_input_dim: 13
   fc_sizes: [512, 256, 128, 32]
   distributed_embedding: 0

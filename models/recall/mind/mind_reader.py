@@ -17,7 +17,7 @@ import numpy as np
 from paddle.io import IterableDataset
 import random
 
-random.seed(12345)
+#random.seed(12345)
 
 
 class RecDataset(IterableDataset):
@@ -53,7 +53,7 @@ class RecDataset(IterableDataset):
         self.items = list(self.items)
 
     def __iter__(self):
-        # random.seed(12345)
+        random.seed(12345)
         while True:
             user_id_list = random.sample(self.users, self.batch_size)
             if self.count >= self.batches_per_epoch * self.batch_size:
@@ -63,7 +63,7 @@ class RecDataset(IterableDataset):
                 item_list = self.graph[user_id]
                 if len(item_list) <= 4:
                     continue
-                # random.seed(12345)
+                random.seed(12345)
                 k = random.choice(range(4, len(item_list)))
                 item_id = item_list[k]
 

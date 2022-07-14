@@ -81,9 +81,9 @@ class StaticModel():
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
-        auc, batch_auc_var, _ = paddle.fluid.layers.auc(input=predict_2d,
-                                                        label=self.label_input,
-                                                        slide_steps=0)
+        auc, batch_auc_var, _ = paddle.static.auc(input=predict_2d,
+                                                  label=self.label_input,
+                                                  slide_steps=0)
 
         self.inference_target_var = auc
         if is_infer:
@@ -102,8 +102,8 @@ class StaticModel():
         optimizer = paddle.optimizer.Adam(
             learning_rate=self.learning_rate, lazy_mode=True)
         if strategy != None:
-            import paddle.distributed.fleet as fleet
-            optimizer = fleet.distributed_optimizer(optimizer, strategy)
+            optimizer = paddle.distributed.fleet.distributed_optimizer(
+                optimizer, strategy)
         optimizer.minimize(self._cost)
 
     def infer_net(self, input):
