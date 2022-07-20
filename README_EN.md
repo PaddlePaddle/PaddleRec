@@ -49,7 +49,7 @@
   > Linux is recommended for distributed training
   
 ### Installation
-PS: Recommend install the latest develop branch in compile manner, otherwise, an 'has no attribute' error may be reported. See [the tutorial](https://www.paddlepaddle.org.cn/en/install/quick?docurl=/documentation/docs/zh/develop/install/compile/arm-compile.html) for installation
+
 - Install by pip in GPU environment
   ```bash
   python -m pip install paddlepaddle-gpu==2.0.0 
