@@ -55,7 +55,7 @@
   > Windows下PaddleRec目前仅支持单机训练，分布式训练建议使用Linux环境
   
 ### 安装Paddle
-注：建议通过编译方式安装最新develop分支，不然可能会出现最新属性找不到的错误，安装方式见[教程](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/develop/install/compile/arm-compile.html)
+
 - gpu环境pip安装
   ```bash
   python -m pip install paddlepaddle-gpu==2.0.0 

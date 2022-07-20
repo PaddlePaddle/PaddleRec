@@ -73,6 +73,8 @@ python 3.5/3.6/3.7
 
 os : windows/linux/macos 
 
+注：建议通过编译方式安装最新develop分支，不然可能会出现最新属性找不到的错误，安装方式见[教程](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/develop/install/compile/arm-compile.html)
+
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在dien模型目录的快速执行命令如下： 
 ```bash
