@@ -54,17 +54,25 @@ class BenchmarkDNNLayer(nn.Layer):
                 self.add_sublayer('act_%d' % i, act)
                 self._mlp_layers.append(act)
 
-    def forward(self, slot_inputs):
+    def forward(self, slot_inputs, show_click=None):
         self.all_vars = []
         embs = []
         self.inference_feed_vars = []
         for s_input in slot_inputs:
-            emb = paddle.static.nn.sparse_embedding(
-                input=s_input,
-                size=[self.dict_dim, self.emb_dim],
-                padding_idx=0,
-                entry=self.entry,
-                param_attr=paddle.ParamAttr(name="embedding"))
+            if self.sync_mode == "gpubox":
+                emb = paddle.static.nn.sparse_embedding(
+                    input=s_input,
+                    size=[self.dict_dim, self.emb_dim + 2],
+                    padding_idx=0,
+                    param_attr=paddle.ParamAttr(name="embedding"))
+                emb = paddle.static.nn.continuous_value_model(emb, show_click, False)
+            else:
+                emb = paddle.static.nn.sparse_embedding(
+                    input=s_input,
+                    size=[self.dict_dim, self.emb_dim],
+                    padding_idx=0,
+                    entry=self.entry,
+                    param_attr=paddle.ParamAttr(name="embedding"))
 
             self.inference_feed_vars.append(emb)
 

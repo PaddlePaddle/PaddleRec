@@ -57,6 +57,7 @@ class StaticModel():
         return feeds_list
 
     def net(self, input, is_infer=False):
+        self.show_input = input[0]
         self.label_input = input[1]
         self.slot_inputs = input[2:]
 
@@ -67,7 +68,12 @@ class StaticModel():
             self.layer_sizes,
             sync_mode=self.sync_mode)
 
-        self.predict = dnn_model.forward(self.slot_inputs)
+        self.cast_show = paddle.cast(self.show_input, dtype='float32')
+        self.cast_label = paddle.cast(self.label_input, dtype='float32')
+        
+        show_click = paddle.concat([self.cast_show, self.cast_label], axis=1)
+        show_click.stop_gradient = True
+        self.predict = dnn_model.forward(self.slot_inputs, show_click)
 
         # self.all_vars = input + dnn_model.all_vars
         self.all_vars = dnn_model.all_vars
