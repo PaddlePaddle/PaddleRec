@@ -19,7 +19,7 @@ runner:
   test_negative: "../../../datasets/movielens_pinterest_NCF/ml-1m.test.negative" # pinterest-20.test.negative
   num_ng: 4
   train_batch_size: 256
-  model_save_path: "output_model_ncf"
+  model_save_path: "output_model_ncf_all"
 
   use_gpu: True
   epochs: 20
@@ -28,7 +28,7 @@ runner:
   test_data_dir: "../../../datasets/movielens_pinterest_NCF/big_test"
   infer_reader_path: "movielens_reader"  # importlib format
   infer_batch_size: 100
-  infer_load_path: "output_model_ncf"
+  infer_load_path: "output_model_ncf_all"
   infer_start_epoch: 0
   infer_end_epoch: 20
 
