@@ -14,5 +14,4 @@
 # limitations under the License.
 echo "................run................."
 python -u ../../../tools/trainer.py -m config_bigdata.yaml &> log_train.txt
-python -u ../../../tools/infer.py -m config_bigdata.yaml &> result.txt
-python3 evaluate.py
+python -u infer.py -m config_bigdata.yaml
