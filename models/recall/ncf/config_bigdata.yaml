@@ -15,26 +15,29 @@
 runner:
   train_data_dir: "../../../datasets/movielens_pinterest_NCF/big_train"
   train_reader_path: "movielens_reader"  # importlib format
+  train_rating: "../../../datasets/movielens_pinterest_NCF/ml-1m.train.rating" # pinterest-20.train.rating
+  test_negative: "../../../datasets/movielens_pinterest_NCF/ml-1m.test.negative" # pinterest-20.test.negative
+  num_ng: 4
   train_batch_size: 256
-  model_save_path: "output_model_ncf_all"
+  model_save_path: "output_model_ncf"
 
-  use_gpu: False
+  use_gpu: True
   epochs: 20
   print_interval: 1
-  
+
   test_data_dir: "../../../datasets/movielens_pinterest_NCF/big_test"
   infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 1
-  infer_load_path: "output_model_ncf_all"
-  infer_start_epoch: 19
+  infer_batch_size: 100
+  infer_load_path: "output_model_ncf"
+  infer_start_epoch: 0
   infer_end_epoch: 20
 
 hyper_parameters:
-  optimizer: 
+  optimizer:
     class: adam
     learning_rate: 0.001
-  num_users: 6040
-  num_items: 3706
+  num_users: 6040 # pinterest-20.train.rating 不同数据集需要改一下
+  num_items: 3706 # pinterest-20.test.negative
   mf_dim: 8
   mode: "NCF_NeuMF"  # optional: NCF_NeuMF, NCF_GMF, NCF_MLP
-  fc_layers: [64, 32, 16, 8]
+  fc_layers: [ 64, 32, 16, 8 ]
