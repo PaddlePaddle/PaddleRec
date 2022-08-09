@@ -4,8 +4,11 @@ source test_tipc/common_func.sh
 FILENAME=$1
 # MODE be one of ['lite_train_lite_infer' 'lite_train_whole_infer' 'whole_train_whole_infer', 'whole_infer', 'klquant_whole_infer']
 MODE=$2
-
-dataline=$(awk 'NR==1, NR==51{print}'  $FILENAME)
+if [ ${MODE} = "benchmark_train" ]; then
+    dataline=$(awk 'NR==1, NR==60{print}'  $FILENAME)
+else
+    dataline=$(awk 'NR==1, NR==51{print}'  $FILENAME)
+fi
 
 # parser params
 IFS=$'\n'
@@ -87,6 +90,17 @@ benchmark_key=$(func_parser_key "${lines[49]}")
 benchmark_value=$(func_parser_value "${lines[49]}")
 infer_key1=$(func_parser_key "${lines[50]}")
 infer_value1=$(func_parser_value "${lines[50]}")
+
+#parser benchmark 
+if [ ${MODE} = "benchmark_train" ]; then
+    run_mode_key=$(func_parser_key "${lines[55]}")
+    run_mode_value=$(func_parser_value "${lines[55]}")
+    gpu_config_key=$(func_parser_key "${lines[58]}")
+    gpu_config_value=$(func_parser_value "${lines[58]}")
+    cpu_config_key=$(func_parser_key "${lines[59]}")
+    cpu_config_value=$(func_parser_value "${lines[59]}")
+fi
+
 
 # parser klquant_infer
 if [ ${MODE} = "klquant_whole_infer" ]; then
@@ -211,45 +225,72 @@ if [ ${MODE} = "benchmark_train" ]; then
 	  echo "Create log floder for store running log"
 	fi
 
-	export FLAGS_LAUNCH_BARRIER=0
-	export PADDLE_TRAINER_ID=0
-	export PADDLE_PSERVER_NUMS=1
-	export PADDLE_TRAINERS=1
-	export PADDLE_TRAINERS_NUM=${PADDLE_TRAINERS}
-	export POD_IP=127.0.0.1
+	if [ ${run_mode_value} = "PSGPU" ]; then
+        export FLAGS_LAUNCH_BARRIER=0
+        export PADDLE_TRAINER_ID=0
+        export PADDLE_PSERVER_NUMS=1
+        export PADDLE_TRAINERS=1
+        export PADDLE_TRAINERS_NUM=${PADDLE_TRAINERS}
+        export POD_IP=127.0.0.1
 
-	# set free port if 29011 is occupied
-	export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"
-	export PADDLE_PSERVER_PORT_ARRAY=(29011)
+        # set free port if 29011 is occupied
+        export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"
+        export PADDLE_PSERVER_PORT_ARRAY=(29011)
 
-	# set gpu numbers according to your device
-	#export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
-	export FLAGS_selected_gpus=${gpu_list}
+        # set gpu numbers according to your device
+        #export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
+        export FLAGS_selected_gpus=${gpu_list}
 
-	# set your model yaml
-	SC="tools/static_gpubox_trainer.py -m models/rank/dnn/config_gpubox.yaml"
-    BATCH="-o runner.train_batch_size="$train_batch_value
-    EPOCH="-o runner.epochs="$epoch_num
-	# run pserver
-	export TRAINING_ROLE=PSERVER
-	for((i=0;i<$PADDLE_PSERVER_NUMS;i++))
-	do
-		cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
-		echo "PADDLE WILL START PSERVER "$cur_port
-		export PADDLE_PORT=${cur_port}
-        cmd="${python} ${SC} ${BATCH} ${EPOCH}"
+        # set your model yaml
+        CONFIG=$gpu_config_value
+        SC="tools/static_gpubox_trainer.py -m "
+        BATCH="-o runner.train_batch_size="$train_batch_value
+        EPOCH="runner.epochs="$epoch_num
+        # run pserver
+        export TRAINING_ROLE=PSERVER
+        for((i=0;i<$PADDLE_PSERVER_NUMS;i++))
+        do
+            cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
+            echo "PADDLE WILL START PSERVER "$cur_port
+            export PADDLE_PORT=${cur_port}
+            cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
+            eval $cmd
+        done
+
+        # run trainer
+        export TRAINING_ROLE=TRAINER
+        for((i=0;i<$PADDLE_TRAINERS;i++))
+        do
+            echo "PADDLE WILL START Trainer "$i
+            export PADDLE_TRAINER_ID=$i
+            cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
+            eval $cmd
+        done
+    else
+        GLOO_PATH="../tools/paddlecloud/config.ini"
+        gloo_dataline=$(awk '{print}'  $GLOO_PATH)
+        gloo_lines=(${gloo_dataline})
+        gloo_fs_name=$(func_parser_gloo_value "${gloo_lines[4]}")
+        gloo_fs_ugi=$(func_parser_gloo_value "${gloo_lines[5]}")
+        gloo_fs_path=$(func_parser_gloo_value "${gloo_lines[6]}")
+        wget https://paddlerec.bj.bcebos.com/benchmark/brpc.tar.gz --no-check-certificate
+        tar -zxvf brpc.tar.gz
+        BRPC_PATH=`pwd`/brpc
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRPC_PATH}
+        export PADDLE_WITH_GLOO=1
+        export PADDLE_GLOO_RENDEZVOUS=1
+        export PADDLE_GLOO_FS_NAME=$gloo_fs_name
+        export PADDLE_GLOO_FS_UGI=$gloo_fs_ugi
+        export PADDLE_GLOO_FS_PATH=$gloo_fs_path
+
+        CONFIG=$cpu_config_value
+        SC="tools/static_ps_trainer.py -m "
+        BATCH="-o runner.train_batch_size="$train_batch_value
+        EPOCH="runner.epochs="$epoch_num
+        cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
         eval $cmd
-	done
 
-	# run trainer
-	export TRAINING_ROLE=TRAINER
-	for((i=0;i<$PADDLE_TRAINERS;i++))
-	do
-		echo "PADDLE WILL START Trainer "$i
-		export PADDLE_TRAINER_ID=$i
-        cmd="${python} ${SC} ${BATCH} ${EPOCH}"
-        eval $cmd
-	done
+    fi
 elif [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     GPUID=$3
     if [ ${#GPUID} -le 0 ];then
