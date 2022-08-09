@@ -87,21 +87,29 @@ line_num=`grep -n "train_benchmark_params" $FILENAME  | cut -d ":" -f 1`
 batch_size=$(func_parser_value "${lines[line_num]}")
 line_num=`expr $line_num + 1`
 epoch=$(func_parser_value "${lines[line_num]}")
-fp_items="null"
 line_num=`expr $line_num + 1`
 profile_option_key=$(func_parser_key "${lines[line_num]}")
 profile_option_params=$(func_parser_value "${lines[line_num]}")
 profile_option="${profile_option_key}:${profile_option_params}"
-
 line_num=`expr $line_num + 1`
+run_mode=$(func_parser_value "${lines[line_num]}")
+line_num=`expr $line_num + 1`
+fp_items="null"
+line_num=`expr $line_num + 1`
+device_num=$(func_parser_value "${lines[line_num]}")
+line_num=`expr $line_num + 1`
+gpu_config=$(func_parser_value "${lines[line_num]}")
+line_num=`expr $line_num + 1`
+cpu_config=$(func_parser_value "${lines[line_num]}")
+
 flags_value=$(func_parser_value "${lines[line_num]}")
 # set flags
 IFS=";"
-flags_list=(${flags_value})
-for _flag in ${flags_list[*]}; do
-    cmd="export ${_flag}"
-    eval $cmd
-done
+#flags_list=(${flags_value})
+#for _flag in ${flags_list[*]}; do
+#    cmd="export ${_flag}"
+#    eval $cmd
+#done
 
 # set log_name
 repo_name=$(get_repo_name )
@@ -118,6 +126,9 @@ line_batchsize=9
 line_profile=13
 line_eval_py=24
 line_export_py=30
+if [ ${MODE} = "benchmark_train" ]; then
+    line_runmode=56
+fi
 
 func_sed_params "$FILENAME" "${line_eval_py}" "null"
 func_sed_params "$FILENAME" "${line_export_py}" "null"
@@ -141,6 +152,7 @@ else
     precision=${params_list[2]}
     # run_process_type=${params_list[3]}
     run_mode=${params_list[3]}
+    func_sed_params "$FILENAME" "${line_runmode}" "$MODE=$run_mode"
     device_num=${params_list[4]}
     IFS=";"
 
