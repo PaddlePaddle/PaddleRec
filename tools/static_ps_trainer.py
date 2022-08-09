@@ -15,7 +15,7 @@
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
-from utils.static_ps.metric_helper import set_zero
+from utils.static_ps.metric_helper import set_zero, get_global_auc
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
@@ -178,8 +178,9 @@ class Main(object):
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
             if use_auc is True:
-                global_auc = auc(self.model.stat_pos, self.model.stat_neg,
-                                 paddle.static.global_scope(), fleet.util)
+                global_auc = get_global_auc(paddle.static.global_scope(),
+                                            self.model.stat_pos.name,
+                                            self.model.stat_neg.name)
                 self.train_result_dict["auc"].append(global_auc)
                 set_zero(self.model.stat_pos.name,
                          paddle.static.global_scope())
