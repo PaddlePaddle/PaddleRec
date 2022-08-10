@@ -224,7 +224,9 @@ if [ ${MODE} = "benchmark_train" ]; then
 	  mkdir ./log
 	  echo "Create log floder for store running log"
 	fi
-
+    echo "aaaaaaaaaaaa"
+    echo ${run_mode_value}
+    echo "bbbbbbbbbbbbbb"
 	if [ ${run_mode_value} = "PSGPU" ]; then
         export FLAGS_LAUNCH_BARRIER=0
         export PADDLE_TRAINER_ID=0
