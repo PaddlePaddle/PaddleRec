@@ -152,7 +152,7 @@ else
     precision=${params_list[2]}
     # run_process_type=${params_list[3]}
     run_mode=${params_list[3]}
-    func_sed_params "$FILENAME" "${line_runmode}" "$MODE=$run_mode"
+    func_sed_params "$FILENAME" "${line_runmode}" "$run_mode"
     device_num=${params_list[4]}
     IFS=";"
 
