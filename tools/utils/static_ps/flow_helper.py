@@ -145,7 +145,7 @@ def save_batch_model(exe, output_path, day):
 def write_model_donefile(output_path,
                          day,
                          pass_id,
-                         xbox_base_key,
+                         model_base_key,
                          client,
                          donefile_name="donefile.txt"):
     """
@@ -155,13 +155,13 @@ def write_model_donefile(output_path,
         output_path(str): output path
         day(str|int): training day
         pass_id(str|int): training pass id
-        xbox_base_key(str|int): xbox base key
+        model_base_key(str|int): model base key
         client(HDFSClient): hadoop client
         donefile_name(str): donefile name, default is "donefile.txt"r
     """
     day = str(day)
     pass_id = str(pass_id)
-    xbox_base_key = int(xbox_base_key)
+    model_base_key = int(model_base_key)
 
     if pass_id != "-1":
         suffix_name = "/%s/%s/" % (day, pass_id)
@@ -172,7 +172,7 @@ def write_model_donefile(output_path,
 
     if fleet.is_first_worker():
         donefile_path = output_path + "/" + donefile_name
-        content = "%s\t%lu\t%s\t%s\t%d" % (day, xbox_base_key, \
+        content = "%s\t%lu\t%s\t%s\t%d" % (day, model_base_key, \
                                             model_path, pass_id, 0)
         if not is_local(model_path):
             if client.is_file(donefile_path):
@@ -214,7 +214,6 @@ def write_model_donefile(output_path,
                 return
             with open(donefile_path, encoding='utf-8') as f:
                 pre_content = f.read().strip("\n")
-            logger.info("pre_content = {}".format(pre_content))
             pre_content_list = pre_content.split("\n")
             day_list = [i.split("\t")[0] for i in pre_content_list]
             pass_list = [i.split("\t")[3] for i in pre_content_list]
@@ -227,7 +226,6 @@ def write_model_donefile(output_path,
             if not exist:
                 with open(donefile_path, "w") as f:
                     f.write(pre_content + "\n")
-                    logger.info("write donefile {}".format(pre_content))
                     f.write(content + "\n")
                     logger.info("write donefile {}".format(content))
                 logger.info("write %s/%s %s succeed" % \
@@ -247,11 +245,11 @@ def get_last_save_model(output_path, client):
         client(HDFSClient): hadoop client
 
     Returns:
-        [last_save_day, last_save_pass, last_path, xbox_base_key]
+        [last_save_day, last_save_pass, last_path, model_base_key]
         last_save_day(int): day of saved model
         last_save_pass(int): pass id of saved
         last_path(str): model path
-        xbox_base_key(int): xbox key
+        model_base_key(int): model base key
 
     """
     last_save_day = -1
@@ -266,8 +264,8 @@ def get_last_save_model(output_path, client):
         last_save_day = int(content[0])
         last_save_pass = int(content[3])
         last_path = content[2]
-        xbox_base_key = int(content[1])
-        return [last_save_day, last_save_pass, last_path, xbox_base_key]
+        model_base_key = int(content[1])
+        return [last_save_day, last_save_pass, last_path, model_base_key]
     else:
         file = Path(donefile_path)
         if not file.is_file():
@@ -278,26 +276,26 @@ def get_last_save_model(output_path, client):
         last_save_day = int(content[0])
         last_save_pass = int(content[3])
         last_path = content[2]
-        xbox_base_key = int(content[1])
-        return [last_save_day, last_save_pass, last_path, xbox_base_key]
+        model_base_key = int(content[1])
+        return [last_save_day, last_save_pass, last_path, model_base_key]
 
 
-def get_last_save_xbox_base(output_path, client):
+def get_last_save_base_model(output_path, client):
     """
-    get last saved base xbox info from xbox_base_done.txt
+    get last saved base model info from base_donefile.txt
 
     Args:
         output_path(str): output path
         client(HDFSClient): hadoop client
 
     Returns:
-        [last_save_day, last_path, xbox_base_key]
+        [last_save_day, last_path, model_base_key]
         last_save_day(int): day of saved model
         last_path(str): model path
-        xbox_base_key(int): xbox key
+        model_base_key(int): model base key
     """
 
-    donefile_path = output_path + "/xbox_base_done.txt"
+    donefile_path = output_path + "/base_donefile.txt"
     if not is_local(donefile_path):
         if not client.is_file(donefile_path):
             return [-1, -1, int(time.time())]
@@ -305,8 +303,8 @@ def get_last_save_xbox_base(output_path, client):
         last_dict = json.loads(pre_content.split("\n")[-1])
         last_day = int(last_dict["input"].split("/")[-3])
         last_path = "/".join(last_dict["input"].split("/")[:-1])
-        xbox_base_key = int(last_dict["key"])
-        return [last_day, last_path, xbox_base_key]
+        model_base_key = int(last_dict["key"])
+        return [last_day, last_path, model_base_key]
     else:
         file = Path(donefile_path)
         if not file.is_file():
@@ -317,41 +315,39 @@ def get_last_save_xbox_base(output_path, client):
         last_dict = json.loads(last_line)
         last_day = int(last_dict["input"].split("/")[-3])
         last_path = "/".join(last_dict["input"].split("/")[:-1])
-        xbox_base_key = int(last_dict["key"])
-        return [last_day, last_path, xbox_base_key]
+        model_base_key = int(last_dict["key"])
+        return [last_day, last_path, model_base_key]
 
 
-def get_last_save_xbox(output_path, client):
+def get_last_save_patch_model(output_path, client):
     """
-    get last saved xbox info from xbox_patch_done.txt
+    get last saved delta model info from delta_donefile.txt
 
     Args:
         output_path(str): output path
         client(HDFSClient): hadoop client
 
     Returns:
-        [last_save_day, last_save_pass, last_path, xbox_base_key]
+        [last_save_day, last_save_pass, last_path, model_base_key]
         last_save_day(int): day of saved model
         last_save_pass(int): pass id of saved
         last_path(str): model path
-        xbox_base_key(int): xbox key
+        model_base_key(int): model base key
 
     """
-    donefile_path = output_path + "/xbox_patch_done.txt"
+    donefile_path = output_path + "/patch_donefile.txt"
     if not is_local(donefile_path):
         if not client.is_file(donefile_path):
             return [-1, -1, "", int(time.time())]
-        logger.info("get_last_save_xbox donefile_path {} is file".format(
-            donefile_path))
+        logger.info("get_last_save_patch_model donefile_path {} is file".
+                    format(donefile_path))
         pre_content = client.cat(donefile_path)
-        logger.info("get_last_save_xbox get a pre_content = {}".format(
-            pre_content))
         last_dict = json.loads(pre_content.split("\n")[-1])
         last_day = int(last_dict["input"].split("/")[-3])
         last_pass = int(last_dict["input"].split("/")[-2].split("-")[-1])
         last_path = "/".join(last_dict["input"].split("/")[:-1])
-        xbox_base_key = int(last_dict["key"])
-        return [last_day, last_pass, last_path, xbox_base_key]
+        model_base_key = int(last_dict["key"])
+        return [last_day, last_pass, last_path, model_base_key]
     else:
         file = Path(donefile_path)
         if not file.is_file():
@@ -363,14 +359,14 @@ def get_last_save_xbox(output_path, client):
         last_day = int(last_dict["input"].split("/")[-3])
         last_pass = int(last_dict["input"].split("/")[-2].split("-")[-1])
         last_path = "/".join(last_dict["input"].split("/")[:-1])
-        xbox_base_key = int(last_dict["key"])
-        return [last_day, last_pass, last_path, xbox_base_key]
+        model_base_key = int(last_dict["key"])
+        return [last_day, last_pass, last_path, model_base_key]
 
 
-def save_xbox_model(output_path, day, pass_id, exe, feed_vars, target_vars,
-                    client):
+def save_inference_model(output_path, day, pass_id, exe, feed_vars,
+                         target_vars, client):
     """
-    save xbox model
+    save inference model
 
     Args:
         output_path(str): output path
@@ -399,28 +395,28 @@ def save_xbox_model(output_path, day, pass_id, exe, feed_vars, target_vars,
     fleet.barrier_worker()
 
 
-def write_xbox_donefile(output_path,
-                        day,
-                        pass_id,
-                        xbox_base_key,
-                        client,
-                        hadoop_fs_name="",
-                        monitor_data="",
-                        donefile_name=None):
+def write_inference_donefile(output_path,
+                             day,
+                             pass_id,
+                             model_base_key,
+                             client,
+                             hadoop_fs_name="",
+                             monitor_data="",
+                             donefile_name=None):
     """
-    write xbox donefile when save xbox model
+    write inference donefile when save inference model
 
     Args:
         output_path(str): output path
         day(str|int): training day
         pass_id(str|int): training pass id
-        xbox_base_key(str|int): xbox base key
+        model_base_key(str|int): model base key
         client(HDFSClient): hadoop client
-        donefile_name(str): donefile name, default is "xbox_patch_done.txt"
+        donefile_name(str): donefile name
     """
     day = str(day)
     pass_id = str(pass_id)
-    xbox_base_key = int(xbox_base_key)
+    model_base_key = int(model_base_key)
     mode = None
 
     if pass_id != "-1":
@@ -428,19 +424,19 @@ def write_xbox_donefile(output_path,
         suffix_name = "/%s/delta-%s/" % (day, pass_id)
         model_path = output_path.rstrip("/") + suffix_name
         if donefile_name is None:
-            donefile_name = "xbox_patch_done.txt"
+            donefile_name = "patch_donefile.txt"
     else:
         mode = "base"
         suffix_name = "/%s/base/" % day
         model_path = output_path.rstrip("/") + suffix_name
         if donefile_name is None:
-            donefile_name = "xbox_base_done.txt"
+            donefile_name = "base_donefile.txt"
 
     if fleet.is_first_worker():
         donefile_path = output_path + "/" + donefile_name
-        xbox_str = _get_xbox_str(
+        donefile_str = _get_donefile_str(
             model_path=model_path,
-            xbox_base_key=xbox_base_key,
+            model_base_key=model_base_key,
             hadoop_fs_name=hadoop_fs_name,
             monitor_data=monitor_data,
             mode=mode)
@@ -461,7 +457,7 @@ def write_xbox_donefile(output_path,
                 if not exist:
                     with open(donefile_name, "w") as f:
                         f.write(pre_content + "\n")
-                        f.write(xbox_str + "\n")
+                        f.write(donefile_str + "\n")
                     client.delete(donefile_path)
                     client.upload(
                         donefile_name,
@@ -475,7 +471,7 @@ def write_xbox_donefile(output_path,
                                 "exists" % (donefile_name, day, pass_id))
             else:
                 with open(donefile_name, "w") as f:
-                    f.write(xbox_str + "\n")
+                    f.write(donefile_str + "\n")
                 client.upload(
                     donefile_name,
                     output_path,
@@ -487,7 +483,7 @@ def write_xbox_donefile(output_path,
             file = Path(donefile_path)
             if not file.is_file():
                 with open(donefile_path, "w") as f:
-                    f.write(xbox_str + "\n")
+                    f.write(donefile_str + "\n")
                 return
             with open(donefile_path, encoding='utf-8') as f:
                 pre_content = f.read().strip("\n")
@@ -503,29 +499,29 @@ def write_xbox_donefile(output_path,
             if not exist:
                 with open(donefile_path, "w") as f:
                     f.write(pre_content + "\n")
-                    f.write(xbox_str + "\n")
+                    f.write(donefile_str + "\n")
     fleet.barrier_worker()
 
 
-def _get_xbox_str(model_path,
-                  xbox_base_key,
-                  hadoop_fs_name="",
-                  monitor_data="",
-                  mode="patch"):
-    xbox_dict = collections.OrderedDict()
+def _get_donefile_str(model_path,
+                      model_base_key,
+                      hadoop_fs_name="",
+                      monitor_data="",
+                      mode="patch"):
+    donefile_dict = collections.OrderedDict()
     if mode == "base":
-        xbox_dict["id"] = str(xbox_base_key)
+        donefile_dict["id"] = str(model_base_key)
     elif mode == "patch":
-        xbox_dict["id"] = str(int(time.time()))
+        donefile_dict["id"] = str(int(time.time()))
     else:
         logger.info("warning: unknown mode %s, set it to patch" % mode)
         mode = "patch"
-        xbox_dict["id"] = str(int(time.time()))
-    xbox_dict["key"] = str(xbox_base_key)
+        donefile_dict["id"] = str(int(time.time()))
+    donefile_dict["key"] = str(model_base_key)
     if is_local(model_path):
         hadoop_fs_name = ""
     else:
         model_path = model_path[model_path.find(":") + 1:]
-    xbox_dict["input"] = hadoop_fs_name + model_path.rstrip("/") + "/001"
-    xbox_dict["monitor_data"] = monitor_data
-    return json.dumps(xbox_dict)
+    donefile_dict["input"] = hadoop_fs_name + model_path.rstrip("/") + "/000"
+    donefile_dict["monitor_data"] = monitor_data
+    return json.dumps(donefile_dict)

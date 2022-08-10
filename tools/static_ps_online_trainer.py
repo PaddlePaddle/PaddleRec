@@ -238,11 +238,11 @@ class Main(object):
                 not os.path.exists(self.save_model_path)):
             os.makedirs(self.save_model_path)
 
-        last_day, last_pass, last_path, xbox_base_key = get_last_save_model(
+        last_day, last_pass, last_path, model_base_key = get_last_save_model(
             self.save_model_path, self.hadoop_client)
         logger.info(
-            "get_last_save_model last_day = {}, last_pass = {}, last_path = {}, xbox_base_key = {}".
-            format(last_day, last_pass, last_path, xbox_base_key))
+            "get_last_save_model last_day = {}, last_pass = {}, last_path = {}, model_base_key = {}".
+            format(last_day, last_pass, last_path, model_base_key))
         if last_day != -1:
             logger.info("going to load model {}".format(last_path))
             begin = time.time()
@@ -265,27 +265,27 @@ class Main(object):
                     continue
                 if self.save_first_base:
                     self.save_first_base = False
-                    last_base_day, last_base_path, tmp_xbox_base_key = \
-                        get_last_save_xbox_base(self.save_model_path, self.hadoop_client)
+                    last_base_day, last_base_path, tmp_model_base_key = \
+                        get_last_save_base_model(self.save_model_path, self.hadoop_client)
                     logger.info(
-                        "get_last_save_xbox_base, last_base_day = {}, last_base_path = {}, tmp_xbox_base_key = {}".
+                        "get_last_save_base_model, last_base_day = {}, last_base_path = {}, tmp_model_base_key = {}".
                         format(last_base_day, last_base_path,
-                               tmp_xbox_base_key))
+                               tmp_model_base_key))
                     if int(day) > last_base_day:
                         logger.info("going to save first base model")
-                        xbox_base_key = int(time.time())
-                        save_xbox_model(self.save_model_path, day, -1,
-                                        self.exe, self.inference_feed_vars,
-                                        self.inference_target_var,
-                                        self.hadoop_client)
-                        write_xbox_donefile(
+                        model_base_key = int(time.time())
+                        save_inference_model(
+                            self.save_model_path, day, -1, self.exe,
+                            self.inference_feed_vars,
+                            self.inference_target_var, self.hadoop_client)
+                        write_inference_donefile(
                             output_path=self.save_model_path,
                             day=day,
                             pass_id=-1,
-                            xbox_base_key=xbox_base_key,
+                            model_base_key=model_base_key,
                             client=self.hadoop_client)
                     elif int(day) == last_base_day:
-                        xbox_base_key = tmp_xbox_base_key
+                        model_base_key = tmp_model_base_key
                         logger.info("first base model exists")
                     else:
                         logger.info("first base model exists")
@@ -389,41 +389,42 @@ class Main(object):
                         output_path=self.save_model_path,
                         day=day,
                         pass_id=pass_id,
-                        xbox_base_key=xbox_base_key,
+                        model_base_key=model_base_key,
                         client=self.hadoop_client)
                     end = time.time()
                     donefile_cost = (end - begin) / 60.0
                     log_str = "finished save checkpoint model epoch %d [save_model: %s min][donefile: %s min]" % (
-                        pass_index, save_cost, donefile_cost)
+                        pass_id, save_cost, donefile_cost)
                     logger.info(log_str)
                 if pass_id % self.save_delta_frequency == 0:
-                    last_xbox_day, last_xbox_pass, last_xbox_path, _ = get_last_save_xbox(
+                    last_model_day, last_model_pass, last_model_path, _ = get_last_save_patch_model(
                         self.save_model_path, self.hadoop_client)
-                    if int(day) < last_xbox_day or int(
-                            day) == last_xbox_day and int(
-                                pass_id) <= last_xbox_pass:
+                    if int(day) < last_model_day or int(
+                            day) == last_model_day and int(
+                                pass_id) <= last_model_pass:
                         logger.info("delta model exists")
                     else:
                         begin = time.time()
-                        save_xbox_model(self.save_model_path, day, pass_id,
-                                        self.exe, self.inference_feed_vars,
-                                        self.inference_target_var,
-                                        self.hadoop_client)  # 1 delta
+                        save_inference_model(self.save_model_path, day,
+                                             pass_id, self.exe,
+                                             self.inference_feed_vars,
+                                             self.inference_target_var,
+                                             self.hadoop_client)  # 1 delta
                         end = time.time()
                         save_cost = (end - begin) / 60.0
                         begin = time.time()
-                        write_xbox_donefile(
+                        write_inference_donefile(
                             output_path=self.save_model_path,
                             day=day,
                             pass_id=pass_id,
-                            xbox_base_key=xbox_base_key,
+                            model_base_key=model_base_key,
                             client=self.hadoop_client,
                             hadoop_fs_name=self.hadoop_fs_name,
                             monitor_data=metric_str)
                         end = time.time()
                         donefile_cost = (end - begin) / 60.0
                         log_str = "finished save delta model epoch %d [save_model: %s min][donefile: %s min]" % (
-                            pass_index, save_cost, donefile_cost)
+                            pass_id, save_cost, donefile_cost)
                         logger.info(log_str)
 
             logger.info("shrink table")
@@ -433,35 +434,36 @@ class Main(object):
             logger.info("shrink table done, cost %s min" % (
                 (end - begin) / 60.0))
 
-            last_base_day, last_base_path, last_base_key = get_last_save_xbox_base(
+            last_base_day, last_base_path, last_base_key = get_last_save_base_model(
                 self.save_model_path, self.hadoop_client)
             logger.info(
-                "one epoch finishes, get_last_save_xbox, last_base_day = {}, last_base_path = {}, last_base_key = {}".
+                "one epoch finishes, get_last_save_base_model, last_base_day = {}, last_base_path = {}, last_base_key = {}".
                 format(last_base_day, last_base_path, last_base_key))
             next_day = get_next_day(day)
             if int(next_day) <= last_base_day:
-                xbox_base_key = last_base_key
-                logger.info("batch model/base xbox model exists")
+                model_base_key = last_base_key
+                logger.info("batch model/base inference model exists")
             else:
-                xbox_base_key = int(time.time())
+                model_base_key = int(time.time())
                 begin = time.time()
-                save_xbox_model(self.save_model_path, next_day, -1, self.exe,
-                                self.inference_feed_vars,
-                                self.inference_target_var, self.hadoop_client)
+                save_inference_model(self.save_model_path, next_day, -1,
+                                     self.exe, self.inference_feed_vars,
+                                     self.inference_target_var,
+                                     self.hadoop_client)
                 end = time.time()
                 save_cost = (end - begin) / 60.0
                 begin = time.time()
-                write_xbox_donefile(
+                write_inference_donefile(
                     output_path=self.save_model_path,
                     day=next_day,
                     pass_id=-1,
-                    xbox_base_key=xbox_base_key,
+                    model_base_key=model_base_key,
                     client=self.hadoop_client,
                     hadoop_fs_name=self.hadoop_fs_name,
                     monitor_data=metric_str)
                 end = time.time()
                 donefile_cost = (end - begin) / 60.0
-                log_str = "finished save base model day %d [save_model: %s min][donefile: %s min]" % (
+                log_str = "finished save base model day %s [save_model: %s min][donefile: %s min]" % (
                     next_day, save_cost, donefile_cost)
                 logger.info(log_str)
 
@@ -474,11 +476,11 @@ class Main(object):
                     output_path=self.save_model_path,
                     day=next_day,
                     pass_id=-1,
-                    xbox_base_key=xbox_base_key,
+                    model_base_key=model_base_key,
                     client=self.hadoop_client)
                 end = time.time()
                 donefile_cost = (end - begin) / 60.0
-                log_str = "finished save batch model day %d [save_model: %s min][donefile: %s min]" % (
+                log_str = "finished save batch model day %s [save_model: %s min][donefile: %s min]" % (
                     next_day, save_cost, donefile_cost)
                 logger.info(log_str)
             day = get_next_day(day)
