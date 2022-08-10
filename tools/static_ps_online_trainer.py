@@ -148,7 +148,7 @@ class Main(object):
         dataset = paddle.DatasetFactory().create_dataset(self.reader_type)
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size', 1))
-        dataset.set_thread(self.config.get('runner.train_thread_num', 1))
+        dataset.set_thread(self.config.get('runner.train_thread_num', 12))
         dataset.set_hdfs_config(self.hadoop_fs_name, self.hadoop_fs_ugi)
         dataset.set_parse_ins_id(self.config.get("runner.parse_ins_id", False))
         dataset.set_parse_content(
@@ -173,17 +173,57 @@ class Main(object):
         dataset.set_pipe_command(self.pipe_command)
         dataset.load_into_memory()
 
-        shuffle_thread_num = config.get("runner.shuffle_thread_num", 12)
-        begin = time.time()
-        dataset.global_shuffle(fleet, shuffle_thread_num)
-        end = time.time()
-        logger.info('global_shuffle time cost: {}'.format((end - begin) /
-                                                          60.0))
-        shuffle_data_size = dataset.get_shuffle_data_size(fleet)
-        logger.info('after global_shuffle data_size: {}'.format(
-            shuffle_data_size))
-
         return dataset
+
+    def prefetch_next_dataset(self, day, pass_index):
+        train_data_path = self.config.get("runner.train_data_dir", [])
+        if pass_index < len(self.online_intervals):
+            next_pass = self.online_intervals[pass_index]
+            next_day = day
+        else:
+            next_pass = self.online_intervals[0]
+            next_day = get_next_day(day)
+        next_path = []
+        for i in next_pass:
+            p = os.path.join(train_data_path, next_day, str(i))
+            next_path.append(p)
+        next_data_ready = True
+        for p in next_path:
+            if self.data_donefile:
+                cur_donefile = os.path.join(p, self.data_donefile)
+                if not is_data_ready(cur_donefile, self.client):
+                    next_data_ready = False
+                    logger.info("next data not ready: %s" % p)
+        if not next_data_ready:
+            next_dataset = None
+        else:
+            next_dataset = paddle.DatasetFactory().create_dataset(
+                self.reader_type)
+            next_dataset.set_use_var(self.input_data)
+            next_dataset.set_batch_size(
+                self.config.get('runner.train_batch_size', 1))
+            next_dataset.set_thread(
+                self.config.get('runner.train_thread_num', 12))
+            next_dataset.set_hdfs_config(self.hadoop_fs_name,
+                                         self.hadoop_fs_ugi)
+            next_dataset.set_parse_ins_id(
+                self.config.get("runner.parse_ins_id", False))
+            next_dataset.set_parse_content(
+                self.config.get("runner.parse_content", False))
+
+            global_file_list = file_ls(next_path, self.hadoop_client)
+            my_file_list = fleet.util.get_file_shard(global_file_list)
+            logger.info("next dataset my_file_list = {}".format(my_file_list))
+            next_dataset.set_filelist(my_file_list)
+
+            self.pipe_command = "{} {} {}".format(
+                self.config.get("runner.pipe_command"),
+                config.get("yaml_path"), get_utils_file_path())
+            next_dataset.set_pipe_command(self.pipe_command)
+            next_dataset.preload_into_memory(
+                self.config.get("runner.preload_thread_num", 12))
+
+        return next_dataset
 
     def wait_and_prepare_infer_dataset(self, day, pass_index):
         test_data_path = self.config.get("runner.infer_data_dir", [])
@@ -251,6 +291,8 @@ class Main(object):
             logger.info("load model cost {} min".format((end - begin) / 60.0))
 
         day = self.start_day
+        dataset = None
+        next_dataset = None
         while int(day) <= int(self.end_day):
             logger.info("training a new day {}, end_day = {}".format(
                 day, self.end_day))
@@ -260,6 +302,8 @@ class Main(object):
 
             for pass_id in range(1, 1 + len(self.online_intervals)):
                 print(last_day, day, last_pass, pass_id)
+                dataset = next_dataset
+                next_dataset = None
                 if (last_day != -1 and int(day) == last_day) and (
                         last_pass != -1 and int(pass_id) <= last_pass):
                     continue
@@ -295,12 +339,35 @@ class Main(object):
                 logger.info("Day:{}, Pass: {}, Prepare Dataset Begin.".format(
                     day, pass_id))
                 begin_train = time.time()
+                if dataset is not None:
+                    begin = time.time()
+                    dataset.wait_preload_done()
+                    end = time.time()
+                    log_str = "wait data preload done cost %s min" % (
+                        (end - begin) / 60.0)
+                    logger.info(log_str)
+
+                if dataset is None:
+                    begin = time.time()
+                    dataset = self.wait_and_prepare_dataset(day, pass_id)
+                    end = time.time()
+                    read_data_cost = (end - begin) / 60.0
+                    logger.info("Prepare Dataset Done, using time {} mins.".
+                                format(read_data_cost))
+
+                shuffle_thread_num = config.get("runner.shuffle_thread_num",
+                                                12)
                 begin = time.time()
-                dataset = self.wait_and_prepare_dataset(day, pass_id)
+                dataset.global_shuffle(fleet, shuffle_thread_num)
                 end = time.time()
-                read_data_cost = (end - begin) / 60.0
-                logger.info("Prepare Dataset Done, using time {} mins.".format(
-                    read_data_cost))
+                logger.info('global_shuffle time cost: {}'.format((end - begin)
+                                                                  / 60.0))
+                shuffle_data_size = dataset.get_shuffle_data_size(fleet)
+                logger.info('after global_shuffle data_size: {}'.format(
+                    shuffle_data_size))
+
+                if self.config.get("runner.prefetch", False):
+                    next_dataset = self.prefetch_next_dataset(day, pass_id)
 
                 infer_cost = 0
                 infer_metric_cost = 0

@@ -57,15 +57,21 @@ def file_ls(path_array, client):
     return result
 
 
+def is_data_ready(data_donefile, client):
+    if is_local(data_donefile):
+        donefile = Path(data_donefile)
+        if donefile.is_file():
+            return True
+    else:
+        if client.is_file(data_donefile):
+            return True
+    return False
+
+
 def data_ready(data_donefile, sleep_second, client):
     while True:
-        if is_local(data_donefile):
-            donefile = Path(data_donefile)
-            if donefile.is_file():
-                return
-        else:
-            if client.is_file(data_donefile):
-                return
+        if is_data_ready(data_donefile, client):
+            return
         logger.info("wait for data ready: {}".format(data_donefile))
         time.sleep(sleep_second)
 
