@@ -61,7 +61,8 @@ function get_repo_name(){
     cur_dir=$(pwd)
     IFS="/"
     arr=(${cur_dir})
-    echo ${arr[-1]}
+    lastIndex=$((${#arr[@]}-1))
+    echo ${arr[lastIndex]}
 }
 
 FILENAME=$1
@@ -112,6 +113,10 @@ IFS=";"
 #done
 
 # set log_name
+echo "aaaaaaaaaaaaaa"
+pwd
+echo "bbbbbbbbbbbbbb"
+
 repo_name=$(get_repo_name )
 SAVE_LOG=${BENCHMARK_LOG_DIR:-$(pwd)}   # */benchmark_log
 mkdir -p "${SAVE_LOG}/benchmark_log/"
