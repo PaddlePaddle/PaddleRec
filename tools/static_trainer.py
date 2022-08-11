@@ -44,7 +44,6 @@ def parse_args():
 
 
 def main(args):
-    paddle.seed(12345)
 
     # load config
     config = load_yaml(args.config_yaml)
@@ -86,6 +85,8 @@ def main(args):
     batch_size = config.get("runner.train_batch_size", None)
     reader_type = config.get("runner.reader_type", "DataLoader")
     use_fleet = config.get("runner.use_fleet", False)
+    seed = config.get("runner.seed", 12345)
+    paddle.seed(seed)
     use_save_data = config.get("runner.use_save_data", False)
     os.environ["CPU_NUM"] = str(config.get("runner.thread_num", 1))
     logger.info("**************common.configs**********")

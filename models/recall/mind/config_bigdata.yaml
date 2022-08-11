@@ -18,15 +18,15 @@ runner:
   use_gpu: False
   use_auc: False
   train_batch_size: 128
-  epochs: 20
+  epochs: 50
   print_interval: 500
   model_save_path: "output_model_mind_all"
   infer_batch_size: 128
   infer_reader_path: "mind_infer_reader" # importlib format
   test_data_dir: "../../../datasets/AmazonBook/valid"
   infer_load_path: "output_model_mind_all"
-  infer_start_epoch: 19
-  infer_end_epoch: 20
+  infer_start_epoch: 49
+  infer_end_epoch: 50
 
   # distribute_config
   # sync_mode: "async"
@@ -39,7 +39,7 @@ hyper_parameters:
   # optimizer config
   optimizer:
     class: Adam
-    learning_rate: 0.005
+    learning_rate: 0.001
     # strategy: async
   # user-defined <key, value> pairs
   item_count: 367983

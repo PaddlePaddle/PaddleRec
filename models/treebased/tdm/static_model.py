@@ -77,14 +77,12 @@ class StaticModel():
             x=inputs[0],
             size=self.x_bert_embed_size,
             activation="tanh",
-            weight_attr=paddle.fluid.ParamAttr(
+            weight_attr=paddle.ParamAttr(
                 name="user_fc_w",
-                initializer=paddle.fluid.initializer.NormalInitializer(
-                    seed=1)),
-            bias_attr=paddle.fluid.ParamAttr(
+                initializer=paddle.initializer.NormalInitializer(seed=1)),
+            bias_attr=paddle.ParamAttr(
                 name="user_fc_b",
-                initializer=paddle.fluid.initializer.ConstantInitializer(
-                    value=0.1)))
+                initializer=paddle.initializer.ConstantInitializer(value=0.1)))
         unit_id_emb = embedding(inputs[-2])
         dout = dnn_model_define(
             self.x_bert_embed_size,

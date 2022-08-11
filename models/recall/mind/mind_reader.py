@@ -17,6 +17,8 @@ import numpy as np
 from paddle.io import IterableDataset
 import random
 
+#random.seed(12345)
+
 
 class RecDataset(IterableDataset):
     def __init__(self, file_list, config):

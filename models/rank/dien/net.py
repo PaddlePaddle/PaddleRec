@@ -520,7 +520,7 @@ class StaticDIENLayer(nn.Layer):
 
         # ------------------------- RNN-gru --------------------------
 
-        self.rnn = paddle.fluid.layers.StaticRNN(name="attention_evolution")
+        self.rnn = paddle.static.nn.StaticRNN(name="attention_evolution")
         with self.rnn.step():
             word = self.rnn.step_input(concat_weighted_vector)
             prev = self.rnn.memory(
