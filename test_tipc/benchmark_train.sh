@@ -113,9 +113,6 @@ IFS=";"
 #done
 
 # set log_name
-echo "aaaaaaaaaaaaaa"
-pwd
-echo "bbbbbbbbbbbbbb"
 
 repo_name=$(get_repo_name )
 SAVE_LOG=${BENCHMARK_LOG_DIR:-$(pwd)}   # */benchmark_log
