@@ -397,7 +397,7 @@ def save_inference_model(output_path, day, pass_id, exe, feed_vars,
         target_vars,
         mode=mode)
     if not is_local(model_path) and fleet.is_first_worker():
-        client.upload("./dnn_plugin", model_path)
+        client.upload_dir("./dnn_plugin", model_path)
     fleet.barrier_worker()
 
 
