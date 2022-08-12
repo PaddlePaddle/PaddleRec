@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from __future__ import print_function
-from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.flow_helper import *
 from utils.static_ps.metric_helper import get_global_metrics_str, clear_metrics

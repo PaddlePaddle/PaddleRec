@@ -101,7 +101,7 @@ class StaticModel():
             return fetch_dict
         cost = paddle.nn.functional.log_loss(
             input=self.predict, label=paddle.cast(self.label_input, "float32"))
-        avg_cost = paddle.sum(x=cost)
+        avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
         fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict
