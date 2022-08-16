@@ -22,4 +22,3 @@ for file in ${yaml_files}; do
    echo $file
    sed -i "s/use_gpu: True/use_gpu: False/g" $file
 done
-

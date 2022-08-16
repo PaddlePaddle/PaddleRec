@@ -50,7 +50,8 @@ def parse_args():
     parser.add_argument("--precision", type=str)
     args = parser.parse_args()
     args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
-    args.use_npu = (True if args.use_npu is not None and args.use_npu.lower() == "true" else False)
+    args.use_npu = (True if args.use_npu is not None and
+                    args.use_npu.lower() == "true" else False)
     args.enable_mkldnn = (True
                           if args.enable_mkldnn.lower() == "true" else False)
     args.enable_tensorRT = (True if args.enable_tensorRT.lower() == "true" else
