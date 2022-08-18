@@ -106,4 +106,4 @@ class MMoELayer(nn.Layer):
             out = paddle.clip(out, min=1e-15, max=1.0 - 1e-15)
             output_layers.append(out)
 
-        return output_layers
+        return output_layers + [expert_concat]

@@ -15,6 +15,7 @@
 import paddle
 
 from net import MMoELayer
+from paddle.static import loss_adaptation
 
 
 class StaticModel():
@@ -29,6 +30,7 @@ class StaticModel():
         self.gate_num = self.config.get("hyper_parameters.gate_num")
         self.expert_size = self.config.get("hyper_parameters.expert_size")
         self.tower_size = self.config.get("hyper_parameters.tower_size")
+        self.use_loss_w = self.config.get("hyper_parameters.use_loss_w")
         self.learning_rate = self.config.get(
             "hyper_parameters.optimizer.learning_rate")
 
@@ -51,7 +53,7 @@ class StaticModel():
 
         MMoE = MMoELayer(self.feature_size, self.expert_num, self.expert_size,
                          self.tower_size, self.gate_num)
-        pred_income, pred_marital = MMoE.forward(input_data)
+        pred_income, pred_marital, last_common_layer = MMoE.forward(input_data)
 
         pred_income_1 = paddle.slice(
             pred_income, axes=[1], starts=[1], ends=[2])
@@ -79,11 +81,13 @@ class StaticModel():
             input=pred_marital_1,
             label=paddle.cast(
                 label_marital, dtype="float32"))
-
-        avg_cost_income = paddle.mean(x=cost_income)
-        avg_cost_marital = paddle.mean(x=cost_marital)
-
-        cost = avg_cost_income + avg_cost_marital
+        if self.use_loss_w:
+            cost = loss_adaptation([cost_income, cost_marital],
+                                   last_common_layer)
+        else:
+            avg_cost_income = paddle.mean(x=cost_income)
+            avg_cost_marital = paddle.mean(x=cost_marital)
+            cost = avg_cost_income + avg_cost_marital
 
         self._cost = cost
         fetch_dict = {

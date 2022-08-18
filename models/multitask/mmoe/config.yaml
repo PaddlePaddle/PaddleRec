@@ -30,6 +30,7 @@ runner:
   infer_end_epoch: 3
   #use inference save model
   use_inference: False
+  use_loss_w: True
   save_inference_feed_varnames: ["input"]
   save_inference_fetch_varnames: ["slice_0.tmp_0", "slice_1.tmp_0"]
 
