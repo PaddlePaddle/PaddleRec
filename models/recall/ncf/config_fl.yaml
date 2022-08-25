@@ -14,7 +14,7 @@
 
 runner:
   sync_mode: "geo" # 可选, string: sync/async/geo
-  with_coodinator: 1
+  #with_coodinator: 1
   geo_step: 100 # 可选, int, 在geo模式下控制本地的迭代次数
   split_file_list: True # 可选, bool, 若每个节点上都拥有全量数据，则需设置为True
   thread_num: 1 # 多线程配置
@@ -39,6 +39,13 @@ runner:
   infer_load_path: "output_model_ncf"
   infer_start_epoch: 2
   infer_end_epoch: 3
+  
+  need_dump: True
+  dump_fields_path: "/home/wangbin/the_one_ps/ziyoujiyi_PaddleRec/PaddleRec/models/recall/ncf"
+  dump_fields: ['item_input', 'user_input']
+  dump_param: []
+  local_sparse: ['embedding_0.w_0']
+  remote_sparse: ['embedding_1.w_0']
 
 hyper_parameters:
   optimizer: 
