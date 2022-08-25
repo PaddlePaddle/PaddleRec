@@ -111,7 +111,7 @@ class Trainer(object):
         self.model = get_model(self.config)
         self.input_data = self.model.create_feeds()
         self.metrics = self.model.net(self.input_data)
-        self.model.create_optimizer(get_strategy(self.config))
+        self.model.create_optimizer(get_strategy(self.config))  ## get_strategy
         if self.pure_bf16:
             self.model.optimizer.amp_init(self.place)
 

@@ -10,6 +10,7 @@
 * 在 PaddleRec/datasets/movielens_pinterest_NCF/fl_data 中新建目录 fl_test_data 和 fl_train_data，用于存放每个 client 上的训练数据集和测试数据集
 * 在 PaddleRec/datasets/movielens_pinterest_NCF/fl_data 目录中执行: python gen_heter_data.py，生成 10 份训练数据
     * 总样本数 4970844（按 1:4 补充负样本）：0 - 518095，1 - 520165，2 - 373605，3 - 315550，4 - 483779，5 - 495635，6 - 402810，7 - 354590，8 - 262710，9 - 1243905
+    * 样本数据每一行表示：物品 id，用户 id，标签
     
 # 3、运行命令
 1. 不带 coordinator 版本
