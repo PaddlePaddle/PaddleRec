@@ -27,5 +27,5 @@
   |                     [AITM](models/multitask/aitm/)                     |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/756   | 论文复现赛第六期 |
   |                     [IPRec](models/rank/iprec/)                     |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/774   | 论文复现赛第六期 |
   |                     [KIM](models/match/kim/)                     |  [renmada](https://github.com/renmada)  |    https://github.com/PaddlePaddle/PaddleRec/pull/790   | 论文复现赛第六期 |
-  |                     [AutoInt](models/rank/autoint/)                     |  [kafaichan](https://github.com/kafaichan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/830  | 论文复现赛第七期 |
+  |                     [AutoInt](models/rank/autoint/)                     |  [kafaichan](https://github.com/kafaichan)  |    https://github.com/PaddlePaddle/PaddleRec/pull/829  | 论文复现赛第七期 |
 </div> 
