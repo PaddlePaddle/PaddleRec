@@ -19,14 +19,14 @@ runner:
   use_gpu: True
   use_xpu: False   # Enable this option only if you have an xpu device
   use_auc: True
-  train_batch_size: 128
+  train_batch_size: 2
   epochs: 3
   print_interval: 2
   # model_init_path: "output_model_deepfm/2" # init model
   model_save_path: "output_model_autoint"
   test_data_dir: "data/sample_data/train"
   infer_reader_path: "criteo_reader" # importlib format
-  infer_batch_size: 128
+  infer_batch_size: 2
   infer_load_path: "output_model_autoint"
   infer_start_epoch: 0
   infer_end_epoch: 3
