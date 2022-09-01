@@ -16,6 +16,7 @@ runner:
   dataset_debug: False
   # data_donefile: "data.done"
   data_sleep_second: 1
+  prefetch: True
   sync_mode: "async"
 
   split_interval: 30
