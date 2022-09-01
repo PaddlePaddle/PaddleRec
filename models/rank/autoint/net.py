@@ -179,11 +179,10 @@ class AutoInt(nn.Layer):
                                         use_sparse)
 
         self.attn_layer_sizes = [embedding_dim] + attn_layer_sizes
-        self.iteraction_layers = nn.Sequential(*[
-            InteractingLayer(self.attn_layer_sizes[i],
-                             self.attn_layer_sizes[i + 1], head_num,
-                             use_residual, scaling)
-            for i in range(len(self.attn_layer_sizes) - 1)
+        self.iteraction_layers = nn.Sequential(* [
+            InteractingLayer(self.attn_layer_sizes[i], self.attn_layer_sizes[
+                i + 1], head_num, use_residual, scaling) for i in range(
+                    len(self.attn_layer_sizes) - 1)
         ])
 
         self.linear = nn.Linear(
