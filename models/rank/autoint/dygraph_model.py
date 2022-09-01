@@ -34,8 +34,9 @@ class DygraphModel():
         num_field = config.get("hyper_parameters.num_field")
         attn_layer_sizes = config.get("hyper_parameters.attn_layer_sizes")
 
-        autoint_model = net.AutoInt(feature_number, embedding_dim, fc_sizes, use_residual, scaling, use_wide, 
-            use_sparse, head_num, num_field, attn_layer_sizes)
+        autoint_model = net.AutoInt(
+            feature_number, embedding_dim, fc_sizes, use_residual, scaling,
+            use_wide, use_sparse, head_num, num_field, attn_layer_sizes)
         return autoint_model
 
     # define feeds which convert numpy of batch data to paddle.tensor 

@@ -87,8 +87,12 @@ def main(args):
     dy_model = paddle.jit.to_static(
         dy_model,
         input_spec=[
-            paddle.static.InputSpec(shape=[None, config['hyper_parameters.num_field']], dtype='int64'),
-            paddle.static.InputSpec(shape=[None, config['hyper_parameters.num_field']], dtype='float32')])
+            paddle.static.InputSpec(
+                shape=[None, config['hyper_parameters.num_field']],
+                dtype='int64'), paddle.static.InputSpec(
+                    shape=[None, config['hyper_parameters.num_field']],
+                    dtype='float32')
+        ])
     save_jit_model(dy_model, model_save_path, prefix='tostatic')
 
 

@@ -31,7 +31,8 @@ class StaticModel():
         if self.config.get("hyper_parameters.distributed_embedding", 0) == 1:
             self.distributed_embedding = True
 
-        self.feature_number = self.config.get("hyper_parameters.feature_number")
+        self.feature_number = self.config.get(
+            "hyper_parameters.feature_number")
         self.embedding_dim = self.config.get("hyper_parameters.embedding_dim")
         self.fc_sizes = self.config.get("hyper_parameters.fc_sizes")
         self.use_residual = self.config.get("hyper_parameters.use_residual")
@@ -40,32 +41,29 @@ class StaticModel():
         self.use_sparse = self.config.get("hyper_parameters.use_sparse")
         self.head_num = self.config.get("hyper_parameters.head_num")
         self.num_field = self.config.get("hyper_parameters.num_field")
-        self.attn_layer_sizes = self.config.get("hyper_parameters.attn_layer_sizes")
-        self.learning_rate = self.config.get("hyper_parameters.optimizer.learning_rate")        
-
+        self.attn_layer_sizes = self.config.get(
+            "hyper_parameters.attn_layer_sizes")
+        self.learning_rate = self.config.get(
+            "hyper_parameters.optimizer.learning_rate")
 
     def create_feeds(self, is_infer=False):
         self.label_input = paddle.static.data(
             name="label", shape=[None, 1], dtype="int64")
 
         self.feat_index = paddle.static.data(
-            name='feat_index',
-            shape=[None, self.num_field],
-            dtype='int64')
+            name='feat_index', shape=[None, self.num_field], dtype='int64')
 
         self.feat_value = paddle.static.data(
-            name='feat_value',
-            shape=[None, self.num_field],
-            dtype='float32'
-        )
+            name='feat_value', shape=[None, self.num_field], dtype='float32')
 
         feeds_list = [self.label_input, self.feat_index, self.feat_value]
         return feeds_list
 
     def net(self, input, is_infer=False):
-        autoint_model = AutoInt(
-            self.feature_number, self.embedding_dim, self.fc_sizes, self.use_residual, self.scaling, self.use_wide, 
-            self.use_sparse, self.head_num, self.num_field, self.attn_layer_sizes)
+        autoint_model = AutoInt(self.feature_number, self.embedding_dim,
+                                self.fc_sizes, self.use_residual, self.scaling,
+                                self.use_wide, self.use_sparse, self.head_num,
+                                self.num_field, self.attn_layer_sizes)
 
         pred = autoint_model.forward(self.feat_index, self.feat_value)
 
