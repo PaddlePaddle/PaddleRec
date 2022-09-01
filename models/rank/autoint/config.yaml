@@ -1,0 +1,54 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+runner:
+  train_data_dir: "data/sample_data/train"
+  train_reader_path: "criteo_reader" # importlib format
+  use_gpu: True
+  use_xpu: False   # Enable this option only if you have an xpu device
+  use_auc: True
+  train_batch_size: 2
+  epochs: 3
+  print_interval: 2
+  # model_init_path: "output_model_deepfm/2" # init model
+  model_save_path: "output_model_autoint"
+  test_data_dir: "data/sample_data/train"
+  infer_reader_path: "criteo_reader" # importlib format
+  infer_batch_size: 2
+  infer_load_path: "output_model_autoint"
+  infer_start_epoch: 0
+  infer_end_epoch: 3
+  # use fleet
+  use_fleet: False
+  
+# hyper parameters of user-defined network
+hyper_parameters:
+  # optimizer config
+  optimizer:
+    class: Adam
+    learning_rate: 0.001
+    strategy: async
+  # user-defined <key, value> pairs
+  feature_number: 1000001
+  embedding_dim: 16
+  fc_sizes: [] #[256, 128]
+  use_residual: True
+  scaling: True
+  use_wide: True
+  use_sparse: True
+  head_num: 2
+  num_field: 39
+  attn_layer_sizes: [64,64,64]
+  distributed_embedding: 0
