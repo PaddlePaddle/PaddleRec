@@ -40,7 +40,7 @@ def get_reader(input_var, config):
         "QueueDataset", "DataLoader", "RecDataset", "InmemoryDataset", None
     ]
     file_list = get_file_list(train_data_path, config)
-
+    print("train file_list: {}".format(file_list))
     if reader_type == "QueueDataset":
         reader_instance = QueueDatset(input_var, file_list, config)
         return reader_instance.get_reader(), file_list
@@ -59,10 +59,16 @@ def get_infer_reader(input_var, config):
     test_data_path = config.get("runner.test_data_dir")
     assert test_data_path != ""
     test_data_path = os.path.join(config["config_abs_dir"], test_data_path)
+    print("test_data_path is: {}".format(test_data_path))
     file_list = get_file_list(test_data_path, config)
-
-    reader_instance = InferDataLoader(input_var, file_list, config)
-    return reader_instance.get_reader(), file_list
+    print("test file_list: {}".format(file_list))
+    reader_type = config.get("runner.reader_type")
+    if reader_type == "QueueDataset":
+        reader_instance = QueueDatset(input_var, file_list, config)
+        return reader_instance.get_infer_reader(), file_list
+    else:
+        reader_instance = InferDataLoader(input_var, file_list, config)
+        return reader_instance.get_reader(), file_list
 
 
 def get_file_list(data_path, config):
@@ -208,11 +214,13 @@ class QueueDatset(object):
         print("utils_path: {}".format(utils_path))
         abs_train_reader = os.path.join(config["config_abs_dir"],
                                         self.train_reader)
+        print("abs_train_reader is: {}".format(abs_train_reader))
         self.pipe_command = self.pipe_command.replace(self.train_reader,
                                                       abs_train_reader)
         self.pipe_command = "{} {} {}".format(self.pipe_command,
                                               config.get("yaml_path"),
                                               utils_path)
+        print("pipe_command is: {}".format(self.pipe_command))
         self.batch_size = int(self.config.get("runner.train_batch_size"))
         assert self.batch_size >= 1
         self.thread_num = int(self.config.get("runner.thread_num"))
@@ -220,7 +228,7 @@ class QueueDatset(object):
         assert self.thread_num >= 1
 
     def get_reader(self):
-        logger.info("Get Dataset")
+        logger.info("Get Train Dataset")
         dataset = paddle.distributed.QueueDataset()
         dataset.init(
             use_var=self.input_var,
@@ -228,6 +236,20 @@ class QueueDatset(object):
             batch_size=self.batch_size,
             thread_num=self.thread_num)
         print("dataset get_reader thread_num:", self.thread_num)
+        dataset.set_filelist(self.file_list)
+        return dataset
+
+    def get_infer_reader(self):
+        logger.info("Get Infer Dataset")
+        dataset = paddle.distributed.QueueDataset()
+        self.infer_batch_size = int(self.config.get("runner.infer_batch_size"))
+        self.infer_thread_num = self.thread_num
+        dataset.init(
+            use_var=self.input_var,
+            pipe_command=self.pipe_command,
+            batch_size=self.infer_batch_size,
+            thread_num=self.infer_thread_num)
+        print("dataset get_infer_reader thread_num:", self.infer_thread_num)
         dataset.set_filelist(self.file_list)
         return dataset
 
