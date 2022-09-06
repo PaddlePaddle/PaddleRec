@@ -74,8 +74,8 @@ class StaticModel(object):
             size=[self.sparse_feature_number, self.sparse_feature_dim],
             param_attr=paddle.ParamAttr(
                 name='emb',
-                initializer=paddle.initializer.Uniform(-init_width,
-                                                       init_width)))
+                initializer=paddle.nn.initializer.Uniform(-init_width,
+                                                          init_width)))
 
         true_emb_w = paddle.static.nn.embedding(
             input=inputs[1],
@@ -83,7 +83,7 @@ class StaticModel(object):
             size=[self.sparse_feature_number, self.sparse_feature_dim],
             param_attr=paddle.ParamAttr(
                 name='emb_w',
-                initializer=paddle.initializer.Constant(value=0.0)))
+                initializer=paddle.nn.initializer.Constant(value=0.0)))
 
         true_emb_b = paddle.static.nn.embedding(
             input=inputs[1],
@@ -91,7 +91,7 @@ class StaticModel(object):
             size=[self.sparse_feature_number, 1],
             param_attr=paddle.ParamAttr(
                 name='emb_b',
-                initializer=paddle.initializer.Constant(value=0.0)))
+                initializer=paddle.nn.initializer.Constant(value=0.0)))
 
         neg_word_reshape = paddle.reshape(inputs[2], shape=[-1, 1])
         neg_word_reshape.stop_gradient = True
@@ -116,7 +116,7 @@ class StaticModel(object):
         neg_emb_b_vec = paddle.reshape(neg_emb_b, shape=[-1, self.neg_num])
 
         true_logits = paddle.add(paddle.sum(
-            paddle.multiply(input_emb, true_emb_w), dim=1, keep_dim=True),
+            paddle.multiply(input_emb, true_emb_w), axis=1, keepdim=True),
                                  true_emb_b)
 
         input_emb_re = paddle.reshape(
@@ -131,14 +131,15 @@ class StaticModel(object):
         label_ones = paddle.full_like(
             true_logits, fill_value=1.0, dtype='float32')
         label_zeros = paddle.full_like(
-            true_logits, fill_value=0.0, dtype='float32')
+            neg_logits, fill_value=0.0, dtype='float32')
 
+        true_logits = paddle.nn.functional.sigmoid(true_logits)
         true_xent = paddle.nn.functional.binary_cross_entropy(true_logits,
                                                               label_ones)
+        neg_logits = paddle.nn.functional.sigmoid(neg_logits)
         neg_xent = paddle.nn.functional.binary_cross_entropy(neg_logits,
                                                              label_zeros)
-        cost = paddle.add(paddle.sum(true_xent, dim=1),
-                          paddle.sum(neg_xent, dim=1))
+        cost = paddle.add(true_xent, neg_xent)
         avg_cost = paddle.mean(cost)
 
         self.inference_target_var = avg_cost
@@ -157,11 +158,8 @@ class StaticModel(object):
 
         # single
         optimizer = paddle.optimizer.SGD(
-            learning_rate=paddle.static.exponential_decay(
-                learning_rate=lr,
-                decay_steps=decay_steps,
-                decay_rate=decay_rate,
-                staircase=True))
+            learning_rate=paddle.optimizer.lr.ExponentialDecay(
+                learning_rate=lr, gamma=decay_rate, verbose=True))
 
         if strategy != None:
             sync_mode = self.config.get("runner.sync_mode")
@@ -169,12 +167,11 @@ class StaticModel(object):
             # geo
             if sync_mode == "geo":
                 decay_steps = int(decay_steps / fleet.worker_num())
+                print("decay_steps: {}".format(decay_steps))
                 optimizer = paddle.optimizer.SGD(
-                    learning_rate=paddle.static.exponential_decay(
-                        learning_rate=lr,
-                        decay_steps=decay_steps,
-                        decay_rate=decay_rate,
-                        staircase=True))
+                    learning_rate=paddle.optimizer.lr.ExponentialDecay(
+                        learning_rate=lr, gamma=decay_rate, verbose=True))
+                strategy.a_sync_configs["lr_decay_steps"] = decay_steps
 
             # async sync heter
             if sync_mode in ["async", "sync", "heter"]:
