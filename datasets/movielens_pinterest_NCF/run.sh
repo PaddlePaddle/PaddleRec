@@ -7,3 +7,4 @@ cd big_test
 wget https://paddlerec.bj.bcebos.com/ncf/test_data.csv
 cd ..
 wget https://paddlerec.bj.bcebos.com/ncf/Data.zip
+unzip Data.zip
