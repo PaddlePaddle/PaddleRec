@@ -1,0 +1,51 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+hyper_parameters:
+  optimizer:
+    learning_rate: 0.0001
+    class: Adam
+    strategy: async
+  dense_input_dim: 13
+  sparse_inputs_slots: 27
+  sparse_feature_number: 1000001
+  sparse_feature_dim: 10
+  fc_sizes: [400, 400, 400]
+
+runner:
+  epochs: 15
+  print_interval: 100
+
+  geo_step: 400
+  sync_mode: "async"  # sync / async /geo / heter
+  thread_num: 16
+  use_gpu: False
+  use_auc: True
+  
+  model_path: "static_model.py"
+  reader_type: "QueueDataset"  # DataLoader / QueueDataset / RecDataset
+  pipe_command: "python models/rank/dnn/queuedataset_reader.py"
+  dataset_debug: False
+  split_file_list: False
+
+  train_batch_size: 1000
+  train_data_dir: "data/sample_data/train"
+  train_reader_path: "benchmark_reader"
+  model_save_path: "model"
+
+  infer_batch_size: 1000
+  test_data_dir: "data/sample_data/train"
+  infer_reader_path: "benchmark_reader"
+  infer_load_path: "model"
+  infer_start_epoch: 0
+  infer_end_epoch: 1

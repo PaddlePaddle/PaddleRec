@@ -56,3 +56,5 @@ epoch:50
 run_mode:PSGPU
 fp_items:null
 device_num:N1C8
+gpu_config:models/rank/dnn/config_gpubox.yaml
+cpu_config:models/rank/dnn/config_cpups.yaml

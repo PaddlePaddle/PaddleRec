@@ -83,6 +83,9 @@ elif [ ${model_name} == "wide_deep" ]; then
         cd ../..
         cp -r ./models/rank/wide_deep/data/sample_data/train/* ./test_tipc/data/train
         cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
+    elif [ ${MODE} = "benchmark_train" ];then
+        cp -r ./models/rank/wide_deep/data/sample_data/train/* ./test_tipc/data/train
+        echo "demo data ready"
     fi
     
 elif [ ${model_name} == "deepfm" ]; then
