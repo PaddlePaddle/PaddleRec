@@ -73,6 +73,8 @@ python 3.5/3.6/3.7
 
 os : windows/linux/macos 
 
+注：建议通过编译方式安装最新develop分支，不然可能会出现最新属性找不到的错误，安装方式见[教程](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/develop/install/compile/arm-compile.html)
+
 ## 快速开始
 本文提供了样例数据可以供您快速体验，在dien模型目录的快速执行命令如下： 
 ```bash
@@ -97,11 +99,11 @@ cat_count:  品类的种类数目
 ```
 
 #### Loss及Acc计算
-- 本文采用AUGRU及模型组网，采用sigmoid激活函数
 - 预测的结果为一个sigmoid向量，表示推荐的商品广告被用户点击的概率
 - 样本的损失函数值由CTR_loss和Auxiliary_loss叠加组成，同时计算预测的auc
 
 ## 效果复现
+注：目前paddle未支持AUGRU算子，此处用的是普通的GRU，不同于论文部分。
 ### 数据集获取及预处理
 为了方便使用者能够快速的跑通每一个模型，我们在每个模型下都提供了样例数据。同时，我们提供了全量数据生成的脚本，将会自动下载amazon eletronics dataset全量数据集并转换为模型能接受的
 输入格式。
