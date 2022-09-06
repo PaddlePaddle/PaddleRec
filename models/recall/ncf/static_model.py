@@ -56,13 +56,22 @@ class StaticModel():
                                       self.mf_dim, self.layers)
 
         prediction = ncf_model.forward(input)
+        predict_2d = paddle.concat(x=[1 - prediction, prediction], axis=1)
+        label_input = input[2]
+
+        auc, batch_auc, [batch_stat_pos, batch_stat_neg, stat_pos,
+                         stat_neg] = paddle.static.auc(input=predict_2d,
+                                                       label=label_input,
+                                                       num_thresholds=2**12,
+                                                       slide_steps=0)
 
         self.inference_target_var = prediction
         if is_infer:
             fetch_dict = {
                 "user": input[0],
                 'prediction': prediction,
-                "label": input[2]
+                "label": input[2],
+                'auc': auc
             }
             return fetch_dict
         cost = F.log_loss(
@@ -71,7 +80,7 @@ class StaticModel():
         avg_cost = paddle.mean(x=cost)
         # print(avg_cost)
         self._cost = avg_cost
-        fetch_dict = {'Loss': avg_cost}
+        fetch_dict = {'Loss': avg_cost, 'Auc': auc}
         return fetch_dict
 
     def create_optimizer(self, strategy=None):
