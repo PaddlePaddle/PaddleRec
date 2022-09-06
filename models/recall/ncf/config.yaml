@@ -15,6 +15,9 @@
 runner:
   train_data_dir: "data/train"
   train_reader_path: "movielens_reader"  # importlib format
+  train_rating: "data/ml-1m.train.rating.demo" # pinterest-20.train.rating.demo
+  test_negative: "data/ml-1m.test.negative.demo" # pinterest-20.test.negative.demo
+  num_ng: 4
   train_batch_size: 5
   model_save_path: "output_model_ncf"
 
@@ -24,7 +27,7 @@ runner:
   
   test_data_dir: "data/test"
   infer_reader_path: "movielens_reader"  # importlib format
-  infer_batch_size: 1
+  infer_batch_size: 100
   infer_load_path: "output_model_ncf"
   infer_start_epoch: 2
   infer_end_epoch: 3
