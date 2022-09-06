@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument("--params_file", type=str)
     parser.add_argument("--model_dir", type=str)
     parser.add_argument("--use_gpu", type=str)
+    parser.add_argument("--use_npu", type=str)
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
@@ -49,6 +50,8 @@ def parse_args():
     parser.add_argument("--precision", type=str)
     args = parser.parse_args()
     args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
+    args.use_npu = (True if args.use_npu is not None and
+                    args.use_npu.lower() == "true" else False)
     args.enable_mkldnn = (True
                           if args.enable_mkldnn.lower() == "true" else False)
     args.enable_tensorRT = (True if args.enable_tensorRT.lower() == "true" else
@@ -86,6 +89,8 @@ def init_predictor(args):
                 max_batch_size=args.batchsize,
                 min_subgraph_size=9,
                 precision_mode=paddle.inference.PrecisionType.Float32)
+    elif args.use_npu:
+        config.enable_npu()
     else:
         config.disable_gpu()
         config.set_cpu_math_library_num_threads(args.cpu_threads)
@@ -114,7 +119,12 @@ def create_data_loader(args):
 
 def main(args):
     predictor, pred_config = init_predictor(args)
-    place = paddle.set_device('gpu' if args.use_gpu else 'cpu')
+    if args.use_gpu:
+        place = paddle.set_device('gpu')
+    elif args.use_npu:
+        place = paddle.set_device('npu')
+    else:
+        place = paddle.set_device('cpu')
     args.place = place
     input_names = predictor.get_input_names()
     output_names = predictor.get_output_names()
@@ -132,7 +142,7 @@ def main(args):
             inference_config=pred_config,
             pids=pid,
             process_name=None,
-            gpu_ids=0,
+            gpu_ids=0 if args.use_gpu else None,
             time_keys=[
                 'preprocess_time', 'inference_time', 'postprocess_time'
             ])
