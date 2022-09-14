@@ -27,9 +27,12 @@ REPO_ROOT_PATH=$(readlinkf ${BASEDIR}/../)
 FILENAME=$1
 
 # change gpu to npu in tipc txt configs
-sed -i "s/runner.use_gpu/runner.use_npu/g" $FILENAME
+sed -i "s/gpu_list:0|-1/gpu_list:0/g" $FILENAME
+sed -i "s/runner.use_gpu:True|False/runner.use_npu:True/g" $FILENAME
+sed -i "s/--use_gpu:True|False/--use_npu:True/g" $FILENAME
 sed -i "s/--use_gpu/--use_npu/g" $FILENAME
 sed -i "s/--enable_tensorRT:False|True/--enable_tensorRT:False/g" $FILENAME
+sed -i "s/--enable_tensorRT:True|False/--enable_tensorRT:False/g" $FILENAME
 sed -i "s/--benchmark:True/--benchmark:False/g" $FILENAME
 dataline=`cat $FILENAME`
 
@@ -48,18 +51,14 @@ sed -i 's/config.get(\"runner.use_gpu\", True)/config.get(\"runner.use_gpu\", Fa
 # replace gpu to npu in to_static.py
 to_static_py=$(func_parser_value "${lines[29]}")
 to_static_config=$(func_parser_execute_python ${to_static_py})
-if [[ $to_static_config =~ "test_tipc" ]];then
-    echo "replace in to_static.py"
-    sed -i 's/use_gpu/use_npu/g' "$REPO_ROOT_PATH/$to_static_config"
-    sed -i 's/'"'"'gpu'"'"'/'"'"'npu'"'"'/g' "$REPO_ROOT_PATH/$to_static_config"
-fi
+sed -i 's/use_gpu/use_npu/g' "$REPO_ROOT_PATH/$to_static_config"
+sed -i 's/'"'"'gpu'"'"'/'"'"'npu'"'"'/g' "$REPO_ROOT_PATH/$to_static_config"
 
 # replace gpu to npu in paddle_infer.py
 inference_py=$(func_parser_value "${lines[39]}")
 inference_config=$(func_parser_execute_python ${inference_py})
 if [[ $inference_config =~ "test_tipc" ]]; then
-    echo "replace in paddle_infer.py"
-    sed -i 's/config.enable_use_gpu(1000, 0)/config.enable_use_npu()/g' "$REPO_ROOT_PATH/$inference_config"
+    sed -i 's/config.enable_use_gpu(1000, 0)/config.enable_npu()/g' "$REPO_ROOT_PATH/$inference_config"
     sed -i 's/use_gpu/use_npu/g' "$REPO_ROOT_PATH/$inference_config"
     sed -i 's/'"'"'gpu'"'"'/'"'"'npu'"'"'/g' "$REPO_ROOT_PATH/$inference_config"
 fi
