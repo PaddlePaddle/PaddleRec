@@ -59,6 +59,8 @@ if [[ $inference_config =~ "test_tipc" ]]; then
     sed -i 's/config.enable_use_gpu(1000, 0)/config.enable_xpu(100)/g' "$REPO_ROOT_PATH/$inference_config"
     sed -i 's/use_gpu/use_xpu/g' "$REPO_ROOT_PATH/$inference_config"
     sed -i 's/'"'"'gpu'"'"'/'"'"'xpu'"'"'/g' "$REPO_ROOT_PATH/$inference_config"
+else
+    sed -i 's/"--use_gpu", type=str2bool, default=True/"--use_gpu", type=str2bool, default=False/g' "$REPO_ROOT_PATH/$inference_config"
 fi
 
 # replace training config file
