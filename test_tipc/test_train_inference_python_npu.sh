@@ -27,9 +27,7 @@ REPO_ROOT_PATH=$(readlinkf ${BASEDIR}/../)
 FILENAME=$1
 
 # change gpu to npu in tipc txt configs
-sed -i "s/gpu_list:0|-1/gpu_list:0/g" $FILENAME
-sed -i "s/runner.use_gpu:True|False/runner.use_npu:True/g" $FILENAME
-sed -i "s/--use_gpu:True|False/--use_npu:True/g" $FILENAME
+sed -i "s/runner.use_gpu/runner.use_npu/g" $FILENAME
 sed -i "s/--use_gpu/--use_npu/g" $FILENAME
 sed -i "s/--enable_tensorRT:False|True/--enable_tensorRT:False/g" $FILENAME
 sed -i "s/--enable_tensorRT:True|False/--enable_tensorRT:False/g" $FILENAME
