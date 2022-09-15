@@ -14,9 +14,8 @@ lines=(${dataline})
 # The training params
 model_name=$(func_parser_value "${lines[1]}")
 
-# clear dataset and output
+# clear dataset
 rm -rf ./test_tipc/data
-# rm -rf ./test_tipc/output
 
 if [ ${model_name} == "dnn" ]; then
     # prepare pretrained weights and dataset 
