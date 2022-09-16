@@ -37,9 +37,6 @@ runner:
   sync_mode: "async"
   split_file_list: False
   thread_num: 1
-  reader_type: "QueueDataset" # DataLoader / QueueDataset / RecDataset
-  pipe_command: "python queuedataset_reader.py" # QueueDataset 模式下的数据pipe命令
-  dataset_debug: False # QueueDataset 模式下 Profiler 开关
 
 
 # hyper parameters of user-defined network
