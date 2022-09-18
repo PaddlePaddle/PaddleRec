@@ -106,7 +106,9 @@ class Main(object):
         print("load model:", model_path)
         [inference_program, feed_target_names, fetch_targets] = (
             paddle.static.io.load_inference_model(
-                path_prefix=model_path, executor=self.exe))
+                path_prefix=model_path,
+                executor=self.exe,
+                model_filename='__model__'))
 
         self.reset_auc()
         infer_res = []
