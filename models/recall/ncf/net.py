@@ -79,10 +79,10 @@ class NCF_NeuMF_Layer(nn.Layer):
             self.MLP_fc.append(act)
 
         self.prediction = paddle.nn.Linear(
-            in_features=self.layers[-1] + self.mf_dim,
+            in_features=self.layers[2],
             out_features=1,
-            weight_attr=nn.initializer.KaimingUniform(fan_in=(
-                self.layers[-1] + self.mf_dim) * 2),
+            weight_attr=nn.initializer.KaimingUniform(fan_in=self.layers[2] *
+                                                      2),
             name='prediction')
         self.sigmoid = paddle.nn.Sigmoid()
 
@@ -155,6 +155,7 @@ class NCF_GMF_Layer(nn.Layer):
         self.sigmoid = paddle.nn.Sigmoid()
 
     def forward(self, input_data):
+
         user_input = input_data[0]
         item_input = input_data[1]
         label = input_data[2]
