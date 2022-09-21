@@ -137,7 +137,7 @@ if [ ${MODE} = "klquant_whole_infer" ]; then
 fi
 
 WORK_PATH=$(pwd)
-LOG_PATH="$(pwd)/test_tipc/output"
+LOG_PATH="$(pwd)/test_tipc/output/${model_name}/${MODE}"
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 
