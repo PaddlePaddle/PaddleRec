@@ -6,7 +6,7 @@
 
 # 2、样本准备
 * 在 PaddleRec/datasets/movielens_pinterest_NCF 目录中执行: sh run.sh，获取初步处理过的训练数据（big_train）和测试数据（test_data）
-* 从 MovieLens 官网下载 ml-1m 数据集，获取 users.dat 文件（可自定义存储路径，但需要和 gen_heter_data.py 脚本中路径保持一致），后续用于构造异构数据集（按 zipcode 的首位数字划分）
+* 从 MovieLens 官网: https://grouplens.org/datasets/movielens/1m/ 下载 ml-1m 数据集，获取 users.dat 文件（可自定义存储路径，但需要和 gen_heter_data.py 脚本中路径保持一致），后续用于构造异构数据集（按 zipcode 的首位数字划分）
 * 在 PaddleRec/datasets/movielens_pinterest_NCF/fl_data 中新建目录 fl_test_data 和 fl_train_data，用于存放每个 client 上的训练数据集和测试数据集
 * 在 PaddleRec/datasets/movielens_pinterest_NCF/fl_data 目录中执行: python gen_heter_data.py，生成 10 份训练数据
     * 总样本数 4970844（按 1:4 补充负样本）：0 - 518095，1 - 520165，2 - 373605，3 - 315550，4 - 483779，5 - 495635，6 - 402810，7 - 354590，8 - 262710，9 - 1243905
