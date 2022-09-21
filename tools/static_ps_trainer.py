@@ -202,6 +202,7 @@ class Main(object):
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
+
             if is_distributed_env():
                 fleet.save_inference_model(
                     self.exe, model_dir,
