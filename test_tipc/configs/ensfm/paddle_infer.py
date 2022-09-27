@@ -21,8 +21,9 @@ import logging
 import sys
 import re
 from importlib import import_module
+
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../tools')))
 from utils.utils_single import load_yaml, load_dy_model_class, get_abs_model
 from utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader

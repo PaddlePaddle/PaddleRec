@@ -32,12 +32,16 @@ from paddle.inference import create_predictor
 
 
 def parse_args():
+    def str2bool(v):
+        return v.lower() in ("true", "t", "1")
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--params_file", type=str)
     parser.add_argument("--model_dir", type=str)
-    parser.add_argument("--use_gpu", type=str)
-    parser.add_argument("--use_npu", type=str)
+    parser.add_argument("--use_gpu", type=str2bool, default=False)
+    parser.add_argument("--use_npu", type=str2bool, default=False)
+    parser.add_argument("--use_xpu", type=str2bool, default=False)
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--reader_file", type=str)
     parser.add_argument("--batchsize", type=int)
@@ -49,9 +53,6 @@ def parse_args():
     parser.add_argument("--save_log_path", type=str, default="./output")
     parser.add_argument("--precision", type=str)
     args = parser.parse_args()
-    args.use_gpu = (True if args.use_gpu.lower() == "true" else False)
-    args.use_npu = (True if args.use_npu is not None and
-                    args.use_npu.lower() == "true" else False)
     args.enable_mkldnn = (True
                           if args.enable_mkldnn.lower() == "true" else False)
     args.enable_tensorRT = (True if args.enable_tensorRT.lower() == "true" else
@@ -91,6 +92,8 @@ def init_predictor(args):
                 precision_mode=paddle.inference.PrecisionType.Float32)
     elif args.use_npu:
         config.enable_npu()
+    elif args.use_xpu:
+        config.enable_xpu()
     else:
         config.disable_gpu()
         config.set_cpu_math_library_num_threads(args.cpu_threads)
@@ -123,6 +126,8 @@ def main(args):
         place = paddle.set_device('gpu')
     elif args.use_npu:
         place = paddle.set_device('npu')
+    elif args.use_xpu:
+        place = paddle.set_device('xpu')
     else:
         place = paddle.set_device('cpu')
     args.place = place
