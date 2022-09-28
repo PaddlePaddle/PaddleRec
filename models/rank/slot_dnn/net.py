@@ -33,8 +33,6 @@ class BenchmarkDNNLayer(nn.Layer):
         self.layer_sizes = layer_sizes
         self._init_range = 0.2
 
-        self.entry = paddle.distributed.ShowClickEntry("show", "click")
-
         sizes = [emb_dim * slot_num] + self.layer_sizes + [1]
         acts = ["relu" for _ in range(len(self.layer_sizes))] + [None]
         scales = []
@@ -54,10 +52,14 @@ class BenchmarkDNNLayer(nn.Layer):
                 self.add_sublayer('act_%d' % i, act)
                 self._mlp_layers.append(act)
 
-    def forward(self, slot_inputs):
+    def forward(self, show, click, slot_inputs):
         self.all_vars = []
         embs = []
         self.inference_feed_vars = []
+        show_cast = paddle.cast(show, dtype='float32')
+        click_cast = paddle.cast(click, dtype='float32')
+        self.entry = paddle.distributed.ShowClickEntry(show_cast.name,
+                                                       click_cast.name)
         for s_input in slot_inputs:
             emb = paddle.static.nn.sparse_embedding(
                 input=s_input,

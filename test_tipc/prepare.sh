@@ -14,9 +14,8 @@ lines=(${dataline})
 # The training params
 model_name=$(func_parser_value "${lines[1]}")
 
-# clear dataset and output
+# clear dataset
 rm -rf ./test_tipc/data
-rm -rf ./test_tipc/output
 
 if [ ${model_name} == "dnn" ]; then
     # prepare pretrained weights and dataset 
@@ -83,6 +82,9 @@ elif [ ${model_name} == "wide_deep" ]; then
         cd ../..
         cp -r ./models/rank/wide_deep/data/sample_data/train/* ./test_tipc/data/train
         cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
+    elif [ ${MODE} = "benchmark_train" ];then
+        cp -r ./models/rank/wide_deep/data/sample_data/train/* ./test_tipc/data/train
+        echo "demo data ready"
     fi
     
 elif [ ${model_name} == "deepfm" ]; then
@@ -115,6 +117,36 @@ elif [ ${model_name} == "deepfm" ]; then
         cd ../..
         cp -r ./models/rank/deepfm/data/sample_data/train/* ./test_tipc/data/train
         cp -r ./datasets/criteo/slot_test_data_full/* ./test_tipc/data/infer
+    fi
+
+elif [ ${model_name} == "autoint" ]; then
+    # prepare pretrained weights and dataset 
+
+    mkdir -p ./test_tipc/data/train
+    mkdir -p ./test_tipc/data/infer
+    if [ ${MODE} = "lite_train_lite_infer" ];then
+        cp -r ./models/rank/autoint/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./models/rank/autoint/data/sample_data/train/* ./test_tipc/data/infer
+        echo "demo data ready"
+    elif [ ${MODE} = "whole_train_whole_infer" ];then
+        cd ./datasets/criteo_autoint
+        bash run.sh
+        cd ../..
+        cp -r ./datasets/criteo_autoint/slot_train_data_full/* ./test_tipc/data/train
+        cp -r ./datasets/criteo_autoint/slot_test_data_full/* ./test_tipc/data/infer
+        echo "whole data ready"
+    elif [ ${MODE} = "whole_infer" ];then
+        cd ./datasets/criteo_autoint
+        bash run.sh
+        cd ../..
+        cp -r ./models/rank/autoint/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/criteo_autoint/slot_test_data_full/* ./test_tipc/data/infer
+    elif [ ${MODE} = "lite_train_whole_infer" ];then
+        cd ./datasets/criteo
+        bash run.sh
+        cd ../..
+        cp -r ./models/rank/autoint/data/sample_data/train/* ./test_tipc/data/train
+        cp -r ./datasets/criteo_autoint/slot_test_data_full/* ./test_tipc/data/infer
     fi
 
 elif [ ${model_name} == "ple" ]; then

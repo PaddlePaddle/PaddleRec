@@ -23,6 +23,7 @@ class StaticModel():
         self.cost = None
         self.config = config
         self._init_hyper_parameters()
+        self.sync_mode = config.get("runner.sync_mode")
 
     def _init_hyper_parameters(self):
         self.is_distributed = False
@@ -49,9 +50,15 @@ class StaticModel():
             shape=[None, self.dense_input_dim],
             dtype="float32")
 
+        # sparse_input_ids = [
+        #     paddle.static.data(
+        #         name="C" + str(i), shape=[None, 1], dtype="int64")
+        #     for i in range(1, self.sparse_inputs_slots)
+        # ]
+
         sparse_input_ids = [
             paddle.static.data(
-                name="C" + str(i), shape=[None, 1], dtype="int64")
+                name=str(i), shape=[None, 1], dtype="int64")
             for i in range(1, self.sparse_inputs_slots)
         ]
 
@@ -71,19 +78,35 @@ class StaticModel():
         sparse_number = self.sparse_inputs_slots - 1
 
         wide_deep_model = WideDeepLayer(
-            self.sparse_feature_number, self.sparse_feature_dim,
-            self.dense_input_dim, sparse_number, self.fc_sizes)
+            self.sparse_feature_number,
+            self.sparse_feature_dim,
+            self.dense_input_dim,
+            sparse_number,
+            self.fc_sizes,
+            sync_mode=self.sync_mode)
 
-        pred = wide_deep_model.forward(self.sparse_inputs, self.dense_input)
+        self.cast_label = paddle.cast(self.label_input, dtype='float32')
+        ones = paddle.full_like(
+            self.label_input, fill_value=1, dtype="float32")
+        show_click = paddle.cast(
+            paddle.concat(
+                [ones, self.cast_label], axis=1), dtype='float32')
+        show_click.stop_gradient = True
+
+        pred = wide_deep_model.forward(self.sparse_inputs, self.dense_input,
+                                       show_click)
 
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
 
         self.predict = predict_2d
 
-        auc, batch_auc, _ = paddle.static.auc(input=self.predict,
-                                              label=self.label_input,
-                                              num_thresholds=2**12,
-                                              slide_steps=20)
+        auc, batch_auc, [
+            self.batch_stat_pos, self.batch_stat_neg, self.stat_pos,
+            self.stat_neg
+        ] = paddle.static.auc(input=self.predict,
+                              label=self.label_input,
+                              num_thresholds=2**12,
+                              slide_steps=20)
         auc = paddle.cast(auc, "float32")
         self.inference_target_var = auc
         if is_infer:

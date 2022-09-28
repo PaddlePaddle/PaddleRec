@@ -57,6 +57,7 @@ class StaticModel():
         return feeds_list
 
     def net(self, input, is_infer=False):
+        self.show_input = input[0]
         self.label_input = input[1]
         self.slot_inputs = input[2:]
 
@@ -67,7 +68,8 @@ class StaticModel():
             self.layer_sizes,
             sync_mode=self.sync_mode)
 
-        self.predict = dnn_model.forward(self.slot_inputs)
+        self.predict = dnn_model.forward(self.show_input, self.label_input,
+                                         self.slot_inputs)
 
         # self.all_vars = input + dnn_model.all_vars
         self.all_vars = dnn_model.all_vars
@@ -99,7 +101,7 @@ class StaticModel():
             return fetch_dict
         cost = paddle.nn.functional.log_loss(
             input=self.predict, label=paddle.cast(self.label_input, "float32"))
-        avg_cost = paddle.sum(x=cost)
+        avg_cost = paddle.mean(x=cost)
         self._cost = avg_cost
         fetch_dict = {'cost': avg_cost, 'auc': auc}
         return fetch_dict

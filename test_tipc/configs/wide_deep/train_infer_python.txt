@@ -49,3 +49,12 @@ inference:-u tools/paddle_infer.py --model_name=wide_deep --reader_file=models/r
 --save_log_path:./test_tipc/output/
 --benchmark:True
 null:null
+===========================train_benchmark_params=========================== 
+batch_size:2048
+epoch:50
+--profiler_options="batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile"
+run_mode:PSGPU
+fp_items:null
+device_num:N1C8
+gpu_config:models/rank/wide_deep/config_gpups.yaml
+cpu_config:models/rank/wide_deep/config_cpups.yaml

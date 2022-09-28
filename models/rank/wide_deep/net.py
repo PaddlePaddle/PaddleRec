@@ -19,14 +19,20 @@ import math
 
 
 class WideDeepLayer(nn.Layer):
-    def __init__(self, sparse_feature_number, sparse_feature_dim,
-                 dense_feature_dim, num_field, layer_sizes):
+    def __init__(self,
+                 sparse_feature_number,
+                 sparse_feature_dim,
+                 dense_feature_dim,
+                 num_field,
+                 layer_sizes,
+                 sync_mode=""):
         super(WideDeepLayer, self).__init__()
         self.sparse_feature_number = sparse_feature_number
         self.sparse_feature_dim = sparse_feature_dim
         self.dense_feature_dim = dense_feature_dim
         self.num_field = num_field
         self.layer_sizes = layer_sizes
+        self.sync_mode = sync_mode
 
         self.wide_part = paddle.nn.Linear(
             in_features=self.dense_feature_dim,
@@ -64,14 +70,25 @@ class WideDeepLayer(nn.Layer):
                 self.add_sublayer('act_%d' % i, act)
                 self._mlp_layers.append(act)
 
-    def forward(self, sparse_inputs, dense_inputs):
+    def forward(self, sparse_inputs, dense_inputs, show_click=None):
         # wide part
         wide_output = self.wide_part(dense_inputs)
 
         # deep part
         sparse_embs = []
         for s_input in sparse_inputs:
-            emb = self.embedding(s_input)
+            if self.sync_mode == "gpubox":
+                emb = paddle.static.nn.sparse_embedding(
+                    input=s_input,
+                    size=[
+                        self.sparse_feature_number, self.sparse_feature_dim + 2
+                    ],
+                    param_attr=paddle.ParamAttr(name="embedding"))
+                emb = paddle.static.nn.continuous_value_model(emb, show_click,
+                                                              False)
+            else:
+                emb = self.embedding(s_input)
+
             emb = paddle.reshape(emb, shape=[-1, self.sparse_feature_dim])
             sparse_embs.append(emb)
 

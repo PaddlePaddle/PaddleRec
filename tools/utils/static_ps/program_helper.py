@@ -44,7 +44,11 @@ def get_strategy(config):
     elif sync_mode == "geo":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
-        strategy.a_sync_configs = {"k_steps": config.get("runner.geo_step")}
+        strategy.is_with_coordinator = True if config.get(
+            "runner.with_coordinator") == 1 else False
+        a_sync_configs = strategy.a_sync_configs
+        a_sync_configs["k_steps"] = config.get("runner.geo_step")
+        strategy.a_sync_configs = a_sync_configs
     elif sync_mode == "heter":
         strategy = paddle.distributed.fleet.DistributedStrategy()
         strategy.a_sync = True
@@ -59,7 +63,9 @@ def get_strategy(config):
         "dump_fields_path": config.get("runner.dump_fields_path", ""),
         "dump_fields": config.get("runner.dump_fields", []),
         "dump_param": config.get("runner.dump_param", []),
-        "stat_var_names": config.get("stat_var_names", [])
+        "stat_var_names": config.get("stat_var_names", []),
+        "local_sparse": config.get("runner.local_sparse", []),
+        "remote_sparse": config.get("runner.remote_sparse", [])
     }
     print("strategy:", strategy.trainer_desc_configs)
 

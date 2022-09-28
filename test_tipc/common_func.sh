@@ -16,6 +16,14 @@ function func_parser_value(){
     echo ${tmp}
 }
 
+function func_parser_gloo_value(){
+    strs=$1
+    IFS="="
+    array=(${strs})
+    tmp=${array[1]}
+    echo ${tmp}
+}
+
 function func_set_params(){
     key=$1
     value=$2
