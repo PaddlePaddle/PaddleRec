@@ -67,6 +67,7 @@ def main(args):
     use_auc = config.get("runner.use_auc", False)
     use_npu = config.get("runner.use_npu", False)
     use_xpu = config.get("runner.use_xpu", False)
+    use_ascend = config.get("runner.use_ascend", False)
     use_visual = config.get("runner.use_visual", False)
     train_data_dir = config.get("runner.train_data_dir", None)
     epochs = config.get("runner.epochs", None)
@@ -80,9 +81,10 @@ def main(args):
 
     logger.info("**************common.configs**********")
     logger.info(
-        "use_gpu: {}, use_xpu: {}, use_npu: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
-        format(use_gpu, use_xpu, use_npu, use_visual, train_batch_size,
-               train_data_dir, epochs, print_interval, model_save_path))
+        "use_gpu: {}, use_xpu: {}, use_npu: {}, use_ascend: {}, use_visual: {}, train_batch_size: {}, train_data_dir: {}, epochs: {}, print_interval: {}, model_save_path: {}".
+        format(use_gpu, use_xpu, use_npu, use_ascend, use_visual,
+               train_batch_size, train_data_dir, epochs, print_interval,
+               model_save_path))
     logger.info("**************common.configs**********")
 
     if use_xpu:
@@ -91,6 +93,10 @@ def main(args):
     elif use_npu:
         npu_device = 'npu:{0}'.format(os.getenv('FLAGS_selected_npus', 0))
         place = paddle.set_device(npu_device)
+    elif use_ascend:
+        ascend_device = 'ascend:{0}'.format(
+            os.getenv('FLAGS_selected_ascends', 0))
+        place = paddle.set_device(ascend_device)
     else:
         place = paddle.set_device('gpu' if use_gpu else 'cpu')
 
