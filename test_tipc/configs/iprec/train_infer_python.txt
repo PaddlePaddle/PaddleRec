@@ -39,7 +39,7 @@ infer_export:null
 infer_quant:False
 inference:-u test_tipc/configs/iprec/paddle_infer.py --model_name=iprec --reader_file=./models/rank/iprec/reader.py
 --use_gpu:True|False
---enable_mkldnn:True|False
+--enable_mkldnn:False
 --cpu_threads:1|6
 --batchsize:1
 --enable_tensorRT:False
