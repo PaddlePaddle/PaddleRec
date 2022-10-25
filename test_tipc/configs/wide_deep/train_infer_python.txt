@@ -39,10 +39,10 @@ infer_export:null
 infer_quant:False
 inference:-u tools/paddle_infer.py --model_name=wide_deep --reader_file=models/rank/wide_deep/criteo_reader.py
 --use_gpu:True|False
---enable_mkldnn:True|False
+--enable_mkldnn:False
 --cpu_threads:1|6
 --batchsize:10
---enable_tensorRT:True|False
+--enable_tensorRT:False
 --precision:fp32
 --model_dir:
 --data_dir:test_tipc/data/infer
@@ -53,8 +53,8 @@ null:null
 batch_size:2048
 epoch:50
 --profiler_options="batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile"
-run_mode:PSGPU
+run_mode:PSGPU|PSCPU
 fp_items:null
-device_num:N1C8
+device_num:N1C8|N4X16|N8X16|N16X16|N32X16
 gpu_config:models/rank/wide_deep/config_gpups.yaml
 cpu_config:models/rank/wide_deep/config_cpups.yaml

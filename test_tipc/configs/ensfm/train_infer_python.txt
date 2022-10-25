@@ -39,10 +39,10 @@ infer_export:null
 infer_quant:False
 inference:-u test_tipc/configs/ensfm/paddle_infer.py --model_name=ensfm --reader_file=models/recall/ensfm/movielens_reader.py
 --use_gpu:True|False
---enable_mkldnn:True|False
+--enable_mkldnn:False
 --cpu_threads:1|6
 --batchsize:10
---enable_tensorRT:True|False
+--enable_tensorRT:False
 --precision:fp32
 --model_dir:
 --data_dir:test_tipc/data
