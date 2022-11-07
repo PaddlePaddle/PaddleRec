@@ -270,7 +270,6 @@ class Measure(object):
         return math.sqrt(error / count)
 
 
-@jit(nopython=True)
 def find_k_largest(K, candidates):
     n_candidates = []
     for iid, score in enumerate(candidates[:K]):
