@@ -314,7 +314,7 @@ elif [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
             echo  $export_cmd
             eval $export_cmd
             status_export=$?
-            status_check $status_export "${export_cmd}" "${status_log}"
+            status_check $status_export "${export_cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
         else
             save_infer_dir=${infer_model}
         fi
@@ -411,7 +411,7 @@ else
                     cmd="${python} ${run_train} ${set_use_gpu}  ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config} "
                     eval "unset CUDA_VISIBLE_DEVICES"
                     eval $cmd
-                    status_check $? "${cmd}" "${status_log}"
+                    status_check $? "${cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
 
                 elif [ ${#ips} -le 26 ];then  # train with multi-gpu
                     # run pserver
@@ -424,7 +424,7 @@ else
                         cmd="${python} ${SC}"
                         eval "unset CUDA_VISIBLE_DEVICES"
                         eval $cmd
-                        status_check $? "${cmd}" "${status_log}"
+                        status_check $? "${cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
                     done
 
                     # run trainer
@@ -436,13 +436,13 @@ else
                         cmd="${python} ${SC}"
                         eval "unset CUDA_VISIBLE_DEVICES"
                         eval $cmd
-                        status_check $? "${cmd}" "${status_log}"
+                        status_check $? "${cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
                     done
                 else     # train with multi-machine
                     cmd="${python} -m paddle.distributed.launch --ips=${ips} --devices=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                     eval "unset CUDA_VISIBLE_DEVICES"
                     eval $cmd
-                    status_check $? "${cmd}" "${status_log}"
+                    status_check $? "${cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
 
                 fi
                 # run train
@@ -457,7 +457,7 @@ else
                     set_eval_params1=$(func_set_params "${eval_key1}" "${eval_value1}")
                     eval_cmd="${python} ${eval_py} ${set_eval_pretrain} ${set_use_gpu} ${set_eval_params1}" 
                     eval $eval_cmd
-                    status_check $? "${eval_cmd}" "${status_log}"
+                    status_check $? "${eval_cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
                 fi
                 # run export model
                 if [ ${run_export} != "null" ]; then 
@@ -467,7 +467,7 @@ else
                     set_save_infer_key=$(func_set_params "${save_infer_key}" "${save_infer_path}")
                     export_cmd="${python} ${run_export} ${set_export_weight} ${set_save_infer_key}"
                     eval $export_cmd
-                    status_check $? "${export_cmd}" "${status_log}"
+                    status_check $? "${export_cmd}" "${status_log}" "${model_name}" "${_save_log_path}"
 
                     #run inference
                     eval $env
