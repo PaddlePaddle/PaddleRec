@@ -138,7 +138,7 @@ fi
 
 LOG_PATH="./test_tipc/output/${model_name}/${MODE}"
 mkdir -p ${LOG_PATH}
-status_log="${LOG_PATH}/results_python.log"
+status_log="${LOG_PATH}/results.log"
 
 
 function func_inference(){
@@ -178,7 +178,7 @@ function func_inference(){
                             eval $command
                             last_status=${PIPESTATUS[0]}
                             eval "cat ${_save_log_path}"
-                            status_check $last_status "${command}" "${status_log}"
+                            status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}"
                         done
                     done
                 done
@@ -208,7 +208,7 @@ function func_inference(){
                         eval $command
                         last_status=${PIPESTATUS[0]}
                         eval "cat ${_save_log_path}"
-                        status_check $last_status "${command}" "${status_log}"
+                        status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}"
                         
                     done
                 done
