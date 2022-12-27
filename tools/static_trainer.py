@@ -145,9 +145,9 @@ def main(args):
         tree_path = config.get("hyper_parameters.tree_path", None)
         if config.get("runner.reader_type", "DataLoader") == 'InmemoryDataset':
             dataset.load_into_memory()
+            #only support global shuffle in distributed mode
             #dataset.global_shuffle(thread_num=config.get("runner.thread_num",
             #                                             1))
-            logger.info("dddddddddddddddddd")
             if tree_path != None:
                 dataset.tdm_sample(
                     config.get("hyper_parameters.tree_name"), tree_path,
