@@ -35,7 +35,7 @@ def get_emb_numpy(tree_node_num, node_emb_size, init_model_path=""):
         size=[tree_node_num, node_emb_size],
         param_attr=paddle.ParamAttr(
             name="tdm.bw_emb.weight",
-            initializer=paddle.initializer.UniformInitializer()))
+            initializer=paddle.nn.initializer.Uniform()))
 
     place = paddle.CPUPlace()
     exe = paddle.static.Executor(place)
