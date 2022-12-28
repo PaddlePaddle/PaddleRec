@@ -1,7 +1,7 @@
 ===========================train_params===========================
 model_name:autoint
 python:python3.7
-gpu_list:0|-1
+gpu_list:0
 runner.use_gpu:True|False
 auto_cast:False
 runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=1|whole_infer=1|lite_train_whole_infer=1
