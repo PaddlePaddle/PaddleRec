@@ -35,7 +35,7 @@ def get_emb_numpy(tree_node_num, node_emb_size, init_model_path=""):
         size=[tree_node_num, node_emb_size],
         param_attr=paddle.ParamAttr(
             name="tdm.bw_emb.weight",
-            initializer=paddle.initializer.UniformInitializer()))
+            initializer=paddle.nn.initializer.Uniform()))
 
     place = paddle.CPUPlace()
     exe = paddle.static.Executor(place)
@@ -69,10 +69,17 @@ if __name__ == '__main__':
     tree = TreeIndex(tree_name, tree_path)
     all_leafs = tree.get_all_leafs()
 
+    node_item_map = {}
+    with open("../builder/ids_id.txt", encoding='utf8') as f:
+        for line in f:
+            item_id, node_id = map(int, line.split())
+            node_item_map[node_id] = item_id
+
     with open(sys.argv[3], 'w') as fout:
         for node in all_leafs:
             node_id = node.id()
+            item_id = node_item_map[node_id]
             emb_vec = list(map(str, tensor[node_id].tolist()))
-            emb_vec = [str(node_id)] + emb_vec
+            emb_vec = [str(item_id)] + emb_vec
             fout.write(",".join(emb_vec))
             fout.write("\n")
