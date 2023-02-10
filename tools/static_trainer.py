@@ -85,6 +85,9 @@ def main(args):
     batch_size = config.get("runner.train_batch_size", None)
     reader_type = config.get("runner.reader_type", "DataLoader")
     use_fleet = config.get("runner.use_fleet", False)
+    use_out_vec = config.get("runner.use_out_vec", False)
+    emb_weight_name = config.get("runner.emb_weight_name", None)
+    out_vec_path = config.get("runner.out_vec_path", None)
     seed = config.get("runner.seed", 12345)
     paddle.seed(seed)
     use_save_data = config.get("runner.use_save_data", False)
@@ -121,6 +124,12 @@ def main(args):
             model_init_path,
             prefix='rec_static')
 
+    if use_out_vec:
+        import numpy as np
+        tmp_param = np.load(out_vec_path, encoding="bytes").astype(np.float32)
+        paddle.static.global_scope().var(emb_weight_name).get_tensor().set(
+            tmp_param, place)
+
     last_epoch_id = config.get("last_epoch", -1)
 
     # Create a log_visual object and store the data in the path
@@ -131,8 +140,23 @@ def main(args):
         log_visual = None
     step_num = 0
 
-    if reader_type == 'QueueDataset':
+    if reader_type == 'QueueDataset' or reader_type == 'InmemoryDataset':
         dataset, file_list = get_reader(input_data, config)
+        tree_path = config.get("hyper_parameters.tree_path", None)
+        if config.get("runner.reader_type", "DataLoader") == 'InmemoryDataset':
+            dataset.load_into_memory()
+            #only support global shuffle in distributed mode
+            #dataset.global_shuffle(thread_num=config.get("runner.thread_num",
+            #                                             1))
+            if tree_path != None:
+                dataset.tdm_sample(
+                    config.get("hyper_parameters.tree_name"), tree_path,
+                    config.get("hyper_parameters.tdm_layer_counts"),
+                    config.get("hyper_parameters.start_sample_layer", 1),
+                    config.get("hyper_parameters.with_hierachy", False),
+                    config.get("hyper_parameters.seed", 0),
+                    config.get("hyper_parameters.id_slot", 0))
+
     elif reader_type == 'DataLoader':
         train_dataloader = create_data_loader(config=config, place=place)
     elif reader_type == "CustomizeDataLoader":
@@ -155,9 +179,12 @@ def main(args):
             logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                         "epoch time: {:.2f} s".format(time.time() -
                                                       epoch_begin))
-        elif reader_type == 'QueueDataset':
+        elif reader_type == 'QueueDataset' or reader_type == 'InmemoryDataset':
             fetch_batch_var = dataset_train(epoch_id, dataset, fetch_vars, exe,
                                             config)
+            if config.get("runner.reader_type",
+                          "DataLoader") == 'InmemoryDataset':
+                dataset.release_memory()
             logger.info("epoch: {} done, ".format(epoch_id) +
                         "epoch time: {:.2f} s".format(time.time() -
                                                       epoch_begin))
