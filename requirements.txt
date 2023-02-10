@@ -1,1 +1,14 @@
+opencv-python==4.6.0.66
+sklearn==0.0
+pandas
+sklearn
+scipy
+numba
+pgl
+tqdm
+pyyaml
+requests
 nltk
+h5py
+faiss-cpu
+faiss-gpu
