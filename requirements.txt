@@ -1,10 +1,9 @@
 opencv-python==4.6.0.66
 sklearn==0.0
 pandas
-sklearn
 scipy
 numba
-pgl
+pgl==2.2.4
 tqdm
 pyyaml
 requests
