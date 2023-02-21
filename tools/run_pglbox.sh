@@ -12,7 +12,12 @@ ulimit -c unlimited
 # download dependency
 wget https://paddlerec.bj.bcebos.com/benchmark/dependency.tar.gz
 tar -zxvf dependency.tar.gz
-rm  dependency.tar.gz
+rm dependency.tar.gz
+
+# download data
+wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz
+tar -zxvf data.tar.gz
+rm data.tar.gz
 
 # environment variables for fleet distribute training
 export NCCL_DEBUG=INFO
