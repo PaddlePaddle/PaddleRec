@@ -38,8 +38,6 @@ import logging
 
 from utils.static_ps.distributed_program import make_distributed_train_program, make_distributed_infer_program
 import profiler
-from paddle.fluid.incubate.fleet.utils.fleet_util import FleetUtil
-fleet_util = FleetUtil()
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
