@@ -197,7 +197,6 @@ class BaseDataset(object):
                             break
                     else:
                         data_size = dataset.get_memory_data_size()
-                        print('dddddddddddddddddddddd: ', data_size)
                         epoch_finish = dataset.get_epoch_finish()
                         if epoch_finish:
                             log.info("epoch_finish == true, break")

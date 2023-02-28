@@ -29,10 +29,14 @@ import pgl
 from pgl.utils.logger import log
 
 from . import layers
-from . import model_util
 from . import loss as Loss
 
-from . import util
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+# sys.path.append(__dir__)
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append('../../../tools')
+from utils.static_ps import util
+from utils.static_ps import model_util
 from . import helper
 from .auto_heter_gnn import AutoHeterGNN
 

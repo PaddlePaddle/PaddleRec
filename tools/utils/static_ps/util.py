@@ -118,8 +118,8 @@ def load_pretrained_model(exe, model_dict, args, model_path):
     """ load pretrained model """
     # multi node
     if paddle.distributed.get_world_size() > 1:
-        sparse_model_path = os.path.join(model_path, "%03d" %
-                                         (fleet.worker_index()))
+        sparse_model_path = os.path.join(model_path,
+                                         "%03d" % (fleet.worker_index()))
     else:
         sparse_model_path = model_path
     if os.path.exists(sparse_model_path):  # local directory
@@ -266,8 +266,8 @@ def save_model(exe, model_dict, args, local_model_path, model_save_path):
         user, passwd = args.fs_ugi.split(',')
         log.info("being to upload model to: %s " % model_save_path)
         #  HFS.rm(model_save_path)
-        gzshell_upload(args.fs_name, user, passwd, local_model_path, "afs:%s" %
-                       working_root)
+        gzshell_upload(args.fs_name, user, passwd, local_model_path,
+                       "afs:%s" % working_root)
         log.info("model has been saved, model_path: %s" % model_save_path)
     else:
         save_pretrained_model(exe, local_model_path, args, mode="local")
@@ -326,8 +326,8 @@ def upload_embedding(args, local_embed_path):
         log.info("being to upload embedding to: %s " % infer_result_path)
         #  HFS.rm(infer_result_path)
         user, passwd = args.fs_ugi.split(',')
-        gzshell_upload(args.fs_name, user, passwd, local_embed_path, "afs:%s" %
-                       working_root)
+        gzshell_upload(args.fs_name, user, passwd, local_embed_path,
+                       "afs:%s" % working_root)
         log.info("[gzshell] embedding has been upload to: %s " %
                  infer_result_path)
     else:
@@ -357,8 +357,8 @@ def upload_dump_walk(args, local_dump_path):
         log.info("being to upload walk_path to: %s " % dump_save_path)
         #  HFS.rm(dump_save_path)
         user, passwd = args.fs_ugi.split(',')
-        gzshell_upload(args.fs_name, user, passwd, local_dump_path, "afs:%s" %
-                       working_root)
+        gzshell_upload(args.fs_name, user, passwd, local_dump_path,
+                       "afs:%s" % working_root)
         log.info("[gzshell] walk_path has been upload to: %s " %
                  dump_save_path)
     else:
@@ -609,9 +609,8 @@ def gzshell_upload(fs_name, fs_user, fs_password, local_path, remote_path):
     """ upload data with gzshell in afs """
     gzshell = os.getenv("GZSHELL")
     client_conf = os.getenv("CLIENT_CONF")
-    cmd = "%s --uri=%s --username=%s --password=%s --conf=%s \
-            --thread=100 -put %s/ %s"
-                                      % (gzshell, fs_name, fs_user, \
+    cmd = "%s --uri=%s --username=%s --password=%s --conf=%s --thread=100 -put %s/ %s" \
+            % (gzshell, fs_name, fs_user,
             fs_password, client_conf, local_path, remote_path)
     upload_res = run_cmd_get_return_code(cmd)
     retry_num = 0

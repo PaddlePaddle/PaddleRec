@@ -10,12 +10,12 @@ export GLOG_v=0
 ulimit -c unlimited
 
 # download dependency
-wget https://paddlerec.bj.bcebos.com/benchmark/dependency.tar.gz
+wget https://paddlerec.bj.bcebos.com/benchmark/dependency.tar.gz --no-check-certificate
 tar -zxvf dependency.tar.gz
 rm dependency.tar.gz
 
 # download data
-wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz
+wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz --no-check-certificate
 tar -zxvf data.tar.gz
 rm data.tar.gz
 
