@@ -38,9 +38,9 @@ export PADDLE_TRAINER_ID=0
 export TRAINING_ROLE=TRAINER
 export PADDLE_PORT=8800
 
-PYTHON_HOME=./dependency/cpython-3.7.0
-export PATH=${PYTHON_HOME}/bin:${PATH}
-export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${LD_LIBRARY_PATH}
+#PYTHON_HOME=./dependency/cpython-3.7.0
+#export PATH=${PYTHON_HOME}/bin:${PATH}
+#export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${LD_LIBRARY_PATH}
 export LD_PRELOAD=./dependency/libjemalloc.so
 export DEPENDENCY_HOME=./dependency
 export GZSHELL=./dependency/gzshell
