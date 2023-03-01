@@ -76,6 +76,14 @@ def parse_args():
     config.max_steps = config.max_steps if config.max_steps else 0
     config.metapath_split_opt = config.metapath_split_opt \
                                 if config.metapath_split_opt else False
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            value = int(value)
+            config.__setattr__(key, value)
+
+    config.profiler_options = args.profiler_options
     print("#===================PRETTY CONFIG============================#")
     pretty(config, indent=0)
     return config
@@ -171,7 +179,7 @@ class Main(object):
     def __init__(self, config):
         self.metrics = {}
         self.config = config
-        self.profiler_options = config.get("profiler_options")
+        self.profiler_options = config.profiler_options
         self.input_data = None
         self.reader = None
         self.exe = None
@@ -339,6 +347,7 @@ class Main(object):
             last_batch_num = 0
             for pass_dataset in dataset.pass_generator(epoch):
                 train_begin = time.time()
+                profiler.add_profiler_step(self.profiler_options)
                 self.exe.train_from_dataset(
                     self.model_dict.train_program, pass_dataset, debug=False)
                 train_end = time.time()
