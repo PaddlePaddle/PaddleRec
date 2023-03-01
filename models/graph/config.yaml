@@ -2,10 +2,9 @@
 # -----------paddlcloud 配置: 主要是一些提交paddlecloud任务的信息----------------------#
 job_name: test_nlp_pglbox_deepwalk_singlenode
 # paddlecloud GPU 队列名称，每个部门的队列不同
-group_name: csrd-gg-4-40g-0-yq01-k8s-gpu-a100-8
-#group_name: feed-40g-0-yq01-k8s-gpu-a100-8
+group_name: 
 # paddlecloud 提交任务所使用的docker 镜像
-image_addr: iregistry.baidu-int.com/paddlecloud/base-images:paddlecloud-centos7.8-gcc8.2-cuda11.0-cudnn8
+image_addr: 
 k8s_priority: high
 wall_time: "240000:00:00"
 # 要用来训练的GPU卡
@@ -16,8 +15,7 @@ gpus: [0, 1, 2, 3, 4, 5, 6, 7]
 graph_data_fs_name: ""
 graph_data_fs_ugi: ""
 # graph_data_hdfs_path: 图数据在hadoop集群存放的位置。
-graph_data_hdfs_path: "afs:/user/cspd-model/users/jiaoxuewu/gpugraph/full_data/20220610/train_data/"
-# graph_data_local_path: 图数据从hadoop集群下载到paddlecloud机器上的本地地址。（当前目录为/env_run/src/）
+graph_data_hdfs_path: ""
 #graph_data_local_path: "/raid0/gdata/"
 graph_data_local_path: "./data/"
 
@@ -76,7 +74,7 @@ fs_ugi: ""
 #working_root: /raid0/working_root
 working_root: ./working_root
 # pdc_info_output_path: paddlecloud 需要一个hadoop目录保存提交任务的相关代码信息。这里随便填一个hadoop路径即可。
-pdc_info_output_path: /user/cspd-model/users/jiaoxuewu/paddlebox/submit_path/paddlecloud
+pdc_info_output_path: 
 
 # warm_start_from: 训练阶段需要热启的模型所在的hadoop路径
 warm_start_from: null
