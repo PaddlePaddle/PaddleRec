@@ -265,7 +265,7 @@ if [ ${MODE} = "benchmark_train" ]; then
             cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
             eval $cmd
         done
-    elif [ ${run_mode_value} = "PSGPU" ]; then
+    elif [ ${run_mode_value} = "PSCPU" ]; then
         GLOO_PATH="../tools/paddlecloud/config.ini"
         gloo_dataline=$(awk '{print}'  $GLOO_PATH)
         gloo_lines=(${gloo_dataline})
