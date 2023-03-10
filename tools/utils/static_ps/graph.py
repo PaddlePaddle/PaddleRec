@@ -129,7 +129,7 @@ class DistGraph(object):
 
         load_begin_time = time.time()
         self.graph.load_edge_file(self.edge_types, self.root_dir,
-                                  self.num_parts, self.reverse)
+                                  self.num_parts, self.reverse, [])
         load_end_time = time.time()
         log.info("STAGE [CPU LOAD EDGE] finished, time cost: %f sec" %
                  (load_end_time - load_begin_time))
@@ -138,7 +138,7 @@ class DistGraph(object):
         for i in range(len(self.etype_list)):
             log.info("begin to upload edge_type: [%s] to GPU" %
                      self.etype_list[i])
-            self.graph.upload_batch(0, 0,
+            self.graph.upload_batch(0,
                                     len(get_cuda_places()), self.etype_list[i])
         load_end_time = time.time()
         log.info("STAGE [GPU LOAD EDGE] finished, time cost: %f sec" %
