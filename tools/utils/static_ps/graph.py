@@ -15,7 +15,7 @@
 """
 import sys
 import time
-
+import paddle
 from pgl.utils.logger import log
 
 import helper
