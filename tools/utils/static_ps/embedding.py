@@ -14,7 +14,6 @@
 """GPU Parameter Server
 """
 import paddle
-import paddle.fluid.core as core
 from pgl.utils.logger import log
 from place import get_cuda_places
 
@@ -30,7 +29,7 @@ class DistEmbedding(object):
     """
 
     def __init__(self, slots, embedding_size, slot_num_for_pull_feature):
-        self.parameter_server = core.PSGPU()
+        self.parameter_server = paddle.framework.core.PSGPU()
         self.parameter_server.set_slot_num_for_pull_feature(
             slot_num_for_pull_feature)
         self.parameter_server.set_slot_vector(slots)

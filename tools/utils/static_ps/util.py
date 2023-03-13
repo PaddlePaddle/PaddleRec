@@ -27,11 +27,10 @@ import numpy as np
 import pickle as pkl
 from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
-
+import paddle.framework.io_utils as io_utils
 import paddle
 import paddle.static as static
-import paddle.fluid as fluid
-import paddle.fluid.core as core
+from paddle.framework import core
 import paddle.distributed.fleet as fleet
 from pgl.utils.logger import log
 
@@ -40,16 +39,16 @@ import util_hadoop as HFS
 
 def get_global_value(value_sum, value_cnt):
     """ get global value """
-    value_sum = np.array(fluid.global_scope().find_var(value_sum.name)
+    value_sum = np.array(paddle.static.global_scope().find_var(value_sum.name)
                          .get_tensor())
-    value_cnt = np.array(fluid.global_scope().find_var(value_cnt.name)
+    value_cnt = np.array(paddle.static.global_scope().find_var(value_cnt.name)
                          .get_tensor())
     return value_sum / np.maximum(value_cnt, 1)
 
 
 def get_batch_num(value_cnt):
     """ get global value """
-    value_cnt = np.array(fluid.global_scope().find_var(value_cnt.name)
+    value_cnt = np.array(paddle.static.global_scope().find_var(value_cnt.name)
                          .get_tensor())
     return value_cnt
 
@@ -178,7 +177,7 @@ def load_pretrained_model(exe, model_dict, args, model_path):
             else:
                 log.info("[WARM_MISS] var %s not existed" % filename)
 
-        fluid.io.load_vars(
+        paddle.static.io.load_vars(
             exe,
             dense_params_path,
             model_dict.train_program,
@@ -217,7 +216,7 @@ def name_not_have_sparse(var):
     persistable var which not contains pull_box_sparse
     """
     res = "sparse" not in var.name and \
-            fluid.io.is_persistable(var) and \
+            io_utils.is_persistable(var) and \
             var.name != "embedding" and \
             "learning_rate" not in var.name and \
             "_generated_var" not in var.name
@@ -290,7 +289,7 @@ def save_model(exe, model_dict, args, local_model_path, model_save_path):
     if os.path.exists(local_var_save_path):
         shutil.rmtree(local_var_save_path)
 
-    fluid.io.save_vars(
+    paddle.static.io.save_vars(
         exe,
         local_var_save_path,
         model_dict.train_program,

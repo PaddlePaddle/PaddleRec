@@ -22,7 +22,6 @@ import numpy as np
 import pickle as pkl
 
 import paddle
-import paddle.fluid.layers as L
 import paddle.fluid as F
 import paddle.static as static
 import pgl
