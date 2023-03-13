@@ -16,7 +16,6 @@
 import os
 
 import paddle
-import paddle.framework.core as core
 
 
 def get_cuda_places():

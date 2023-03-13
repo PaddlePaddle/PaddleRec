@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 import paddle.framework.io_utils as io_utils
 import paddle
 import paddle.static as static
-import paddle.framework.core as core
+from paddle.framework import core
 import paddle.distributed.fleet as fleet
 from pgl.utils.logger import log
 

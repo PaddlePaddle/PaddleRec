@@ -16,7 +16,6 @@
 import sys
 import time
 
-from paddle.framework.core import GraphGpuWrapper
 from pgl.utils.logger import log
 
 import helper
@@ -77,7 +76,7 @@ class DistGraph(object):
         log.info("total etype: %s" % repr(self.etype_list))
         log.info("total ntype: %s" % repr(self.ntype_list))
 
-        self.graph = GraphGpuWrapper()
+        self.graph = paddle.framework.core.GraphGpuWrapper()
 
         self._setup_graph()
 
