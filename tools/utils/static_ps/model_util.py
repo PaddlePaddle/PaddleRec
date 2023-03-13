@@ -24,7 +24,6 @@ import pickle as pkl
 
 import paddle
 import paddle.fluid as F
-import paddle.fluid.layers as L
 import paddle.static as static
 import pgl
 from pgl.utils.logger import log
@@ -32,7 +31,7 @@ from paddle.common_ops_import import (
     LayerHelper,
     check_type,
     check_variable_and_dtype, )
-from paddle.fluid.framework import Variable
+from paddle.framework.io_utils import Variable
 
 
 def inner_add(value, var):

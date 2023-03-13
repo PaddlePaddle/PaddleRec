@@ -14,7 +14,7 @@
 """GPU Parameter Server
 """
 import paddle
-import paddle.fluid.core as core
+import paddle.framework.core as core
 from pgl.utils.logger import log
 from place import get_cuda_places
 

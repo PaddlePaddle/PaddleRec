@@ -16,7 +16,7 @@
 import sys
 import time
 
-from paddle.fluid.core import GraphGpuWrapper
+from paddle.framework.core import GraphGpuWrapper
 from pgl.utils.logger import log
 
 import helper

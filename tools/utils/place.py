@@ -16,7 +16,7 @@
 import os
 
 import paddle
-import paddle.fluid.core as core
+import paddle.framework.core as core
 
 
 def get_cuda_places():
