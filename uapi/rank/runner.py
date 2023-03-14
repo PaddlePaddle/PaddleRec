@@ -19,7 +19,6 @@ from ..base import BaseRunner
 
 class RankRunner(BaseRunner):
     def train(self, config_path, cli_args, device, ips):
-        config_path = "models/rank/wide_deep/config_gpups.yaml"
         python = self.distributed(device, ips)
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)

@@ -33,8 +33,7 @@ register_suite_info({
 })
 
 # WideDeep 
-WIDE_DEEP_CFG_PATH = osp.join(REPO_ROOT_PATH, 'configs', 'wide_deep',
-                              'config_gpups.yaml')
+WIDE_DEEP_CFG_PATH = "models/rank/wide_deep/config_gpups.yaml"
 register_model_info({
     'model_name': 'wide_deep',
     'suite': 'Rank',

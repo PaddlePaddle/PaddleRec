@@ -54,7 +54,7 @@ class RankModel(BaseModel):
         if dy2st:
             config._update_dy2st(dy2st)
         config_path = self._config_path
-        config.dump(config_path)
+        #config.dump(config_path)
 
         # Parse CLI arguments
         cli_args = []
