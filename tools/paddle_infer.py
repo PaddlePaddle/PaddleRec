@@ -36,6 +36,8 @@ def parse_args():
         return v.lower() in ("true", "t", "1")
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--config_yaml", type=str)
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     parser.add_argument("--model_file", type=str)
     parser.add_argument("--params_file", type=str)
     parser.add_argument("--model_dir", type=str)
