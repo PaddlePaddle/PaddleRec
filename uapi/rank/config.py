@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import sys, os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
 from functools import lru_cache
 from urllib.parse import urlparse
 
 import yaml
 
-from ..base import BaseConfig
-from ..base.utils import logging
-from ..base.utils.misc import abspath
+from base import BaseConfig
+from base.utils import logging
+from base.utils.misc import abspath
 
 
 class RankConfig(BaseConfig):

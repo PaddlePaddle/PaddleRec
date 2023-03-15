@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
 # See the License for the specific language governing permissions and   
 # limitations under the License.
-
-import os
-
-from ..base import BaseModel
-from ..base.utils.cache import get_cache_dir
-from ..base.utils.arg import CLIArgument
-from ..base.utils.misc import abspath
+import sys, os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+from base import BaseModel
+from base.utils.cache import get_cache_dir
+from base.utils.arg import CLIArgument
+from base.utils.misc import abspath
 
 
 class RankModel(BaseModel):
@@ -53,7 +52,7 @@ class RankModel(BaseModel):
             config.update_dataset(dataset)
         if dy2st:
             config._update_dy2st(dy2st)
-        config_path = self._config_path
+        config_path = self._config_path()
         #config.dump(config_path)
 
         # Parse CLI arguments
@@ -98,6 +97,9 @@ class RankModel(BaseModel):
 
     def infer(self, model_dir, input_path, device='gpu', save_dir=None):
         pass
+
+    def _config_path(self):
+        return self.model_info['config_path']
 
     def compression(self,
                     weight_path,
