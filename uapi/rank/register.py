@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import os.path as osp
-
-from ..base.register import register_model_info, register_suite_info
+import sys, os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+from base.register import register_model_info, register_suite_info
 from .model import RankModel
 from .runner import RankRunner
 from .config import RankConfig

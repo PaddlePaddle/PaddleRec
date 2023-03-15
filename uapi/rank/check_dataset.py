@@ -17,8 +17,9 @@ from collections import defaultdict, Counter
 
 import numpy as np
 from PIL import Image
-
-from ..base.utils.dataset_checker_utils import (
+import sys, os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+from base.utils.dataset_checker_utils import (
     persist_dataset_meta, build_res_dict, CheckFailedError,
     UnsupportedDatasetTypeError, DatasetFileNotFoundError)
 

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and   
 # limitations under the License.
 
-import os
-
-from ..base import BaseRunner
+import sys, os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+from base import BaseRunner
 
 
 class RankRunner(BaseRunner):

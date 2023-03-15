@@ -16,17 +16,23 @@
 
 import shutil
 import os.path as osp
-
-from uapi.PaddleRec.uapi.rank import RankModel, RankConfig
+import sys, os
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+# sys.path.append(__dir__)
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append('../')
+print(sys.path)
+from rank.model import RankModel
+from rank.config import RankConfig
 
 if __name__ == '__main__':
     model_name = 'wide_deep'
 
     model = RankModel(model_name=model_name)
 
-    # Hard-code paths
-    save_dir = f"test_uapi/output/3d_res"
-    dataset_dir = "test_uapi/data/KITTI"
+    # hyterparams will be set by config yaml in register.py
+    save_dir = ""
+    dataset_dir = ""
     if osp.exists(save_dir):
         shutil.rmtree(save_dir)
 
