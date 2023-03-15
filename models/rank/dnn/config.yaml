@@ -32,14 +32,16 @@ runner:
   infer_start_epoch: 0
   infer_end_epoch: 3
   num_workers: 0
+  #use inference save model
+  # model_init_path: "output_model_dnn/2" # init model
+  use_inference: False
+  save_inference_feed_varnames: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","dense_input"]
+  save_inference_fetch_varnames: ["sigmoid_0.tmp_0"]
 
   # distribute_config
   sync_mode: "async"
   split_file_list: False
   thread_num: 1
-  reader_type: "QueueDataset" # DataLoader / QueueDataset / RecDataset
-  pipe_command: "python queuedataset_reader.py" # QueueDataset 模式下的数据pipe命令
-  dataset_debug: False # QueueDataset 模式下 Profiler 开关
 
 
 # hyper parameters of user-defined network

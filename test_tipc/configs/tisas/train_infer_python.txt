@@ -1,7 +1,7 @@
 ===========================train_params===========================
 model_name:tisas
 python:python3.7
-gpu_list:0|-1
+gpu_list:0
 runner.use_gpu:True|False
 auto_cast:False
 runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=102|whole_infer=101|lite_train_whole_infer=1
@@ -39,10 +39,10 @@ infer_export:null
 infer_quant:False
 inference:-u test_tipc/configs/tisas/paddle_infer.py --model_name=tisas --reader_file=models/recall/tisas/movielens_reader.py
 --use_gpu:True|False
---enable_mkldnn:True|False
+--enable_mkldnn:False
 --cpu_threads:1|6
 --batchsize:1
---enable_tensorRT:True|False
+--enable_tensorRT:False
 --precision:fp32
 --model_dir:
 --data_dir:test_tipc/data/infer

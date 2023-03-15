@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train static script")
     parser.add_argument("-m", "--config_yaml", type=str, default="config.yaml")
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     parser.add_argument("-top_n", "--top_n", type=int, default=10)
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
@@ -269,7 +270,6 @@ class Measure(object):
         return math.sqrt(error / count)
 
 
-@jit(nopython=True)
 def find_k_largest(K, candidates):
     n_candidates = []
     for iid, score in enumerate(candidates[:K]):

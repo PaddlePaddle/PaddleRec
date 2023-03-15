@@ -67,11 +67,10 @@ def middle_transform(output_dim, x, y):
         num_flatten_dims=2,
         activation='relu',
         weight_attr=paddle.ParamAttr(
-            name="relu.w",
-            initializer=paddle.initializer.NormalInitializer(seed=1)),
+            name="relu.w", initializer=paddle.nn.initializer.Normal()),
         bias_attr=paddle.ParamAttr(
             name="relu.b",
-            initializer=paddle.initializer.ConstantInitializer(value=0.1)))
+            initializer=paddle.nn.initializer.Constant(value=0.1)))
     #hiddens_ = paddle.nn.functional.dropout(hiddens_, 0.1)
 
     #paddle.static.Print(hiddens_, summarize=-1)
@@ -80,11 +79,10 @@ def middle_transform(output_dim, x, y):
         size=2,
         activation=None,
         weight_attr=paddle.ParamAttr(
-            name="cos_sim.w",
-            initializer=paddle.initializer.NormalInitializer(seed=1)),
+            name="cos_sim.w", initializer=paddle.nn.initializer.Normal()),
         bias_attr=paddle.ParamAttr(
             name="cos_sim.b",
-            initializer=paddle.initializer.ConstantInitializer(value=0.1)))
+            initializer=paddle.nn.initializer.Constant(value=0.1)))
     return hiddens_
 
 

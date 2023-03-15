@@ -15,6 +15,7 @@
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
+from utils.static_ps.metric_helper import set_zero, get_global_auc
 from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
@@ -28,6 +29,7 @@ import logging
 import ast
 import numpy as np
 import struct
+from utils.utils_single import auc
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -39,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser("PaddleRec train script")
+    parser.add_argument("-o", "--opt", nargs='*', type=str)
     parser.add_argument(
         '-m',
         '--config_yaml',
@@ -55,6 +58,18 @@ def parse_args():
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
     config = yaml_helper.load_yaml(args.config_yaml)
+    # modify config from command
+    if args.opt:
+        for parameter in args.opt:
+            parameter = parameter.strip()
+            key, value = parameter.split("=")
+            if type(config.get(key)) is int:
+                value = int(value)
+            if type(config.get(key)) is float:
+                value = float(value)
+            if type(config.get(key)) is bool:
+                value = (True if value.lower() == "true" else False)
+            config[key] = value
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
     config["pure_bf16"] = args.pure_bf16
@@ -75,6 +90,7 @@ class Main(object):
         self.exe = None
         self.train_result_dict = {}
         self.train_result_dict["speed"] = []
+        self.train_result_dict["auc"] = []
         self.model = None
         self.pure_bf16 = self.config['pure_bf16']
 
@@ -115,6 +131,7 @@ class Main(object):
     def run_worker(self):
         logger.info("Run Worker Begin")
         use_cuda = int(config.get("runner.use_gpu"))
+        use_auc = config.get("runner.use_auc", False)
         place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
         self.exe = paddle.static.Executor(place)
 
@@ -137,6 +154,13 @@ class Main(object):
         reader_type = self.config.get("runner.reader_type", "QueueDataset")
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
+        opt_info = paddle.static.default_main_program()._fleet_opt
+        if use_auc is True:
+            opt_info['stat_var_names'] = [
+                self.model.stat_pos.name, self.model.stat_neg.name
+            ]
+        else:
+            opt_info['stat_var_names'] = []
 
         if reader_type == "InmemoryDataset":
             self.reader.load_into_memory()
@@ -153,24 +177,42 @@ class Main(object):
 
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
-            logger.info(
-                "Epoch: {}, using time {} second, ips {} {}/sec.".format(
-                    epoch, epoch_time, epoch_speed, self.count_method))
+            if use_auc is True:
+                global_auc = get_global_auc(paddle.static.global_scope(),
+                                            self.model.stat_pos.name,
+                                            self.model.stat_neg.name)
+                self.train_result_dict["auc"].append(global_auc)
+                set_zero(self.model.stat_pos.name,
+                         paddle.static.global_scope())
+                set_zero(self.model.stat_neg.name,
+                         paddle.static.global_scope())
+                set_zero(self.model.batch_stat_pos.name,
+                         paddle.static.global_scope())
+                set_zero(self.model.batch_stat_neg.name,
+                         paddle.static.global_scope())
+                logger.info(
+                    "Epoch: {}, using time: {} second, ips: {} {}/sec. auc: {}".
+                    format(epoch, epoch_time, epoch_speed, self.count_method,
+                           global_auc))
+            else:
+                logger.info(
+                    "Epoch: {}, using time {} second, ips {} {}/sec.".format(
+                        epoch, epoch_time, epoch_speed, self.count_method))
+
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
-            if fleet.is_first_worker() and save_model_path:
-                if is_distributed_env():
-                    fleet.save_inference_model(
-                        self.exe, model_dir,
-                        [feed.name for feed in self.inference_feed_var],
-                        self.inference_target_var)
-                else:
-                    paddle.static.save_inference_model(
-                        model_dir,
-                        [feed.name for feed in self.inference_feed_var],
-                        [self.inference_target_var], self.exe)
-            fleet.barrier_worker()
+
+            if is_distributed_env():
+                fleet.save_inference_model(
+                    self.exe, model_dir,
+                    [feed.name for feed in self.inference_feed_var],
+                    self.inference_target_var)
+            else:
+                paddle.static.save_inference_model(
+                    model_dir,
+                    [feed.name for feed in self.inference_feed_var],
+                    [self.inference_target_var], self.exe)
 
         if reader_type == "InmemoryDataset":
             self.reader.release_memory()

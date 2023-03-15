@@ -4,8 +4,11 @@ source test_tipc/common_func.sh
 FILENAME=$1
 # MODE be one of ['lite_train_lite_infer' 'lite_train_whole_infer' 'whole_train_whole_infer', 'whole_infer', 'klquant_whole_infer']
 MODE=$2
-
-dataline=$(awk 'NR==1, NR==51{print}'  $FILENAME)
+if [ ${MODE} = "benchmark_train" ]; then
+    dataline=$(awk 'NR==1, NR==60{print}'  $FILENAME)
+else
+    dataline=$(awk 'NR==1, NR==51{print}'  $FILENAME)
+fi
 
 # parser params
 IFS=$'\n'
@@ -88,6 +91,17 @@ benchmark_value=$(func_parser_value "${lines[49]}")
 infer_key1=$(func_parser_key "${lines[50]}")
 infer_value1=$(func_parser_value "${lines[50]}")
 
+#parser benchmark 
+if [ ${MODE} = "benchmark_train" ]; then
+    run_mode_key=$(func_parser_key "${lines[55]}")
+    run_mode_value=$(func_parser_value "${lines[55]}")
+    gpu_config_key=$(func_parser_key "${lines[58]}")
+    gpu_config_value=$(func_parser_value "${lines[58]}")
+    cpu_config_key=$(func_parser_key "${lines[59]}")
+    cpu_config_value=$(func_parser_value "${lines[59]}")
+fi
+
+
 # parser klquant_infer
 if [ ${MODE} = "klquant_whole_infer" ]; then
     dataline=$(awk 'NR==1 NR==17{print}'  $FILENAME)
@@ -122,9 +136,9 @@ if [ ${MODE} = "klquant_whole_infer" ]; then
     infer_value1=$(func_parser_value "${lines[17]}")
 fi
 
-LOG_PATH="./test_tipc/output"
+LOG_PATH="./test_tipc/output/${model_name}/${MODE}"
 mkdir -p ${LOG_PATH}
-status_log="${LOG_PATH}/results_python.log"
+status_log="${LOG_PATH}/results.log"
 
 
 function func_inference(){
@@ -153,7 +167,7 @@ function func_inference(){
                             fi # skip when quant model inference but precision is not int8
                             set_precision=$(func_set_params "${precision_key}" "${precision}")
                             
-                            _save_log_path="${_log_path}/python_infer_cpu_usemkldnn_${use_mkldnn}_threads_${threads}_precision_${precision}_batchsize_${batch_size}.log"
+                            _save_log_path="${_log_path}/python_infer_cpu_gpus_${use_gpu}_usemkldnn_${use_mkldnn}_threads_${threads}_precision_${precision}_batchsize_${batch_size}.log"
                             set_infer_data=$(func_set_params "${image_dir_key}" "${_img_dir}")
                             set_benchmark=$(func_set_params "${benchmark_key}" "${benchmark_value}")
                             set_batchsize=$(func_set_params "${batch_size_key}" "${batch_size}")
@@ -164,7 +178,7 @@ function func_inference(){
                             eval $command
                             last_status=${PIPESTATUS[0]}
                             eval "cat ${_save_log_path}"
-                            status_check $last_status "${command}" "${status_log}"
+                            status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}"
                         done
                     done
                 done
@@ -182,7 +196,7 @@ function func_inference(){
                         continue
                     fi
                     for batch_size in ${batch_size_list[*]}; do
-                        _save_log_path="${_log_path}/python_infer_gpu_usetrt_${use_trt}_precision_${precision}_batchsize_${batch_size}.log"
+                        _save_log_path="${_log_path}/python_infer_gpu_gpus_${use_gpu}_usetrt_${use_trt}_precision_${precision}_batchsize_${batch_size}.log"
                         set_infer_data=$(func_set_params "${image_dir_key}" "${_img_dir}")
                         set_benchmark=$(func_set_params "${benchmark_key}" "${benchmark_value}")
                         set_batchsize=$(func_set_params "${batch_size_key}" "${batch_size}")
@@ -194,7 +208,7 @@ function func_inference(){
                         eval $command
                         last_status=${PIPESTATUS[0]}
                         eval "cat ${_save_log_path}"
-                        status_check $last_status "${command}" "${status_log}"
+                        status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}"
                         
                     done
                 done
@@ -210,46 +224,143 @@ if [ ${MODE} = "benchmark_train" ]; then
 	  mkdir ./log
 	  echo "Create log floder for store running log"
 	fi
+	if [ ${run_mode_value} = "PSGPU" ]; then
+        export FLAGS_LAUNCH_BARRIER=0
+        export PADDLE_TRAINER_ID=0
+        export PADDLE_PSERVER_NUMS=1
+        export PADDLE_TRAINERS=1
+        export PADDLE_TRAINERS_NUM=${PADDLE_TRAINERS}
+        export POD_IP=127.0.0.1
 
-	export FLAGS_LAUNCH_BARRIER=0
-	export PADDLE_TRAINER_ID=0
-	export PADDLE_PSERVER_NUMS=1
-	export PADDLE_TRAINERS=1
-	export PADDLE_TRAINERS_NUM=${PADDLE_TRAINERS}
-	export POD_IP=127.0.0.1
+        # set free port if 29011 is occupied
+        export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"
+        export PADDLE_PSERVER_PORT_ARRAY=(29011)
 
-	# set free port if 29011 is occupied
-	export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"
-	export PADDLE_PSERVER_PORT_ARRAY=(29011)
+        # set gpu numbers according to your device
+        #export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
+        export FLAGS_selected_gpus=${gpu_list}
 
-	# set gpu numbers according to your device
-	#export FLAGS_selected_gpus="0,1,2,3,4,5,6,7"
-	export FLAGS_selected_gpus=${gpu_list}
+        # set your model yaml
+        CONFIG=$gpu_config_value
+        SC="tools/static_gpubox_trainer.py -m "
+        BATCH="-o runner.train_batch_size="$train_batch_value
+        EPOCH="runner.epochs="$epoch_num
+        # run pserver
+        export TRAINING_ROLE=PSERVER
+        for((i=0;i<$PADDLE_PSERVER_NUMS;i++))
+        do
+            cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
+            echo "PADDLE WILL START PSERVER "$cur_port
+            export PADDLE_PORT=${cur_port}
+            cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
+            eval $cmd
+        done
 
-	# set your model yaml
-	SC="tools/static_gpubox_trainer.py -m models/rank/dnn/config_gpubox.yaml"
-    BATCH="-o runner.train_batch_size="$train_batch_value
-    EPOCH="-o runner.epochs="$epoch_num
-	# run pserver
-	export TRAINING_ROLE=PSERVER
-	for((i=0;i<$PADDLE_PSERVER_NUMS;i++))
-	do
-		cur_port=${PADDLE_PSERVER_PORT_ARRAY[$i]}
-		echo "PADDLE WILL START PSERVER "$cur_port
-		export PADDLE_PORT=${cur_port}
-        cmd="${python} ${SC} ${BATCH} ${EPOCH}"
+        # run trainer
+        export TRAINING_ROLE=TRAINER
+        for((i=0;i<$PADDLE_TRAINERS;i++))
+        do
+            echo "PADDLE WILL START Trainer "$i
+            export PADDLE_TRAINER_ID=$i
+            cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
+            eval $cmd
+        done
+    elif [ ${run_mode_value} = "PSCPU" ]; then
+        GLOO_PATH="../tools/paddlecloud/config.ini"
+        gloo_dataline=$(awk '{print}'  $GLOO_PATH)
+        gloo_lines=(${gloo_dataline})
+        gloo_fs_name=$(func_parser_gloo_value "${gloo_lines[4]}")
+        gloo_fs_ugi=$(func_parser_gloo_value "${gloo_lines[5]}")
+        gloo_fs_path=$(func_parser_gloo_value "${gloo_lines[6]}")
+        wget https://paddlerec.bj.bcebos.com/benchmark/brpc.tar.gz --no-check-certificate
+        tar -zxvf brpc.tar.gz
+        BRPC_PATH=`pwd`/brpc
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRPC_PATH}
+        export PADDLE_WITH_GLOO=1
+        export PADDLE_GLOO_RENDEZVOUS=1
+        export PADDLE_GLOO_FS_NAME=$gloo_fs_name
+        export PADDLE_GLOO_FS_UGI=$gloo_fs_ugi
+        export PADDLE_GLOO_FS_PATH=$gloo_fs_path
+
+        CONFIG=$cpu_config_value
+        SC="tools/static_ps_trainer.py -m "
+        BATCH="-o runner.train_batch_size="$train_batch_value
+        EPOCH="runner.epochs="$epoch_num
+        cmd="${python} ${SC} ${CONFIG} ${BATCH} ${EPOCH}"
         eval $cmd
-	done
 
-	# run trainer
-	export TRAINING_ROLE=TRAINER
-	for((i=0;i<$PADDLE_TRAINERS;i++))
-	do
-		echo "PADDLE WILL START Trainer "$i
-		export PADDLE_TRAINER_ID=$i
-        cmd="${python} ${SC} ${BATCH} ${EPOCH}"
-        eval $cmd
-	done
+    else
+        # download dependency
+        wget https://paddlerec.bj.bcebos.com/benchmark/dependency.tar.gz --no-check-certificate
+        tar -zxvf dependency.tar.gz
+        rm dependency.tar.gz
+
+        # download data
+        wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz --no-check-certificate
+        tar -zxvf data.tar.gz
+        rm data.tar.gz
+
+        # environment variables for fleet distribute training
+        export NCCL_DEBUG=INFO
+        export FLAGS_LAUNCH_BARRIER=0
+        export PADDLE_TRAINERS=1
+        export FLAGS_enable_tracker_all2all=false
+        export FLAGS_enable_auto_rdma_trans=true
+        export FLAGS_enable_all2all_use_fp16=true
+        export FLAGS_enable_sparse_inner_gather=true
+        export FLAGS_check_nan_inf=false
+
+        export PADDLE_TRAINERS_NUM=${PADDLE_TRAINERS}
+        export POD_IP=127.0.0.1
+        export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"  #set free port if 29011 is occupied
+        export PADDLE_TRAINER_ENDPOINTS=${PADDLE_TRAINER_ENDPOINTS/,*/}
+        export PADDLE_PSERVER_PORT_ARRAY=(29011)
+        export PADDLE_TRAINER_ID=0
+        export TRAINING_ROLE=TRAINER
+        export PADDLE_PORT=8800
+
+        #PYTHON_HOME=./dependency/cpython-3.7.0
+        #export PATH=${PYTHON_HOME}/bin:${PATH}
+        #export LD_LIBRARY_PATH=${PYTHON_HOME}/lib:${LD_LIBRARY_PATH}
+        export LD_PRELOAD=./dependency/libjemalloc.so
+        export DEPENDENCY_HOME=./dependency
+        export GZSHELL=./dependency/gzshell
+
+        export FLAGS_free_when_no_cache_hit=true
+        export FLAGS_use_stream_safe_cuda_allocator=true
+        export FLAGS_gpugraph_enable_hbm_table_collision_stat=false
+        export FLAGS_gpugraph_hbm_table_load_factor=0.75
+        export FLAGS_gpugraph_enable_segment_merge_grads=true
+        export FLAGS_gpugraph_merge_grads_segment_size=128
+        export FLAGS_gpugraph_dedup_pull_push_mode=1
+        export FLAGS_gpugraph_load_node_list_into_hbm=false
+
+        export FLAGS_enable_exit_when_partial_worker=false
+        export FLAGS_gpugraph_debug_gpu_memory=false
+        export FLAGS_gpugraph_slot_feasign_max_num=200
+            
+        export FLAGS_graph_load_in_parallel=true
+        export FLAGS_graph_get_neighbor_id=true
+        export FLAGS_graph_metapath_split_opt=false
+        export FLAGS_rocksdb_path="./database"
+            
+        export FLAGS_gpugraph_storage_mode=3
+        #python3.7 -c 'import paddle; print(paddle.version.commit)';
+        set -x
+        which python3.7
+        unset PYTHONHOME
+        unset PYTHONPATH
+        # set your model yaml
+        CONFIG=$gpu_config_value
+        SC="tools/static_pglbox_trainer.py -m "
+        BATCH="-o runner.train_batch_size="$train_batch_value
+        for((i=0;i<$PADDLE_TRAINERS;i++))
+        do
+            cmd="${python} ${SC} ${CONFIG} ${BATCH}"
+            eval $cmd
+        done
+
+    fi
 elif [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     GPUID=$3
     if [ ${#GPUID} -le 0 ];then
@@ -351,14 +462,14 @@ else
                 set_train_params1=$(func_set_params "${train_param_key1}" "${train_param_value1}")
                 set_use_gpu=$(func_set_params "${train_use_gpu_key}" "${train_use_gpu}")
                 if [ ${#ips} -le 26 ];then
-                    save_log="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}"
                     nodes=1
+                    save_log="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}.log"
                 else
                     IFS=","
                     ips_array=(${ips})
                     IFS="|"
                     nodes=${#ips_array[@]}
-                    save_log="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}"
+                    save_log="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}.log"
                 fi
 
                 # load pretrain from norm training if current trainer is pact or fpgm trainer
@@ -371,7 +482,7 @@ else
                     cmd="${python} ${run_train} ${set_use_gpu}  ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config} "
                     eval "unset CUDA_VISIBLE_DEVICES"
                     eval $cmd
-                    status_check $? "${cmd}" "${status_log}"
+                    status_check $? "${cmd}" "${status_log}" "${model_name}" "${save_log}"
 
                 elif [ ${#ips} -le 26 ];then  # train with multi-gpu
                     # run pserver
@@ -384,7 +495,7 @@ else
                         cmd="${python} ${SC}"
                         eval "unset CUDA_VISIBLE_DEVICES"
                         eval $cmd
-                        status_check $? "${cmd}" "${status_log}"
+                        status_check $? "${cmd}" "${status_log}" "${model_name}" "${save_log}"
                     done
 
                     # run trainer
@@ -396,13 +507,13 @@ else
                         cmd="${python} ${SC}"
                         eval "unset CUDA_VISIBLE_DEVICES"
                         eval $cmd
-                        status_check $? "${cmd}" "${status_log}"
+                        status_check $? "${cmd}" "${status_log}" "${model_name}" "${save_log}"
                     done
                 else     # train with multi-machine
-                    cmd="${python} -m paddle.distributed.launch --ips=${ips} --gpus=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
+                    cmd="${python} -m paddle.distributed.launch --ips=${ips} --devices=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                     eval "unset CUDA_VISIBLE_DEVICES"
                     eval $cmd
-                    status_check $? "${cmd}" "${status_log}"
+                    status_check $? "${cmd}" "${status_log}" "${model_name}" "${save_log}"
 
                 fi
                 # run train
@@ -417,7 +528,7 @@ else
                     set_eval_params1=$(func_set_params "${eval_key1}" "${eval_value1}")
                     eval_cmd="${python} ${eval_py} ${set_eval_pretrain} ${set_use_gpu} ${set_eval_params1}" 
                     eval $eval_cmd
-                    status_check $? "${eval_cmd}" "${status_log}"
+                    status_check $? "${eval_cmd}" "${status_log}" "${model_name}" "${save_log}"
                 fi
                 # run export model
                 if [ ${run_export} != "null" ]; then 
@@ -427,7 +538,7 @@ else
                     set_save_infer_key=$(func_set_params "${save_infer_key}" "${save_infer_path}")
                     export_cmd="${python} ${run_export} ${set_export_weight} ${set_save_infer_key}"
                     eval $export_cmd
-                    status_check $? "${export_cmd}" "${status_log}"
+                    status_check $? "${export_cmd}" "${status_log}" "${model_name}" "${save_log}"
 
                     #run inference
                     eval $env

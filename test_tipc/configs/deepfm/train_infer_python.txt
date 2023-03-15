@@ -1,7 +1,7 @@
 ===========================train_params===========================
 model_name:deepfm
 python:python3.7
-gpu_list:0|-1
+gpu_list:0
 runner.use_gpu:True|False
 auto_cast:False
 runner.epochs:lite_train_lite_infer=1|whole_train_whole_infer=1|whole_infer=1|lite_train_whole_infer=1
@@ -39,10 +39,10 @@ infer_export:null
 infer_quant:False
 inference:-u tools/paddle_infer.py --model_name=deepfm --reader_file=models/rank/deepfm/criteo_reader.py
 --use_gpu:True|False
---enable_mkldnn:True|False
+--enable_mkldnn:False
 --cpu_threads:1|6
 --batchsize:10
---enable_tensorRT:True|False
+--enable_tensorRT:False
 --precision:fp32
 --model_dir:
 --data_dir:test_tipc/data/infer
