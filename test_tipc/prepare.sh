@@ -542,4 +542,11 @@ elif [ ${model_name} == "dpin" ]; then
         cp -r ./models/rank/dpin/data/* ./test_tipc/data/train
         cp -r ./datasets/KDD2012_track2/test/* ./test_tipc/data/infer
     fi
+elif [ ${model_name} == "deep_walk" ]; then
+    if [ ${MODE} = "benchmark_train" ];then
+        python -m pip install paddlenlp==2.0.0rc16
+        python -m pip install protobuf==3.20.0 -U
+        python -m pip install pgl -U
+        python -m pip install gpustat==1.0.0 -U
+    fi
 fi
