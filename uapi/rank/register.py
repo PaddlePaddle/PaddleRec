@@ -43,3 +43,15 @@ register_model_info({
     'supported_apis':
     ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
+
+# DNN 
+DNN_CFG_PATH = "models/rank/dnn/config_gpubox.yaml"
+register_model_info({
+    'model_name': 'dnn',
+    'suite': 'Rank',
+    'config_path': DNN_CFG_PATH,
+    'auto_compression_config_path': DNN_CFG_PATH,
+    'supported_apis':
+    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+})
+

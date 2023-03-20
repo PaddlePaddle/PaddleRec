@@ -27,6 +27,7 @@ from rank.config import RankConfig
 
 if __name__ == '__main__':
     model_name = 'wide_deep'
+    model_name = 'dnn'
 
     model = RankModel(model_name=model_name)
 
