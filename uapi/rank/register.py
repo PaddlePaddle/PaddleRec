@@ -54,4 +54,3 @@ register_model_info({
     'supported_apis':
     ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
 })
-
