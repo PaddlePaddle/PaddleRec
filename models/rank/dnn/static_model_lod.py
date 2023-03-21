@@ -90,10 +90,12 @@ class StaticModel():
                     ],
                     param_attr=paddle.ParamAttr(
                         name="SparseFeatFactors",
-                        initializer=paddle.initializer.Uniform()))
+                        initializer=paddle.nn.initializer.Uniform()))
             emb_sum = paddle.static.nn.sequence_pool(
                 input=emb, pool_type='sum')
-            return emb_sum
+            sequeeze_emb_sum = paddle.squeeze(emb_sum, axis=1)
+            #return emb_sum
+            return sequeeze_emb_sum
 
         sparse_embs = list(map(embedding_layer, self.sparse_inputs))
 
