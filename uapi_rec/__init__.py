@@ -23,3 +23,4 @@ from base import PaddleModel, Config
 # Register models and suites
 # wide_deep 
 from rank import register
+from rank import check_dataset
