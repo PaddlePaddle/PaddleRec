@@ -48,7 +48,6 @@ import random
 # pprint(partitions)
 # ids = client.insert()
 
-
 import codecs
 
 import sys
@@ -58,7 +57,8 @@ from milvus_tool.milvus_insert import VecToMilvus
 
 
 def get_vectors():
-    with codecs.open("movie_vectors.txt", "r", encoding='utf-8', errors='ignore') as f:
+    with codecs.open(
+            "movie_vectors.txt", "r", encoding='utf-8', errors='ignore') as f:
         lines = f.readlines()
     ids = [int(line.split(":")[0]) for line in lines]
     embeddings = []
@@ -74,8 +74,11 @@ ids, embeddings = get_vectors()
 
 collection_name = 'demo_films'
 client = VecToMilvus()
-status, ids = client.insert(collection_name=collection_name, vectors=embeddings, ids=ids, partition_tag="Movie")
-
+status, ids = client.insert(
+    collection_name=collection_name,
+    vectors=embeddings,
+    ids=ids,
+    partition_tag="Movie")
 
 # print("\n----------insert----------")
 # # print("Films are inserted and the ids are: {}".format(ids))

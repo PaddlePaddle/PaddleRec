@@ -19,13 +19,12 @@ import logging
 import sys
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-print(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
-sys.path.append(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
+sys.path.append('../../../tools')
 
-from tools.utils.utils_single import load_yaml, load_dy_model_class, \
+from utils.utils_single import load_yaml, load_dy_model_class, \
     get_abs_model, create_data_loader
-from tools.utils.save_load import load_model, save_model
+from utils.save_load import load_model, save_model
 import argparse
 
 logging.basicConfig(
