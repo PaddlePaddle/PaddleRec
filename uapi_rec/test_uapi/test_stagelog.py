@@ -26,9 +26,7 @@ from uapi_rec import PaddleModel, Config, check_dataset
 def init_stagelog():
     os.environ['PADDLEX_TRACKING_SWITCH'] = 'TRUE'
     os.environ['PADDLEX_MODEL_ID'] = '1'
-    #os.environ['PADDLEX_TRACKING_URL'] = '{SENSITIVE_DATA}'
-    os.environ[
-        'PADDLEX_TRACKING_URL'] = 'http://yq01-paddlec-integration-master00.yq01.baidu.com:8013'
+    os.environ['PADDLEX_TRACKING_URL'] = '{SENSITIVE_DATA}'
 
     run_id, token = stagelog.init()
     print(run_id, token)
