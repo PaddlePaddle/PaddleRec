@@ -23,9 +23,13 @@ from base.utils.dataset_checker_utils import (
     persist_dataset_meta, build_res_dict, CheckFailedError,
     UnsupportedDatasetTypeError, DatasetFileNotFoundError)
 
+from base.utils import stagelog
+
 
 @persist_dataset_meta
-def check_dataset(dataset_dir, dataset_type):
+def check_dataset(model_name, dataset_dir, dataset_type):
+    stage_id = stagelog.running_datacheck(
+        data_path=dataset_dir, data_type=dataset_type)
     try:
         if dataset_type == 'Dataset':
             # Custom dataset
@@ -138,6 +142,12 @@ def check_dataset(dataset_dir, dataset_type):
         else:
             raise UnsupportedDatasetTypeError(dataset_type=dataset_type)
     except CheckFailedError as e:
+        stagelog.fail(stage_id, str(e))
         return build_res_dict(False, err_type=type(e), err_msg=str(e))
     else:
+        stagelog.success_datacheck(
+            stage_id,
+            train_dataset=meta['train.samples'],
+            validation_dataset=meta['val.samples'],
+            test_dataset=meta['test.samples'] or 0)
         return meta
