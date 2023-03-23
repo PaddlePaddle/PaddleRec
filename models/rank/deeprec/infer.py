@@ -20,13 +20,12 @@ import sys
 from math import sqrt
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-print(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
-sys.path.append(os.path.abspath('/'.join(__dir__.split('/')[:-3])))
+sys.path.append('../../../tools')
 
-from tools.utils.utils_single import load_yaml, load_dy_model_class, \
+from utils.utils_single import load_yaml, load_dy_model_class, \
     get_abs_model
-from tools.utils.save_load import load_model
+from utils.save_load import load_model
 from paddle.io import DataLoader
 import argparse
 from importlib import import_module
