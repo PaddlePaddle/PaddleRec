@@ -20,14 +20,17 @@ from concurrent import futures
 
 import grpc
 
-from proto import rank_pb2 
-from proto import rank_pb2_grpc 
+from proto import rank_pb2
+from proto import rank_pb2_grpc
 from proto import user_info_pb2 as user_info_pb2
 import redis
 import numpy as np
 from paddle_serving_app.local_predict import LocalPredictor
+
+
 def hash2(a):
     return hash(a) % 60000000
+
 
 class RankServerServicer(object):
     def __init__(self):
@@ -36,7 +39,15 @@ class RankServerServicer(object):
 
     def process_feed_dict(self, user_info, item_infos):
         #" userid gender age occupation | movieid title genres"
-        dic = {"userid": [], "gender": [], "age": [], "occupation": [], "movieid": [], "title": [], "genres": []}
+        dic = {
+            "userid": [],
+            "gender": [],
+            "age": [],
+            "occupation": [],
+            "movieid": [],
+            "title": [],
+            "genres": []
+        }
         batch_size = len(item_infos)
         lod = [0]
         for i, item_info in enumerate(item_infos):
@@ -47,7 +58,7 @@ class RankServerServicer(object):
             dic["gender"].append(hash2(user_info.gender))
             dic["age"].append(hash2(user_info.age))
             dic["occupation"].append(hash2(user_info.job))
-            lod.append(i+1)
+            lod.append(i + 1)
 
         dic["movieid.lod"] = lod
         dic["title.lod"] = lod
@@ -57,7 +68,8 @@ class RankServerServicer(object):
         dic["age.lod"] = lod
         dic["occupation.lod"] = lod
         for key in dic:
-            dic[key] = np.array(dic[key]).astype(np.int64).reshape(len(dic[key]),1)
+            dic[key] = np.array(dic[key]).astype(np.int64).reshape(
+                len(dic[key]), 1)
 
         return dic
 
@@ -84,28 +96,32 @@ class RankServerServicer(object):
         '''
         batch_size = len(request.item_infos)
         dic = self.process_feed_dict(request.user_info, request.item_infos)
-        fetch_map = self.ctr_client.predict(feed=dic, fetch=["save_infer_model/scale_0.tmp_0"], batch=True)
+        fetch_map = self.ctr_client.predict(
+            feed=dic, fetch=["save_infer_model/scale_0.tmp_0"], batch=True)
         response = rank_pb2.RankResponse()
-        
+
         #raise ValueError("UM server get user_info from redis fail. ({})".format(str(request)))
         response.error.code = 200
 
         for i in range(batch_size):
             score_pair = response.score_pairs.add()
             score_pair.nid = request.item_infos[i].movie_id
-            score_pair.score = fetch_map["save_infer_model/scale_0.tmp_0"][i][0]
-        response.score_pairs.sort(reverse=True, key = lambda item: item.score)
+            score_pair.score = fetch_map["save_infer_model/scale_0.tmp_0"][i][
+                0]
+        response.score_pairs.sort(reverse=True, key=lambda item: item.score)
         return response
+
 
 class RankServer(object):
     """
     rank server
     """
+
     def start_server(self):
         max_workers = 40
         concurrency = 40
         port = 8960
-        
+
         server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers),
             options=[('grpc.max_send_message_length', 1024 * 1024),
@@ -116,6 +132,7 @@ class RankServer(object):
         server.add_insecure_port('[::]:{}'.format(port))
         server.start()
         server.wait_for_termination()
+
 
 if __name__ == "__main__":
     rank = RankServer()

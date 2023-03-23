@@ -79,8 +79,9 @@ class RecDataset(IterableDataset):
                     cat = catRes0.astype("int64").reshape([-1, max_len])
 
                     len_array = [len(x[0]) for x in b]
-                    mask = np.array([[0] * x + [-1e9] * (max_len - x) for x in
-                                     len_array]).reshape([-1, max_len, 1])
+                    mask = np.array(
+                        [[0] * x + [-1e9] * (max_len - x)
+                         for x in len_array]).reshape([-1, max_len, 1])
                     target_item_seq = np.array(
                         [[x[2]] * max_len for x in b]).astype("int64").reshape(
                             [-1, max_len])
@@ -92,8 +93,8 @@ class RecDataset(IterableDataset):
                         res = []
                         res.append(np.array(item[i]))
                         res.append(np.array(cat[i]))
-                        res.append(np.array(int(b[i][2])))
-                        res.append(np.array(int(b[i][3])))
+                        res.append(np.array(b[i][2]).astype('int64'))
+                        res.append(np.array(b[i][3]).astype('int64'))
                         res.append(np.array(b[i][4]).astype('float32'))
                         res.append(np.array(mask[i]).astype('int64'))
                         res.append(np.array(target_item_seq[i]))
@@ -120,8 +121,9 @@ class RecDataset(IterableDataset):
                 cat = catRes0.astype("int64").reshape([-1, max_len])
 
                 len_array = [len(x[0]) for x in b]
-                mask = np.array([[0] * x + [-1e9] * (max_len - x) for x in
-                                 len_array]).reshape([-1, max_len, 1])
+                mask = np.array(
+                    [[0] * x + [-1e9] * (max_len - x)
+                     for x in len_array]).reshape([-1, max_len, 1])
                 target_item_seq = np.array(
                     [[x[2]] * max_len for x in b]).astype("int64").reshape(
                         [-1, max_len])
@@ -133,8 +135,8 @@ class RecDataset(IterableDataset):
                     res = []
                     res.append(np.array(item[i]))
                     res.append(np.array(cat[i]))
-                    res.append(np.array(int(b[i][2])))
-                    res.append(np.array(int(b[i][3])))
+                    res.append(np.array(b[i][2]).astype('int64'))
+                    res.append(np.array(b[i][3]).astype('int64'))
                     res.append(np.array(b[i][4]).astype('float32'))
                     res.append(np.array(mask[i]).astype('int64'))
                     res.append(np.array(target_item_seq[i]))

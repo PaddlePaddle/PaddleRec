@@ -20,11 +20,12 @@ from concurrent import futures
 
 import grpc
 
-from proto import cm_pb2 
-from proto import cm_pb2_grpc 
+from proto import cm_pb2
+from proto import cm_pb2_grpc
 from proto import item_info_pb2 as item_info_pb2
 import redis
 import json
+
 
 class CMServerServicer(object):
     def __init__(self):
@@ -32,12 +33,13 @@ class CMServerServicer(object):
 
     def cm_call(self, request, context):
         cm_res = cm_pb2.CMResponse()
-        item_ids = request.item_ids;
+        item_ids = request.item_ids
         for item_id in item_ids:
             redis_res = self.redis_cli.get("{}##movie_info".format(item_id))
             if redis_res is None:
                 cm_res.error.code = 500
-                cm_res.error.text = "CM server get item_info from redis fail. ({})".format(str(request))
+                cm_res.error.text = "CM server get item_info from redis fail. ({})".format(
+                    str(request))
                 return cm_res
                 #raise ValueError("CM server get user_info from redis fail. ({})".format(str(request)))
             cm_info = json.loads(redis_res)
@@ -50,15 +52,17 @@ class CMServerServicer(object):
         cm_res.error.code = 200
         return cm_res
 
+
 class CMServer(object):
     """
     cm server
     """
+
     def start_server(self):
         max_workers = 40
         concurrency = 40
         port = 8920
-        
+
         server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers),
             options=[('grpc.max_send_message_length', 1024 * 1024),
@@ -69,6 +73,7 @@ class CMServer(object):
         server.add_insecure_port('[::]:{}'.format(port))
         server.start()
         server.wait_for_termination()
+
 
 if __name__ == "__main__":
     um = CMServer()
