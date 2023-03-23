@@ -38,11 +38,13 @@ def get_ums(uid):
     response = stub.um_call(request)
     return response
 
+
 def get_recall(request):
     channel = grpc.insecure_channel('127.0.0.1:8950')
     stub = recall_pb2_grpc.RecallServiceStub(channel)
     response = stub.recall(request)
     return response
+
 
 def get_cm(nid_list):
     channel = grpc.insecure_channel('127.0.0.1:8920')
@@ -50,8 +52,9 @@ def get_cm(nid_list):
     cm_request = cm_pb2.CMRequest()
     for nid in nid_list:
         cm_request.item_ids.append(str(nid).encode(encoding='utf-8'))
-    cm_response = stub.cm_call(cm_request,timeout=10)
+    cm_response = stub.cm_call(cm_request, timeout=10)
     return cm_response
+
 
 def get_rank(request):
     channel = grpc.insecure_channel('127.0.0.1:8960')
@@ -77,13 +80,13 @@ if __name__ == "__main__":
             gender = sys.argv[2]
             age = int(sys.argv[3])
             job = sys.argv[4]
-            req.user_info.user_id, req.user_info.gender, req.user_info.age, req.user_info.job = "0", gender, age, job 
+            req.user_info.user_id, req.user_info.gender, req.user_info.age, req.user_info.job = "0", gender, age, job
         print(get_as(req))
     if sys.argv[1] == 'um':
         uid = sys.argv[2]
         print(get_ums(uid))
     if sys.argv[1] == 'cm':
-        nid_list_str= sys.argv[2]
+        nid_list_str = sys.argv[2]
         nid_list = nid_list_str.strip().split(",")
         print(get_cm(nid_list))
     if sys.argv[1] == "recall":
@@ -94,12 +97,12 @@ if __name__ == "__main__":
         print(get_recall(request))
     if sys.argv[1] == "rank":
         request = rank_pb2.RankRequest()
-        request.user_info.user_id="1"
-        request.user_info.age=3
-        request.user_info.job="1"
-        request.user_info.gender="M"
+        request.user_info.user_id = "1"
+        request.user_info.age = 3
+        request.user_info.job = "1"
+        request.user_info.gender = "M"
         item_info = request.item_infos.add()
         item_info.movie_id = "1"
-        item_info.title="ET"
-        item_info.genre="fiction"
+        item_info.title = "ET"
+        item_info.genre = "fiction"
         print(get_rank(request))
