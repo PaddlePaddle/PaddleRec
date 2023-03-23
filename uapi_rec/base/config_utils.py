@@ -18,7 +18,6 @@ import yaml
 
 
 def load_config(file_path):
-    # Refer to https://github.com/PaddlePaddle/PaddleOCR/blob/366ad29d6c202a79bad103c72556c1186915c9c8/tools/program.py#L75
     _, ext = os.path.splitext(file_path)
     assert ext in ['.yml', '.yaml'], "only support yaml files for now"
     config = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
@@ -26,7 +25,6 @@ def load_config(file_path):
 
 
 def merge_config(config, opts):
-    # Refer to https://github.com/PaddlePaddle/PaddleOCR/blob/366ad29d6c202a79bad103c72556c1186915c9c8/tools/program.py#L88
     for key, value in opts.items():
         if "." not in key:
             if isinstance(value, dict) and key in config:
