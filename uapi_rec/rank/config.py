@@ -22,11 +22,13 @@ import yaml
 from base import BaseConfig
 from base.utils import logging
 from base.utils.misc import abspath
+from base.config_utils import merge_config
 
 
 class RankConfig(BaseConfig):
     def update(self, dict_like_obj):
-        pass
+        dict_ = merge_config(self.dict, dict_like_obj)
+        self.reset_from_dict(dict_)
 
     def load(self, config_path):
         pass

@@ -17,6 +17,7 @@ from base import BaseModel
 from base.utils.cache import get_cache_dir
 from base.utils.arg import CLIArgument
 from base.utils.misc import abspath
+from base.utils import stagelog
 
 
 class RankModel(BaseModel):
@@ -78,7 +79,18 @@ class RankModel(BaseModel):
         if save_dir is not None:
             cli_args.append(CLIArgument('--save_dir', save_dir))
 
-        return self.runner.train(config_path, cli_args, device, ips)
+        with stagelog.StageLogTrain(
+                learning_rate=learning_rate
+                if learning_rate is not None else config._get_learning_rate(),
+                epoch_iters=epochs_iters
+                if epochs_iters is not None else config._get_epochs_iters(),
+                batch_size=batch_size
+                if batch_size is not None else config._get_batch_size(),
+                data_path=config.train_dataset['dataset_root'],
+                yaml_path=config_path,
+                vdl_path=save_dir,
+                save_dir=save_dir):
+            return self.runner.train(config_path, cli_args, device, ips)
 
     def evaluate(self,
                  weight_path,
