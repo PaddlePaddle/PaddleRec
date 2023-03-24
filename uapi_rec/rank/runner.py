@@ -66,8 +66,6 @@ class RankRunner(BaseRunner):
                 echo {trainer_echo} && \
                 python3.7 -u tools/static_gpubox_trainer.py -m {config_path} {paras_cmd}"
 
-        print("yifei in line 67")
-        print(cmd)
         return self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
     def evaluate(self, config_path, cli_args, device, ips):
