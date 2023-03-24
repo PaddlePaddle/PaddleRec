@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base import PaddleModel, Config
+import sys, os
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(__dir__)
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append('../')
+
+from base import PaddleModel, Config
 # Register models and suites
 # wide_deep 
-from .rank import register
+from rank import register
+from rank import check_dataset

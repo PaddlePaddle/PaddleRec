@@ -34,11 +34,14 @@ from proto import cm_pb2 as cm_pb2
 from proto import cm_pb2_grpc as cm_pb2_grpc
 import redis
 
+
 def get_ums(uid):
     channel = grpc.insecure_channel('127.0.0.1:8910')
     stub = um_pb2_grpc.UMServiceStub(channel)
-    response = stub.um_call(um_pb2.UserModelRequest(user_id=str(uid).encode(encoding='utf-8')))
+    response = stub.um_call(
+        um_pb2.UserModelRequest(user_id=str(uid).encode(encoding='utf-8')))
     return response
+
 
 def get_recall(request):
 
@@ -47,20 +50,23 @@ def get_recall(request):
     response = stub.recall(request)
     return response
 
+
 def get_cm(nid_list):
     channel = grpc.insecure_channel('127.0.0.1:8920')
     stub = cm_pb2_grpc.CMServiceStub(channel)
     cm_request = cm_pb2.CMRequest()
     for nid in nid_list:
         cm_request.item_ids.append(str(nid).encode(encoding='utf-8'))
-    cm_response = stub.cm_call(cm_request,timeout=10)
+    cm_response = stub.cm_call(cm_request, timeout=10)
     return cm_response
+
 
 def get_rank(request):
     channel = grpc.insecure_channel('127.0.0.1:8960')
     stub = rank_pb2_grpc.RankServiceStub(channel)
     response = stub.rank_predict(request)
     return response
+
 
 class ASServerServicer(object):
     def __init__(self):
@@ -88,7 +94,7 @@ class ASServerServicer(object):
         }
         '''
         recall_req = recall_pb2.RecallRequest()
-        if request.user_id != "-1": 
+        if request.user_id != "-1":
             user_id = request.user_id
             um_res = get_ums(user_id)
             recall_req.user_info.CopyFrom(um_res.user_info)
@@ -96,7 +102,7 @@ class ASServerServicer(object):
             recall_req.user_info.CopyFrom(request.user_info)
         recall_res = get_recall(recall_req)
         nid_list = [x.nid for x in recall_res.score_pairs]
-        cm_res = get_cm(nid_list) 
+        cm_res = get_cm(nid_list)
         item_dict = {}
         for x in cm_res.item_infos:
             item_dict[x.movie_id] = x
@@ -113,10 +119,12 @@ class ASServerServicer(object):
 
         return as_res
 
+
 class ASServer(object):
     """
     as server
     """
+
     def start_server(self):
         max_workers = 40
         concurrency = 40
@@ -132,6 +140,7 @@ class ASServer(object):
         server.add_insecure_port('[::]:{}'.format(port))
         server.start()
         server.wait_for_termination()
+
 
 if __name__ == "__main__":
     As = ASServer()

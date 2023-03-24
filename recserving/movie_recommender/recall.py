@@ -19,8 +19,8 @@ from concurrent import futures
 
 import grpc
 
-from proto import recall_pb2 
-from proto import recall_pb2_grpc 
+from proto import recall_pb2
+from proto import recall_pb2_grpc
 from proto import user_info_pb2 as user_info_pb2
 import redis
 # from milvus import Milvus, DataType
@@ -31,13 +31,16 @@ import sys
 sys.path.append("..")
 from milvus_tool.milvus_recall import RecallByMilvus
 
+
 def hash2(a):
     return hash(a) % 60000000
+
 
 class RecallServerServicer(object):
     def __init__(self):
         self.uv_client = LocalPredictor()
-        self.uv_client.load_model_config("user_vector_model/serving_server_dir") 
+        self.uv_client.load_model_config(
+            "user_vector_model/serving_server_dir")
         # milvus_host = '127.0.0.1'
         # milvus_port = '19530'
         self.milvus_client = RecallByMilvus()
@@ -57,9 +60,11 @@ class RecallServerServicer(object):
         dic["age.lod"] = lod
         dic["occupation.lod"] = lod
         for key in dic:
-            dic[key] = np.array(dic[key]).astype(np.int64).reshape(len(dic[key]),1)
+            dic[key] = np.array(dic[key]).astype(np.int64).reshape(
+                len(dic[key]), 1)
 
-        fetch_map = self.uv_client.predict(feed=dic, fetch=["save_infer_model/scale_0.tmp_0"], batch=True)
+        fetch_map = self.uv_client.predict(
+            feed=dic, fetch=["save_infer_model/scale_0.tmp_0"], batch=True)
         return fetch_map["save_infer_model/scale_0.tmp_0"].tolist()[0]
 
     def recall(self, request, context):
@@ -87,11 +92,15 @@ class RecallServerServicer(object):
         recall_res = recall_pb2.RecallResponse()
         user_vector = self.get_user_vector(request.user_info)
 
-        status, results = self.milvus_client.search(collection_name=self.collection_name, vectors=[user_vector], partition_tag="Movie")
+        status, results = self.milvus_client.search(
+            collection_name=self.collection_name,
+            vectors=[user_vector],
+            partition_tag="Movie")
         for entities in results:
             if len(entities) == 0:
                 recall_res.error.code = 500
-                recall_res.error.text = "Recall server get milvus fail. ({})".format(str(request))
+                recall_res.error.text = "Recall server get milvus fail. ({})".format(
+                    str(request))
                 return recall_res
             for topk_film in entities:
                 # current_entity = topk_film.entity
@@ -101,15 +110,17 @@ class RecallServerServicer(object):
         recall_res.error.code = 200
         return recall_res
 
+
 class RecallServer(object):
     """
     recall server
     """
+
     def start_server(self):
         max_workers = 40
         concurrency = 40
         port = 8950
-        
+
         server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers),
             options=[('grpc.max_send_message_length', 1024 * 1024),
@@ -120,6 +131,7 @@ class RecallServer(object):
         server.add_insecure_port('[::]:{}'.format(port))
         server.start()
         server.wait_for_termination()
+
 
 if __name__ == "__main__":
     recall = RecallServer()
