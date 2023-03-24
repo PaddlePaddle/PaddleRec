@@ -22,28 +22,30 @@ class RankRunner(BaseRunner):
         python = self.distributed(device, ips)
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
-        batch_size_value=0
-        learning_rate_value=0
-        iters_value=0
-        save_dir_value=""
+        batch_size_value = 0
+        learning_rate_value = 0
+        iters_value = 0
+        save_dir_value = ""
         try:
-        	batch_size_value=args_str.split("--batch_size ")[1].split(" ")[0]
+            batch_size_value = args_str.split("--batch_size ")[1].split(" ")[0]
         except:
             pass
         try:
-        	learning_rate_value=args_str.split("--learning_rate ")[1].split(" ")[0]
+            learning_rate_value = args_str.split("--learning_rate ")[1].split(
+                " ")[0]
         except:
             pass
         try:
-        	iters_value=args_str.split("--iters ")[1].split(" ")[0]
+            iters_value = args_str.split("--iters ")[1].split(" ")[0]
         except:
             pass
         try:
-        	save_dir_value=args_str.split("--save_dir ")[1].split(" ")[0]
+            save_dir_value = args_str.split("--save_dir ")[1].split(" ")[0]
         except:
             pass
-        paras_cmd=f"-o runner.use_gpu=True runner.train_batch_size={batch_size_value} hyper_parameters.optimizer.learning_rate={learning_rate_value} \
+        paras_cmd = f"-o runner.use_gpu=True runner.train_batch_size={batch_size_value} hyper_parameters.optimizer.learning_rate={learning_rate_value} \
         runner.epochs={iters_value} runner.model_save_path={save_dir_value}"
+
         paddle_pserver_ip_port = "127.0.0.1:29011"
         gpus_list = "0,1,2,3,4,5,6,7"
         server_echo = "PADDLE WILL START PSERVER 29011"
