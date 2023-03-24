@@ -22,6 +22,28 @@ class RankRunner(BaseRunner):
         python = self.distributed(device, ips)
         args = self._gather_opts_args(cli_args)
         args_str = ' '.join(str(arg) for arg in args)
+        batch_size_value=0
+        learning_rate_value=0
+        iters_value=0
+        save_dir_value=""
+        try:
+        	batch_size_value=args_str.split("--batch_size ")[1].split(" ")[0]
+        except:
+            pass
+        try:
+        	learning_rate_value=args_str.split("--learning_rate ")[1].split(" ")[0]
+        except:
+            pass
+        try:
+        	iters_value=args_str.split("--iters ")[1].split(" ")[0]
+        except:
+            pass
+        try:
+        	save_dir_value=args_str.split("--save_dir ")[1].split(" ")[0]
+        except:
+            pass
+        paras_cmd=f"-o runner.use_gpu=True runner.train_batch_size={batch_size_value} hyper_parameters.optimizer.learning_rate={learning_rate_value} \
+        runner.epochs={iters_value} runner.model_save_path={save_dir_value}"
         paddle_pserver_ip_port = "127.0.0.1:29011"
         gpus_list = "0,1,2,3,4,5,6,7"
         server_echo = "PADDLE WILL START PSERVER 29011"
@@ -37,11 +59,13 @@ class RankRunner(BaseRunner):
                 export TRAINING_ROLE=PSERVER && \
                 echo {server_echo} && \
                 export PADDLE_PORT=29011 && \
-                python3.7 -u tools/static_gpubox_trainer.py -m {config_path} && \
+                python3.7 -u tools/static_gpubox_trainer.py -m {config_path} {paras_cmd} && \
                 export TRAINING_ROLE=TRAINER && \
                 echo {trainer_echo} && \
-                python3.7 -u tools/static_gpubox_trainer.py -m {config_path}"
+                python3.7 -u tools/static_gpubox_trainer.py -m {config_path} {paras_cmd}"
 
+        print("yifei in line 67")
+        print(cmd)
         return self.run_cmd(cmd, switch_wdir=True, echo=True, silent=False)
 
     def evaluate(self, config_path, cli_args, device, ips):
