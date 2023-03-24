@@ -1,4 +1,4 @@
-# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
 # limitations under the License.
 
 import os
-from milvus import MetricType, IndexType
 
-MILVUS_HOST = '127.0.0.1'
-MILVUS_PORT = 19530
+__all__ = ['DEBUG', 'DRY_RUN']
 
-collection_param = {
-    'dimension': 128,
-    'index_file_size': 2048,
-    'metric_type': MetricType.L2
-}
 
-index_type = IndexType.IVF_FLAT
-index_param = {'nlist': 1000}
+def get_flag_from_env_var(name, default):
+    env_var = os.environ.get(name, None)
+    if env_var in ('True', 'true', 'TRUE', '1'):
+        return True
+    elif env_var in ('False', 'false', 'FALSE', '0'):
+        return False
+    else:
+        return default
 
-top_k = 100
-search_param = {'nprobe': 20}
+
+DEBUG = get_flag_from_env_var('PADDLE_UAPI_DEBUG', False)
+DRY_RUN = get_flag_from_env_var('PADDLE_UAPI_DRY_RUN', False)
+CHECK_OPTS = get_flag_from_env_var('PADDLE_UAPI_CHECK_OPTS', False)

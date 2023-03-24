@@ -16,6 +16,7 @@ import paddle
 import paddle.nn as nn
 import net
 import numpy as np
+import math
 
 
 class DygraphModel():
@@ -73,9 +74,12 @@ class DygraphModel():
         outputs = dy_model.forward(sparse_tensor)
         loss = self.create_loss(outputs, sparse_tensor)
         # update metrics
-
+        idx = sparse_tensor.numpy().nonzero()
+        SE = paddle.square(outputs[idx] - sparse_tensor[idx]).sum()
+        num = np.count_nonzero(sparse_tensor)
+        rmse = round(math.sqrt(SE / num), 5)
         # print_dict format :{'loss': loss}
-        print_dict = {'loss': loss}
+        print_dict = {'loss': loss, 'rmse': paddle.to_tensor(rmse)}
         return outputs, loss, metrics_list, print_dict
 
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
