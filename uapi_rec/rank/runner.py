@@ -56,7 +56,6 @@ class RankRunner(BaseRunner):
         gpus_list = "0,1"
         if "gpu" in device:
             gpus_list = device.lstrip("gpu:")
-            
         server_echo = "PADDLE WILL START PSERVER 29011"
         trainer_echo = "PADDLE WILL START Trainer 0"
         cmd = f"export FLAGS_LAUNCH_BARRIER=0 && \
