@@ -54,9 +54,8 @@ class RankRunner(BaseRunner):
         paddle_pserver_ip_port = "127.0.0.1:29011"
         #gpus_list = "0,1,2,3,4,5,6,7"
         gpus_list = "0,1"
-        if "device" in device:
+        if "gpu" in device:
             gpus_list = device.lstrip("gpu:")
-            
         server_echo = "PADDLE WILL START PSERVER 29011"
         trainer_echo = "PADDLE WILL START Trainer 0"
         cmd = f"export FLAGS_LAUNCH_BARRIER=0 && \
