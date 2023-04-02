@@ -210,7 +210,7 @@ class Mind_Capsual_Layer(nn.Layer):
         for i in range(self.iters - 1):
             B_mask = paddle.where(mask, B, pad)
             # print(B_mask)
-            W = F.softmax(B_mask, axis=1)
+            W = F.softmax(B_mask, axis=2)
             W = paddle.unsqueeze(W, axis=2)
             high_capsule_tmp = paddle.matmul(W, low_capsule_new_nograd)
             # print(low_capsule_new_nograd.shape)
