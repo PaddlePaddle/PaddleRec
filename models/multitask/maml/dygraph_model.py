@@ -32,7 +32,7 @@ class DygraphModel():
                                    bn_channel)
         return maml_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         x_spt = paddle.to_tensor(batch_data[0].numpy().astype("float32"))
         y_spt = paddle.to_tensor(batch_data[1].numpy().astype("int64"))
@@ -41,7 +41,7 @@ class DygraphModel():
         #print("x_spt",x_spt.shape,"y_spt",y_spt.shape,"x_qry",x_qry.shape,"y_qry",y_qry.shape)
         return x_spt, y_spt, x_qry, y_qry
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         meta_lr = config.get("hyper_parameters.meta_optimizer.learning_rate",
                              0.001)
@@ -56,7 +56,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         np.random.seed(12345)
         x_spt, y_spt, x_qry, y_qry = self.create_feeds(batch_data, config)

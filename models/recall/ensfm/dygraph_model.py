@@ -28,7 +28,7 @@ class DygraphModel():
         enc_fm_model = net.ENSFMLayer(num_users, num_items, mf_dim)
         return enc_fm_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data):
         batch_data[1] = batch_data[1][0]
         if len(batch_data) == 4:
@@ -50,7 +50,7 @@ class DygraphModel():
         loss += paddle.sum((1.0 - weight) * paddle.square(pos_r) - 2.0 * pos_r)
         return loss
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.05)
         optimizer = paddle.optimizer.Adagrad(
@@ -67,7 +67,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         inputs = self.create_feeds(batch_data)
 

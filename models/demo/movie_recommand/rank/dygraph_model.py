@@ -31,7 +31,7 @@ class DygraphModel():
                                   fc_sizes)
         return rank_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data):
         user_sparse_inputs = [
             paddle.to_tensor(batch_data[i].numpy().astype('int64').reshape(-1,
@@ -59,7 +59,7 @@ class DygraphModel():
         avg_cost = paddle.mean(cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -74,7 +74,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
 
         batch_size = config.get("runner.train_batch_size", 128)

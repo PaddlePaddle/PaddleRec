@@ -1,16 +1,16 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.	
-#	
-# Licensed under the Apache License, Version 2.0 (the "License");	
-# you may not use this file except in compliance with the License.	
-# You may obtain a copy of the License at	
-#	
-#     http://www.apache.org/licenses/LICENSE-2.0	
-#	
-# Unless required by applicable law or agreed to in writing, software	
-# distributed under the License is distributed on an "AS IS" BASIS,	
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.	
-# See the License for the specific language governing permissions and	
-# limitations under the License.	
+#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import paddle.distributed.fleet.data_generator as dg
@@ -36,7 +36,7 @@ class Reader(dg.MultiSlotDataGenerator):
         ]
         self.continuous_range_ = range(1, 14)
         self.categorical_range_ = range(14, 40)
-        # load preprocessed feature dict	
+        # load preprocessed feature dict
         self.feat_dict_name = "sample_data/feat_dict_10.pkl2"
         self.feat_dict_ = pickle.load(open(self.feat_dict_name, 'rb'))
 
@@ -77,7 +77,7 @@ class Reader(dg.MultiSlotDataGenerator):
                 v = i[1]
                 for j in v:
                     s += " " + k + ":" + str(j)
-            print(s.strip())  # add print for data preprocessing	
+            print(s.strip())  # add print for data preprocessing
             yield None
 
         return data_iter

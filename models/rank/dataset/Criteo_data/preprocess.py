@@ -78,7 +78,7 @@ def get_feat_dict():
                     if features[idx] == '': continue
                     feat_cnt.update([features[idx]])
 
-        # Only retain discrete features with high frequency 
+        # Only retain discrete features with high frequency
         dis_feat_set = set()
         for feat, ot in feat_cnt.items():
             if ot >= freq_:

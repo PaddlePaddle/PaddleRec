@@ -111,7 +111,7 @@ class RankConfig(BaseConfig):
                 "Not able to update pretrained weight path, because no model config was found."
             )
         if urlparse(weight_path).scheme == '':
-            # If `weight_path` is not URL (with scheme present), 
+            # If `weight_path` is not URL (with scheme present),
             # it will be recognized as a local file path.
             weight_path = abspath(weight_path)
         if is_backbone:
@@ -172,7 +172,7 @@ class RankConfig(BaseConfig):
 
         return ds_cfg
 
-    # TODO: A full scanning of dataset can be time-consuming. 
+    # TODO: A full scanning of dataset can be time-consuming.
     # Maybe we should cache the result to disk to avoid rescanning in another run?
     @lru_cache(8)
     def _extract_dataset_metadata(self, dataset_root_path, dataset_type):

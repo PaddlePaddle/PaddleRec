@@ -225,7 +225,7 @@ class InterestAggregation(nn.Layer):
             weight_attr=paddle.framework.ParamAttr(
                 initializer=nn.initializer.XavierUniform()),
             name="user_bx_context_emb")
-        # 
+        #
         self.MLP = nn.Sequential(
             nn.Linear(
                 in_features=2 * self.emb_dim,

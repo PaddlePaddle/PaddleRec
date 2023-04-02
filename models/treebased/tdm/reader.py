@@ -62,7 +62,7 @@ class MyDataset(fleet.MultiSlotDataGenerator):
         item_id = self.id_code[features[-1]]
         for item in features[0:-1]:
             history_ids.append(float(item))
-        #positive data 
+        #positive data
         label = 1
         res = []
         res.append(history_ids)

@@ -39,7 +39,7 @@ class DygraphModel():
 
         return esmm_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         max_len = config.get("hyper_parameters.max_len", 3)
         sparse_tensor = []
@@ -66,7 +66,7 @@ class DygraphModel():
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -82,7 +82,7 @@ class DygraphModel():
         metrics_list = [auc_ctr_metric, auc_ctcvr_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         sparse_tensor, label_ctr, label_ctcvr = self.create_feeds(batch_data,
                                                                   config)
@@ -96,7 +96,7 @@ class DygraphModel():
         metrics_list[1].update(
             preds=ctcvr_prop.numpy(), labels=label_ctcvr.numpy())
 
-        # print_dict format :{'loss': loss} 
+        # print_dict format :{'loss': loss}
         print_dict = {'loss': loss}
         return loss, metrics_list, print_dict
 

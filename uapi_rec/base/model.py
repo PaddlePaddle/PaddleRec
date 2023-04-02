@@ -1,15 +1,15 @@
-# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved. 
-#   
-# Licensed under the Apache License, Version 2.0 (the "License");   
-# you may not use this file except in compliance with the License.  
-# You may obtain a copy of the License at   
-#   
-#     http://www.apache.org/licenses/LICENSE-2.0    
-#   
-# Unless required by applicable law or agreed to in writing, software   
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and   
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 
 import abc
@@ -379,11 +379,11 @@ class BaseModel(metaclass=abc.ABCMeta):
         for api_name in self._API_FULL_LIST:
             api = getattr(self, api_name)
             if api_name not in avail_api_set:
-                # We decorate old API implementation with `_make_unavailable` 
+                # We decorate old API implementation with `_make_unavailable`
                 # so that an error is always raised when the API is called.
                 decorated_api = _make_unavailable(api)
             else:
-                # We decorate old API implementation with `_add_prechecks` to 
+                # We decorate old API implementation with `_add_prechecks` to
                 # perform validity checks before invoking the internal API.
                 decorated_api = _add_prechecks(api)
 
@@ -454,7 +454,7 @@ class _CheckDevice(_APICallArgsChecker):
                                 raise _CheckFailed('device', device,
                                                    self.legal_vals)
         else:
-            # When `device` is None, we assume that a default device that the 
+            # When `device` is None, we assume that a default device that the
             # current model supports will be used, so we simply do nothing.
             pass
 

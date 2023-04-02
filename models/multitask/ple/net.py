@@ -138,7 +138,7 @@ class SinglePLELayer(nn.Layer):
                 sublayer=nn.Linear(
                     input_feature_size,
                     expert_size,
-                    #initialize each shared expert respectly  
+                    #initialize each shared expert respectly
                     weight_attr=nn.initializer.Constant(
                         value=shared_exp_init[i]),
                     bias_attr=nn.initializer.Constant(value=0.1),

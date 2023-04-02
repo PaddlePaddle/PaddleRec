@@ -42,7 +42,7 @@ class DygraphModel():
             pool_type, hidden_act)
         return pyramid_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, sentence_left_size,
                      sentence_right_size):
         sentence_left = paddle.to_tensor(batch_data[0].numpy().astype('int64')
@@ -68,7 +68,7 @@ class DygraphModel():
         avg_cost = paddle.mean(loss_part3)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -82,7 +82,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         sentence_left_size = config.get("hyper_parameters.sentence_left_size")
         sentence_right_size = config.get(

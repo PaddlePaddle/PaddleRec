@@ -39,7 +39,7 @@ class DygraphModel():
                                       pack_max_nei_f, dropout_rate)
         return enc_fm_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data):
         return batch_data
 
@@ -48,7 +48,7 @@ class DygraphModel():
         loss = F.binary_cross_entropy(prediction, label)
         return loss
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.0001)
         optimizer = paddle.optimizer.Adam(
@@ -63,7 +63,7 @@ class DygraphModel():
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         inputs = self.create_feeds(batch_data)
         *inputs, label = inputs

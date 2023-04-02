@@ -1,15 +1,15 @@
-# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved. 
-#   
-# Licensed under the Apache License, Version 2.0 (the "License");   
-# you may not use this file except in compliance with the License.  
-# You may obtain a copy of the License at   
-#   
-#     http://www.apache.org/licenses/LICENSE-2.0    
-#   
-# Unless required by applicable law or agreed to in writing, software   
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and   
+# Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 
 import os
@@ -204,7 +204,7 @@ class BaseRunner(metaclass=abc.ABCMeta):
                 pipe_stderr=pipe_stderr,
                 blocking=blocking)
         else:
-            # Refer to 
+            # Refer to
             # https://stackoverflow.com/questions/17190221/subprocess-popen-cloning-stdout-and-stderr-both-to-terminal-and-variables/25960956
             @asyncio.coroutine
             def _read_display_and_record_from_stream(in_stream, out_stream,
@@ -268,7 +268,7 @@ class BaseRunner(metaclass=abc.ABCMeta):
                     blocking=False,
                     async_run=True)
                 # FIXME: tqdm progress bars can not be normally displayed
-                # XXX: For simplicity, we cache entire stdout and stderr content, which can 
+                # XXX: For simplicity, we cache entire stdout and stderr content, which can
                 # take up lots of memory.
                 loop = asyncio.get_event_loop()
                 try:

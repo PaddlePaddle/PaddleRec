@@ -40,7 +40,7 @@ class DygraphModel():
 
         return gate_dnn_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
         sparse_tensor = []
@@ -59,7 +59,7 @@ class DygraphModel():
         loss = paddle.mean(loss)
         return loss
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -74,7 +74,7 @@ class DygraphModel():
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)
@@ -85,7 +85,7 @@ class DygraphModel():
         predict_2d = paddle.concat(x=[1 - raw_pred, raw_pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
 
-        # print_dict format :{'loss': loss} 
+        # print_dict format :{'loss': loss}
         print_dict = None
         return loss, metrics_list, print_dict
 

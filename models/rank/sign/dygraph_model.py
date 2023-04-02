@@ -51,7 +51,7 @@ class DygraphModel():
 
         return model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         batch_size = config.get("runner.train_batch_size", 1024)
         graphs = []
@@ -85,7 +85,7 @@ class DygraphModel():
 
         return loss
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.05)
         optimizer = paddle.optimizer.Adagrad(
@@ -103,7 +103,7 @@ class DygraphModel():
         metrics_list = [auc_metric, acc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         edges, node_feat, edge_feat, segment_ids, labels = self.create_feeds(
             batch_data, config)
@@ -127,7 +127,7 @@ class DygraphModel():
         print_dict = {'loss': loss}
         return loss, metrics_list, print_dict
 
-    # construct infer forward phase  
+    # construct infer forward phase
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         edges, node_feat, edge_feat, segment_ids, labels = self.create_feeds(
             batch_data, config)

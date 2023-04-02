@@ -38,7 +38,7 @@ class DygraphModel():
 
         return word2vec_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         neg_num = config.get("hyper_parameters.neg_num")
         input_word = paddle.to_tensor(batch_data[0].numpy().astype('int64')
@@ -68,7 +68,7 @@ class DygraphModel():
 
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.SGD(learning_rate=lr,
@@ -82,12 +82,12 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         input_word, true_word, neg_word = self.create_feeds(batch_data, config)
         true_logits, neg_logits = dy_model.forward(
             [input_word, true_word, neg_word])
         loss = self.create_loss(true_logits, neg_logits, config)
-        # print_dict format :{'loss': loss} 
+        # print_dict format :{'loss': loss}
         print_dict = {'loss': loss}
         return loss, metrics_list, print_dict

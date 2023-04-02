@@ -43,7 +43,7 @@ class Reader(fleet.MultiSlotDataGenerator):
 
     def slot_reader(self, slot_num=0, slot_file='./slot'):
         slots = []
-        # slot is not 0, label=1, 
+        # slot is not 0, label=1,
         if slot_num > 0:
             for i in range(slot_num + 2):
                 if i == 0:
@@ -87,7 +87,7 @@ class Reader(fleet.MultiSlotDataGenerator):
 
         def reader():
             output_dict = self.line_process(line)
-            # {key, value} dict format: {'labels': [1], 'sparse_slot1': [2, 3], 'sparse_slot2': [4, 5, 6, 8], 'dense_slot': [1,2,3,4]} 
+            # {key, value} dict format: {'labels': [1], 'sparse_slot1': [2, 3], 'sparse_slot2': [4, 5, 6, 8], 'dense_slot': [1,2,3,4]}
             # dict must match static_model.create_feed()
             yield output_dict
 

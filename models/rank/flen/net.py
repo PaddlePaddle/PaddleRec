@@ -68,7 +68,7 @@ class FLENLayer(nn.Layer):
         item_inputs = sparse_inputs[14:17]
         contex_inputs = sparse_inputs[17:]
 
-        # Embedding 
+        # Embedding
         field_wise_embed_list = []
         for inputs in [user_inputs, item_inputs, contex_inputs]:
 

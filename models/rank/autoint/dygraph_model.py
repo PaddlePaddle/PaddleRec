@@ -39,7 +39,7 @@ class DygraphModel():
             use_wide, use_sparse, head_num, num_field, attn_layer_sizes)
         return autoint_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         label = paddle.to_tensor(batch_data[0], dtype='int64')
         feat_index = paddle.to_tensor(batch_data[1], dtype='int64')
@@ -54,7 +54,7 @@ class DygraphModel():
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -69,7 +69,7 @@ class DygraphModel():
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         label, feat_index, feat_value = self.create_feeds(batch_data, config)
 

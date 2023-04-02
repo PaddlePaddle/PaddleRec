@@ -38,7 +38,7 @@ class DygraphModel():
                                    capsual_max_k, capsual_init_std)
         return MIND_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds_train(self, batch_data):
         #print(batch_data)
         hist_item = paddle.to_tensor(batch_data[0], dtype="int64")
@@ -54,11 +54,11 @@ class DygraphModel():
         seq_len = paddle.to_tensor(batch_data[1], dtype="int64")
         return [hist_item, target_item, seq_len]
 
-    # define optimizer 
+    # define optimizer
     def create_loss(self, hit_prob):
         return paddle.mean(hit_prob)
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -72,7 +72,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         hist_item, labels, seqlen = self.create_feeds_train(batch_data)
         [loss, sampled_logist, sampled_labels
@@ -81,7 +81,7 @@ class DygraphModel():
         print_dict = {"loss": loss}
         return loss, metrics_list, print_dict
 
-    # construct infer forward phase  
+    # construct infer forward phase
     def infer_forward(self, dy_model, metrics_list, batch_data, config):
         hist_item, labels, seqlen = self.create_feeds_infer(batch_data)
         dy_model.eval()

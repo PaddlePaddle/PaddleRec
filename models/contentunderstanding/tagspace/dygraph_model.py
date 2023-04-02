@@ -37,7 +37,7 @@ class DygraphModel():
                                            neg_size, text_len)
         return tagspace_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, text_len, neg_size):
         text = paddle.to_tensor(batch_data[0].numpy().astype('int64').reshape(
             -1, text_len))
@@ -61,7 +61,7 @@ class DygraphModel():
         avg_cost = paddle.mean(loss_part3)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adagrad(
@@ -85,7 +85,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         neg_size = config.get("hyper_parameters.neg_size")
         text_len = config.get("hyper_parameters.text_len")

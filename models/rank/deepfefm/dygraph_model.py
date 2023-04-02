@@ -37,7 +37,7 @@ class DygraphModel():
 
         return deepfefm_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
         sparse_tensor = []
@@ -87,7 +87,7 @@ class DygraphModel():
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         label, sparse_tensor, dense_tensor = self.create_feeds(batch_data,
                                                                config)

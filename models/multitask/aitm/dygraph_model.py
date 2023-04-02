@@ -29,7 +29,7 @@ class DygraphModel():
                          drop_prob)
         return model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         click, conversion, features = batch_data
         return click.astype('float32'), conversion.astype('float32'), features
@@ -52,7 +52,7 @@ class DygraphModel():
         loss = click_loss + conversion_loss + constraint_weight * constraint_loss
         return loss
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.0001)
         optimizer = paddle.optimizer.Adam(
@@ -71,7 +71,7 @@ class DygraphModel():
         ]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         click, conversion, features = self.create_feeds(batch_data, config)
         click_pred, conversion_pred = dy_model.forward(features)

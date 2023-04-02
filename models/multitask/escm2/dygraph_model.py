@@ -49,7 +49,7 @@ class DygraphModel():
 
         return escm_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         max_len = config.get("hyper_parameters.max_len", 3)
         sparse_tensor = []
@@ -88,7 +88,7 @@ class DygraphModel():
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -117,7 +117,7 @@ class DygraphModel():
             batch_shape, dtype="float32"),
                                 axis=0)
         #TODO this shoud be a hyparameter
-        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick 
+        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick
         IPS = paddle.multiply(IPS, batch_size)
         IPS.stop_gradient = True
         loss_cvr = paddle.multiply(loss_cvr, IPS)
@@ -132,7 +132,7 @@ class DygraphModel():
         ctr_out_one = paddle.maximum(ctr_out_one, min_v)
         IPS = paddle.divide(paddle.cast(O, dtype="float32"), ctr_out_one)
 
-        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick 
+        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick
         IPS.stop_gradient = True
 
         loss_error_second = paddle.multiply(e, IPS)
@@ -147,7 +147,7 @@ class DygraphModel():
 
         return paddle.mean(loss_dr)
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         sparse_tensor, label_ctr, label_ctcvr = self.create_feeds(batch_data,
                                                                   config)
@@ -164,7 +164,7 @@ class DygraphModel():
         metrics_list[2].update(
             preds=ctcvr_prop.numpy(), labels=label_ctcvr.numpy())
 
-        # print_dict format :{'loss': loss} 
+        # print_dict format :{'loss': loss}
         print_dict = {'loss': loss}
         return loss, metrics_list, print_dict
 

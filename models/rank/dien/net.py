@@ -414,7 +414,7 @@ class StaticDIENLayer(nn.Layer):
             input_size=self.item_emb_size + self.cat_emb_size,
             hidden_size=self.item_emb_size + self.cat_emb_size,
             num_layers=2)
-        # paddle暂不支持AUGRU，这里用的普通GRU，不同于论文部分 
+        # paddle暂不支持AUGRU，这里用的普通GRU，不同于论文部分
         self.gru_cell_attention = paddle.nn.GRUCell(
             self.item_emb_size + self.cat_emb_size,
             self.item_emb_size + self.cat_emb_size)

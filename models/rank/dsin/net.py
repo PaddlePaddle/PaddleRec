@@ -288,12 +288,12 @@ class DSIN_layer(nn.Layer):
         self.cate_embeded = self.cate_embeddings_var(self.cate)
         self.brand_embeded = self.brand_embeddings_var(self.brand)
 
-        # concat query embeded  
+        # concat query embeded
         # Note: query feature is cate_embeded and brand_embeded
         query_embeded = paddle.concat([self.cate_embeded, self.brand_embeded],
                                       -1)
 
-        # concat sparse feature embeded  
+        # concat sparse feature embeded
         deep_input_embeded = paddle.concat([
             self.user_embeded, self.adgroup_embeded, self.pid_embeded,
             self.cmsid_embeded, self.cmsgroup_embeded, self.gender_embeded,

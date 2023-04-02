@@ -36,7 +36,7 @@ class DygraphModel():
             ncf_model = net.NCF_MLP_Layer(num_users, num_items, mf_dim, layers)
         return ncf_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data):
         user_input = paddle.to_tensor(batch_data[0].numpy().astype('int64')
                                       .reshape(-1, 1))
@@ -54,7 +54,7 @@ class DygraphModel():
         avg_cost = paddle.mean(cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -69,7 +69,7 @@ class DygraphModel():
         metrics_list = []
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         inputs = self.create_feeds(batch_data)
 

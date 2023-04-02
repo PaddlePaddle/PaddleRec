@@ -45,7 +45,7 @@ class FAT_DeepFFMLayer(nn.Layer):
             default_initializer=paddle.nn.initializer.Constant(value=0.0))
 
     def forward(self, sparse_inputs, dense_inputs):
-        # CENLayer 
+        # CENLayer
         cen_out = self.cen(sparse_inputs, dense_inputs)
         # DeepFFMLayer
         y_first_order, dnn_input = self.deepffm(cen_out)
@@ -104,12 +104,12 @@ class CENLayer(nn.Layer):
 
     def forward(self, sparse_inputs, dense_inputs):
 
-        # Embedding 
+        # Embedding
         sparse_inputs_concat = paddle.concat(
             sparse_inputs, axis=1)  # [batch_size, sparse_feature_number]
         sparse_embeddings = self.embedding(
             sparse_inputs_concat
-        )  # [batch_size, sparse_feature_number, sparse_feature_dim] 
+        )  # [batch_size, sparse_feature_number, sparse_feature_dim]
 
         dense_inputs_re = paddle.unsqueeze(dense_inputs, axis=2)
         dense_embeddings = paddle.multiply(dense_inputs_re, self.dense_w)

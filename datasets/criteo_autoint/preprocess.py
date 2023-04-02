@@ -65,7 +65,7 @@ for line in f1:
     #if cnt_train > limits:
     #	break
     split = line.strip('\n').split('\t')
-    # 0-label, 1-13 numerical, 14-39 category 
+    # 0-label, 1-13 numerical, 14-39 category
     for i in range(13, 39):
         #dic_len = len(dic[i])
         if split[i + 1] not in dic[i]:

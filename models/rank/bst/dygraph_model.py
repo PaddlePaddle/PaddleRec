@@ -59,7 +59,7 @@ class DygraphModel():
 
         return bst_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         dense_feature_dim = config.get('hyper_parameters.dense_input_dim')
         sparse_tensor = []
@@ -80,7 +80,7 @@ class DygraphModel():
         avg_cost = paddle.mean(x=cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         scheduler = paddle.optimizer.lr.PiecewiseDecay(
@@ -99,7 +99,7 @@ class DygraphModel():
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         label, userid, history, cate, position, target, target_cate, target_position = self.create_feeds(
             batch_data, config)
@@ -110,7 +110,7 @@ class DygraphModel():
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
 
-        # print_dict format :{'loss': loss} 
+        # print_dict format :{'loss': loss}
         print_dict = None
         return loss, metrics_list, print_dict
 

@@ -39,7 +39,7 @@ class DygraphModel():
 
         return kim_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data):
         return [x.squeeze(0) for x in batch_data]
 
@@ -47,7 +47,7 @@ class DygraphModel():
     def create_loss(self, pred, label):
         return F.cross_entropy(pred, label)
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.00005)
         optimizer = paddle.optimizer.Adam(

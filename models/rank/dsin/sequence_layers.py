@@ -91,7 +91,7 @@ class AttentionSequencePoolingLayer(nn.Layer):
         for i, layer in enumerate(self.layers):
             att_input = layer(att_input)
             #att_input = self.bn_layer[i](att_input)  # BatchNomalization
-            att_input = self.activation(att_input)  # activation 
+            att_input = self.activation(att_input)  # activation
         att_score = self.dnn(att_input)  # (N, 50, 1)
         att_score = paddle.transpose(att_score, [0, 2, 1])  # (N, 1, 50)
         if self.weight_normalization:

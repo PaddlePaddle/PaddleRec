@@ -36,7 +36,7 @@ class DygraphModel():
 
         return deepfm_model
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         return batch_data
 
@@ -45,7 +45,7 @@ class DygraphModel():
         loss = F.binary_cross_entropy(pred, label.astype('float32'))
         return loss
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         if int(config.get('stage', 0)) == 1:
@@ -74,7 +74,7 @@ class DygraphModel():
         metrics_list = [auc_metric, LogLoss()]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         inputs, label = self.create_feeds(batch_data, config)
 

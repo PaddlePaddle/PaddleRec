@@ -73,7 +73,7 @@ class StaticModel():
             batch_shape, dtype="float32"),
                                 axis=0)
         #TODO this shoud be a hyparameter
-        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick 
+        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick
         IPS = paddle.multiply(IPS, batch_size)
         IPS.stop_gradient = True
         loss_cvr = paddle.multiply(loss_cvr, IPS)
@@ -88,7 +88,7 @@ class StaticModel():
         ctr_out_one = paddle.maximum(ctr_out_one, min_v)
         IPS = paddle.divide(paddle.cast(O, dtype="float32"), ctr_out_one)
 
-        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick 
+        IPS = paddle.clip(IPS, min=-15, max=15)  #online trick
         IPS.stop_gradient = True
 
         loss_error_second = paddle.multiply(e, IPS)

@@ -32,7 +32,7 @@ class DygraphModel():
         LR = net.LRLayer(sparse_feature_number, init_value, reg, num_field)
         return LR
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, batch_data, config):
         num_field = config.get('hyper_parameters.num_field', None)
         label = paddle.to_tensor(batch_data[0].numpy().astype('int64').reshape(
@@ -53,7 +53,7 @@ class DygraphModel():
         avg_cost = paddle.sum(x=cost)
         return avg_cost
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, dy_model, config):
         lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
         optimizer = paddle.optimizer.Adam(
@@ -68,7 +68,7 @@ class DygraphModel():
         metrics_list = [auc_metric]
         return metrics_list, metrics_list_name
 
-    # construct train forward phase  
+    # construct train forward phase
     def train_forward(self, dy_model, metrics_list, batch_data, config):
         label, feat_idx, feat_value = self.create_feeds(batch_data, config)
         pred = dy_model.forward(feat_idx, feat_value)
@@ -77,7 +77,7 @@ class DygraphModel():
         # update metrics
         predict_2d = paddle.concat(x=[1 - pred, pred], axis=1)
         metrics_list[0].update(preds=predict_2d.numpy(), labels=label.numpy())
-        # print_dict format :{'loss': loss} 
+        # print_dict format :{'loss': loss}
         print_dict = None
         return loss, metrics_list, print_dict
 

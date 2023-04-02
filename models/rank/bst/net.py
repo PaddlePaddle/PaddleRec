@@ -437,10 +437,10 @@ class BST(paddle.nn.Layer):
         target_sequence = paddle.concat(
             [target_item_emb, target_cat_emb, target_position_emb], axis=2)
 
-        #print(position_sequence_target.shape) 
+        #print(position_sequence_target.shape)
         whole_embedding = paddle.concat(
             [item_sequence, target_sequence], axis=1)
-        #print(whole_embedding) 
+        #print(whole_embedding)
         enc_output = whole_embedding
         '''
         for _ in range(self.n_encoder_layers):

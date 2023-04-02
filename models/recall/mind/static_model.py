@@ -41,7 +41,7 @@ class StaticModel():
                                            1.0)
         self.lr = config.get("hyper_parameters.optimizer.learning_rate", 0.001)
 
-    # define feeds which convert numpy of batch data to paddle.tensor 
+    # define feeds which convert numpy of batch data to paddle.tensor
     def create_feeds(self, is_infer=False):
         # print(batch_data)
         if not is_infer:
@@ -83,11 +83,11 @@ class StaticModel():
         fetch_dict = {"loss": self._cost}
         return fetch_dict
 
-    # define optimizer 
+    # define optimizer
     def create_optimizer(self, strategy=None):
         optimizer = paddle.optimizer.Adam(learning_rate=self.lr)
         optimizer.minimize(self._cost)
 
-    # construct infer forward phase  
+    # construct infer forward phase
     def infer_net(self, inputs):
         return self.net(inputs, is_infer=True)
