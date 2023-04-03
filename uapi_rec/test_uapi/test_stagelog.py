@@ -46,10 +46,12 @@ if __name__ == '__main__':
     init_stagelog()
 
     # Check dataset + success
-    check_dataset(model_name, dataset_dir, dataset_type='Dataset')
+    #check_dataset(model_name, dataset_dir, dataset_type='Dataset')
+    check_dataset(dataset_dir, dataset_type='Dataset')
 
     # Check dataset + failure
-    check_dataset(model_name, dataset_dir, dataset_type='baidu')
+    #check_dataset(model_name, dataset_dir, dataset_type='baidu')
+    check_dataset(dataset_dir, dataset_type='baidu')
 
     config = Config(model_name)
     config.update_dataset(dataset_dir)
