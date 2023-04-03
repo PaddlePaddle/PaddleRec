@@ -23,19 +23,19 @@ from base.utils.dataset_checker_utils import (
     persist_dataset_meta, build_res_dict, CheckFailedError,
     UnsupportedDatasetTypeError, DatasetFileNotFoundError)
 
-from base.utils import stagelog
+from base.utils.stagelog import stagelog_check_dataset
+from base.utils.misc import abspath
 
 MAX_V = 18446744073709551615
 
 
-@persist_dataset_meta
-def check_dataset(model_name, dataset_dir, dataset_type):
-    stage_id = stagelog.running_datacheck(
-        data_path=dataset_dir, data_type=dataset_type)
+@stagelog_check_dataset
+def check_dataset(dataset_dir, dataset_type):
+    dataset_dir = abspath(dataset_dir)
     try:
         if dataset_type == 'Dataset':
             # Custom dataset
-            dataset_dir = osp.abspath(dataset_dir)
+            #dataset_dir = osp.abspath(dataset_dir)
             if not osp.exists(dataset_dir) or not osp.isdir(dataset_dir):
                 raise DatasetFileNotFoundError(file_path=dataset_dir)
 
@@ -80,14 +80,6 @@ def check_dataset(model_name, dataset_dir, dataset_type):
         else:
             raise UnsupportedDatasetTypeError(dataset_type=dataset_type)
     except CheckFailedError as e:
-        stagelog.fail(stage_id, str(e))
         return build_res_dict(False, err_type=type(e), err_msg=str(e))
     else:
-        stagelog.success_datacheck(
-            stage_id,
-            train_dataset=meta['train.samples'],
-            validation_dataset=0,
-            test_dataset=0)
-        #validation_dataset=meta['val.samples'],
-        #test_dataset=meta['test.samples'] or 0)
         return meta
