@@ -68,8 +68,6 @@ def check_dataset(model_name, dataset_dir, dataset_type):
                         parts = line.rstrip().split(delim)[0]
                         label = parts.split(":")[1]
                         label = int(label)
-                        print("label is ", label)
-                        print("part is ", parts)
                         if label not in (0, 1):
                             raise CheckFailedError(
                                 f"The label of data in each row should be 0 or 1, but received {parts[0]}."
@@ -88,8 +86,8 @@ def check_dataset(model_name, dataset_dir, dataset_type):
         stagelog.success_datacheck(
             stage_id,
             train_dataset=meta['train.samples'],
-            validation_dataset=None,
-            test_dataset=None)
+            validation_dataset=0,
+            test_dataset=0)
         #validation_dataset=meta['val.samples'],
         #test_dataset=meta['test.samples'] or 0)
         return meta
