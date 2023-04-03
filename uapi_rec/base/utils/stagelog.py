@@ -14,9 +14,16 @@
 
 import inspect
 import threading
+import signal
+import sys
+import functools
 
 from . import logging
 from ..flags import DEBUG
+from .misc import abspath
+
+_CURR_STAGE_IDS = []
+_LOCK = threading.RLock()
 
 
 class _Singleton(type):
@@ -36,6 +43,22 @@ class _EMPTY_ARG(metaclass=_Singleton):
         return "-EMPTY-"
 
 
+def stagelog_on_exit(signum, frame):
+    global _CURR_STAGE_IDS, _LOCK
+    with _LOCK:
+        for stage_id in _CURR_STAGE_IDS[:]:
+            fail(stage_id,
+                 f"Running of the stage was interrupted with signal {signum}.")
+    # NOTE: We do not send signals to the subprocesses. It is the user's choice whether to 
+    # do this.
+    logging.warn(
+        f"Received signal {signum}. The program is about to terminate.")
+    sys.exit(signum)
+
+
+signal.signal(signal.SIGINT, stagelog_on_exit)
+signal.signal(signal.SIGTERM, stagelog_on_exit)
+
 # TODO: Replacing the code that forwards arguments using `locals()` with more explicit code
 
 
@@ -47,7 +70,7 @@ def running_datacheck(data_path, data_type, yaml_path=_EMPTY_ARG()):
         yaml_path (str, optinoal): Absolute path of the YAML file of the dataset.
     """
 
-    return _stagelog_call('running_datacheck', **locals())
+    return _stagelog_running_call('running_datacheck', **locals())
 
 
 def running_train(learning_rate, epoch_iters, batch_size, data_path, yaml_path,
@@ -63,7 +86,7 @@ def running_train(learning_rate, epoch_iters, batch_size, data_path, yaml_path,
         save_dir (str): Directory that contains model snapshots and logs.
     """
 
-    return _stagelog_call('running_train', **locals())
+    return _stagelog_running_call('running_train', **locals())
 
 
 def running_verify(checkpoint_dir,
@@ -77,7 +100,7 @@ def running_verify(checkpoint_dir,
         metrics (list[str]): A list of names of all metrics used in model evaluation.
         save_dir (str, optional): Directory that contains model snapshots and logs.
     """
-    return _stagelog_call('running_verify', **locals())
+    return _stagelog_running_call('running_verify', **locals())
 
 
 def running_compress(checkpoint_dir,
@@ -100,19 +123,19 @@ def running_compress(checkpoint_dir,
         metrics (list[str], optional): A list of names of all metrics used in model evaluation.
     """
 
-    return _stagelog_call('running_compress', **locals())
+    return _stagelog_running_call('running_compress', **locals())
 
 
 def running_deploy(operating_system, language, architecture, accelerator):
-    return _stagelog_call('running_deploy', **locals())
+    return _stagelog_running_call('running_deploy', **locals())
 
 
 def success(stage_id, result=_EMPTY_ARG()):
-    return _stagelog_call('success', **locals())
+    return _stagelog_status_call('success', **locals())
 
 
 def fail(stage_id, error_message=_EMPTY_ARG()):
-    return _stagelog_call('fail', **locals())
+    return _stagelog_status_call('fail', **locals())
 
 
 def success_datacheck(stage_id, train_dataset, validation_dataset,
@@ -124,7 +147,7 @@ def success_datacheck(stage_id, train_dataset, validation_dataset,
         validation_dataset (int): Number of samples in validation dataset.
         test_dataset (int): Number of samples in test dataset.
     """
-    return _stagelog_call('success_datacheck', **locals())
+    return _stagelog_status_call('success_datacheck', **locals())
 
 
 def _stagelog_call(func_name, *args, **kwargs):
@@ -151,7 +174,37 @@ def _stagelog_call(func_name, *args, **kwargs):
             if DEBUG:
                 logging.warn("stagelog not initialized.")
             else:
+                # Ignore
                 pass
+
+
+def _stagelog_running_call(func_name, **kwargs):
+    # FIXME: It is possible that the program gets interrupted when `_stagelog_call`
+    # is called and the stage id is not yet recorded.
+    ret = _stagelog_call(func_name, **kwargs)
+    if ret is not None:
+        global _CURR_STAGE_IDS, _LOCK
+        with _LOCK:
+            # if `ret` is not None, it is a stage id
+            _CURR_STAGE_IDS.append(ret)
+        return ret
+
+
+def _stagelog_status_call(func_name, **kwargs):
+    global _CURR_STAGE_IDS, _LOCK
+    stage_id = kwargs['stage_id']
+    with _LOCK:
+        try:
+            # O(N)
+            idx = _CURR_STAGE_IDS.index(stage_id)
+        except ValueError:
+            idx = None
+        else:
+            # O(N)
+            _CURR_STAGE_IDS.pop(idx)
+    if idx is not None:
+        # Each stage makes no more than one status call
+        return _stagelog_call(func_name, **kwargs)
 
 
 class _StageLogContextManagerMeta(type):
@@ -185,7 +238,7 @@ class _StageLogContextManager(metaclass=_StageLogContextManagerMeta):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._log_status(self.stage_id, exc_type, exc_val, exc_tb)
+        return self._log_status(self.stage_id, exc_type, exc_val, exc_tb)
 
     def _log_running(self):
         return type(self)._STAGELOG_API(*self.running_args,
@@ -205,7 +258,7 @@ class StageLogTrain(_StageLogContextManager):
         if exc_type is None and exc_val is None and exc_tb is None:
             success(stage_id)
         else:
-            fail(stage_id, str(exc_val))
+            fail(stage_id, f"{exc_type.__name__}: {str(exc_val)}")
 
 
 class StageLogCompress(_StageLogContextManager):
@@ -218,7 +271,7 @@ class StageLogCompress(_StageLogContextManager):
         if exc_type is None and exc_val is None and exc_tb is None:
             success(stage_id)
         else:
-            fail(stage_id, str(exc_val))
+            fail(stage_id, f"{exc_type.__name__}: {str(exc_val)}")
 
 
 class StageLogEvaluate(_StageLogContextManager):
@@ -244,4 +297,29 @@ class StageLogEvaluate(_StageLogContextManager):
                 # the error message.
                 fail(stage_id, "Model evaluation failed.")
         else:
-            return False
+            fail(stage_id, f"{exc_type.__name__}: {str(exc_val)}")
+
+
+def stagelog_check_dataset(dataset_checker):
+    @functools.wraps(dataset_checker)
+    def _wrapper(dataset_dir, dataset_type):
+        stage_id = running_datacheck(abspath(dataset_dir), dataset_type)
+        try:
+            res = dataset_checker(dataset_dir, dataset_type)
+        except BaseException as e:
+            # We catch all exceptions including `KeyboardInterrupt`
+            fail(stage_id, f"{type(e).__name__}: {str(e)}")
+            raise
+        else:
+            if res['res_flag']:
+                test_samples = res.get('test.samples', None) or 0
+                success_datacheck(
+                    stage_id,
+                    train_dataset=res['train.samples'],
+                    validation_dataset=0,
+                    test_dataset=0)
+            else:
+                fail(stage_id, res['err_msg'])
+            return res
+
+    return _wrapper
