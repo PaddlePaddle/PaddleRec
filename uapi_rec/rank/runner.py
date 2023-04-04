@@ -53,7 +53,7 @@ class RankRunner(BaseRunner):
 
         paddle_pserver_ip_port = "127.0.0.1:29011"
         #gpus_list = "0,1,2,3,4,5,6,7"
-        gpus_list = "0,1"
+        gpus_list = "0"
         if "gpu" in device:
             gpus_list = device.lstrip("gpu:")
         server_echo = "PADDLE WILL START PSERVER 29011"
