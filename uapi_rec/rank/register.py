@@ -40,8 +40,7 @@ register_model_info({
     'suite': 'Rank',
     'config_path': WIDE_DEEP_CFG_PATH,
     'auto_compression_config_path': WIDE_DEEP_CFG_PATH,
-    'supported_apis':
-    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+    'supported_apis': ['train']
 })
 
 # DNN 
@@ -51,6 +50,5 @@ register_model_info({
     'suite': 'Rank',
     'config_path': DNN_CFG_PATH,
     'auto_compression_config_path': DNN_CFG_PATH,
-    'supported_apis':
-    ['train', 'evaluate', 'predict', 'export', 'infer', 'compression']
+    'supported_apis': ['train']
 })
