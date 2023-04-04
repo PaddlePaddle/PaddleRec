@@ -28,7 +28,7 @@ class RankRunner(BaseRunner):
         save_dir_value = ""
         device = "cpu"
         try:
-            batch_size_value = args_str.split("--device ")[1].split(" ")[0]
+            device = args_str.split("--device ")[1].split(" ")[0]
         except:
             pass
         try:
