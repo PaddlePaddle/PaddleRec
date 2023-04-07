@@ -57,7 +57,7 @@ class FM(nn.Layer):
         self.init_value_ = 0.1
 
         use_sparse = True
-        if paddle.is_compiled_with_npu():
+        if paddle.is_compiled_with_custom_device('npu'):
             use_sparse = False
 
         # sparse part coding
