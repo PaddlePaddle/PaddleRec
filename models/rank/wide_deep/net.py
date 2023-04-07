@@ -42,7 +42,7 @@ class WideDeepLayer(nn.Layer):
                     mean=0.0, std=1.0 / math.sqrt(self.dense_feature_dim))))
 
         use_sparse = True
-        if paddle.is_compiled_with_custom_device(npu):
+        if paddle.is_compiled_with_custom_device('npu'):
             use_sparse = False
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
