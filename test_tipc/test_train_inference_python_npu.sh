@@ -56,7 +56,7 @@ sed -i 's/'"'"'gpu'"'"'/'"'"'npu'"'"'/g' "$REPO_ROOT_PATH/$to_static_config"
 inference_py=$(func_parser_value "${lines[39]}")
 inference_config=$(func_parser_execute_python ${inference_py})
 if [[ $inference_config =~ "test_tipc" ]]; then
-    sed -i 's/config.enable_use_gpu(1000, 0)/config.enable_npu()/g' "$REPO_ROOT_PATH/$inference_config"
+    sed -i 's/config.enable_use_gpu(1000, 0)/config.enable_custom_device("npu")/g' "$REPO_ROOT_PATH/$inference_config"
     sed -i 's/use_gpu/use_npu/g' "$REPO_ROOT_PATH/$inference_config"
     sed -i 's/'"'"'gpu'"'"'/'"'"'npu'"'"'/g' "$REPO_ROOT_PATH/$inference_config"
 else
