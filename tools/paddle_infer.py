@@ -93,7 +93,7 @@ def init_predictor(args):
                 min_subgraph_size=9,
                 precision_mode=paddle.inference.PrecisionType.Float32)
     elif args.use_npu:
-        config.enable_npu()
+        config.enable_custom_device('npu')
     elif args.use_xpu:
         config.enable_xpu()
     else:
