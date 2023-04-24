@@ -1,6 +1,6 @@
 opencv-python==4.6.0.66
 sklearn==0.0
-pandas
+pandas<2.0.0
 scipy
 numba
 pgl==2.2.4
