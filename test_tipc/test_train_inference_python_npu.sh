@@ -73,6 +73,15 @@ grep -n './models/.*yaml' $FILENAME  | cut -d ":" -f 1 \
 done
 
 # pass parameters to test_train_inference_python.sh
-cmd="bash test_tipc/test_train_inference_python.sh ${FILENAME} $2"
-echo $cmd
-eval $cmd
+
+# kim take NHWC format input in Conv2d, which brings error.
+modelname=$(echo $FILENAME | cut -d '/' -f3)
+if  [ $modelname == "kim" ]; then
+    cmd="FLAGS_npu_storage_format=0 bash test_tipc/test_train_inference_python.sh ${FILENAME} $2"
+    echo $cmd
+    eval $cmd
+else
+    cmd="bash test_tipc/test_train_inference_python.sh ${FILENAME} $2"
+    echo $cmd
+    eval $cmd
+fi
