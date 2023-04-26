@@ -13,14 +13,20 @@
 # limitations under the License.
 """Implement a module that helps automatically generate heterogenous GNN
 """
-
+import os
+import sys
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from collections import OrderedDict
 import paddle.static as static
 import pgl
-from . import model_util
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+# sys.path.append(__dir__)
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append('../../../tools')
+from utils.static_ps import model_util
 from . import layers
 
 

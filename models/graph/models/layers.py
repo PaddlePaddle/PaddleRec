@@ -18,7 +18,14 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import pgl
-from . import model_util
+import os
+import sys
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+# sys.path.append(__dir__)
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append('../../../tools')
+from utils.static_ps import model_util
 
 
 class GIN(nn.Layer):

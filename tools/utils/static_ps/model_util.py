@@ -23,7 +23,7 @@ import numpy as np
 import pickle as pkl
 
 import paddle
-import paddle.fluid as F
+import paddle.incubate as F
 import paddle.static as static
 import pgl
 from pgl.utils.logger import log
@@ -276,7 +276,7 @@ def get_sparse_embedding(config,
 
     slot_embedding_list = []
     if (len(discrete_slot_holders)) > 0:
-        slot_bows = F.contrib.layers.fused_seqpool_cvm(
+        slot_bows = F.layers.fused_seqpool_cvm(
             tmp_slot_emb_list,
             config.slot_pool_type,
             show_clk,
@@ -338,7 +338,7 @@ def hcl(config, feature, graph_holders):
 
         for neg in range(config.neg_num):
             neighbor_dsts_feat_all.append(
-                F.contrib.layers.shuffle_batch(neighbor_dsts_feat_all[0]))
+                F.layers.shuffle_batch(neighbor_dsts_feat_all[0]))
         neighbor_dsts_feat = paddle.concat(neighbor_dsts_feat_all, axis=1)
 
         # [batch_size, 1, neg_num+1]
