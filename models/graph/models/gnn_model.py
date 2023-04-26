@@ -145,8 +145,7 @@ class GNNModel(object):
         src_feat = feature[:, 0:1, :]
         dsts_feat_all = [feature[:, 1:, :]]
         for neg in range(self.neg_num):
-            dsts_feat_all.append(
-                F.contrib.layers.shuffle_batch(dsts_feat_all[0]))
+            dsts_feat_all.append(F.layers.shuffle_batch(dsts_feat_all[0]))
         dsts_feat = paddle.concat(dsts_feat_all, axis=1)
 
         logits = paddle.matmul(
