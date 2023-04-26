@@ -144,13 +144,13 @@ def main(args):
             if batch_id % print_interval == 0:
                 metric_str = ""
                 for var_idx, var_name in enumerate(fetch_vars):
-                    metric_str += "{}: {}, ".format(
-                        var_name, fetch_batch_var[var_idx][0])
+                    metric_str += "{}: {}, ".format(var_name,
+                                                    fetch_batch_var[var_idx])
                     if use_visual:
                         log_visual.add_scalar(
                             tag="infer/" + var_name,
                             step=step_num,
-                            value=fetch_batch_var[var_idx][0])
+                            value=fetch_batch_var[var_idx])
                 logger.info(
                     "epoch: {}, batch_id: {}, ".format(epoch_id,
                                                        batch_id) + metric_str +
@@ -167,8 +167,7 @@ def main(args):
 
         metric_str = ""
         for var_idx, var_name in enumerate(fetch_vars):
-            metric_str += "{}: {}, ".format(var_name,
-                                            fetch_batch_var[var_idx][0])
+            metric_str += "{}: {}, ".format(var_name, fetch_batch_var[var_idx])
         logger.info("epoch: {} done, ".format(epoch_id) + metric_str +
                     "epoch time: {:.2f} s".format(time.time() - epoch_begin))
         if use_save_data:
