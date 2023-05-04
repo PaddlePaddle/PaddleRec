@@ -66,11 +66,15 @@ class Linear(nn.Layer):
         self.sparse_num_field = sparse_num_field
         self.init_value_ = 0.1
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         # sparse part coding
         self.embedding_one = paddle.nn.Embedding(
             sparse_feature_number,
             1,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,
@@ -80,7 +84,7 @@ class Linear(nn.Layer):
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
                     mean=0.0,

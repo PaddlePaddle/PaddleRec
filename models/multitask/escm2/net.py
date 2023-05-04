@@ -38,10 +38,14 @@ class ESCMLayer(nn.Layer):
             self.gate_num = 2
         self.feature_size = feature_size
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             padding_idx=0,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",

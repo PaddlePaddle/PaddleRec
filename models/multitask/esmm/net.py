@@ -28,10 +28,14 @@ class ESMMLayer(nn.Layer):
         self.ctr_layer_sizes = ctr_layer_sizes
         self.cvr_layer_sizes = cvr_layer_sizes
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             padding_idx=0,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
