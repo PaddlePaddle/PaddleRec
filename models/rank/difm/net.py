@@ -88,17 +88,21 @@ class FENLayer(nn.Layer):
             units_list=fen_layers_size,
             activation="relu")
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         self.sparse_embedding = paddle.nn.Embedding(
             num_embeddings=self.sparse_feature_num,
             embedding_dim=self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.Uniform()))
         self.sparse_weight = paddle.nn.Embedding(
             num_embeddings=self.sparse_feature_num,
             embedding_dim=1,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors2",
                 initializer=paddle.nn.initializer.Uniform()))

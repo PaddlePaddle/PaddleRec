@@ -61,10 +61,14 @@ class DLRMLayer(nn.Layer):
             input_shape=self.concat_size + sparse_feature_dim,
             units_list=top_layer_sizes)
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         self.embedding = paddle.nn.Embedding(
             num_embeddings=self.sparse_feature_number,
             embedding_dim=self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="SparseFeatFactors",
                 initializer=paddle.nn.initializer.TruncatedNormal()))
