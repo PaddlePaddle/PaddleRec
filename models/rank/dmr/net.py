@@ -48,10 +48,14 @@ class DMRLayer(nn.Layer):
         self.other_embedding_size = other_embedding_size
         self.history_length = 50
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         self.uid_embeddings_var = paddle.nn.Embedding(
             self.user_size,
             self.main_embedding_size,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="UidSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
@@ -59,7 +63,7 @@ class DMRLayer(nn.Layer):
         self.mid_embeddings_var = paddle.nn.Embedding(
             self.adgroup_id_size,
             self.main_embedding_size,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="MidSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
@@ -67,7 +71,7 @@ class DMRLayer(nn.Layer):
         self.cat_embeddings_var = paddle.nn.Embedding(
             self.cate_size,
             self.main_embedding_size,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="CatSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
@@ -75,7 +79,7 @@ class DMRLayer(nn.Layer):
         self.brand_embeddings_var = paddle.nn.Embedding(
             self.brand_size,
             self.main_embedding_size,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="BrandSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
@@ -99,7 +103,7 @@ class DMRLayer(nn.Layer):
         self.campaign_id_embeddings_var = paddle.nn.Embedding(
             self.campaign_id_size,
             self.main_embedding_size,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="CampSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))
@@ -107,7 +111,7 @@ class DMRLayer(nn.Layer):
         self.customer_embeddings_var = paddle.nn.Embedding(
             self.customer_size,
             self.main_embedding_size,
-            sparse=True,
+            sparse=use_sparse,
             weight_attr=paddle.ParamAttr(
                 name="CustomSparseFeatFactors",
                 initializer=nn.initializer.Uniform()))

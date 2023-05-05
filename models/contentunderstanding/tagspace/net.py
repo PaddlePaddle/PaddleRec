@@ -33,14 +33,21 @@ class TagspaceLayer(nn.Layer):
         self.neg_size = neg_size
         self.text_len = text_len
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         self.text_embedding = paddle.nn.Embedding(
             self.vocab_text_size,
             self.emb_dim,
             padding_idx=75377,
-            sparse=True,
+            sparse=use_sparse,
             name="text_emb")
         self.tag_embedding = paddle.nn.Embedding(
-            self.vocab_tag_size, self.emb_dim, sparse=True, name="tag_emb")
+            self.vocab_tag_size,
+            self.emb_dim,
+            sparse=use_sparse,
+            name="tag_emb")
 
         self.conv = nn.Conv1D(
             in_channels=self.emb_dim,

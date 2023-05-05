@@ -37,11 +37,15 @@ class DCN_V2Layer(nn.Layer):
 
         self.init_value_ = 0.1
 
+        use_sparse = True
+        if paddle.is_compiled_with_custom_device('npu'):
+            use_sparse = False
+
         # sparse coding
         self.embedding = paddle.nn.Embedding(
             self.sparse_feature_number,
             self.sparse_feature_dim,
-            sparse=True,
+            sparse=use_sparse,
             padding_idx=0,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.TruncatedNormal(
