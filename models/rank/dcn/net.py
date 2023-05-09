@@ -131,9 +131,7 @@ class DeepCroLayer(nn.Layer):
         for i in range(num_corss_layers):
             x, w = self._cross_layer(x0, x)
             l2_reg_cross_list.append(self._l2_loss(w))
-        l2_reg_cross_loss = paddle.sum(
-            paddle.concat(
-                l2_reg_cross_list, axis=-1))
+        l2_reg_cross_loss = paddle.add_n(l2_reg_cross_list)
         return x, l2_reg_cross_loss
 
     def _l2_loss(self, w):
