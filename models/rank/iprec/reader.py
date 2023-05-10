@@ -37,9 +37,9 @@ class RecDataset(Dataset):
         data = self.data[idx]
         user, item, biz, friends, user_items, user_bizs, user_friends, user_packages, \
         pack_neighbors_b, pack_neighbors_f, label1, label2 = list(data.values())
-        user = paddle.to_tensor(user)
-        item = paddle.to_tensor(item)
-        biz = paddle.to_tensor(biz)
+        user = paddle.to_tensor([user])
+        item = paddle.to_tensor([item])
+        biz = paddle.to_tensor([biz])
         friends = paddle.to_tensor(
             sequence_padding_1d_list(friends, self.f_max_len))
         user_items = paddle.to_tensor(
@@ -66,7 +66,7 @@ class RecDataset(Dataset):
                 dtype=np.int64).reshape([-1, self.f_max_len + 2]),
             length=self.pack_max_nei_f)
         pack_neighbors_f = paddle.to_tensor(pack_neighbors_f)
-        label1 = paddle.to_tensor(label1)
+        label1 = paddle.to_tensor([label1])
         return (user, item, biz, friends, user_items, user_bizs, user_friends,
                 user_packages, pack_neighbors_b, pack_neighbors_f, label1)
 
