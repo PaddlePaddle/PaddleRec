@@ -62,7 +62,7 @@ def get_infer_reader(input_var, config):
     print("test_data_path is: {}".format(test_data_path))
     file_list = get_file_list(test_data_path, config)
     print("test file_list: {}".format(file_list))
-    reader_type = config.get("runner.reader_type")
+    reader_type = config.get("runner.infer_reader_type")
     if reader_type == "QueueDataset":
         reader_instance = QueueDatset(input_var, file_list, config)
         return reader_instance.get_infer_reader(), file_list
@@ -183,18 +183,26 @@ class InferDataLoader(object):
 
     def get_reader(self):
         logger.info("Get DataLoader")
-        loader = paddle.io.DataLoader.from_generator(
-            feed_list=self.input_var, capacity=64, iterable=True)
-        path = self.config.get("runner.infer_reader_path")
-        path = os.path.join(self.config["config_abs_dir"], path)
-        generator = get_reader_generator(path)
-        generator.init(self.config)
-        places = paddle.CPUPlace()
-        loader.set_sample_generator(
-            generator.dataloader(self.file_list),
-            batch_size=int(self.config.get("runner.infer_batch_size")),
+        use_cuda = int(self.config.get("runner.use_gpu"))
+        place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
+        data_dir = self.config.get("runner.test_data_dir", None)
+        batch_size = self.config.get('runner.infer_batch_size', None)
+        reader_path = self.config.get('runner.infer_reader_path', 'reader')
+        num_workers = int(self.config.get('runner.num_workers', 0))
+        config_abs_dir = self.config.get("config_abs_dir", None)
+        data_dir = os.path.join(config_abs_dir, data_dir)
+        file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
+        user_define_reader = self.config.get('runner.user_define_reader', False)
+        logger.info("reader path:{}".format(reader_path))
+        from importlib import import_module
+        reader_class = import_module(reader_path)
+        dataset = reader_class.RecDataset(file_list, config=self.config)
+        loader = paddle.io.DataLoader(
+            dataset,
+            batch_size=batch_size,
+            places=place,
             drop_last=True,
-            places=places)
+            num_workers=num_workers)
         return loader
 
 

@@ -29,6 +29,7 @@ import sys
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -58,8 +59,10 @@ class Main(object):
         self.metrics = {}
         self.config = config
         self.input_data = None
+        self.input_data_names = None
         self.reader = None
         self.exe = None
+        self.place = None
         self.epoch_model_path_list = []
         self.infer_result_dict = {}
         self.infer_result_dict["result"] = {}
@@ -68,12 +71,10 @@ class Main(object):
         self.network()
         self.init_reader()
         use_cuda = int(config.get("runner.use_gpu"))
-        place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
-        self.exe = paddle.static.Executor(place)
+        self.place = paddle.CUDAPlace(0) if use_cuda else paddle.CPUPlace()
+        self.exe = paddle.static.Executor(self.place)
 
         init_model_path = config.get("runner.model_save_path")
-        init_model_path = os.path.join(config["config_abs_dir"],
-                                       init_model_path)
         logger.info("init_model_path: {}".format(init_model_path))
         for file in os.listdir(init_model_path):
             file_path = os.path.join(init_model_path, file)
@@ -99,21 +100,21 @@ class Main(object):
     def network(self):
         model = get_model(self.config)
         self.input_data = model.create_feeds()
+        self.input_data_names = [data.name for data in self.input_data]
         self.init_reader()
 
     def run_infer(self, model_path, model_name):
         model_path = model_path + "/dnn_plugin"
         print("load model:", model_path)
         [inference_program, feed_target_names, fetch_targets] = (
-            paddle.static.io.load_inference_model(
-                path_prefix=model_path, executor=self.exe))
-
+            paddle.distributed.io.load_inference_model_distributed(
+                dirname=model_path, executor=self.exe))
         self.reset_auc()
         infer_res = []
         for batch_id, data in enumerate(self.reader()):
             results = self.exe.run(inference_program,
-                                   feed=data,
-                                   fetch_list=fetch_targets)
+                                   feed=dict(zip(self.input_data_names, data)),
+                                   fetch_list=['label'])
             batch_id += 1
             print_step = int(config.get("runner.print_interval"))
             if batch_id % print_step == 0:
@@ -139,7 +140,6 @@ class Main(object):
             raise ValueError(
                 "Set static_benchmark.example_count_method for example / word for example count."
             )
-
     def reset_auc(self):
         auc_var_name = [
             "_generated_var_0", "_generated_var_1", "_generated_var_2",
