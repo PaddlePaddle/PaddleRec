@@ -112,9 +112,10 @@ class Main(object):
         self.reset_auc()
         infer_res = []
         for batch_id, data in enumerate(self.reader()):
-            results = self.exe.run(inference_program,
-                                   feed=dict(zip(self.input_data_names, data)),
-                                   fetch_list=['label'])
+            results = self.exe.run(
+                inference_program,
+                feed=dict(zip(self.input_data_names, data)),
+                fetch_list=['label'])
             batch_id += 1
             print_step = int(config.get("runner.print_interval"))
             if batch_id % print_step == 0:
@@ -140,6 +141,7 @@ class Main(object):
             raise ValueError(
                 "Set static_benchmark.example_count_method for example / word for example count."
             )
+
     def reset_auc(self):
         auc_var_name = [
             "_generated_var_0", "_generated_var_1", "_generated_var_2",

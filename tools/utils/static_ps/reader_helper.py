@@ -192,7 +192,8 @@ class InferDataLoader(object):
         config_abs_dir = self.config.get("config_abs_dir", None)
         data_dir = os.path.join(config_abs_dir, data_dir)
         file_list = [os.path.join(data_dir, x) for x in os.listdir(data_dir)]
-        user_define_reader = self.config.get('runner.user_define_reader', False)
+        user_define_reader = self.config.get('runner.user_define_reader',
+                                             False)
         logger.info("reader path:{}".format(reader_path))
         from importlib import import_module
         reader_class = import_module(reader_path)
