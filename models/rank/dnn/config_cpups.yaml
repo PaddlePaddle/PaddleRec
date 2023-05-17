@@ -40,12 +40,13 @@ runner:
 
   train_batch_size: 1000
   train_data_dir: "data/sample_data/train"
-  train_reader_path: "benchmark_reader"
+  train_reader_path: "criteo_reader"
   model_save_path: "model"
 
+  infer_reader_type: "DataLoader"  # DataLoader / QueueDataset / RecDataset
   infer_batch_size: 1000
   test_data_dir: "data/sample_data/train"
-  infer_reader_path: "benchmark_reader"
+  infer_reader_path: "criteo_reader"
   infer_load_path: "model"
   infer_start_epoch: 0
   infer_end_epoch: 1
