@@ -58,7 +58,7 @@ class DygraphModel():
         labels = []
         for i in range(batch_size):
             g = pgl.Graph(
-                num_nodes=batch_data[0][i].numpy(),
+                num_nodes=batch_data[0][i].numpy()[0],
                 edges=batch_data[1][i].numpy(),
                 node_feat={"node_attr": batch_data[2][i].numpy()},
                 edge_feat={"edge_attr": batch_data[3][i].numpy()})
