@@ -221,10 +221,10 @@ def read_news(path, filenames):
     index = 1
     word_dict = {}
     word_index = 1
-    with open(os.path.join(path, filenames)) as f:
+    with open(os.path.join(path, filenames), 'rb') as f:
         lines = f.readlines()
     for line in lines:
-        splited = line.strip('\n').split('\t')
+        splited = line.decode().strip('\n').split('\t')
         doc_id, vert, subvert, title = splited[0:4]
         news_index[doc_id] = index
         index += 1
@@ -296,7 +296,7 @@ def load_entity_metadata(KG_root_path, random_emb=False):
 
 
 def load_news_entity(news, EntityId2Index, data_root_path):
-    with open(os.path.join(data_root_path, 'docs.tsv')) as f:
+    with open(os.path.join(data_root_path, 'docs.tsv'), encoding='UTF-8') as f:
         lines = f.readlines()
 
     news_entity = {}
