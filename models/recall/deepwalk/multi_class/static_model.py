@@ -62,7 +62,8 @@ class StaticModel():
             perm = np.arange(len(self.all_nodes), dtype=np.int64)
             start = 0
             while start < len(self.all_nodes):
-                yield self.all_nodes[perm[start:start + self.batch_size]]
+                yield self.all_nodes[perm[start:start +
+                                          self.batch_size]].astype(np.int64)
                 start += self.batch_size
 
         def wrapper():
