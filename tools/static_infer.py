@@ -158,7 +158,7 @@ def main(args):
                     format(infer_reader_cost / print_interval, (
                         infer_reader_cost + infer_run_cost) / print_interval,
                            batch_size, print_interval * batch_size / (
-                               time.time() - interval_begin)))
+                               time.time() + 0.0001 - interval_begin)))
                 interval_begin = time.time()
                 infer_reader_cost = 0.0
                 infer_run_cost = 0.0
