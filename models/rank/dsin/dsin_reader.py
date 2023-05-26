@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 import numpy as np
-
+import os
 from paddle.io import IterableDataset
 import pandas as pd
 
@@ -32,16 +32,22 @@ class RecDataset(IterableDataset):
     def __init__(self, file_list, config):
         super().__init__()
         self.file_list = file_list
+        print(file_list)
         data_file = [f.split('/')[-1] for f in file_list]
         mode = data_file[0].split('_')[0]
         data_dir = file_list[0].split(data_file[0])[0]
+        data_dir = data_dir[:-1]
+        data_dir = os.path.join(data_dir, os.path.split(data_file[0])[0])
         assert (mode == 'train' or mode == 'test' or mode == 'sample'
                 ), f"mode must be 'train' or 'test', but get '{mode}'"
-        feat_input = pd.read_pickle(data_dir + mode + '_feat_input.pkl')
-        self.sess_input = pd.read_pickle(data_dir + mode + '_sess_input.pkl')
-        self.sess_length = pd.read_pickle(data_dir + mode +
-                                          '_session_length.pkl')
-        self.label = pd.read_pickle(data_dir + mode + '_label.pkl')
+        feat_input = pd.read_pickle(
+            os.path.join(data_dir, mode + '_feat_input.pkl'))
+        self.sess_input = pd.read_pickle(
+            os.path.join(data_dir, mode + '_sess_input.pkl'))
+        self.sess_length = pd.read_pickle(
+            os.path.join(data_dir, mode + '_session_length.pkl'))
+        self.label = pd.read_pickle(
+            os.path.join(data_dir, mode + '_label.pkl'))
         if str(type(self.label)).split("'")[1] != 'numpy.ndarray':
             self.label = self.label.to_numpy()
         self.label = self.label.astype('int64')

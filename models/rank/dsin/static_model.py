@@ -60,13 +60,13 @@ class StaticModel():
     def create_feeds(self, is_infer=False):
 
         sparse_input = paddle.static.data(
-            name="sparse_tensor", shape=[None, 15], dtype="int")
+            name="sparse_tensor", shape=[None, 15], dtype="int64")
         dense_input = paddle.static.data(
             name="dense_tensor", shape=[None, ], dtype="float32")
         sess_input = paddle.static.data(
-            name="sess_tensor", shape=[None, 10, 10], dtype="int")
+            name="sess_tensor", shape=[None, 10, 10], dtype="int64")
         sess_length_input = paddle.static.data(
-            name="sess_length_tensor", shape=[None, ], dtype="int")
+            name="sess_length_tensor", shape=[None, ], dtype="int64")
         label = paddle.static.data(name="label", shape=[None, ], dtype="int64")
         feed_list = [
             sparse_input, dense_input, sess_input, sess_length_input, label
