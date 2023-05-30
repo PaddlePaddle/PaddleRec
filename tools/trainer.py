@@ -182,7 +182,7 @@ def main(args):
                     format(train_reader_cost / print_interval, (
                         train_reader_cost + train_run_cost) / print_interval,
                            total_samples / print_interval, total_samples / (
-                               train_reader_cost + train_run_cost)))
+                               train_reader_cost + train_run_cost + 0.0001)))
                 train_reader_cost = 0.0
                 train_run_cost = 0.0
                 total_samples = 0
