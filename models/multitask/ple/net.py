@@ -179,8 +179,7 @@ class SinglePLELayer(nn.Layer):
         # task-specific expert part
         for i in range(0, self.task_num):
             for j in range(0, self.exp_per_task):
-                linear_out = self._param_expert[i * self.task_num + j](
-                    input_data[i])
+                linear_out = self._param_expert[i * self.exp_per_task + j](input_data[i])
                 expert_output = F.relu(linear_out)
                 expert_outputs.append(expert_output)
         # shared expert part
