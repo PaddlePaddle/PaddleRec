@@ -172,7 +172,9 @@ class Main(object):
             self.reader.load_into_memory()
 
         for epoch in range(epochs):
-            fleet.load_inference_model(os.path.join(init_model_path, str(epoch)), mode=int(model_mode))
+            fleet.load_inference_model(
+                os.path.join(init_model_path, str(epoch)),
+                mode=int(model_mode))
             epoch_start_time = time.time()
 
             if sync_mode == "heter":
@@ -209,7 +211,6 @@ class Main(object):
             self.train_result_dict["speed"].append(epoch_speed)
 
             model_dir = "{}/{}".format(save_model_path, epoch)
-
 
         if reader_type == "InmemoryDataset":
             self.reader.release_memory()
