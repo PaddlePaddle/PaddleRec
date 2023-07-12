@@ -14,9 +14,9 @@
 
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
-from utils.static_ps.program_helper import get_model, get_strategy
-from utils.static_ps.common_ps import YamlHelper, is_distributed_env
-from utils.utils_single import auc
+from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
+from utils.static_ps.metric_helper import set_zero, get_global_auc
+from utils.static_ps.common import YamlHelper, is_distributed_env
 import argparse
 import time
 import sys
@@ -26,10 +26,10 @@ import paddle
 import os
 import warnings
 import logging
-
-import profiler
-from paddle.incubate.distributed.fleet.fleet_util import FleetUtil
-fleet_util = FleetUtil()
+import ast
+import numpy as np
+import struct
+from utils.utils_single import auc
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -49,11 +49,11 @@ def parse_args():
         required=True,
         help='config file path')
     parser.add_argument(
-        '--profiler_options',
-        type=str,
-        default=None,
-        help='The option of profiler, which should be in format \"key1=value1;key2=value2;key3=value3\".'
-    )
+        '-bf16',
+        '--pure_bf16',
+        type=ast.literal_eval,
+        default=False,
+        help="whether use bf16")
     args = parser.parse_args()
     args.abs_dir = os.path.dirname(os.path.abspath(args.config_yaml))
     yaml_helper = YamlHelper()
@@ -70,30 +70,32 @@ def parse_args():
             if type(config.get(key)) is bool:
                 value = (True if value.lower() == "true" else False)
             config[key] = value
-
     config["yaml_path"] = args.config_yaml
     config["config_abs_dir"] = args.abs_dir
-    config["profiler_options"] = args.profiler_options
+    config["pure_bf16"] = args.pure_bf16
     yaml_helper.print_yaml(config)
     return config
+
+
+def bf16_to_fp32(val):
+    return np.float32(struct.unpack('<f', struct.pack('<I', val << 16))[0])
 
 
 class Main(object):
     def __init__(self, config):
         self.metrics = {}
         self.config = config
-        self.profiler_options = config.get("profiler_options")
         self.input_data = None
         self.reader = None
         self.exe = None
-        self.model = None
-        self.PSGPU = None
         self.train_result_dict = {}
         self.train_result_dict["speed"] = []
         self.train_result_dict["auc"] = []
+        self.model = None
+        self.pure_bf16 = self.config['pure_bf16']
 
     def run(self):
-        fleet.init()
+        self.init_fleet_with_gloo()
         self.network()
         if fleet.is_server():
             self.run_server()
@@ -102,17 +104,24 @@ class Main(object):
             fleet.stop_worker()
             self.record_result()
         logger.info("Run Success, Exit.")
-        logger.info("-" * 100)
+
+    def init_fleet_with_gloo(use_gloo=True):
+        if use_gloo:
+            os.environ["PADDLE_WITH_GLOO"] = "1"
+            role = role_maker.PaddleCloudRoleMaker()
+            fleet.init(role)
+        else:
+            fleet.init()
 
     def network(self):
         self.model = get_model(self.config)
         self.input_data = self.model.create_feeds()
+        self.inference_feed_var = self.model.create_feeds()
         self.init_reader()
         self.metrics = self.model.net(self.input_data)
         self.inference_target_var = self.model.inference_target_var
         logger.info("cpu_num: {}".format(os.getenv("CPU_NUM")))
         self.model.create_optimizer(get_strategy(self.config))
-        logger.info("end network.....")
 
     def run_server(self):
         logger.info("Run Server Begin")
@@ -134,25 +143,23 @@ class Main(object):
             f.write(str(paddle.static.default_startup_program()))
 
         self.exe.run(paddle.static.default_startup_program())
+        if self.pure_bf16:
+            self.model.optimizer.amp_init(self.exe.place)
         fleet.init_worker()
+
+        init_model_path = config.get("runner.infer_load_path")
+        model_mode = config.get("runner.model_mode", 0)
+        #if fleet.is_first_worker():
+        #fleet.load_inference_model(init_model_path, mode=int(model_mode))
+        #fleet.barrier_worker()
 
         save_model_path = self.config.get("runner.model_save_path")
         if save_model_path and (not os.path.exists(save_model_path)):
             os.makedirs(save_model_path)
 
-        reader_type = self.config.get("runner.reader_type", None)
+        reader_type = self.config.get("runner.reader_type", "QueueDataset")
         epochs = int(self.config.get("runner.epochs"))
         sync_mode = self.config.get("runner.sync_mode")
-
-        gpus_env = os.getenv("FLAGS_selected_gpus")
-        self.PSGPU = paddle.framework.core.PSGPU()
-        gpuslot = [int(i) for i in range(1, self.model.sparse_inputs_slots)]
-        gpu_mf_sizes = [self.model.sparse_feature_dim - 1] * (
-            self.model.sparse_inputs_slots - 1)
-        self.PSGPU.set_slot_vector(gpuslot)
-        self.PSGPU.set_slot_dim_vector(gpu_mf_sizes)
-        self.PSGPU.init_gpu_ps([int(s) for s in gpus_env.split(",")])
-        gpu_num = len(gpus_env.split(","))
         opt_info = paddle.static.default_main_program()._fleet_opt
         if use_auc is True:
             opt_info['stat_var_names'] = [
@@ -161,35 +168,37 @@ class Main(object):
         else:
             opt_info['stat_var_names'] = []
 
+        if reader_type == "InmemoryDataset":
+            self.reader.load_into_memory()
+
         for epoch in range(epochs):
+            fleet.load_inference_model(
+                os.path.join(init_model_path, str(epoch)),
+                mode=int(model_mode))
             epoch_start_time = time.time()
 
             if sync_mode == "heter":
                 self.heter_train_loop(epoch)
-            elif sync_mode == "gpubox":
-                self.dataset_train_loop(epoch)
             elif reader_type == "QueueDataset":
                 self.dataset_train_loop(epoch)
-            elif reader_type == "DataLoader":
-                self.dataloader_train_loop(epoch)
-            elif reader_type == None or reader_type == "RecDataset":
-                self.recdataset_train_loop(epoch)
+            elif reader_type == "InmemoryDataset":
+                self.dataset_train_loop(epoch)
 
             epoch_time = time.time() - epoch_start_time
             epoch_speed = self.example_nums / epoch_time
-            epoch_speed = epoch_speed / gpu_num
             if use_auc is True:
-                global_auc = auc(self.model.stat_pos, self.model.stat_neg,
-                                 paddle.static.global_scope(), fleet.util)
+                global_auc = get_global_auc(paddle.static.global_scope(),
+                                            self.model.stat_pos.name,
+                                            self.model.stat_neg.name)
                 self.train_result_dict["auc"].append(global_auc)
-                fleet_util.set_zero(self.model.stat_pos.name,
-                                    paddle.static.global_scope())
-                fleet_util.set_zero(self.model.stat_neg.name,
-                                    paddle.static.global_scope())
-                fleet_util.set_zero(self.model.batch_stat_pos.name,
-                                    paddle.static.global_scope())
-                fleet_util.set_zero(self.model.batch_stat_neg.name,
-                                    paddle.static.global_scope())
+                set_zero(self.model.stat_pos.name,
+                         paddle.static.global_scope())
+                set_zero(self.model.stat_neg.name,
+                         paddle.static.global_scope())
+                set_zero(self.model.batch_stat_pos.name,
+                         paddle.static.global_scope())
+                set_zero(self.model.batch_stat_neg.name,
+                         paddle.static.global_scope())
                 logger.info(
                     "Epoch: {}, using time: {} second, ips: {} {}/sec. auc: {}".
                     format(epoch, epoch_time, epoch_speed, self.count_method,
@@ -198,24 +207,19 @@ class Main(object):
                 logger.info(
                     "Epoch: {}, using time {} second, ips {} {}/sec.".format(
                         epoch, epoch_time, epoch_speed, self.count_method))
+
             self.train_result_dict["speed"].append(epoch_speed)
-            self.PSGPU.end_pass()
 
             model_dir = "{}/{}".format(save_model_path, epoch)
-            if fleet.is_first_worker(
-            ) and save_model_path and is_distributed_env():
-                fleet.save_inference_model(
-                    self.exe, model_dir,
-                    [feed.name for feed in self.input_data],
-                    self.inference_target_var)
-            fleet.barrier_worker()
+
+        if reader_type == "InmemoryDataset":
             self.reader.release_memory()
-            logger.info("finish {} epoch training....".format(epoch))
-        self.PSGPU.finalize()
 
     def init_reader(self):
         if fleet.is_server():
             return
+        self.config["runner.reader_type"] = self.config.get(
+            "runner.reader_type", "QueueDataset")
         self.reader, self.file_list = get_reader(self.input_data, config)
         self.example_nums = 0
         self.count_method = self.config.get("runner.example_count_method",
@@ -230,16 +234,6 @@ class Main(object):
             )
 
     def dataset_train_loop(self, epoch):
-        start_time = time.time()
-        self.reader.load_into_memory()
-        print("self.reader.load_into_memory cost :{} seconds".format(time.time(
-        ) - start_time))
-
-        begin_pass_time = time.time()
-        self.PSGPU.begin_pass()
-        print("begin_pass cost:{} seconds".format(time.time() -
-                                                  begin_pass_time))
-
         logger.info("Epoch: {}, Running Dataset Begin.".format(epoch))
         fetch_info = [
             "Epoch {} Var {}".format(epoch, var_name)
@@ -247,94 +241,24 @@ class Main(object):
         ]
         fetch_vars = [var for _, var in self.metrics.items()]
         print_step = int(config.get("runner.print_interval"))
-        profiler.add_profiler_step(self.profiler_options)
-        self.exe.train_from_dataset(
+
+        debug = config.get("runner.dataset_debug", False)
+        if config.get("runner.need_dump"):
+            debug = True
+            dump_fields_path = "{}/{}".format(
+                config.get("runner.dump_fields_path"), epoch)
+            set_dump_config(paddle.static.default_main_program(), {
+                "dump_fields_path": dump_fields_path,
+                "dump_fields": config.get("runner.dump_fields")
+            })
+        print(paddle.static.default_main_program()._fleet_opt)
+        self.exe.infer_from_dataset(
             program=paddle.static.default_main_program(),
             dataset=self.reader,
-            debug=config.get("runner.dataset_debug"))
-
-    def dataloader_train_loop(self, epoch):
-        logger.info("Epoch: {}, Running DataLoader Begin.".format(epoch))
-        batch_id = 0
-        train_run_cost = 0.0
-        total_examples = 0
-        self.reader.start()
-        while True:
-            try:
-                train_start = time.time()
-                profiler.add_profiler_step(self.profiler_options)
-                # --------------------------------------------------- #
-                fetch_var = self.exe.run(
-                    program=paddle.static.default_main_program(),
-                    fetch_list=[var for _, var in self.metrics.items()])
-                # --------------------------------------------------- #
-                train_run_cost += time.time() - train_start
-                total_examples += (self.config.get("runner.train_batch_size"))
-                batch_id += 1
-                print_step = int(config.get("runner.print_interval"))
-                if batch_id % print_step == 0:
-                    metrics_string = ""
-                    for var_idx, var_name in enumerate(self.metrics):
-                        metrics_string += "{}: {}, ".format(var_name,
-                                                            fetch_var[var_idx])
-                    profiler_string = ""
-                    profiler_string += "avg_batch_cost: {} sec, ".format(
-                        format((train_run_cost) / print_step, '.5f'))
-                    profiler_string += "avg_samples: {}, ".format(
-                        format(total_examples / print_step, '.5f'))
-                    profiler_string += "ips: {} {}/sec ".format(
-                        format(total_examples / (train_run_cost), '.5f'),
-                        self.count_method)
-                    logger.info("Epoch: {}, Batch: {}, {} {}".format(
-                        epoch, batch_id, metrics_string, profiler_string))
-                    train_run_cost = 0.0
-                    total_examples = 0
-            except paddle.framework.core.EOFException:
-                self.reader.reset()
-                break
-
-    def recdataset_train_loop(self, epoch):
-        logger.info("Epoch: {}, Running RecDatast Begin.".format(epoch))
-
-        input_data_names = [var.name for var in self.input_data]
-        batch_size = config.get("runner.train_batch_size", None)
-        print_interval = config.get("runner.print_interval", None)
-
-        batch_id = 0
-        train_run_cost = 0.0
-        train_reader_cost = 0.0
-        total_samples = 0
-        reader_start = time.time()
-        for batch_id, batch_data in enumerate(self.reader()):
-            train_reader_cost += time.time() - reader_start
-            train_start = time.time()
-            profiler.add_profiler_step(self.profiler_options)
-            # --------------------------------------------------- #
-            fetch_batch_var = self.exe.run(
-                program=paddle.static.default_main_program(),
-                feed=dict(zip(input_data_names, batch_data)),
-                fetch_list=[var for _, var in self.metrics.items()])
-            # --------------------------------------------------- #
-            train_run_cost += time.time() - train_start
-            total_samples += batch_size
-            if batch_id % print_interval == 0:
-                metric_str = ""
-                for var_idx, var_name in enumerate(self.metrics):
-                    metric_str += "{}: {}, ".format(var_name,
-                                                    fetch_batch_var[var_idx])
-                logger.info(
-                    "Epoch: {}, Batch_id: {}, ".format(epoch,
-                                                       batch_id) + metric_str +
-                    " avg_reader_cost: {:.5f} sec, avg_batch_cost: {:.5f} sec, avg_samples: {:.5f}, ips: {:.5f} {}/sec".
-                    format(train_reader_cost / print_interval, (
-                        train_reader_cost + train_run_cost) / print_interval,
-                           total_samples / print_interval, total_samples / (
-                               train_reader_cost + train_run_cost),
-                           self.count_method))
-                train_reader_cost = 0.0
-                train_run_cost = 0.0
-                total_samples = 0
-            reader_start = time.time()
+            fetch_list=fetch_vars,
+            fetch_info=fetch_info,
+            print_period=print_step,
+            debug=debug)
 
     def heter_train_loop(self, epoch):
         logger.info(
@@ -342,7 +266,7 @@ class Main(object):
             format(epoch))
         reader_type = self.config.get("runner.reader_type")
         if reader_type == "QueueDataset":
-            self.exe.train_from_dataset(
+            self.exe.infer_from_dataset(
                 program=paddle.static.default_main_program(),
                 dataset=self.reader,
                 debug=config.get("runner.dataset_debug"))
@@ -354,7 +278,6 @@ class Main(object):
             while True:
                 try:
                     train_start = time.time()
-                    profiler.add_profiler_step(self.profiler_options)
                     # --------------------------------------------------- #
                     self.exe.run(program=paddle.static.default_main_program())
                     # --------------------------------------------------- #

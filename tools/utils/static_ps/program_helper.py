@@ -19,7 +19,7 @@ import logging
 import paddle
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
-import common
+from . import common_ps
 import sys
 
 logging.basicConfig(
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_strategy(config):
-    if not common.is_distributed_env():
+    if not common_ps.is_distributed_env():
         logger.warn(
             "Not Find Distributed env, Change To local train mode. If you want train with fleet, please use [fleetrun] command."
         )

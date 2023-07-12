@@ -15,7 +15,7 @@
 from __future__ import print_function
 from reader_helper import get_reader, get_infer_reader, get_example_num, get_file_list, get_word_num
 from program_helper import get_model, get_strategy
-from common import YamlHelper, is_number
+from common_ps import YamlHelper, is_number
 import os
 import numpy as np
 import warnings

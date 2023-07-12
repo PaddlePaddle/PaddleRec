@@ -26,7 +26,7 @@ import sys
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
-from common import YamlHelper, is_number
+from common_ps import YamlHelper, is_number
 from program_helper import get_model, get_strategy
 from reader_helper import get_reader, get_infer_reader, get_example_num, get_file_list, get_word_num
 
