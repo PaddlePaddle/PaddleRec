@@ -235,8 +235,8 @@ if __name__ == "__main__":
     yaml_path = sys.argv[1]
     utils_path = sys.argv[2]
     sys.path.append(utils_path)
-    import common
-    yaml_helper = common.YamlHelper()
+    import common_ps
+    yaml_helper = common_ps.YamlHelper()
     config = yaml_helper.load_yaml(yaml_path)
     abs_dir = os.path.dirname(os.path.abspath(yaml_path))
     config["config_abs_dir"] = abs_dir

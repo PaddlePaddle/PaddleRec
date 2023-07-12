@@ -30,7 +30,7 @@ import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
-import common
+import common_ps
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)

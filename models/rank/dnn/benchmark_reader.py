@@ -84,8 +84,8 @@ if __name__ == "__main__":
     yaml_path = sys.argv[1]
     utils_path = sys.argv[2]
     sys.path.append(utils_path)
-    import common
-    yaml_helper = common.YamlHelper()
+    import common_ps
+    yaml_helper = common_ps.YamlHelper()
     config = yaml_helper.load_yaml(yaml_path)
 
     r = Reader()
