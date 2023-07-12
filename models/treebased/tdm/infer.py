@@ -269,8 +269,8 @@ if __name__ == '__main__':
         os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))))
     sys.path.append(utils_path)
     print(utils_path)
-    import common
-    yaml_helper = common.YamlHelper()
+    import common_ps
+    yaml_helper = common_ps.YamlHelper()
     config = yaml_helper.load_yaml(sys.argv[1])
 
     test_files_path = "../data/demo_test_data/"

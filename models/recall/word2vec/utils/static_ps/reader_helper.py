@@ -19,7 +19,7 @@ import logging
 import paddle
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle.distributed.fleet as fleet
-import common
+import common_ps
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -92,7 +92,7 @@ def get_word_num(file_list):
 
 
 def get_reader_generator(path, reader_name="Reader"):
-    reader_class = common.lazy_instance_by_fliename(path, reader_name)()
+    reader_class = common_ps.lazy_instance_by_fliename(path, reader_name)()
     return reader_class
 
 
@@ -113,7 +113,8 @@ class RecDatasetReader(object):
         logger.info("Reader Path: {}".format(reader_path))
 
         from paddle.io import DataLoader
-        dataset = common.lazy_instance_by_fliename(reader_path, "RecDataset")
+        dataset = common_ps.lazy_instance_by_fliename(reader_path,
+                                                      "RecDataset")
         print("dataset: {}".format(dataset))
 
         use_cuda = int(self.config.get("runner.use_gpu"))
@@ -194,7 +195,7 @@ class QueueDatset(object):
         self.pipe_command = self.config.get("runner.pipe_command")
         self.train_reader = self.config.get("runner.train_reader_path")
         assert self.pipe_command != None
-        utils_path = common.get_utils_file_path()
+        utils_path = common_ps.get_utils_file_path()
         print("utils_path: {}".format(utils_path))
         abs_train_reader = os.path.join(config["config_abs_dir"],
                                         self.train_reader)
