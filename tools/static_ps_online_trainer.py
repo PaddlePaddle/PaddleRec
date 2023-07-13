@@ -18,7 +18,7 @@ from utils.static_ps.program_helper import get_model, get_strategy, set_dump_con
 from utils.static_ps.flow_helper import *
 from utils.static_ps.metric_helper import get_global_metrics_str, clear_metrics
 from utils.static_ps.time_helper import get_avg_cost_mins, get_max_cost_mins, get_min_cost_mins
-from utils.static_ps.common import YamlHelper, is_distributed_env, get_utils_file_path
+from utils.static_ps.common_ps import YamlHelper, is_distributed_env, get_utils_file_path
 import argparse
 import time
 import sys
