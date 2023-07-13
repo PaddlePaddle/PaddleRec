@@ -15,7 +15,7 @@
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
-from utils.static_ps.common import YamlHelper, is_distributed_env, get_utils_file_path
+from utils.static_ps.common_ps import YamlHelper, is_distributed_env, get_utils_file_path
 import argparse
 import time
 import sys
