@@ -32,6 +32,8 @@ sed -i "s/--use_gpu/--use_npu/g" $FILENAME
 sed -i "s/--enable_tensorRT:False|True/--enable_tensorRT:False/g" $FILENAME
 sed -i "s/--enable_tensorRT:True|False/--enable_tensorRT:False/g" $FILENAME
 sed -i "s/--benchmark:True/--benchmark:False/g" $FILENAME
+# python has been updated to version 3.9 for npu backend
+sed -i "s/python3.7/python3.9/g" $FILENAME
 dataline=`cat $FILENAME`
 
 # change gpu to npu in execution script
