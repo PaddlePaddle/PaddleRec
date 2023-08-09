@@ -288,7 +288,6 @@ class StaticDIENLayer(nn.Layer):
         self.epsilon = 0.00000001
         self.item_emb_size = item_emb_size
         self.cat_emb_size = cat_emb_size
-        print()
         self.act = act
         self.is_sparse = is_sparse
         self.use_DataLoader = use_DataLoader
