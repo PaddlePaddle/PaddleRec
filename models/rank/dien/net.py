@@ -521,7 +521,8 @@ class StaticDIENLayer(nn.Layer):
 
         # ------------------------- RNN-gru --------------------------
         self.rnn = paddle.nn.RNN(cell=self.gru_cell_attention, time_major=True)
-        attention_rnn_res, final_states= self.rnn(inputs=concat_weighted_vector)
+        attention_rnn_res, final_states= self.rnn(
+            inputs=concat_weighted_vector)
         attention_rnn_res_T = paddle.transpose(attention_rnn_res,
                                                [1, 0, 2])[:, -1, :]
 
