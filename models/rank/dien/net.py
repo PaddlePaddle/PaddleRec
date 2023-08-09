@@ -288,6 +288,7 @@ class StaticDIENLayer(nn.Layer):
         self.epsilon = 0.00000001
         self.item_emb_size = item_emb_size
         self.cat_emb_size = cat_emb_size
+        print()
         self.act = act
         self.is_sparse = is_sparse
         self.use_DataLoader = use_DataLoader
@@ -520,16 +521,8 @@ class StaticDIENLayer(nn.Layer):
         aux_loss = paddle.mean(paddle.add(test_neg, test_pos))
 
         # ------------------------- RNN-gru --------------------------
-
-        self.rnn = paddle.static.nn.StaticRNN(name="attention_evolution")
-        with self.rnn.step():
-            word = self.rnn.step_input(concat_weighted_vector)
-            prev = self.rnn.memory(
-                shape=[-1, self.item_emb_size * 2], batch_ref=word)
-            y_out, hidden = self.gru_cell_attention(word, prev)
-            self.rnn.update_memory(prev, hidden)
-            self.rnn.output(hidden)
-        attention_rnn_res = self.rnn()
+        self.rnn = paddle.nn.RNN(cell=self.gru_cell_attention, time_major=True)
+        attention_rnn_res, final_states= self.rnn(inputs=concat_weighted_vector)
         attention_rnn_res_T = paddle.transpose(attention_rnn_res,
                                                [1, 0, 2])[:, -1, :]
 
