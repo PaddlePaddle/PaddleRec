@@ -54,9 +54,9 @@ if __name__ == '__main__':
         os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))))
     sys.path.append(utils_path)
     print(utils_path)
-    import common
+    import common_ps
 
-    yaml_helper = common.YamlHelper()
+    yaml_helper = common_ps.YamlHelper()
     config = yaml_helper.load_yaml(sys.argv[1])
 
     tree_name = config.get("hyper_parameters.tree_name")
