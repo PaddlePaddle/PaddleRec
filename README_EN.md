@@ -22,7 +22,7 @@
 
 - Recommendation system helps users quickly find useful and interesting information from massive data.
 
-- Recommendation system is also a silver bullet to attract users, retain users, increase users' stickness or conversionn.
+- Recommendation system is also a silver bullet to attract users, retain users, increase users' stickness and conversion.
 
   > Who can better use the recommendation system, who can gain more advantage in the fierce competition.
   >
