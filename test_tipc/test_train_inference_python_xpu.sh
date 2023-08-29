@@ -32,6 +32,8 @@ sed -i "s/--use_gpu/--use_xpu/g" $FILENAME
 sed -i "s/--enable_tensorRT:False|True/--enable_tensorRT:False/g" $FILENAME
 sed -i "s/--enable_tensorRT:True|False/--enable_tensorRT:False/g" $FILENAME
 sed -i "s/--benchmark:True/--benchmark:False/g" $FILENAME
+# python has been updated to version 3.9 for npu backend
+sed -i "s/python3.7/python3.9/g" $FILENAME
 dataline=`cat $FILENAME`
 
 # change gpu to npu in execution script
@@ -41,18 +43,18 @@ sed -i 's/\"gpu\"/\"npu\"/g' test_tipc/test_train_inference_python.sh
 IFS=$'\n'
 lines=(${dataline})
 
-# replace gpu to npu in trainer.py
+# replace gpu to xpu in trainer.py
 trainer_py=$(func_parser_value "${lines[15]}")
 trainer_config=$(func_parser_execute_python ${trainer_py})
 sed -i 's/config.get(\"runner.use_gpu\", True)/config.get(\"runner.use_gpu\", False)/g' "$REPO_ROOT_PATH/$trainer_config"
 
-# replace gpu to npu in to_static.py
+# replace gpu to xpu in to_static.py
 to_static_py=$(func_parser_value "${lines[29]}")
 to_static_config=$(func_parser_execute_python ${to_static_py})
 sed -i 's/use_gpu/use_xpu/g' "$REPO_ROOT_PATH/$to_static_config"
 sed -i 's/'"'"'gpu'"'"'/'"'"'xpu'"'"'/g' "$REPO_ROOT_PATH/$to_static_config"
 
-# replace gpu to npu in paddle_infer.py
+# replace gpu to xpu in paddle_infer.py
 inference_py=$(func_parser_value "${lines[39]}")
 inference_config=$(func_parser_execute_python ${inference_py})
 if [[ $inference_config =~ "test_tipc" ]]; then
