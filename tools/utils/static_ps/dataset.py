@@ -19,7 +19,6 @@ import threading
 
 import paddle
 from paddle.distributed import fleet
-import paddle.fluid as fluid
 from pgl.utils.logger import log
 
 import util
@@ -108,7 +107,7 @@ class BaseDataset(object):
             graph_config["batch_size"] = config.infer_batch_size
             graph_config["samples"] = str_infer_samples
 
-        dataset = fluid.DatasetFactory().create_dataset("InMemoryDataset")
+        dataset = paddle.DatasetFactory().create_dataset("InMemoryDataset")
         dataset.set_feed_type("SlotRecordInMemoryDataFeed")
         dataset.set_use_var(self.holder_list)
         dataset.set_graph_config(graph_config)

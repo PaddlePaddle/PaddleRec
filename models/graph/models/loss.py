@@ -28,8 +28,6 @@ import numpy as np
 import pickle as pkl
 
 import paddle
-import paddle.fluid as F
-import paddle.fluid.layers as L
 import pgl
 from pgl.utils.logger import log
 import paddle.static as static
