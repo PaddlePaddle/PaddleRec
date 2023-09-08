@@ -29,7 +29,7 @@ runner:
   sync_mode: "gpubox"
   thread_num: 30
   reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
-  pipe_command: "python3.7 models/rank/wide_deep/queuedataset_reader.py"
+  pipe_command: "python models/rank/wide_deep/queuedataset_reader.py"
   dataset_debug: False
   split_file_list: False
 
