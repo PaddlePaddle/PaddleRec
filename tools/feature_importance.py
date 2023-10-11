@@ -109,7 +109,7 @@ class Main(object):
         fleet.run_server()
 
     def wait_and_prepare_dataset(self):
-        dataset = paddle.DatasetFactory().create_dataset("InMemoryDataset")
+        dataset = paddle.base.DatasetFactory().create_dataset("InMemoryDataset")
         dataset.set_use_var(self.input_data)
         train_data_dir = self.config.get("runner.data_dir", "")
         dataset.set_batch_size(int(config.get("runner.batch_size", "1")))
