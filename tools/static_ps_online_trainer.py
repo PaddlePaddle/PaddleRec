@@ -145,7 +145,7 @@ class Main(object):
 
     def wait_and_prepare_dataset(self, day, pass_index):
         train_data_path = self.config.get("runner.train_data_dir", [])
-        dataset = paddle.DatasetFactory().create_dataset(self.reader_type)
+        dataset = paddle.base.DatasetFactory().create_dataset(self.reader_type)
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.train_batch_size', 1))
         dataset.set_thread(self.config.get('runner.train_thread_num', 12))
@@ -197,7 +197,7 @@ class Main(object):
         if not next_data_ready:
             next_dataset = None
         else:
-            next_dataset = paddle.DatasetFactory().create_dataset(
+            next_dataset = paddle.base.DatasetFactory().create_dataset(
                 self.reader_type)
             next_dataset.set_use_var(self.input_data)
             next_dataset.set_batch_size(
@@ -227,7 +227,7 @@ class Main(object):
 
     def wait_and_prepare_infer_dataset(self, day, pass_index):
         test_data_path = self.config.get("runner.infer_data_dir", [])
-        dataset = paddle.DatasetFactory().create_dataset(self.reader_type)
+        dataset = paddle.base.DatasetFactory().create_dataset(self.reader_type)
         dataset.set_use_var(self.input_data)
         dataset.set_batch_size(self.config.get('runner.infer_batch_size', 1))
         dataset.set_thread(self.config.get('runner.infer_thread_num', 1))
