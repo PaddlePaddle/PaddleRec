@@ -225,6 +225,7 @@ if [ ${MODE} = "benchmark_train" ]; then
 	  echo "Create log floder for store running log"
 	fi
 	if [ ${run_mode_value} = "PSGPU" ]; then
+        export FLAGS_dynamic_static_unified_comm=False #PSGPU不支持新通信库
         export FLAGS_LAUNCH_BARRIER=0
         export PADDLE_TRAINER_ID=0
         export PADDLE_PSERVER_NUMS=1
