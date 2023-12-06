@@ -47,7 +47,7 @@ class DygraphModel():
         sub_category_size = config.get("hyper_parameters.sub_category_size")
         cate_dimension = config.get("hyper_parameters.category_dimension")
         word_dict_size = config.get("hyper_parameters.word_dict_size")
-        return net.NAMLLayer(article_content_size, article_title_size,
+        return net.FastRecommender(article_content_size, article_title_size,
                              browse_size, neg_condidate_sample_size,
                              word_dimension, category_size, sub_category_size,
                              cate_dimension, word_dict_size)
