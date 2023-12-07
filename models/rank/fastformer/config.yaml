@@ -14,7 +14,7 @@
 
 runner:
   train_data_dir: "data/sample_data/train"
-  train_reader_path: "NAMLDataReader" # importlib format
+  train_reader_path: "FastformerDataReader" # importlib format
   use_gpu: False
   train_batch_size: 10
   epochs: 20
@@ -22,7 +22,7 @@ runner:
   #model_init_path: "output_model/0" # init model
   model_save_path: "output_model_all"
   infer_batch_size: 2
-  infer_reader_path: "NAMLDataReader" # importlib format
+  infer_reader_path: "FastformerDataReader" # importlib format
   test_data_dir: "data/sample_data/train"
   infer_load_path: "output_model_all"
   infer_start_epoch: 0
@@ -30,6 +30,17 @@ runner:
 
 # hyper parameters of user-defined network
 hyper_parameters:
+  # fastformer
+  hidden_size: 256
+  hidden_dropout_prob: 0.2
+  num_hidden_layers: 2
+  num_attention_heads: 16
+  intermediate_size: 256
+  max_position_embeddings: 256
+  layer_norm_eps: 1e-12
+  initializer_range: 0.02
+  pooler_type: weightpooler
+
   # optimizer config
   optimizer:
     class: Adam

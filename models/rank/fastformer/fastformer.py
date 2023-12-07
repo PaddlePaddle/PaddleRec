@@ -18,6 +18,7 @@ import paddle.nn as nn
 import math
 import numpy as np
 
+
 class AttentionPooling(nn.Layer):
     def __init__(self, hidden_size, initializer_range):
         super(AttentionPooling, self).__init__()
@@ -29,10 +30,11 @@ class AttentionPooling(nn.Layer):
 
     def init_weights(self, layer):
         if isinstance(layer, nn.Linear):
-            layer.weight.set_value(paddle.tensor.normal(
-                        mean=0.0,
-                        std=self.initializer_range,
-                        shape=layer.weight.shape))
+            layer.weight.set_value(
+                paddle.tensor.normal(
+                    mean=0.0, std=self.initializer_range, shape=layer.weight.shape
+                )
+            )
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
 
     def forward(self, x, attn_mask=None):
@@ -56,8 +58,8 @@ class FastSelfAttention(nn.Layer):
         if hidden_size % num_attention_heads != 0:
             raise ValueError(
                 "The hidden size (%d) is not a multiple of the number of attention "
-                "heads (%d)" %
-                (hidden_size, num_attention_heads))
+                "heads (%d)" % (hidden_size, num_attention_heads)
+            )
         self.attention_head_size = int(hidden_size / num_attention_heads)
         self.num_attention_heads = num_attention_heads
         self.all_head_size = self.num_attention_heads * self.attention_head_size
@@ -76,14 +78,17 @@ class FastSelfAttention(nn.Layer):
 
     def init_weights(self, layer):
         if isinstance(layer, nn.Linear):
-            layer.weight.set_value(paddle.tensor.normal(
-                        mean=0.0,
-                        std=self.initializer_range,
-                        shape=layer.weight.shape))
+            layer.weight.set_value(
+                paddle.tensor.normal(
+                    mean=0.0, std=self.initializer_range, shape=layer.weight.shape
+                )
+            )
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
 
     def transpose_for_scores(self, x):
-        new_x_shape = x.shape[:-1] + [self.num_attention_heads] + [self.attention_head_size]
+        new_x_shape = (
+            x.shape[:-1] + [self.num_attention_heads] + [self.attention_head_size]
+        )
         x = paddle.reshape(x, new_x_shape)
         return x.transpose([0, 2, 1, 3])
 
@@ -94,7 +99,10 @@ class FastSelfAttention(nn.Layer):
         mixed_key_layer = self.key(hidden_states)
 
         # batch_size, num_head, seq_len
-        query_for_score = self.query_att(mixed_query_layer).transpose([0, 2, 1]) / self.attention_head_size**0.5
+        query_for_score = (
+            self.query_att(mixed_query_layer).transpose([0, 2, 1])
+            / self.attention_head_size**0.5
+        )
 
         # add attention mask
         query_for_score += attention_mask
@@ -107,14 +115,20 @@ class FastSelfAttention(nn.Layer):
         query_layer = self.transpose_for_scores(mixed_query_layer)
 
         # batch_size, num_head, head_dim, 1
-        pooled_query = paddle.matmul(query_weight, query_layer).transpose([0, 2, 1, 3]).reshape([-1, 1, self.num_attention_heads * self.attention_head_size])
+        pooled_query = (
+            paddle.matmul(query_weight, query_layer)
+            .transpose([0, 2, 1, 3])
+            .reshape([-1, 1, self.num_attention_heads * self.attention_head_size])
+        )
         pooled_query_repeat = pooled_query.tile([1, seq_len, 1])
         # batch_size, num_head, seq_len, head_dim
 
         # batch_size, num_head, seq_len
         mixed_query_key_layer = mixed_key_layer * pooled_query_repeat
 
-        query_key_score = (self.key_att(mixed_query_key_layer) / self.attention_head_size**0.5).transpose([0, 2, 1])
+        query_key_score = (
+            self.key_att(mixed_query_key_layer) / self.attention_head_size**0.5
+        ).transpose([0, 2, 1])
         # add attention mask
         query_key_score += attention_mask
 
@@ -126,18 +140,29 @@ class FastSelfAttention(nn.Layer):
 
         # query = value
         weighted_value = (pooled_key * query_layer).transpose([0, 2, 1, 3])
-        weighted_value = paddle.reshape(weighted_value, 
-            weighted_value.shape[:-2] + [self.num_attention_heads * self.attention_head_size])
+        weighted_value = paddle.reshape(
+            weighted_value,
+            weighted_value.shape[:-2]
+            + [self.num_attention_heads * self.attention_head_size],
+        )
         weighted_value = self.transform(weighted_value) + mixed_query_layer
 
         return weighted_value
 
 
 class FastAttention(paddle.nn.Layer):
-    def __init__(self, hidden_size, num_attention_heads, initializer_range, 
-                 layer_norm_eps, hidden_dropout_prob):
+    def __init__(
+        self,
+        hidden_size,
+        num_attention_heads,
+        initializer_range,
+        layer_norm_eps,
+        hidden_dropout_prob,
+    ):
         super(FastAttention, self).__init__()
-        self.self_attention = FastSelfAttention(hidden_size, num_attention_heads, initializer_range)
+        self.self_attention = FastSelfAttention(
+            hidden_size, num_attention_heads, initializer_range
+        )
         self.dense = nn.Linear(hidden_size, hidden_size)
         self.layer_norm = nn.LayerNorm(hidden_size, epsilon=layer_norm_eps)
         self.dropout = nn.Dropout(hidden_dropout_prob)
@@ -152,14 +177,23 @@ class FastAttention(paddle.nn.Layer):
 
 
 class FastformerLayer(paddle.nn.Layer):
-    def __init__(self, hidden_size, num_attention_heads, initializer_range, layer_norm_eps, intermediate_size, hidden_dropout_prob):
+    def __init__(
+        self,
+        hidden_size,
+        num_attention_heads,
+        initializer_range,
+        layer_norm_eps,
+        intermediate_size,
+        hidden_dropout_prob,
+    ):
         super(FastformerLayer, self).__init__()
-        self.attention = FastAttention(hidden_size, 
-                                       num_attention_heads, 
-                                       initializer_range, 
-                                       layer_norm_eps, 
-                                       hidden_dropout_prob
-                                      )
+        self.attention = FastAttention(
+            hidden_size,
+            num_attention_heads,
+            initializer_range,
+            layer_norm_eps,
+            hidden_dropout_prob,
+        )
 
         # BERT Intermediate
         self.dense1 = nn.Linear(hidden_size, intermediate_size)
@@ -182,24 +216,41 @@ class FastformerLayer(paddle.nn.Layer):
 
 
 class FastformerEncoder(paddle.nn.Layer):
-    def __init__(self, hidden_size, num_attention_heads, initializer_range, 
-                 layer_norm_eps, intermediate_size, hidden_dropout_prob, 
-                 num_hidden_layers, max_position_embeddings, pooler_type, pooler_count):
+    def __init__(
+        self,
+        hidden_size,
+        num_attention_heads,
+        initializer_range,
+        layer_norm_eps,
+        intermediate_size,
+        hidden_dropout_prob,
+        num_hidden_layers,
+        max_position_embeddings,
+        pooler_type,
+        pooler_count,
+    ):
         super(FastformerEncoder, self).__init__()
         self.initializer_range = initializer_range
-        self.encoders = nn.LayerList([FastformerLayer(hidden_size, 
-                                                      num_attention_heads, 
-                                                      initializer_range, 
-                                                      layer_norm_eps, 
-                                                      intermediate_size, 
-                                                      hidden_dropout_prob) for _ in range(num_hidden_layers)])
+        self.encoders = nn.LayerList(
+            [
+                FastformerLayer(
+                    hidden_size,
+                    num_attention_heads,
+                    initializer_range,
+                    layer_norm_eps,
+                    intermediate_size,
+                    hidden_dropout_prob,
+                )
+                for _ in range(num_hidden_layers)
+            ]
+        )
         self.position_embeddings = nn.Embedding(max_position_embeddings, hidden_size)
         self.layer_norm = nn.LayerNorm(hidden_size, epsilon=layer_norm_eps)
         self.dropout = nn.Dropout(hidden_dropout_prob)
 
         # support multiple different poolers with shared bert encoder.
         self.poolers = nn.LayerList()
-        if pooler_type == 'weightpooler':
+        if pooler_type == "weightpooler":
             for _ in range(pooler_count):
                 self.poolers.append(AttentionPooling(hidden_size, initializer_range))
         logging.info(f"This model has {len(self.poolers)} poolers.")
@@ -208,16 +259,19 @@ class FastformerEncoder(paddle.nn.Layer):
 
     def init_weights(self, layer):
         if isinstance(layer, (nn.Linear, nn.Embedding)):
-            layer.weight.set_value(paddle.tensor.normal(
-                                    mean=0.0,
-                                    std=self.initializer_range,
-                                    shape=layer.weight.shape))
+            layer.weight.set_value(
+                paddle.tensor.normal(
+                    mean=0.0, std=self.initializer_range, shape=layer.weight.shape
+                )
+            )
             if isinstance(layer, (nn.Embedding)) and layer._padding_idx is not None:
                 with paddle.no_grad():
                     layer.weight[layer._padding_idx].fill_(0)
         elif isinstance(layer, nn.LayerNorm):
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
-            layer.weight.set_value(paddle.full(shape=layer.weight.shape, fill_value=0.0))
+            layer.weight.set_value(
+                paddle.full(shape=layer.weight.shape, fill_value=0.0)
+            )
         if isinstance(layer, nn.Linear) and layer.bias is not None:
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
 
@@ -226,7 +280,9 @@ class FastformerEncoder(paddle.nn.Layer):
         # attention_mask: batch_size, seq_len, emb_dim
 
         extended_attention_mask = attention_mask.unsqueeze(1)
-        extended_attention_mask = extended_attention_mask.astype(next(iter(self.parameters())).dtype)  # fp16 compatibility
+        extended_attention_mask = extended_attention_mask.astype(
+            next(iter(self.parameters())).dtype
+        )  # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
         # embeddings = input_embs + position_embeddings
@@ -246,25 +302,43 @@ class FastformerEncoder(paddle.nn.Layer):
 
 
 class Fastformer(paddle.nn.Layer):
-
-    def __init__(self, hidden_size, num_attention_heads, initializer_range, 
-                 layer_norm_eps, intermediate_size, hidden_dropout_prob, 
-                 num_hidden_layers, max_position_embeddings, pooler_type, vocab_size, pooler_count=1):
+    def __init__(
+        self,
+        hidden_size,
+        num_attention_heads,
+        initializer_range,
+        layer_norm_eps,
+        intermediate_size,
+        hidden_dropout_prob,
+        num_hidden_layers,
+        max_position_embeddings,
+        pooler_type,
+        pooler_count=1,
+    ):
         super(Fastformer, self).__init__()
         self.initializer_range = initializer_range
-        # self.word_embedding = nn.Embedding(vocab_size, 256, padding_idx=0)
-        self.fastformer_model = FastformerEncoder(hidden_size, num_attention_heads, initializer_range, 
-                 layer_norm_eps, intermediate_size, hidden_dropout_prob, 
-                 num_hidden_layers, max_position_embeddings, pooler_type, pooler_count)
+        self.fastformer_model = FastformerEncoder(
+            hidden_size,
+            num_attention_heads,
+            initializer_range,
+            layer_norm_eps,
+            intermediate_size,
+            hidden_dropout_prob,
+            num_hidden_layers,
+            max_position_embeddings,
+            pooler_type,
+            pooler_count,
+        )
         self.criterion = nn.CrossEntropyLoss()
         self.apply(self.init_weights)
 
     def init_weights(self, layer):
         if isinstance(layer, (nn.Linear, nn.Embedding)):
-            layer.weight.set_value(paddle.tensor.normal(
-                                    mean=0.0,
-                                    std=self.initializer_range,
-                                    shape=layer.weight.shape))
+            layer.weight.set_value(
+                paddle.tensor.normal(
+                    mean=0.0, std=self.initializer_range, shape=layer.weight.shape
+                )
+            )
             if isinstance(layer, (nn.Embedding)) and layer._padding_idx is not None:
                 with paddle.no_grad():
                     layer.weight[layer._padding_idx].fill_(0)
@@ -276,23 +350,20 @@ class Fastformer(paddle.nn.Layer):
         return text_vec
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     batch_size = 48
     seq_len = 30
     hidden_size = 256
     hidden_dropout_prob = 0.2
-    num_hidden_layers =  2
-    hidden_act = "gelu"
+    num_hidden_layers = 2
     num_attention_heads = 16
     intermediate_size = 256
     max_position_embeddings = 256
-    type_vocab_size = 2
     vocab_size = 100000
     layer_norm_eps = 1e-12
     initializer_range = 0.02
     pooler_type = "weightpooler"
-    enable_fp16 =  False
+    enable_fp16 = False
 
     # Test FastAttentionPooling
     # x = paddle.rand(shape=[4, seq_len, hidden_size])
@@ -304,18 +375,27 @@ if __name__ == '__main__':
     # Test FastAttentionPooling
 
     # batch_size, log_length, news_dim
-    x = paddle.paddle.randint(low=0, high=100, shape=[batch_size, hidden_size])
+    x = paddle.paddle.randint(low=0, high=100, shape=[batch_size, seq_len])
     x = paddle.tril(x)
 
     word_embedding = nn.Embedding(vocab_size, hidden_size, padding_idx=0)
     embedding = word_embedding(x)
 
-    attention_mask = paddle.cast(x, dtype='bool')
-    attention_mask = paddle.cast(attention_mask, dtype='float32')
+    attention_mask = paddle.cast(x, dtype="bool")
+    attention_mask = paddle.cast(attention_mask, dtype="float32")
 
-    model = Fastformer(hidden_size, num_attention_heads, initializer_range, 
-                       layer_norm_eps, intermediate_size, hidden_dropout_prob, 
-                       num_hidden_layers, max_position_embeddings, pooler_type, vocab_size
-                      )
+    model = Fastformer(
+        hidden_size,
+        num_attention_heads,
+        initializer_range,
+        layer_norm_eps,
+        intermediate_size,
+        hidden_dropout_prob,
+        num_hidden_layers,
+        max_position_embeddings,
+        pooler_type,
+        vocab_size,
+    )
+    print(embedding.shape, attention_mask.shape)
     out = model(embedding, attention_mask)
     print(out.shape)
