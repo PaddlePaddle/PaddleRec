@@ -83,6 +83,7 @@ class FastSelfAttention(nn.Layer):
                     mean=0.0, std=self.initializer_range, shape=layer.weight.shape
                 )
             )
+        if isinstance(layer, nn.Linear) and layer.bias is not None:
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
 
     def transpose_for_scores(self, x):
@@ -104,8 +105,11 @@ class FastSelfAttention(nn.Layer):
             / self.attention_head_size**0.5
         )
 
+        # breakpoint()
         # add attention mask
         query_for_score += attention_mask
+
+        # breakpoint()
 
         # batch_size, num_head, 1, seq_len
         query_weight = self.softmax(query_for_score).unsqueeze(2)
@@ -168,6 +172,7 @@ class FastAttention(paddle.nn.Layer):
         self.dropout = nn.Dropout(hidden_dropout_prob)
 
     def forward(self, input_tensor, attention_mask):
+        # breakpoint()
         self_output = self.self_attention(input_tensor, attention_mask)
         self_output = self.dense(self_output)
         self_output = self.dropout(self_output)
@@ -205,6 +210,7 @@ class FastformerLayer(paddle.nn.Layer):
         self.dropout = nn.Dropout(hidden_dropout_prob)
 
     def forward(self, hidden_states, attention_mask):
+        # breakpoint()
         attention_output = self.attention(hidden_states, attention_mask)
         hidden_states = self.dense1(attention_output)
         intermediate_output = self.intermediate_act_fn(hidden_states)
@@ -270,14 +276,14 @@ class FastformerEncoder(paddle.nn.Layer):
         elif isinstance(layer, nn.LayerNorm):
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
             layer.weight.set_value(
-                paddle.full(shape=layer.weight.shape, fill_value=0.0)
+                paddle.full(shape=layer.weight.shape, fill_value=1.0)
             )
         if isinstance(layer, nn.Linear) and layer.bias is not None:
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
 
     def forward(self, input_embs, attention_mask, pooler_index=0):
         # input_embs: batch_size, seq_len, emb_dim
-        # attention_mask: batch_size, seq_len, emb_dim
+        # attention_mask: batch_size, seq_len
 
         extended_attention_mask = attention_mask.unsqueeze(1)
         extended_attention_mask = extended_attention_mask.astype(
@@ -285,13 +291,19 @@ class FastformerEncoder(paddle.nn.Layer):
         )  # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
-        # embeddings = input_embs + position_embeddings
-        embeddings = input_embs
+        batch_size, seq_length, emb_dim = input_embs.shape
+        position_ids = paddle.arange(seq_length, dtype="int64")
+        position_ids = position_ids.unsqueeze(0).expand([batch_size, -1])
+        position_embeddings = self.position_embeddings(position_ids)
+
+        embeddings = input_embs + position_embeddings
         embeddings = self.layer_norm(embeddings)
         embeddings = self.dropout(embeddings)
+
+        # breakpoint()
         # print(embeddings.size())
         all_hidden_states = [embeddings]
-
+        # breakpoint()
         for i, layer_module in enumerate(self.encoders):
             layer_outputs = layer_module(all_hidden_states[-1], extended_attention_mask)
             all_hidden_states.append(layer_outputs)
@@ -346,8 +358,8 @@ class Fastformer(paddle.nn.Layer):
             layer.bias.set_value(paddle.full(shape=layer.bias.shape, fill_value=0.0))
 
     def forward(self, inputs, mask):
-        text_vec = self.fastformer_model(inputs, mask)
-        return text_vec
+        attention_vec = self.fastformer_model(inputs, mask)
+        return attention_vec
 
 
 if __name__ == "__main__":
@@ -359,7 +371,7 @@ if __name__ == "__main__":
     num_attention_heads = 16
     intermediate_size = 256
     max_position_embeddings = 256
-    vocab_size = 100000
+    vocab_size = 1000
     layer_norm_eps = 1e-12
     initializer_range = 0.02
     pooler_type = "weightpooler"
@@ -397,5 +409,6 @@ if __name__ == "__main__":
         vocab_size,
     )
     print(embedding.shape, attention_mask.shape)
+    print("input", embedding, attention_mask)
     out = model(embedding, attention_mask)
-    print(out.shape)
+    print("out", out)

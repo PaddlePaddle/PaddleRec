@@ -141,16 +141,21 @@ class NewsEncoder(nn.Layer):
         self.add_sublayer("sub_category_linear", self.sub_category_linear)
 
         # Fastformer Attention
-        self.mix_attention = Fastformer(
-            hidden_size=self.conv_out_channel_size,
-            num_attention_heads=num_attention_heads,
-            initializer_range=initializer_range,
-            layer_norm_eps=layer_norm_eps,
-            intermediate_size=intermediate_size,
-            hidden_dropout_prob=hidden_dropout_prob,
-            num_hidden_layers=num_hidden_layers,
-            max_position_embeddings=max_position_embeddings,
-            pooler_type=pooler_type,
+        # self.mix_attention = Fastformer(
+        #     hidden_size=self.conv_out_channel_size,
+        #     num_attention_heads=num_attention_heads,
+        #     initializer_range=initializer_range,
+        #     layer_norm_eps=layer_norm_eps,
+        #     intermediate_size=intermediate_size,
+        #     hidden_dropout_prob=hidden_dropout_prob,
+        #     num_hidden_layers=num_hidden_layers,
+        #     max_position_embeddings=max_position_embeddings,
+        #     pooler_type=pooler_type,
+        # )
+
+        self.mix_attention = self.make_attention_layer(
+            "mix_attention",
+            [self.conv_out_channel_size, self.attention_projection_size],
         )
 
         self.title_attention = Fastformer(
@@ -191,8 +196,46 @@ class NewsEncoder(nn.Layer):
         condition = paddle.equal(input_tensor, self.word_dict_size)
         attention_mask = paddle.logical_not(condition)
         attention_mask = paddle.cast(attention_mask, dtype="float32")
-
         return attention_mask
+
+    def make_attention_layer(self, name_base, size):
+        row = size[0]
+        col = size[1]
+        vec = paddle.create_parameter(
+            shape=(col, 1),
+            dtype="float32",
+            name=name_base + "_vec_generated",
+            default_initializer=paddle.nn.initializer.Normal(std=0.1),
+        )
+        self.add_parameter(name_base + "_vec_generated", vec)
+        index = len(self.attention_vec)
+        self.attention_vec.append(vec)
+        linear = paddle.nn.Linear(
+            in_features=row,
+            out_features=col,
+            weight_attr=paddle.ParamAttr(
+                initializer=paddle.nn.initializer.Normal(std=0.01)
+            ),
+        )
+        self.attention_layer.append(linear)
+        self.add_sublayer(name_base + "_linear_generated", linear)
+
+        def func(input):
+            # input [b,g, row]
+            # [b,g,col]
+            project = self.attention_layer[index](input)
+            # [b,g,1]
+            project = paddle.matmul(project, self.attention_vec[index])
+            # [b,1,g]
+            project = paddle.transpose(project, perm=[0, 2, 1])
+            weight = paddle.nn.functional.softmax(project)
+            # [b, 1, row]
+            output = paddle.matmul(weight, input)
+            # [b,row]
+            output = paddle.reshape(output, [-1, row])
+            return output
+
+        return func
 
     def forward(self, category, sub_category, title, content):
         cate_emb = self.cate_embedding(category)
@@ -223,6 +266,7 @@ class NewsEncoder(nn.Layer):
         # Create mask for titles and contents
         title_mask = self.create_mask(title)
         content_mask = self.create_mask(content)
+        # breakpoint()
 
         # [b,conv_out]
         title_emb = self.title_attention(title_emb, title_mask)
@@ -236,9 +280,9 @@ class NewsEncoder(nn.Layer):
             shape=[vec_group.shape[0], vec_group.shape[1]], dtype="int32"
         )
 
+        # breakpoint()
         # [b, conv_out]
-        final_vec = self.mix_attention(vec_group, vec_group_mask)
-
+        final_vec = self.mix_attention(vec_group)  # , vec_group_mask)
         return final_vec
 
 
@@ -391,8 +435,12 @@ class FastRecommender(paddle.nn.Layer):
             shape=[visit_emb.shape[0], visit_emb.shape[1]], dtype="int32"
         )
 
+        # breakpoint()
+
         # [b, conv_out_size]
         visit_compressed_emb = self.user_encoder(visit_emb, visit_mask)
+        # breakpoint()
+
         # [b, conv_out_size,1]
         visit_compressed_emb = paddle.reshape(
             visit_compressed_emb, [-1, self.conv_out_channel_size, 1]
@@ -402,10 +450,11 @@ class FastRecommender(paddle.nn.Layer):
         predict = paddle.matmul(sample_emb, visit_compressed_emb)
 
         # [b,sample]
-        # print(predict)
         predict = paddle.reshape(predict, [-1, self.neg_condidate_sample_size + 1])
         # predict = paddle.nn.functional.softmax(predict)
         # predict = paddle.nn.functional.sigmoid(predict)
+        # print(predict)
+        # breakpoint()
         return predict
 
 
@@ -464,16 +513,14 @@ if __name__ == "__main__":
         cate_dimension,
         word_dict_size,
         hidden_size,
+        num_attention_heads,
+        initializer_range,
+        layer_norm_eps,
+        intermediate_size,
         hidden_dropout_prob,
         num_hidden_layers,
-        num_attention_heads,
-        intermediate_size,
         max_position_embeddings,
-        vocab_size,
-        layer_norm_eps,
-        initializer_range,
         pooler_type,
-        enable_fp16,
     )
 
     # sparse_inputs =
