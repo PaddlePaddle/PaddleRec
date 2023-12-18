@@ -16,17 +16,20 @@ runner:
   train_data_dir: "../../../datasets/MIND/data/train"
   train_reader_path: "FastformerDataReader" # importlib format
   use_gpu: True
-  train_batch_size: 50
-  epochs: 2
+  train_batch_size: 32
+  epochs: 10
+  last_epoch: 0
   print_interval: 10
-  #model_init_path: "output_model/0" # init model
+  # model_init_path: "output_model_all/0" # init model
   model_save_path: "output_model_all"
-  infer_batch_size: 10
+  infer_batch_size: 32
   infer_reader_path: "FastformerDataReader" # importlib format
   test_data_dir:  "../../../datasets/MIND/data/test"
   infer_load_path: "output_model_all"
-  infer_start_epoch: 1
-  infer_end_epoch: 2
+  infer_start_epoch: 8
+  infer_end_epoch: 9
+
+
 
 # hyper parameters of user-defined network
 hyper_parameters:
@@ -44,14 +47,14 @@ hyper_parameters:
   # optimizer config
   optimizer:
     class: Adam
-    learning_rate: 0.001
+    learning_rate: 0.0001
     strategy: async
   # user-defined <key, value> pairs
   article_content_size: 100
-  article_title_size: 10
+  article_title_size: 32
   browse_size: 30
   neg_condidate_sample_size: 4
-  word_dimension: 60
+  word_dimension: 64
   category_dimension: 32
   category_size: 19
   sub_category_size: 294

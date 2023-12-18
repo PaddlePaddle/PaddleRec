@@ -1,4 +1,4 @@
-# 基于NAML模型的点击率预估模型
+# 基于Fastformer模型的点击率预估模型
 
 **[AI Studio在线运行环境](https://aistudio.baidu.com/aistudio/projectdetail/3240529)**
 
@@ -13,8 +13,9 @@
 ├── README.md #文档
 ├── config.yaml # sample数据配置
 ├── config_bigdata.yaml # 全量数据配置
+├── fastformer.py # Fastformer attention 核心
 ├── net.py # 模型核心组网（动静统一）
-├── NAMLDataReader.py #数据读取程序
+├── FastformerDataReader.py #数据读取程序
 ├── dygraph_model.py # 构建动态图
 ├── static_model.py #构建静态图
 ```
@@ -38,15 +39,15 @@
 
 ```text
 @inproceedings{
-  title={Neural News Recommendation with Attentive Multi-View Learning},
-  author={Chuhan Wu , Fangzhao Wu , Mingxiao An , Jianqiang Huang , Yongfeng Huang , Xing Xie},
-  year={2019}
+  title={Fastformer: Additive Attention Can Be All You Need},
+  author={Chuhan Wu, Fangzhao Wu, Tao Qi, Yongfeng Huang, Xing Xie},
+  year={2021}
 }
 ```
 
-naml 实现了一个news-encoder, 通过text卷积提取文章特征并采用attention机制把特征压缩为一个n维向量(article embedding)，
-n篇用户浏览过的文章的article embedding向量组将再次通过attention机制被进一步压缩成最终的user-behavior-embedding（包含了用户行为特征）
-此user-behavior-embedding 和 一篇新文章的article embedding 的向量内积则表示用户对此文章的喜好程度。
+Fastformer是一种基于加性注意力的高效Transformer模型。Fastformer不是建模标记之间的成对交互作用，而是首先利用加性注意力机制来捕捉全局上下文，然后根据标记与全局上下文表示之间的交互作用，进一步转换每个标记的表示。通过这种方式，Fastformer能够实现具有线性复杂性的有效上下文建模。在过去，NAML实现了一个news-encoder，通过文本卷积提取文章特征，并采用注意力机制将特征压缩为一个n维向量（文章嵌入）。用户浏览过的n篇文章的文章嵌入向量组将再次通过注意力机制被进一步压缩成最终的用户行为嵌入（包含了用户行为特征）。此user-behavior-embedding和一篇新文章的文章嵌入的向量内积则表示用户对此文章的喜好程度。
+
+在这里，我们继承了NAML的架构，并将Fastformer attention引入其中，取得了在测试数据上令人满意的结果。
 
 
 ## 数据准备
@@ -76,7 +77,7 @@ os : windows/linux/macos
 # 进入模型目录
 cd models/rank/naml 
 # 动态图训练
-python -u ../../../tools/trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
+python -u trainer.py -m config.yaml # 全量数据运行config_bigdata.yaml 
 # 动态图预测
 python -u ../../../tools/infer.py -m config.yaml 
 ```
@@ -113,23 +114,24 @@ python -u ../../../tools/infer.py -m config.yaml
 
 4.运行：
 ```bash
-python -u ../../../tools/trainer.py -m config_bigdata.yaml
+python -u trainer.py -m config_bigdata.yaml
 ```
 以下为训练2个epoch的结果
 | 模型 | auc | batch_size | epoch_num| Time of each epoch| 
 | :------| :------ | :------ | :------| :------ | 
 | naml | 0.66 | 50 | 3 | 约4小时 | 
+| fastformer | 0.72 | 32 | 10 | 约120小时 | 
 
 预测
 ```bash
 python -u ../../../tools/infer.py -m config_bigdata.yaml
 ```
 
-期待预测auc为0.66
+期待预测auc为0.729
 
 
 单机多卡执行方式(以训练为例)
-python -m paddle.distributed.launch ../../../tools/trainer.py -m config_bigdata.yaml
+python -m paddle.distributed.launch trainer.py -m config_bigdata.yaml
 在此情况下将使用单机上所有gpu卡，若需要指定部分gpu卡执行，可以通过设置环境变量CUDA_VISIBLE_DEVICES
 来实现。例如单机上有8张卡，只打算用前4卡张训练，可以设置export CUDA_VISIBLE_DEVICES=0,1,2,3
 再执行训练脚本即可。

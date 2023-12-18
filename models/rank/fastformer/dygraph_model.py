@@ -43,11 +43,9 @@ class DygraphModel:
         num_attention_heads = config.get("hyper_parameters.num_attention_heads")
         intermediate_size = config.get("hyper_parameters.intermediate_size")
         max_position_embeddings = config.get("hyper_parameters.max_position_embeddings")
-        # vocab_size = config.get("hyper_parameters.vocab_size")
         layer_norm_eps = float(config.get("hyper_parameters.layer_norm_eps"))
         initializer_range = config.get("hyper_parameters.initializer_range")
         pooler_type = config.get("hyper_parameters.pooler_type")
-        # enable_fp16 = config.get("hyper_parameters.enable_fp16")
 
         return net.FastRecommender(
             article_content_size,
@@ -129,4 +127,10 @@ class DygraphModel:
         predict_2d = paddle.concat(x=[1 - soft_predict, soft_predict], axis=-1)
         labels = paddle.reshape(labels, [-1, 1])
         metrics_list[0].update(preds=predict_2d.numpy(), labels=labels.numpy())
+
+        # breakpoint()
+        # update metrics
+        print_dict = {
+            "y_pred": soft_predict,
+        }
         return metrics_list, None
