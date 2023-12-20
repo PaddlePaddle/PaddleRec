@@ -47,9 +47,8 @@ class AttrDict(dict):
     def __setattr__(self, name, value):
         """ set attr """
         if isinstance(value, (list, tuple)):
-            value = [
-                self.__class__(x) if isinstance(x, dict) else x for x in value
-            ]
+            value = [self.__class__(x)
+                     if isinstance(x, dict) else x for x in value]
         elif isinstance(value, dict) and not isinstance(value, self.__class__):
             value = self.__class__(value)
         super(AttrDict, self).__setattr__(name, value)
@@ -130,6 +129,14 @@ def parse_files(type_files):
         t, file_or_dir = item.split(":")
         type2files[t] = file_or_dir
     return type2files
+
+
+def generate_files_string(ntype_list, nodes_file):
+    """ generate files string """
+    res = ""
+    for item in ntype_list:
+        res += item + ":" + nodes_file + ","
+    return res[:-1]
 
 
 def get_files(edge_file_or_dir):
