@@ -28,10 +28,10 @@ class DistEmbedding(object):
         embedding_size: the output size of the embedding.
     """
 
-    def __init__(self, slots, embedding_size, slot_num_for_pull_feature):
+    def __init__(self, slots, embedding_size, slot_num_for_pull_feature, float_slot_num):
         self.parameter_server = paddle.framework.core.PSGPU()
         self.parameter_server.set_slot_num_for_pull_feature(
-            slot_num_for_pull_feature)
+            slot_num_for_pull_feature, float_slot_num)
         self.parameter_server.set_slot_vector(slots)
         self.parameter_server.init_gpu_ps(get_cuda_places())
         self.parameter_server.set_slot_dim_vector([embedding_size] *
@@ -56,6 +56,10 @@ class DistEmbedding(object):
     def set_infer_mode(self, set_flag=False):
         """set infer mode"""
         self.parameter_server.set_mode(set_flag)
+
+    def set_sage_mode(self, sage_flag=False):
+        """set sage mode"""
+        self.parameter_server.set_sage(sage_flag)
 
     def __del__(self):
         self.finalize()

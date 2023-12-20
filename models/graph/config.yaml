@@ -28,12 +28,16 @@ ntype2files: "cuid:node_types,clk:node_types,conv:node_types,fcclk:node_types,fc
 excluded_train_pair: ""
 # only infer the node(s) specified by 'infer_node_type', eg "q;t"
 infer_node_type: ""
+# label of train pair, eg "cuid2conv:2,cuid2fcclk:3,cuid2fcconv:4,clk2entity:5,conv2entity:6"
+pair_label: ""
 
 # 如果要使用hadoop_shard 的功能, 请先参考./tools/graph_sharding/README.md 进行操作; 这个参数的功能是手动对数据进行分片, 这样可以减少每台机从hadoop拉取数据的数据量，加快拉取速度。
 # 目前使用graph_shard 的功能, 对数据进行分片，必须分片为1000 个part文件
 hadoop_shard: True
-#num_part: 1000
-num_part: 10
+# auto_shard是对数据自动进行sharding，强烈建议开启auto_shard，这样用户就不要先手动对数据进行sharding了。但如果用户已经使用hadoop streaming对数据手动sharding了，那就不要开启auto_shard了。
+auto_shard: False
+num_part: 1000
+# num_part: 10
 # 是否双向边（目前只支持双向边）
 symmetry: True
 
@@ -58,6 +62,10 @@ nodeid_slot: 9008
 # 节点slot 特征配置，如果没有节点特征, 则slots参数为空列表
 slots: [] #["1", "2", "3", "4", "5", "6", "7", "8"]
 # slot_pool_type: slot 特征的聚合方式，有concat或者sum， 一般不用改动, sum的效果就比较ok了。
+float_slots: []
+# 格式是{"float_slot_id":shape...}，用法相当于token slot的max_seq_len,这里支持多个连续值特征，分别指定不同维度，那么python组网需要为每个连续值特征创建holder
+# 如果在节点文件里将多个连续值向量concat到一起，那么python端组网值需要定义一个holder,并使用类似于split_token_section的方式来切分特征数据
+float_slots_len: {}
 slot_pool_type: sum
 # max_slot_value_size: 一个slot如果对应的值太多，会很影响训练速度，甚至无法训练, 而且效果也不一定会更好。所以这里做了限制。一般不用改动。
 max_slot_value_size: 100
@@ -130,21 +138,33 @@ save_model_interval: 10
 batch_size: 80000
 infer_batch_size: 80000
 chunk_num: 1
-# how many sample times are performed in a buf
-sample_times_one_chunk: 5
 # 1 for debug
 debug_mode: 0
+# 是否开启metapath优化
+metapath_split_opt: False
+# 训练模式，可填WHOLE_HBM/MEM_EMBEDDING/SSD_EMBEDDING，默认为MEM_EMBEDDING
+train_storage_mode: MEM_EMBEDDING
+version: v_refactor_0104
+
+# ---------------------------例行训练和预测------------------------------#
+# 若修改为"online_train"，则表示需要进行例行训练，否则默认为普通训练模式。
+train_mode: "train"
+# 例行训练的第一次图数据起始时间。（注意，天级别更新的时候，日期的格式也一定要是20230217/00, 不能省略小时的单位）
+start_time: 20230217/00
+# 例行训练的小时级间隔(当train_mode=online_train时生效)，time_delta=1表示每次训练一个小时数据，然后换到下一个小时。如果是天级别更新，则time_delta=24。
+time_delta: 24
+
+# ---------------------------save config---------------------------------------------#
+# 为了加快训练速度，可以设置每隔多少个epochs才保存一次模型。默认最后一个epoch训练完一定会保存模型。
+save_model_interval: 10
 # 触发ssd cache的频率
 save_cache_frequency: 4
 # 内存中缓存多少个pass
 mem_cache_passid_num: 4
 # 是否保存为二进制模式，仅在SSD模式下生效
 save_binary_mode : False
-# 是否开启metapath优化
-metapath_split_opt: False
-# 训练模式，可填WHOLE_HBM/MEM_EMBEDDING/SSD_EMBEDDING，默认为MEM_EMBEDDING
-train_storage_mode: MEM_EMBEDDING
-version: v_refactor_0104
+# 保存模型前，是否需要根据threshold删除embedding
+need_shrink: False
 
 #------------------------ eval config ---------------------------------#
 # 是否开启运行完自动评估召回，目前只支持20220610数据验证

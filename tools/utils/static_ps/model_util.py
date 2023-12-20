@@ -21,7 +21,6 @@ import math
 import time
 import numpy as np
 import pickle as pkl
-
 import paddle
 import paddle.incubate as F
 import paddle.static as static
@@ -30,7 +29,8 @@ from pgl.utils.logger import log
 from paddle.common_ops_import import (
     LayerHelper,
     check_type,
-    check_variable_and_dtype, )
+    check_variable_and_dtype,
+)
 from paddle.framework.io_utils import Variable
 
 
@@ -54,10 +54,8 @@ def calc_auc(pos_logits, neg_logits):
     neg_labels = paddle.cast(neg_labels, dtype="int64")
 
     labels = paddle.concat([pos_labels, neg_labels], 0)
-    labels.stop_gradient = True
-    _, batch_auc_out, state_tuple = static.auc(input=proba,
-                                               label=labels,
-                                               num_thresholds=4096)
+    labels.stop_gradient=True
+    _, batch_auc_out, state_tuple = static.auc(input=proba, label=labels, num_thresholds=4096)
     return batch_auc_out, state_tuple
 
 
@@ -75,7 +73,6 @@ def dump_func(file_obj, node_index, node_embed):
     """
     out = static.default_main_program().current_block().create_var(
         name="dump_out", dtype="float32", shape=[1])
-
     def _dump_func(vec_id, node_vec):
         """
             Dump Vectors for inference
@@ -84,8 +81,7 @@ def dump_func(file_obj, node_index, node_embed):
             buffer
             file_obj.acquire()
             vec_lines = []
-            for _node_id, _vec_feat in zip(
-                    np.array(vec_id), np.array(node_vec)):
+            for _node_id, _vec_feat in zip(np.array(vec_id), np.array(node_vec)):
                 _node_id = str(_node_id.astype("int64").astype('uint64')[0])
                 _vec_feat = " ".join(["%.5lf" % w for w in _vec_feat])
 
@@ -119,7 +115,7 @@ def paddle_print(*args):
             speed = 1.0 * (time.time() - start_time) / print_per_step
             msg = "Speed %s sec/batch \t Batch:%s\t " % (speed, print_count)
             for x in inputs:
-                msg += " Loss:%s \t" % (np.array(x)[0])
+                msg += " Loss:%s \t" % (np.array(x))
             log.info(msg)
             start_time = time.time()
 
@@ -129,136 +125,272 @@ def paddle_print(*args):
 def loss_visualize(loss):
     """loss_visualize"""
     visualize_loss = static.create_global_var(
-        persistable=True, dtype="float32", shape=[1], value=0)
+            persistable=True, dtype="float32", shape=[1], value=0)
     batch_count = static.create_global_var(
-        persistable=True, dtype="float32", shape=[1], value=0)
+            persistable=True, dtype="float32", shape=[1], value=0)
     inner_add(loss, visualize_loss)
     inner_add(1., batch_count)
 
     return visualize_loss, batch_count
 
 
-def build_node_holder(nodeid_slot_name):
+def build_show_clk_holder(config, is_predict, accumulate_num=None):
     """ build node holder """
+    if accumulate_num is not None and accumulate_num >= 2:
+        fake_accumulate_num = 2
+    else:
+        fake_accumulate_num = 1
+
     holder_list = []
-    nodeid_slot_holder = static.data(
-        str(nodeid_slot_name), shape=[-1, 1], dtype="int64", lod_level=1)
+    show_clk_list = []
+    show_clk = None
+    for accum in range(fake_accumulate_num):
+        show = static.data("%s_show" % accum, shape=[-1], dtype="int64")
+        click = static.data("%s_click" % accum, shape=[-1], dtype="int64")
+        show_clk = paddle.concat([paddle.reshape(show, [-1, 1]), paddle.reshape(click, [-1, 1])], axis=-1)
+        show_clk = paddle.cast(show_clk, dtype="float32")
+        show_clk.stop_gradient = True
 
-    show = static.data("show", shape=[-1], dtype="int64")
-    click = static.data("click", shape=[-1], dtype="int64")
-    show_clk = paddle.concat(
-        [paddle.reshape(show, [-1, 1]), paddle.reshape(click, [-1, 1])],
-        axis=-1)
-    show_clk = paddle.cast(show_clk, dtype="float32")
-    show_clk.stop_gradient = True
-    holder_list = [nodeid_slot_holder, show, click]
+        holder_list.append(show)
+        holder_list.append(click)
 
-    return nodeid_slot_holder, show_clk, holder_list
+        show_clk_list.append(show_clk)
+    
+    if fake_accumulate_num == 1:
+        return show_clk, holder_list
+    else:
+        return show_clk_list, holder_list
 
 
-def build_slot_holder(discrete_slot_names):
+def build_node_holder(nodeid_slot_name, config, is_predict, accumulate_num=None, tensor_pair_idx=0):
+    """ build node holder """
+    if accumulate_num is not None and accumulate_num >= 2:
+        fake_accumulate_num = 2
+    else:
+        fake_accumulate_num = 1
+
+    holder_list = []
+    nodeid_slot_holder_list = []
+    nodeid_slot_holder = None
+    for accum in range(fake_accumulate_num):
+        nodeid_slot_holder = static.data(
+            "%s_" % accum + str(int(nodeid_slot_name) + tensor_pair_idx), 
+            shape=[-1, 1], 
+            dtype="int64", 
+            lod_level=1)
+
+        holder_list.append(nodeid_slot_holder)
+
+        nodeid_slot_holder_list.append(nodeid_slot_holder)
+    
+        if not is_predict and config.pair_label:  # do not consider about pair_label now.
+            pair_label = static.data("pair_label-" + str(tensor_pair_idx), shape=[-1], dtype="int32")
+            holder_list.append(pair_label)
+
+    if fake_accumulate_num == 1:
+        return nodeid_slot_holder, holder_list
+    else:
+        return nodeid_slot_holder_list, holder_list
+
+
+def build_slot_holder(discrete_slot_names, tensor_pair_idx=0):
     """build discrete slot holders """
     holder_list = []
     discrete_slot_holders = []
     discrete_slot_lod_holders = []
     for slot in discrete_slot_names:
-        holder = static.data(slot, shape=[None, 1], dtype="int64", lod_level=1)
+        new_slot = int(slot) + tensor_pair_idx * 10000
+        holder = static.data(str(new_slot),
+                        shape=[None, 1],
+                        dtype="int64",
+                        lod_level=1)
         discrete_slot_holders.append(holder)
         holder_list.append(holder)
 
-        lod_holder = static.data(
-            "slot_%s_lod" % slot, shape=[None], dtype="int64", lod_level=0)
+        lod_holder = static.data("slot_%d_lod" % new_slot,
+                            shape=[None],
+                            dtype="int64",
+                            lod_level=0)
         discrete_slot_lod_holders.append(lod_holder)
         holder_list.append(lod_holder)
 
     return discrete_slot_holders, discrete_slot_lod_holders, holder_list
 
-
-def build_token_holder(token_slot_name):
-    """build token slot holder """
-    token_slot_name = str(token_slot_name)
-    token_slot_holder = static.data(
-        token_slot_name, shape=[None, 1], dtype="int64", lod_level=1)
-
-    token_slot_lod_holder = static.data(
-        "slot_%s_lod" % token_slot_name,
-        shape=[None],
-        dtype="int64",
-        lod_level=0)
-
-    return token_slot_holder, token_slot_lod_holder
-
-
-def build_graph_holder(samples, use_degree_norm=False):
-    """ build graph holder """
+def build_float_holder(float_slot_names, float_slot_shape, tensor_pair_idx=0):
+    """build float slot holders """
     holder_list = []
+    float_slot_holders = []
+    float_slot_lod_holders = []
+    
+    if not float_slot_names:
+      return float_slot_holders, float_slot_lod_holders, holder_list
+       
+    for slot in float_slot_names:
+        new_slot = int(slot) + tensor_pair_idx * 10000
+        slot_shape = float_slot_shape[str(slot)]
+        holder = static.data(str(new_slot),
+                             shape=[None, 1],
+                             dtype="float32",
+                             lod_level=1)
+        float_slot_holders.append(holder)
+        holder_list.append(holder)
+
+        lod_holder = static.data("float_slot_%d_lod" % new_slot,
+                            shape=[None],
+                            dtype="int64",
+                            lod_level=0)
+        float_slot_lod_holders.append(lod_holder)
+        holder_list.append(lod_holder)
+
+    return float_slot_holders, float_slot_lod_holders, holder_list
+
+def build_token_holder(token_slot_name, accumulate_num=None, tensor_pair_idx=0):
+    """build token slot holder """
+
+    if accumulate_num is not None and accumulate_num >= 2:
+        fake_accumulate_num = 2
+    else:
+        fake_accumulate_num = 1
+
+    token_slot_holder_list = []
+    token_slot_lod_holder_list = []
+    holder_list = []
+    token_slot_holder = None
+    token_slot_lod_holder = None
+    for accum in range(fake_accumulate_num):
+        new_slot = int(token_slot_name) + tensor_pair_idx * 10000
+        token_slot_name_ = "%s_" % accum + str(new_slot)
+        token_slot_holder = static.data(token_slot_name_,
+                                        shape=[None, 1],
+                                        dtype="int64",
+                                        lod_level=1)
+
+        token_slot_lod_holder = static.data(
+            "%s_slot_%s_lod" % (accum, token_slot_name_),
+            shape=[None],
+            dtype="int64",
+            lod_level=0)
+        token_slot_holder_list.append(token_slot_holder)
+        token_slot_lod_holder_list.append(token_slot_lod_holder)
+        holder_list.append(token_slot_holder)
+        holder_list.append(token_slot_lod_holder)
+
+    if fake_accumulate_num == 1:
+        return token_slot_holder, token_slot_lod_holder, holder_list
+    else:
+        return token_slot_holder_list, token_slot_lod_holder_list, holder_list
+
+
+def build_mini_graph_holder(samples, holder_list, return_weight=False, accum=0, tensor_pair_idx=0):
+    """ build mini graph holder """
     graph_holders = {}
     for i, s in enumerate(samples):
         # For different sample size, we hold a graph block.
         graph_holders[i] = []
         num_nodes = static.data(
-            name="%s_num_nodes" % i, shape=[-1], dtype="int")
+            name="%s_%s_num_nodes-%d" % (accum, i, tensor_pair_idx),
+            shape=[-1],
+            dtype="int32")
         graph_holders[i].append(num_nodes)
         holder_list.append(num_nodes)
 
         next_num_nodes = static.data(
-            name="%s_next_num_nodes" % i, shape=[-1], dtype="int")
+            name="%s_%s_next_num_nodes-%d" % (accum, i, tensor_pair_idx),
+            shape=[-1],
+            dtype="int32")
         graph_holders[i].append(next_num_nodes)
         holder_list.append(next_num_nodes)
 
         edges_src = static.data(
-            name="%s_edges_src" % i, shape=[-1, 1], dtype="int64")
+            name="%s_%s_edges_src-%d" % (accum, i, tensor_pair_idx),
+            shape=[-1, 1],
+            dtype="int64")
         graph_holders[i].append(edges_src)
         holder_list.append(edges_src)
 
         edges_dst = static.data(
-            name="%s_edges_dst" % i, shape=[-1, 1], dtype="int64")
+            name="%s_%s_edges_dst-%d" % (accum, i, tensor_pair_idx),
+            shape=[-1, 1],
+            dtype="int64")
         graph_holders[i].append(edges_dst)
         holder_list.append(edges_dst)
 
         edges_split = static.data(
-            name="%s_edges_split" % i, shape=[-1], dtype="int")
+            name="%s_%s_edges_split-%d" % (accum, i, tensor_pair_idx),
+            shape=[-1],
+            dtype="int32")
         graph_holders[i].append(edges_split)
         holder_list.append(edges_split)
 
-    ego_index_holder = static.data(name="final_index", shape=[-1], dtype="int")
-    holder_list.append(ego_index_holder)
+        if return_weight:
+            edges_weight = static.data(
+                name="%s_%s_edges_weight-%d" % (accum, i, tensor_pair_idx),
+                shape=[-1],
+                dtype="float32")
+            graph_holders[i].append(edges_weight)
+            holder_list.append(edges_weight)
+
+    return graph_holders
+
+
+def build_graph_holder(samples, use_degree_norm=False, return_weight=False,
+                       accumulate_num=None, tensor_pair_idx=0):
+    """ build graph holder """
+    holder_list = []
+    if accumulate_num is None:
+        fake_accumulate_num = 1
+        graph_holders = build_mini_graph_holder(samples, holder_list, return_weight)
+        ego_index_holder = static.data(name="final_index-" + str(tensor_pair_idx), shape=[-1], dtype="int32")
+        holder_list.append(ego_index_holder)
+    else:
+        graph_holders_list = []
+        ego_index_holder_list = []
+        if accumulate_num > 2:
+            fake_accumulate_num = 2
+        else:
+            fake_accumulate_num = accumulate_num
+        for i in range(fake_accumulate_num):
+            graph_holders = build_mini_graph_holder(samples, holder_list, return_weight, accum=i)
+            graph_holders_list.append(graph_holders)
+            ego_index_holder = static.data(name="%s_final_index" % i, shape=[-1], dtype="int32")
+            ego_index_holder_list.append(ego_index_holder)
+            holder_list.append(ego_index_holder)
 
     if use_degree_norm:
         node_degree_holder = static.data(
-            name="node_degree", shape=[-1], dtype="int32")
+            name="node_degree-" + str(tensor_pair_idx),
+            shape=[-1],
+            dtype="int32")
         holder_list.append(node_degree_holder)
     else:
         node_degree_holder = None
 
-    holder_dict = {
-        "graph_holders": graph_holders,
-        "final_index": ego_index_holder,
-        "holder_list": holder_list,
-        "node_degree": node_degree_holder
-    }
+    holder_dict = {"graph_holders": graph_holders if fake_accumulate_num == 1 else graph_holders_list,
+                   "final_index": ego_index_holder if fake_accumulate_num == 1 else ego_index_holder_list,
+                   "holder_list": holder_list,
+                   "node_degree": node_degree_holder}
 
     return holder_dict
 
 
 def get_sparse_embedding(config,
-                         nodeid_slot_holder,
-                         discrete_slot_holders,
-                         discrete_slot_lod_holders,
-                         show_clk,
-                         use_cvm,
-                         emb_size,
-                         name="embedding"):
+        nodeid_slot_holder,
+        discrete_slot_holders,
+        discrete_slot_lod_holders,
+        show_clk,
+        use_cvm,
+        emb_size,
+        name="embedding"):
     """get sparse embedding"""
 
     id_embedding = static.nn.sparse_embedding(
         input=nodeid_slot_holder,
         size=[1024, emb_size + 3],
         param_attr=paddle.ParamAttr(name=name))
-
+      
     id_embedding = static.nn.continuous_value_model(id_embedding, show_clk,
                                                     use_cvm)
-    id_embedding = id_embedding[:, 1:]  # the first column is for lr, remove it
+    id_embedding = id_embedding[:, 1:] # the first column is for lr, remove it
 
     tmp_slot_emb_list = []
     for slot_idx, lod in zip(discrete_slot_holders, discrete_slot_lod_holders):
@@ -275,12 +407,66 @@ def get_sparse_embedding(config,
         tmp_slot_emb_list.append(slot_emb)
 
     slot_embedding_list = []
-    if (len(discrete_slot_holders)) > 0:
+    if(len(discrete_slot_holders)) > 0:
         slot_bows = F.layers.fused_seqpool_cvm(
-            tmp_slot_emb_list,
-            config.slot_pool_type,
-            show_clk,
-            use_cvm=use_cvm)
+                tmp_slot_emb_list, 
+                config.slot_pool_type,
+                show_clk,
+                use_cvm=use_cvm)
+        for bow in slot_bows:
+            slot_embedding = bow[:, 1:]
+            slot_embedding = paddle.nn.functional.softsign(slot_embedding)
+            slot_embedding_list.append(slot_embedding)
+
+    return id_embedding, slot_embedding_list
+
+
+def get_sparse_embedding_vec(config,
+        nodeid_slot_holder_vec,
+        discrete_slot_holders,
+        discrete_slot_lod_holders,
+        show_clk,
+        use_cvm,
+        emb_size,
+        name="embedding"):
+    """get sparse embedding"""
+
+    id_embedding_vec = []
+    for node_id in nodeid_slot_holder_vec:
+        id_embedding = static.nn.sparse_embedding(
+                input=node_id,
+                size=[1024, emb_size + 3],
+                param_attr=paddle.ParamAttr(name=name))
+
+        id_embedding = static.nn.continuous_value_model(id_embedding, show_clk, use_cvm)
+        id_embedding = id_embedding[:, 1:] # the first column is for lr, remove it
+        id_embedding_vec.append(id_embedding)
+
+    id_embedding = id_embedding_vec[0]
+    for i in range(1, len(id_embedding_vec)):
+        id_embedding += id_embedding_vec[i]
+
+    tmp_slot_emb_list = []
+    for slot_idx, lod in zip(discrete_slot_holders, discrete_slot_lod_holders):
+        slot_emb = static.nn.sparse_embedding(
+            input=slot_idx,
+            size=[1024, emb_size + 3],
+            param_attr=paddle.ParamAttr(name=name))
+
+        lod = paddle.cast(lod, dtype="int32")
+        lod = paddle.reshape(lod, [1, -1])
+        lod.stop_gradient = True
+        slot_emb = lod_reset(slot_emb, lod)
+
+        tmp_slot_emb_list.append(slot_emb)
+
+    slot_embedding_list = []
+    if(len(discrete_slot_holders)) > 0:
+        slot_bows = F.layers.fused_seqpool_cvm(
+                tmp_slot_emb_list, 
+                config.slot_pool_type,
+                show_clk,
+                use_cvm=use_cvm)
         for bow in slot_bows:
             slot_embedding = bow[:, 1:]
             slot_embedding = paddle.nn.functional.softsign(slot_embedding)
@@ -314,17 +500,25 @@ def get_graph_degree_norm(graph):
 
 def dump_embedding(config, nfeat, node_index):
     """dump_embedding"""
-    node_embed = paddle.squeeze(
-        nfeat, axis=[1], name=config.dump_node_emb_name)
+    node_embed = paddle.squeeze(nfeat, axis=[1], name=config.dump_node_emb_name)
     node_index = paddle.reshape(node_index, shape=[-1, 2])
     src_node_index = node_index[:, 0:1]
-    src_node_index = paddle.reshape(
-        src_node_index, shape=src_node_index.shape,
-        name=config.dump_node_name)  # for rename
+    src_node_index = paddle.reshape(src_node_index, 
+            shape = src_node_index.shape, 
+            name=config.dump_node_name) # for rename
 
 
-def hcl(config, feature, graph_holders):
+def hcl(config, hcl_buffer, graph_holders, empty_flag):
     """Hierarchical Contrastive Learning"""
+    if config.sage_layer_type == "TransformerConv":
+        # bcl_buffer [ init_feature, (q, k, v, ori_x)]
+        # TransformerConv HCL take the output after Linear
+        log.info("using TransformerConv HCL")
+        feature = hcl_buffer[1][2].reshape([-1, config.emb_size])[1:] * empty_flag 
+    else:
+        # bcl_buffer [ init_feature, layer1 inputs] 
+        feature = hcl_buffer[0][1:] 
+
     hcl_logits = []
     for idx, sample in enumerate(config.samples):
         graph_holder = graph_holders[idx]
@@ -338,12 +532,11 @@ def hcl(config, feature, graph_holders):
 
         for neg in range(config.neg_num):
             neighbor_dsts_feat_all.append(
-                F.layers.shuffle_batch(neighbor_dsts_feat_all[0]))
+                    F.layers.shuffle_batch(neighbor_dsts_feat_all[0]))
         neighbor_dsts_feat = paddle.concat(neighbor_dsts_feat_all, axis=1)
 
         # [batch_size, 1, neg_num+1]
-        logits = paddle.matmul(
-            neighbor_src_feat, neighbor_dsts_feat, transpose_y=True)
+        logits = paddle.matmul(neighbor_src_feat, neighbor_dsts_feat, transpose_y=True)  
         logits = paddle.squeeze(logits, axis=[1])
         hcl_logits.append(logits)
 
@@ -380,22 +573,134 @@ def reset_program_state_dict(args, model, state_dict, pretrained_state_dict):
 
 def lod_reset(x, y=None, target_lod=None):
     """lod_reset"""
-    check_variable_and_dtype(x, 'x', ['float32', 'float64', 'int32', 'int64'],
-                             'lod_reset')
+    check_variable_and_dtype(
+        x, 'x', ['float32', 'float64', 'int32', 'int64'], 'lod_reset'
+    )
     h = LayerHelper("lod_reset", **locals())
     out = h.create_variable_for_type_inference(dtype=x.dtype)
     if y is not None:
         check_type(y, 'y', (Variable), 'lod_reset')
         # TODO: check y.lod_level = 0 dtype
         h.append_op(
-            type="lod_reset", inputs={'X': x,
-                                      'Y': y}, outputs={'Out': out})
+            type="lod_reset", inputs={'X': x, 'Y': y}, outputs={'Out': out}
+        )
     elif target_lod is not None:
         h.append_op(
             type="lod_reset",
             inputs={'X': x},
             attrs={'target_lod': target_lod},
-            outputs={'Out': out}, )
+            outputs={'Out': out},
+        )
     else:
         raise ValueError("y and target_lod should not be both none.")
     return out
+
+def remove_duplitcate(arr, ref):
+    """ doc """
+    ref_size = paddle.shape(ref)[0]
+    arr_concat = paddle.concat([ref, arr], axis=0)
+    uniq_ele, inverse = paddle.unique(arr_concat, return_inverse=True) 
+    zeros = paddle.zeros_like(uniq_ele, dtype="int32")
+
+    ref_inv = inverse[:ref_size]
+    exits_flag = paddle.scatter(zeros, ref_inv, paddle.ones_like(ref_inv, dtype="int32"))
+    mask = paddle.gather(exits_flag, inverse[ref_size:])
+    return mask == 0
+
+def remove_leakage_edges(edges_src, edges_dst, final_index):
+    """remove leakage edges"""
+    ego_pairs = final_index.reshape([-1, 2])
+    magic_number = 27644437  
+    log.info("magic number: %s" % magic_number)
+    hashnum = ego_pairs[:, 0] * magic_number + ego_pairs[:, 1]
+    hashnum = paddle.unique(hashnum)
+
+    tmp_edges_dst = paddle.cast(edges_dst, dtype="int32")
+    tmp_edges_src = paddle.cast(edges_src, dtype="int32")
+    edge_hash = tmp_edges_dst * magic_number + tmp_edges_src
+    edge_hash = paddle.reshape(edge_hash, [-1])
+    mask1 = remove_duplitcate(edge_hash, hashnum)
+
+    edge_hash = tmp_edges_src * magic_number + tmp_edges_dst
+    edge_hash = paddle.reshape(edge_hash, [-1])
+    mask2 = remove_duplitcate(edge_hash, hashnum)
+
+    mask = paddle.logical_and(mask1, mask2)
+    mask = paddle.reshape(mask, [-1, 1])
+    edges_src = paddle.masked_select(edges_src, mask)
+    edges_dst = paddle.masked_select(edges_dst, mask)
+
+    return edges_src, edges_dst
+
+
+def remove_leakage_edges_gnn(graph_holders, etype_len, final_index, empty_flag, return_weight=False):
+    """ remove duplicate edges, avoid data leakage"""
+    new_graph_holders = {}
+    ego_pairs = final_index.reshape([-1, 2])
+    magic_number = 27644437  
+    hashnum = ego_pairs[:, 0] * magic_number + ego_pairs[:, 1]
+    hashnum = paddle.unique(hashnum)
+    for key, graph_holder in graph_holders.items():
+        num_nodes = graph_holder[0]
+        next_num_nodes = graph_holder[1]
+        edges_src = graph_holder[2] 
+        edges_dst = graph_holder[3]
+        split_edges = graph_holder[4]
+
+        if return_weight:
+            edges_weight = graph_holder[5]
+
+        tmp_edges_dst = paddle.cast(edges_dst, dtype="int32")
+        tmp_edges_src = paddle.cast(edges_src, dtype="int32")
+        edge_hash = tmp_edges_dst * magic_number + tmp_edges_src
+        edge_hash = paddle.reshape(edge_hash, [-1])
+        mask1 = remove_duplitcate(edge_hash, hashnum)
+
+        edge_hash = tmp_edges_src * magic_number + tmp_edges_dst
+        edge_hash = paddle.reshape(edge_hash, [-1])
+        mask2 = remove_duplitcate(edge_hash, hashnum)
+
+        empty_flag = empty_flag.squeeze([-1])
+        mask3 = paddle.gather(empty_flag, edges_src)
+
+        mask4 = paddle.gather(empty_flag, edges_dst)
+        mask5 = mask3 * mask4
+
+        mask = paddle.logical_and(mask1, mask2)
+        mask = paddle.logical_and(mask, mask5 > 0.5)
+
+        edges_src = edges_src[mask]
+        edges_dst = edges_dst[mask]
+
+        if return_weight:
+            edges_weight = edges_weight[mask]
+
+        mask = mask.astype("int32")
+        new_split_edges = []
+        for j in range(etype_len):
+            start = paddle.zeros(
+               [1], dtype="int32") if j == 0 else split_edges[j - 1]
+            
+            def true_func():
+                tmp_sum = paddle.sum(mask[start:split_edges[j]])
+                return tmp_sum
+            def false_func():
+                tmp_sum = paddle.zeros([], dtype="int64")
+                return tmp_sum
+
+            compare = paddle.less_than(start, split_edges[j])
+            tmp_sum = static.nn.cond(compare, true_func, false_func)
+            new_split_edges.append(tmp_sum)
+            # new_split_edges.append(paddle.sum(mask[start:split_edges[j]]))
+        if len(new_split_edges) > 1:
+            # new_split_edges = paddle.cumsum(paddle.concat(new_split_edges))
+            new_split_edges = paddle.cumsum(paddle.stack(new_split_edges))
+        else:
+            new_split_edges = new_split_edges[0]
+
+        if not return_weight:
+            new_graph_holders[key] = [num_nodes, next_num_nodes, edges_src, edges_dst, new_split_edges]
+        else:
+            new_graph_holders[key] = [num_nodes, next_num_nodes, edges_src, edges_dst, new_split_edges, edges_weight]
+
+    return new_graph_holders
