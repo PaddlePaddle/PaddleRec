@@ -36,8 +36,8 @@ pair_label: ""
 hadoop_shard: True
 # auto_shard是对数据自动进行sharding，强烈建议开启auto_shard，这样用户就不要先手动对数据进行sharding了。但如果用户已经使用hadoop streaming对数据手动sharding了，那就不要开启auto_shard了。
 auto_shard: False
-num_part: 1000
-# num_part: 10
+# num_part: 1000
+num_part: 10
 # 是否双向边（目前只支持双向边）
 symmetry: True
 
