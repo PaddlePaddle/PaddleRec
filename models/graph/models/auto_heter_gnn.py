@@ -58,6 +58,17 @@ class FeatureInteraction(nn.Layer):
         else:
             return paddle.add_n(feature_list)
 
+class Identity(nn.Layer):
+    """ Identity function is use to return identity"""
+    def __init__(self, hidden_size, act, use_degree_norm):
+        super(Identity, self).__init__()
+
+    def forward(self, x, degree_norm=None):
+        """forward function 
+        """
+        return x
+        
+
 
 class AutoHeterGNN(nn.Layer):
     """AutoHeterGNN"""
@@ -70,7 +81,8 @@ class AutoHeterGNN(nn.Layer):
                  act=None,
                  alpha_residual=0.9,
                  use_degree_norm=False,
-                 interact_mode="sum"):
+                 interact_mode="sum",
+                 return_weight=False):
         super(AutoHeterGNN, self).__init__()
         self.etype_len = etype_len
         self.num_layers = num_layers
@@ -80,20 +92,26 @@ class AutoHeterGNN(nn.Layer):
             interact_mode = "gatne"
         self.alpha_residual = alpha_residual
         self.use_degree_norm = use_degree_norm
+        self.return_weight = return_weight
         sub_layer_dict = OrderedDict()
+        shared_sub_pre_layer = []
 
         for i in range(self.num_layers):
             if i == self.num_layers - 1:
                 cur_act = None
             else:
                 cur_act = act
+            shared_sub_pre_layer.append(getattr(layers, "Pre" + layer_type, Identity)(
+                    hidden_size, act, use_degree_norm=use_degree_norm))
             for j in range(self.etype_len):
                 sub_layer_dict[(i, j)] = getattr(layers, layer_type)(
                     hidden_size, act, use_degree_norm=use_degree_norm)
             sub_layer_dict[(i, self.etype_len)] = FeatureInteraction(
                 interact_mode, hidden_size, self.etype_len)
 
+        self.shared_sub_pre_layer = nn.LayerList(shared_sub_pre_layer)
         self.rgnn_dict = nn.LayerDict(sub_layer_dict)
+        self.hcl_buffer = []
 
     def forward(self, graph_holders, init_feature, degree_norm=None):
         """ Forward for auto heter gnn
@@ -103,14 +121,14 @@ class AutoHeterGNN(nn.Layer):
         zeros_tensor2 = paddle.zeros([1, 1], dtype="int64")
         init_feature = paddle.concat([zeros_tensor1, init_feature])
         feature = init_feature
+        self.hcl_buffer.append(feature)
 
         if degree_norm is not None:
             degree_norm = degree_norm.reshape([self.etype_len, -1]).T
+            degree_norm.stop_gradient = False
             degree_norm = paddle.sum(degree_norm, -1)
             degree_norm = model_util.get_degree_norm(degree_norm)
-            degree_norm = paddle.concat(
-                [paddle.ones(
-                    [1, 1], dtype="float32"), degree_norm], axis=0)
+            degree_norm = paddle.concat([paddle.ones([1, 1], dtype="float32"), degree_norm], axis=0)
 
         for i in range(self.num_layers):
             graph_holder = graph_holders[self.num_layers - i - 1]
@@ -118,8 +136,13 @@ class AutoHeterGNN(nn.Layer):
             next_num_nodes = graph_holder[1] + 1
             edges_src = graph_holder[2] + 1
             edges_dst = graph_holder[3] + 1
-            split_edges = paddle.cumsum(graph_holder[4])
+            split_edges = graph_holder[4]
+            # if self.return_weight:
+            #     edges_weight = graph_holder[5]
+            
             nxt_fs = []
+            feature = self.shared_sub_pre_layer[i](feature, degree_norm)
+            self.hcl_buffer.append(feature)
 
             for j in range(self.etype_len):
                 start = paddle.zeros(
@@ -134,8 +157,7 @@ class AutoHeterGNN(nn.Layer):
                         [new_edges_src, new_edges_dst], axis=1))
 
                 # generate feature of single relation
-                nxt_f = self.rgnn_dict[(i, j)](graph, feature, next_num_nodes,
-                                               degree_norm)
+                nxt_f = self.rgnn_dict[(i, j)](graph, feature, next_num_nodes, degree_norm)
                 nxt_fs.append(nxt_f)
             # feature intergation
             feature = self.rgnn_dict[(i, self.etype_len)](nxt_fs)
