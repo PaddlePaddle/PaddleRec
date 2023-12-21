@@ -490,7 +490,7 @@ class Main(object):
             fleet.barrier_worker()
             time_msg = "%s\n" % datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             train_msg += time_msg
-            msg = "Train: Epoch %s | batch_loss %.6f\n" % (epoch, epoch_loss)
+            msg = "Train: Epoch %s | auc: %.6f\n" % (epoch, epoch_loss)
             train_msg += msg
             log.info(msg)
 
