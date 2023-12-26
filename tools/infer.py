@@ -29,10 +29,6 @@ from utils.save_load import save_model, load_model
 from paddle.io import DistributedBatchSampler, DataLoader
 import argparse
 
-logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description='paddle-rec run')
@@ -75,6 +71,26 @@ def main(args):
     model_load_path = config.get("runner.infer_load_path", "model_output")
     start_epoch = config.get("runner.infer_start_epoch", 0)
     end_epoch = config.get("runner.infer_end_epoch", 10)
+
+
+    if not os.path.exists(model_load_path):
+        os.makedirs(model_load_path)
+        logger.info(f"Directory '{model_load_path}' created.")
+
+    logging.basicConfig(
+        format='%(asctime)s - %(levelname)s - %(message)s', 
+        level=logging.INFO)
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    file_handler = logging.FileHandler(os.path.join(model_load_path, "eval.log"))
+    file_handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
 
     logger.info("**************common.configs**********")
     logger.info(
