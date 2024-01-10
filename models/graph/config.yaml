@@ -61,11 +61,11 @@ walk_times: 10
 nodeid_slot: 9008
 # 节点slot 特征配置，如果没有节点特征, 则slots参数为空列表
 slots: [] #["1", "2", "3", "4", "5", "6", "7", "8"]
-# slot_pool_type: slot 特征的聚合方式，有concat或者sum， 一般不用改动, sum的效果就比较ok了。
 float_slots: []
 # 格式是{"float_slot_id":shape...}，用法相当于token slot的max_seq_len,这里支持多个连续值特征，分别指定不同维度，那么python组网需要为每个连续值特征创建holder
 # 如果在节点文件里将多个连续值向量concat到一起，那么python端组网值需要定义一个holder,并使用类似于split_token_section的方式来切分特征数据
 float_slots_len: {}
+# slot_pool_type: slot 特征的聚合方式，有concat或者sum， 一般不用改动, sum的效果就比较ok了。
 slot_pool_type: sum
 # max_slot_value_size: 一个slot如果对应的值太多，会很影响训练速度，甚至无法训练, 而且效果也不一定会更好。所以这里做了限制。一般不用改动。
 max_slot_value_size: 100
@@ -92,10 +92,10 @@ load_binary_mode : False
 # ---------------------------模型参数配置---------------------------------------------#
 # 模型类型选择
 model_type: GNNModel
-# embedding 维度，需要和hidden_size保持一样。
+# embedding 维度
 emb_size: 64
 # sparse_type: 稀疏参数服务器的优化器，目前支持adagrad, shared_adam
-sparse_type: adagrad
+sparse_type: adagrad_v2
 # sparse_lr: 稀疏参数服务器的学习率
 sparse_lr: 0.05
 # dense_lr: 稠密参数的学习率
@@ -120,6 +120,10 @@ samples: [5]
 infer_samples: [100]
 sage_act: "relu"
 
+# 带权采样开关，同时作用于游走和sage子图采样阶段。
+weighted_sample: False
+# 是否返回边权重，仅用于sage_mode=True模式，如边不带权则默认返回1。
+return_weight: False
 # 是否要进行训练，如果只想单独热启模型做预估(inference)，则可以关闭need_train
 need_train: True
 # 是否需要进行inference. 如果只想单独训练模型，则可以关闭need_inference
@@ -132,8 +136,6 @@ need_dump_walk: False
 
 # ---------------------------train param config---------------------------------------------#
 epochs: 1
-# 为了加快训练速度，可以设置每隔多少个epochs才保存一次模型。默认最后一个epoch训练完一定会保存模型。
-save_model_interval: 10
 # 训练样本的batch_size
 batch_size: 80000
 infer_batch_size: 80000
