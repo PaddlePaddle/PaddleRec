@@ -53,7 +53,7 @@ def get_strategy(args, model_dict):
 
 
 def gen_sparse_config(args, sparse_lr, init_range, op_type, emb_size, feature_lr, \
-                     nodeid_slot, load_filter_slots, sparse_table_class):
+                     nodeid_slot, load_filter_slots, save_filter_slots, sparse_table_class):
     """
     gen sparse config
     """
@@ -69,7 +69,7 @@ def gen_sparse_config(args, sparse_lr, init_range, op_type, emb_size, feature_lr
     sparse_config['sparse_initial_range'] = init_range
     sparse_config['sparse_weight_bounds'] = [-10.0, 10.0]
     sparse_config['sparse_embedx_dim'] = emb_size
-    sparse_config['sparse_embedx_threshold'] = 10
+    sparse_config['sparse_embedx_threshold'] = 0
     sparse_config['sparse_nonclk_coeff'] = 0.1
     sparse_config['sparse_click_coeff'] = 1.0
     sparse_config['sparse_base_threshold'] = 0
@@ -99,6 +99,7 @@ def gen_sparse_config(args, sparse_lr, init_range, op_type, emb_size, feature_lr
     sparse_config['nodeid_slot'] = nodeid_slot
     sparse_config['feature_learning_rate'] = feature_lr
     sparse_config['sparse_load_filter_slots'] = load_filter_slots
+    sparse_config['sparse_save_filter_slots'] = save_filter_slots
     return sparse_config
 
 
@@ -122,7 +123,7 @@ def generate_config(args):
         sparse_table_class = "DownpourSparseTable"
     config['embedding'] = gen_config(args, args.sparse_lr, args.init_range, args.sparse_type, \
                                      args.emb_size, slot_feature_lr, args.nodeid_slot, args.load_filter_slots, \
-                                     sparse_table_class)
+                                     args.save_filter_slots, sparse_table_class)
 
     dense_config = dict()
     dense_config['dense_table_class'] = "DownpourDenseTable"

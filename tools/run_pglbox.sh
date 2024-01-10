@@ -20,17 +20,23 @@ tar -zxvf data.tar.gz
 rm data.tar.gz
 
 # environment variables for fleet distribute training
+export FLAGS_dynamic_static_unified_comm=false #PGLBOX不支持新通信库
 export NCCL_DEBUG=INFO
 export FLAGS_LAUNCH_BARRIER=0
 export PADDLE_TRAINERS=1
 export FLAGS_enable_tracker_all2all=false
 export FLAGS_enable_auto_rdma_trans=true
-export FLAGS_enable_all2all_use_fp16=true
-export FLAGS_enable_sparse_inner_gather=true
+export FLAGS_enable_all2all_use_fp16=false
 export FLAGS_check_nan_inf=false
+export FLAGS_eager_delete_tensor_gb=0.0
+export FLAGS_memory_fraction_of_eager_deletion=1
+export FLAGS_control_flow_use_new_executor=false
+export FLAGS_graph_neighbor_size_percent=1.0
+export FLAGS_graph_edges_split_mode="hard"
+export FLAGS_enable_graph_multi_node_sampling=false
+export FLAGS_new_executor_use_local_scope=0
 
 export PADDLE_TRAINERS_NUM=${PADDLE_TRAINERS}
-export POD_IP=127.0.0.1
 export PADDLE_PSERVERS_IP_PORT_LIST="127.0.0.1:29011"  #set free port if 29011 is occupied
 export PADDLE_TRAINER_ENDPOINTS=${PADDLE_TRAINER_ENDPOINTS/,*/}
 export PADDLE_PSERVER_PORT_ARRAY=(29011)
@@ -53,6 +59,21 @@ export FLAGS_gpugraph_enable_segment_merge_grads=true
 export FLAGS_gpugraph_merge_grads_segment_size=128
 export FLAGS_gpugraph_dedup_pull_push_mode=1
 export FLAGS_gpugraph_load_node_list_into_hbm=false
+# storage mode
+# 1. WHOLE_HBM 2.MEM_EMBEDDING_NO_FEATURE"(currently not supported)
+# 3.MEM_EMBEDDING 4.SSD_EMBEDDING
+train_storage_mode=`grep train_storage_mode $config_file | sed s/#.*//g | grep train_storage_mode | awk -F':' '{print $2}' | sed 's/ //g'`
+if [ "${train_storage_mode}" = "WHOLE_HBM" ]; then
+    export FLAGS_gpugraph_storage_mode=1
+    echo "FLAGS_gpugraph_storage_mode is WHOLE_HBM"
+elif [ "${train_storage_mode}" = "SSD_EMBEDDING" ]; then
+    export FLAGS_gpugraph_storage_mode=4
+    echo "FLAGS_gpugraph_storage_mode is SSD_EMBEDDING"
+else
+    export FLAGS_gpugraph_storage_mode=3
+    echo "FLAGS_gpugraph_storage_mode is MEM_EMBEDDING"
+fi
+
 
 export FLAGS_enable_exit_when_partial_worker=false
 export FLAGS_gpugraph_debug_gpu_memory=false
@@ -70,17 +91,16 @@ export FLAGS_rocksdb_path="./database"
 
 
     
-export FLAGS_gpugraph_storage_mode=3
 #python3.7 -c 'import paddle; print(paddle.version.commit)';
 set -x
-which python3.7
+which python
 unset PYTHONHOME
 unset PYTHONPATH
 
 ret=0
 for((i=0;i<$PADDLE_TRAINERS;i++))
 do
-    python3.7 -u tools/static_pglbox_trainer.py -m models/graph/config.yaml &> ./log/tainer.$i.log
+    python -u tools/static_pglbox_trainer.py -m models/graph/lightgcn.yaml &> ./log/tainer.$i.log
 
 done
 ret=$?
