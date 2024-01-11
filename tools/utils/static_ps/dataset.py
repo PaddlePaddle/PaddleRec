@@ -16,6 +16,7 @@
 import os
 import time
 import threading
+import numpy as np
 
 import paddle
 from paddle.distributed import fleet
@@ -26,6 +27,7 @@ import util
 from place import get_cuda_places
 import model_util as model_util
 import queue
+import helper
 
 def compute_max_nodes(emb_size, allocate_rate):
     """compute the max unique nodes"""
