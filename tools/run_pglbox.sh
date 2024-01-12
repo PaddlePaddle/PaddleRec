@@ -22,11 +22,10 @@ rm data.tar.gz
 SOURCE_HOME=$(readlink -f $(dirname ${BASH_SOURCE[0]}) )/
 PGLBOX_HOME=${SOURCE_HOME}/../
 
+config_file="${PGLBOX_HOME}/models/graph/config.yaml" # 模型配置文件，可以修改
 
 # environment variables for fleet distribute training
 source ${PGLBOX_HOME}/tools/utils/static_ps/pglbox_util.sh
-
-config_file="${PGLBOX_HOME}/models/graph/lightgcn.yaml"
 
 sharding=`grep sharding $config_file | sed s/#.*//g | grep sharding | awk -F':' '{print $1}' | sed 's/ //g'`
 if [ "${sharding}" = "sharding" ]; then
@@ -41,7 +40,7 @@ if [[ ${pretrained_model} =~ "1.5B" ]] || [[ ${pretrained_model} =~ "10B" ]]; th
 fi
 
 # environment variables for fleet distribute training
-export FLAGS_dynamic_static_unified_comm=false #PGLBOX不支持新通信库
+export FLAGS_dynamic_static_unified_comm=false #PGLBOX最新不支持新通信库
 export NCCL_DEBUG=INFO
 export FLAGS_LAUNCH_BARRIER=0
 export PADDLE_TRAINERS=1
@@ -173,7 +172,7 @@ unset PYTHONPATH
 ret=0
 for((i=0;i<$PADDLE_TRAINERS;i++))
 do
-    python -u tools/static_pglbox_trainer.py -m $config_file &> ./log/tainer.$i.log
+    python -u tools/static_pglbox_trainer.py -m $config_file &> ./log/trainer.$i.log
 
 done
 ret=$?
