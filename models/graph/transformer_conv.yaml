@@ -1,6 +1,6 @@
 # configuration for deepwalk
 # -----------paddlcloud 配置: 主要是一些提交paddlecloud任务的信息----------------------#
-job_name: test_nlp_pglbox_deepwalk_singlenode
+job_name: test_nlp_pglbox_transformer_singlenode
 # paddlecloud GPU 队列名称，每个部门的队列不同
 group_name: 
 # paddlecloud 提交任务所使用的docker 镜像
@@ -33,6 +33,9 @@ pair_label: ""
 
 # 如果要使用hadoop_shard 的功能, 请先参考./tools/graph_sharding/README.md 进行操作; 这个参数的功能是手动对数据进行分片, 这样可以减少每台机从hadoop拉取数据的数据量，加快拉取速度。
 # 目前使用graph_shard 的功能, 对数据进行分片，必须分片为1000 个part文件
+train_start_nodes: ""
+infer_nodes: ""
+
 hadoop_shard: True
 # auto_shard是对数据自动进行sharding，强烈建议开启auto_shard，这样用户就不要先手动对数据进行sharding了。但如果用户已经使用hadoop streaming对数据手动sharding了，那就不要开启auto_shard了。
 auto_shard: False
@@ -47,11 +50,11 @@ symmetry: True
 meta_path: "cuid2clk-clk2cuid;cuid2conv-conv2cuid;cuid2fcclk-fcclk2cuid;cuid2fcconv-fcconv2cuid;clk2cuid-cuid2clk;conv2cuid-cuid2clk;fcclk2cuid-cuid2clk;fcconv2cuid-cuid2clk;clk2cuid-cuid2conv;conv2cuid-cuid2conv;fcclk2cuid-cuid2conv;fcconv2cuid-cuid2conv;clk2entity-entity2clk;conv2entity-entity2conv;clk2entity-entity2conv;conv2entity-entity2clk"
 
 # 游走路径的正样本窗口大小
-win_size: 3
+win_size: 2
 # neg_num: 每对正样本对应的负样本数量
-neg_num: 5
+neg_num: 10
 # walk_len: metapath 游走路径深度
-walk_len: 24
+walk_len: 4
 # walk_times: 每个起始节点重复n次游走，这样可以尽可能把一个节点的所有邻居游走一遍，使得训练更加均匀。
 walk_times: 10
 
@@ -61,11 +64,11 @@ walk_times: 10
 nodeid_slot: 9008
 # 节点slot 特征配置，如果没有节点特征, 则slots参数为空列表
 slots: [] #["1", "2", "3", "4", "5", "6", "7", "8"]
+# slot_pool_type: slot 特征的聚合方式，有concat或者sum， 一般不用改动, sum的效果就比较ok了。
 float_slots: []
 # 格式是{"float_slot_id":shape...}，用法相当于token slot的max_seq_len,这里支持多个连续值特征，分别指定不同维度，那么python组网需要为每个连续值特征创建holder
 # 如果在节点文件里将多个连续值向量concat到一起，那么python端组网值需要定义一个holder,并使用类似于split_token_section的方式来切分特征数据
 float_slots_len: {}
-# slot_pool_type: slot 特征的聚合方式，有concat或者sum， 一般不用改动, sum的效果就比较ok了。
 slot_pool_type: sum
 # max_slot_value_size: 一个slot如果对应的值太多，会很影响训练速度，甚至无法训练, 而且效果也不一定会更好。所以这里做了限制。一般不用改动。
 max_slot_value_size: 100
@@ -95,9 +98,9 @@ model_type: GNNModel
 # embedding 维度
 emb_size: 64
 # sparse_type: 稀疏参数服务器的优化器，目前支持adagrad, shared_adam
-sparse_type: adagrad_v2
+sparse_type: adagrad_v2 # shared_adam
 # sparse_lr: 稀疏参数服务器的学习率
-sparse_lr: 0.05
+sparse_lr: 0.1
 # dense_lr: 稠密参数的学习率
 dense_lr: 0.000005 #001
 # slot_feature_lr: slot特征的学习率
@@ -112,18 +115,21 @@ softsign: False
 gcl_loss: simgcl_loss
 
 # sage 模型设置开关
-sage_mode: False
+sage_mode: True
 # sage_layer_type: sage 模型类型选择
-sage_layer_type: "LightGCN"
-sage_alpha: 0.9
+sage_layer_type: "TransformerConv"
+sage_alpha: 0.4
 samples: [5]
 infer_samples: [100]
 sage_act: "relu"
+hcl: True
+use_degree_norm: True # 如果为True，则sage_alpha 需设置为0.4-0.5, batch_node_size 和 infer_batch_size也要调小.
 
 # 带权采样开关，同时作用于游走和sage子图采样阶段。
 weighted_sample: False
 # 是否返回边权重，仅用于sage_mode=True模式，如边不带权则默认返回1。
 return_weight: False
+
 # 是否要进行训练，如果只想单独热启模型做预估(inference)，则可以关闭need_train
 need_train: True
 # 是否需要进行inference. 如果只想单独训练模型，则可以关闭need_inference
@@ -137,12 +143,15 @@ need_dump_walk: False
 # ---------------------------train param config---------------------------------------------#
 epochs: 1
 # 训练样本的batch_size
-batch_size: 80000
-infer_batch_size: 80000
+batch_size: 8000 
+infer_batch_size: 1000 
 chunk_num: 1
+thread_num: 8
 # 1 for debug
 debug_mode: 0
-# 是否开启metapath优化
+version: v_transformer_conv_230309
+# 大致设置gpups的显存占用率 默认 0.25
+gpups_memory_allocated_rate: 0.10
 metapath_split_opt: False
 # 训练模式，可填WHOLE_HBM/MEM_EMBEDDING/SSD_EMBEDDING，默认为MEM_EMBEDDING
 train_storage_mode: MEM_EMBEDDING

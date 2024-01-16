@@ -53,18 +53,31 @@ class DistGraph(object):
                  symmetry,
                  slots,
                  token_slot,
+                 float_slots,
+                 float_slots_len,
                  slot_num_for_pull_feature,
+                 float_slot_num,
                  num_parts,
-                 metapath_split_opt=False):
+                 metapath_split_opt=False,
+                 train_start_nodes=None,
+                 infer_nodes=None,
+                 use_weight=False):
+
         self.root_dir = root_dir
         self.node_types = node_types
         self.edge_types = edge_types
         self.symmetry = symmetry
         self.slots = slots
         self.token_slot = token_slot
+        self.float_slots = float_slots
+        self.float_slots_len = float_slots_len
         self.slot_num_for_pull_feature = slot_num_for_pull_feature
+        self.float_slot_num = float_slot_num
         self.num_parts = num_parts
         self.metapath_split_opt = metapath_split_opt
+        self.train_start_nodes = train_start_nodes
+        self.infer_nodes = infer_nodes
+        self.use_weight = use_weight
         self.reverse = 1 if self.symmetry else 0
 
         self.etype2files = helper.parse_files(self.edge_types)
@@ -96,6 +109,13 @@ class DistGraph(object):
                 self.graph.add_table_feat_conf(ntype,
                                                str(self.token_slot), "feasign",
                                                1)
+            if self.float_slots:
+                for float_slot_id in self.float_slots:
+                    float_slot_len = self.float_slots_len[str(float_slot_id)]
+                    log.info("add_table_feat_conf of float slot id %s" % float_slot_id)
+                    self.graph.add_table_feat_conf(ntype,
+                                               str(float_slot_id), "float32", int(float_slot_len))
+
         self.graph.set_slot_feature_separator(":")
         self.graph.set_feature_separator(",")
         self.graph.init_service()
@@ -108,7 +128,8 @@ class DistGraph(object):
                 continue
             load_begin_time = time.time()
             self.graph.load_edge_file(etype + ":" + etype, self.root_dir,
-                                      self.num_parts, self.reverse, [])
+                                      self.num_parts, self.reverse, [],
+                                      self.use_weight)
             load_end_time = time.time()
             log.info("load edge[%s] to cpu, time cost: %f sec" %
                      (etype, load_end_time - load_begin_time))
@@ -128,17 +149,21 @@ class DistGraph(object):
 
         load_begin_time = time.time()
         self.graph.load_edge_file(self.edge_types, self.root_dir,
-                                  self.num_parts, self.reverse, [])
+                                  self.num_parts, self.reverse, [],
+                                  self.use_weight)
         load_end_time = time.time()
         log.info("STAGE [CPU LOAD EDGE] finished, time cost: %f sec" %
                  (load_end_time - load_begin_time))
+
+        log.info("begin calc edge neighbor limit")
+        self.graph.calc_edge_type_limit()
+        log.info("end calc edge neighbor limit")
 
         load_begin_time = time.time()
         for i in range(len(self.etype_list)):
             log.info("begin to upload edge_type: [%s] to GPU" %
                      self.etype_list[i])
-            self.graph.upload_batch(0,
-                                    len(get_cuda_places()), self.etype_list[i])
+            self.graph.upload_batch(0, len(get_cuda_places()), self.etype_list[i])
         load_end_time = time.time()
         log.info("STAGE [GPU LOAD EDGE] finished, time cost: %f sec" %
                  (load_end_time - load_begin_time))
@@ -157,6 +182,30 @@ class DistGraph(object):
         ret = self.graph.load_node_file(self.node_types, self.root_dir,
                                         self.num_parts)
 
+        if self.train_start_nodes:
+            log.info("[TRAIN NODE] loading train_start_nodes from [%s]" % self.train_start_nodes)
+            new_ntype2files = helper.generate_files_string(
+                    self.ntype_list, self.train_start_nodes)
+            log.info("[TRAIN NODE] train_node2files: %s" % new_ntype2files)
+            ret = self.graph.load_node_file(new_ntype2files, self.root_dir,
+                                            self.num_parts)
+            if ret != 0:
+                log.info("Fail to load train_start_nodes!")
+                return -1
+
+        if self.infer_nodes:
+            log.info("[INFER NODE] loading infer_nodes from [%s]" % self.infer_nodes)
+
+            new_ntype2files = helper.generate_files_string(
+                    self.ntype_list, self.infer_nodes)
+            log.info("[INFER NODE] infer_node2files: %s" % new_ntype2files)
+
+            ret = self.graph.load_node_file(new_ntype2files, self.root_dir,
+                                            self.num_parts)
+            if ret != 0:
+                log.info("Fail to load infer_nodes!")
+                return -1
+
         if ret != 0:
             log.info("Fail to load node, ntype2files[%s] path[%s] num_part[%d]" \
                      % (self.node_types, self.root_dir, self.num_parts))
@@ -169,13 +218,13 @@ class DistGraph(object):
 
         if not self.metapath_split_opt:
             load_begin_time = time.time()
-            if self.slot_num_for_pull_feature > 0:
+            if self.slot_num_for_pull_feature > 0 or self.float_slot_num > 0:
                 self.graph.upload_batch(1,
-                                        len(get_cuda_places()),
-                                        self.slot_num_for_pull_feature)
+                        len(get_cuda_places()),
+                        self.slot_num_for_pull_feature, self.float_slot_num)
             load_end_time = time.time()
             log.info("STAGE [GPU LOAD NODE] finished, time cost: %f sec" %
-                     (load_end_time - load_begin_time))
+                    (load_end_time - load_begin_time))
 
         release_begin_time = time.time()
         self.graph.release_graph_node()
@@ -203,7 +252,8 @@ class DistGraph(object):
 
         metapath_cpuload_begin = time.time()
         self.graph.load_edge_file(sub_etype2files, self.root_dir,
-                                  self.num_parts, False, is_reverse_map)
+                                  self.num_parts, False, is_reverse_map,
+                                  self.use_weight)
         metapath_cpuload_end = time.time()
         log.info("metapath[%s] load edges[%s] to cpu, time: %s" %
                  (metapath, sub_etype2files,
@@ -274,6 +324,26 @@ class DistGraph(object):
     def clear_metapath_state(self):
         """doc"""
         self.graph.clear_metapath_state()
+
+    def load_train_node_from_file(self, train_start_nodes_path_vec, is_need_shuffle):
+        """ load train node from file"""
+        if not train_start_nodes_path_vec:
+            self.graph.set_node_iter_from_graph(True, is_need_shuffle)
+        else:
+            nodetype2files_vec = helper.generate_files_string(
+                self.ntype_list, train_start_nodes_path_vec)
+            self.graph.set_node_iter_from_file(
+                nodetype2files_vec, self.root_dir, self.num_parts, True, is_need_shuffle)
+    def load_infer_node_from_file(self, infer_nodes_path_vec):
+        """ load infer node from file"""
+        if not infer_nodes_path_vec:
+            self.graph.set_node_iter_from_graph(False, False)
+        else:
+            # for online learning, maybe we need to change input for dir.
+            nodetype2files_vec = helper.generate_files_string(
+                self.ntype_list, infer_nodes_path_vec)
+            self.graph.set_node_iter_from_file(
+                nodetype2files_vec, self.root_dir, self.num_parts, False, False)
 
     def load_graph_into_cpu(self):
         """Pull whole graph from disk into memory

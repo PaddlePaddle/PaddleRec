@@ -70,12 +70,26 @@ def parse_args():
     config.local_model_path = "./model"
     config.local_result_path = "./embedding"
     config.local_dump_path = "./dump_walk"
-    config.model_save_path = os.path.join(config.working_root, "model")
+    config.local_dump_neighbors_path = "./dump_neighbors"
+    config.model_save_path = os.path.join(config.working_root, 'model')
     config.infer_result_path = os.path.join(config.working_root, 'embedding')
-    config.dump_save_path = os.path.join(config.working_root, 'dump_walk')
+    config.dump_walk_path = os.path.join(config.working_root, 'dump_walk')
+    config.dump_neighbors_path = os.path.join(config.working_root, 'dump_neighbors')
+    config.meta_path = config.meta_path.replace(' ', '')
+    config.first_node_type, config.tensor_pair_num = util.get_first_node_type(config.meta_path)
+    log.warning('meta_path: %s' % config.meta_path)
+    log.warning('first_node_type: %s' % config.first_node_type)
+    log.warning('tensor_pair_num: %s' % config.tensor_pair_num)
     config.max_steps = config.max_steps if config.max_steps else 0
     config.metapath_split_opt = config.metapath_split_opt \
                                 if config.metapath_split_opt else False
+    config.weighted_sample = config.weighted_sample if config.weighted_sample else False
+    config.return_weight = config.return_weight if config.return_weight else False
+    pretrained_model = config.get("pretrained_model", "")
+    if paddle.distributed.get_world_size() > 1 and len(pretrained_model.strip()) > 0 \
+      and not getattr(config, "sharding", None):
+        print("force sharding")
+        config.sharding = {"segment_broadcast_MB": 1}
     if args.opt:
         for parameter in args.opt:
             parameter = parameter.strip()
@@ -83,9 +97,13 @@ def parse_args():
             value = int(value)
             config.__setattr__(key, value)
 
-    config.profiler_options = args.profiler_options
+    # set hadoop global account
+    if config.fs_name or config.fs_ugi:
+        hadoop_bin = "%s/bin/hadoop" % (os.getenv("HADOOP_HOME"))
+        HFS.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
     print("#===================PRETTY CONFIG============================#")
     pretty(config, indent=0)
+    print("#===================PRETTY CONFIG============================#")
     return config
 
 
@@ -209,6 +227,7 @@ class Main(object):
     def network(self):
         startup_program = paddle.static.Program()
         train_program = paddle.static.Program()
+
         self.infer_model_dict = None
         with paddle.static.program_guard(train_program, startup_program):
             with paddle.utils.unique_name.guard():
@@ -218,13 +237,58 @@ class Main(object):
         self.model_dict.startup_program = startup_program
         self.model_dict.train_program = train_program
 
+        # get strategy
+        strategy=get_strategy(self.config, self.model_dict)
+        # need sharding mode
+        sharding_configs = getattr(self.config, "sharding", None)
+        if sharding_configs:
+            segment_broadcast_MB = getattr(sharding_configs, "segment_broadcast_MB", None)
+            if segment_broadcast_MB is None:
+                segment_broadcast_MB = 1
+            # set sharding
+            strategy.sharding = True
+            configs = {
+                "sharding_segment_strategy": "segment_broadcast_MB",
+                "segment_broadcast_MB": segment_broadcast_MB,
+                "sharding_degree": role_maker._worker_num(),
+            }
+            for k, v in sharding_configs.items():
+                if k in configs:
+                    continue
+                configs[k] = v
+            strategy.sharding_configs = configs
+            print(strategy.sharding_configs)
+            
+        # amp see: https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/distributed/fleet/DistributedStrategy_cn.html#distributedstrategy
+        amp_configs = getattr(self.config, "amp", None)
+        if amp_configs:
+            strategy.amp = True
+            # when not config by model then nan
+            strategy.amp_configs = amp_configs
+            
         adam = paddle.optimizer.Adam(learning_rate=self.config.dense_lr)
         optimizer = fleet.distributed_optimizer(
-            adam, strategy=get_strategy(self.config, self.model_dict))
+            adam, strategy=strategy)
         optimizer.minimize(self.model_dict.loss,
                            self.model_dict.startup_program)
         make_distributed_train_program(self.config, self.model_dict)
 
+        self.local_param = []
+        if getattr(self.config, "sharding", None):
+            shard_obj = shard.Shard()
+            global_param2device, device2global_params \
+                = shard_obj._split_params(params_grads, 0, role_maker._worker_num())
+            start_index = role_maker._worker_index()
+            for i in range(len(role_maker.gpu_nums)):
+                card_param = []
+                for param in device2global_params[i + start_index]:
+                    card_param.append(param)
+                    card_param.append(param + "_moment1_0")
+                    card_param.append(param + "_moment2_0")
+                    card_param.append(param + "_beta1_pow_acc_0")
+                    card_param.append(param + "_beta2_pow_acc_0")
+                self.local_param.append(card_param)
+                
         if self.config.need_inference:
             infer_startup_program = paddle.static.Program()
             infer_train_program = paddle.static.Program()
@@ -271,10 +335,39 @@ class Main(object):
         fleet.init_worker()
         slot_num_for_pull_feature = 1 if self.config.token_slot else 0
         slot_num_for_pull_feature += len(self.config.slots)
+        float_slot_num = 0
+        if self.config.float_slots:
+            float_slot_num = len(self.config.float_slots)
         embedding = DistEmbedding(
             slots=self.model_dict.total_gpups_slots,
             embedding_size=self.config.emb_size,
-            slot_num_for_pull_feature=slot_num_for_pull_feature)
+            slot_num_for_pull_feature=slot_num_for_pull_feature,
+            float_slot_num=float_slot_num)
+        
+        if self.config.warm_start_from:
+            log.info("warmup start from %s" % self.config.warm_start_from)
+            load_model_begin = time.time()
+            if getattr(self.config, "sharding", None):
+                with paddle.static.device_guard("cpu"):
+                    util.load_pretrained_model(self.exe, self.model_dict, self.config, self.config.warm_start_from)
+            else:
+                util.load_pretrained_model(self.exe, self.model_dict, self.config, self.config.warm_start_from)
+            load_model_end = time.time()
+            log.info("STAGE [LOAD MODEL] finished, time cost: %f sec" \
+                % (load_model_end - load_model_begin))
+        elif self.config.pretrained_model:
+            # if sparse table is null, then only load dense pretrained_model from dependency
+            dependency_path = os.getenv("DEPENDENCY_HOME") # see env_run/scripts/train.sh for details
+            dense_path = os.path.join(dependency_path, self.config.pretrained_model)
+            log.info("only load dense parameters from: %s" % dense_path)
+            paddle.static.set_program_state(model_dict.train_program, model_dict.state_dict)
+
+        #  log.info("[DEBUG] begin print tensor of train program")
+        #  util.print_tensor_of_program(paddle.fluid.global_scope(), model_dict.train_program)
+        #  log.info("[DEBUG] end print tensor of train program")
+
+        fleet.barrier_worker()
+        
         dist_graph = DistGraph(
             root_dir=self.config.graph_data_local_path,
             node_types=self.config.ntype2files,
@@ -282,9 +375,15 @@ class Main(object):
             symmetry=self.config.symmetry,
             slots=self.config.slots,
             token_slot=self.config.token_slot,
+            float_slots=self.config.float_slots,
+            float_slots_len=self.config.float_slots_len,
             slot_num_for_pull_feature=slot_num_for_pull_feature,
+            float_slot_num=float_slot_num,
             num_parts=self.config.num_part,
-            metapath_split_opt=self.config.metapath_split_opt)
+            metapath_split_opt=self.config.metapath_split_opt,
+            train_start_nodes=self.config.train_start_nodes,
+            infer_nodes=self.config.infer_nodes,
+            use_weight=self.config.weighted_sample or self.config.return_weight)
 
         dist_graph.load_edge()
         ret = dist_graph.load_node()
@@ -308,7 +407,10 @@ class Main(object):
             dist_graph=dist_graph)
 
         if self.config.need_train:
-            self.train(train_dataset)
+            if self.config.metapath_split_opt:
+                ret = self.train_with_multi_metapath(train_dataset)
+            else:
+                ret = self.train(train_dataset)
         else:
             log.info("STAGE: need_train is %s, skip training process" %
                      self.config.need_train)
@@ -336,35 +438,52 @@ class Main(object):
 
         train_begin_time = time.time()
         for epoch in range(1, self.config.epochs + 1):
+            is_need_shuffle = False
+            if (epoch > 1):
+                is_need_shuffle = True
+            dataset.dist_graph.load_train_node_from_file(self.config.train_start_nodes, is_need_shuffle)
             if self.config.max_steps > 0 and model_util.print_count >= self.config.max_steps:
-                log.info("training reach max_steps: %d, training end" %
-                         self.config.max_steps)
+                log.info("training reach max_steps: %d, training end" % self.config.max_steps)
+
+                savemodel_begin = time.time()
+                log.info("saving model for max_steps {}".format(self.config.max_steps))
+                dataset.embedding.dump_to_mem()
+                # 最后一次训练保存模型时检查是否shrink
+                if "need_shrink" in self.config and self.config.need_shrink is True:
+                    shrink_begin = time.time()
+                    fleet.shrink()
+                    shrink_end = time.time()
+                    log.info("STAGE [SHRINK MODEL] for epoch [%d] finished, time cost: %f sec" \
+                        % (epoch, shrink_end - shrink_begin))
+                ret = util.save_model(exe, model_dict, self.config, self.config.local_model_path,
+                                self.config.model_save_path, local_param, save_mode=3)
+                fleet.barrier_worker()
+                if ret != 0:
+                    log.warning("Fail to save model")
+                    return -1
+                savemodel_end = time.time()
+                log.info("STAGE [SAVE MODEL] for max_steps[%d] finished, time cost: %f sec" \
+                    % (self.config.max_steps, savemodel_end - savemodel_begin))
+
                 break
 
             epoch_begin = time.time()
             epoch_loss = 0
             pass_id = 0
-            last_batch_num = 0
-            for pass_dataset in dataset.pass_generator(epoch):
-                train_begin = time.time()
-                profiler.add_profiler_step(self.profiler_options)
-                self.exe.train_from_dataset(
-                    self.model_dict.train_program, pass_dataset, debug=False)
-                train_end = time.time()
-
-                batch_num = util.get_batch_num(self.model_dict.batch_count)
-                log.info("train pass[%d] STAGE [TRAIN] finished, avg_batch_num[%d] time cost: %f sec" \
-                        % (pass_id, batch_num - last_batch_num, train_end - train_begin))
-                last_batch_num = batch_num
-
-                t_loss = util.get_global_value(self.model_dict.visualize_loss,
-                                               self.model_dict.batch_count)
-                epoch_loss += t_loss
-                pass_id += 1
+            try:
+                for pass_dataset in dataset.pass_generator(epoch):
+                    self.exe.train_from_dataset(self.model_dict.train_program, pass_dataset, debug=False)
+                    t_loss = util.get_global_value(self.model_dict.visualize_loss,
+                                                self.model_dict.batch_count)
+                    epoch_loss += t_loss
+                    pass_id += 1
+            except Exception as e:
+                log.warning('train exception, %s' % (traceback.format_exc()))
+                return -1
 
             epoch_end = time.time()
             log.info("epoch[%d] finished, time cost: %f sec" %
-                     (epoch, epoch_end - epoch_begin))
+                    (epoch, epoch_end - epoch_begin))
 
             if pass_id > 0:
                 epoch_loss = epoch_loss / pass_id
@@ -382,26 +501,118 @@ class Main(object):
 
             fleet.barrier_worker()
 
-            savemodel_begin = time.time()
-            is_save = (epoch % self.config.save_model_interval == 0 or
-                       epoch == self.config.epochs)
+            is_save = (epoch % self.config.save_model_interval == 0 or epoch == self.config.epochs)
             if self.config.model_save_path and is_save:
-                log.info("save model for epoch {}".format(epoch))
+                savemodel_begin = time.time()
+                log.info("saving model for epoch {}".format(epoch))
                 dataset.embedding.dump_to_mem()
-                util.save_model(self.exe, self.model_dict, self.config,
-                                self.config.local_model_path,
-                                self.config.model_save_path)
-                os.system(
-                    "echo '%s' | sh ../scripts/to_robot.sh >/dev/null 2>&1 " %
-                    train_msg)
-            fleet.barrier_worker()
-            savemodel_end = time.time()
-            log.info("STAGE [SAVE MODEL] for epoch[%d] finished, time cost: %f sec" \
-                % (epoch, savemodel_end - savemodel_begin))
+                # 最后一次训练保存模型时检查是否shrink
+                if epoch == self.config.epochs and "need_shrink" in self.config and self.config.need_shrink is True:
+                    shrink_begin = time.time()
+                    fleet.shrink()
+                    shrink_end = time.time()
+                    log.info("STAGE [SHRINK MODEL] for epoch [%d] finished, time cost: %f sec" \
+                        % (epoch, shrink_end - shrink_begin))
+                save_mode = 3 if epoch == self.config.epochs else 0
+                ret = util.save_model(self.exe, self.model_dict, self.config, self.config.local_model_path,
+                                self.config.model_save_path, self.local_param, save_mode=save_mode)
+                os.system("echo '%s' | sh ../scripts/to_robot.sh >/dev/null 2>&1 " % train_msg)
+                fleet.barrier_worker()
+                if ret != 0:
+                    log.warning("Fail to save model")
+                    return -1
+                savemodel_end = time.time()
+                log.info("STAGE [SAVE MODEL] for epoch[%d] finished, time cost: %f sec" \
+                    % (epoch, savemodel_end - savemodel_begin))
+
         train_end_time = time.time()
         log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
-                 (train_end_time - train_begin_time))
+                (train_end_time - train_begin_time))
 
+        return 0
+
+    def train_with_multi_metapath(self, dataset):
+        """ training with multiple metapaths """
+        train_msg = util.get_job_info()
+
+        sorted_metapaths, metapath_dict = \
+            dataset.dist_graph.get_sorted_metapath_and_dict(self.config.meta_path)
+
+        train_begin_time = time.time()
+        for epoch in range(1, self.config.epochs + 1):
+            epoch_begin = time.time()
+
+            epoch_loss = 0
+            pass_id = 0
+            meta_path_len = len(sorted_metapaths)
+            for i in range(meta_path_len):
+                dataset.dist_graph.load_metapath_edges_nodes(metapath_dict,
+                                                    sorted_metapaths[i], i)
+                metapath_train_begin = time.time()
+                dataset.dist_graph.load_train_node_from_file(self.config.train_start_nodes, False)
+                for pass_dataset in dataset.pass_generator():
+                    self.exe.train_from_dataset(
+                        model_dict.train_program, pass_dataset, debug=False)
+                    t_loss = util.get_global_value(model_dict.visualize_loss,
+                                                model_dict.batch_count)
+                    epoch_loss += t_loss
+                    pass_id += 1
+                metapath_train_end = time.time()
+                log.info("metapath[%s] [%d/%d] trained, pass_num[%d] time: %s" %
+                        (sorted_metapaths[i], i, meta_path_len, pass_id + 1,
+                        metapath_train_end - metapath_train_begin))
+                dataset.dist_graph.clear_metapath_state()
+
+            epoch_end = time.time()
+            log.info("epoch[%d] finished, time cost: %f sec" % (epoch, epoch_end - epoch_begin))
+
+            if pass_id > 0:
+                epoch_loss = epoch_loss / pass_id
+
+            fleet.barrier_worker()
+            time_msg = "%s\n" % datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            train_msg += time_msg
+            msg = "Train: Epoch %d | meta path: %s | batch_loss %.6f\n" % \
+                    (epoch, sorted_metapaths[i], epoch_loss)
+            train_msg += msg
+            log.info(msg)
+
+            if fleet.worker_index() == 0:
+                with open(os.path.join('./train_result.log'), 'a') as f:
+                    f.write(time_msg)
+                    f.write(msg)
+                os.system("echo '%s' | sh to_robot.sh >/dev/null 2>&1 " % train_msg)
+            fleet.barrier_worker()
+
+            is_save = (epoch % self.config.save_model_interval == 0 or epoch == self.config.epochs)
+            if self.config.model_save_path and is_save:
+                savemodel_begin = time.time()
+                log.info("saving model for epoch {}".format(epoch))
+                dataset.embedding.dump_to_mem()
+                # 最后一次保存模型时检查是否shrink
+                if epoch == self.config.epochs and "need_shrink" in self.config and self.config.need_shrink is True:
+                    shrink_begin = time.time()
+                    fleet.shrink()
+                    shrink_end = time.time()
+                    log.info("STAGE [SHRINK MODEL] for epoch [%d] finished, time cost: %f sec" \
+                        % (epoch, shrink_end - shrink_begin))
+                save_mode = 3 if epoch == self.config.epochs else 0
+                ret = util.save_model(self.exe, model_dict, self.config, self.config.local_model_path, 
+                                self.config.model_save_path, local_param, save_mode=save_mode)
+                fleet.barrier_worker()
+                if ret != 0:
+                    log.warning("Fail to save model")
+                    return -1
+                savemodel_end = time.time()
+                log.info("STAGE [SAVE MODEL] for epoch [%d] finished, time cost: %f sec" \
+                    % (epoch, savemodel_end - savemodel_begin))
+
+        train_end_time = time.time()
+        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+                (train_end_time - train_begin_time))
+
+        return 0
+        
     def infer(self, dataset):
         """
         infer
@@ -411,11 +622,17 @@ class Main(object):
         # set infer mode
         if hasattr(dataset.embedding.parameter_server, "set_mode"):
             dataset.embedding.set_infer_mode(True)
+        # set sage mode
+        if hasattr(dataset.embedding.parameter_server, "set_sage"):
+            if self.config.sage_mode:
+                dataset.embedding.set_sage_mode(True)
 
+        dataset.dist_graph.load_infer_node_from_file(self.config.infer_nodes)
         for pass_dataset in dataset.pass_generator():
             self.exe.train_from_dataset(
                 self.infer_model_dict.train_program, pass_dataset, debug=False)
 
+        self.exe.close()
         util.upload_embedding(self.config, self.config.local_result_path)
 
         infer_end = time.time()
