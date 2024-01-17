@@ -1,6 +1,6 @@
 ===========================train_params===========================
-model_name:deep_walk
-python:python3.7
+model_name:transformer_conv
+python:python3.8
 gpu_list:0
 runner.use_gpu:True|False
 auto_cast:False
@@ -50,11 +50,10 @@ inference:null
 --benchmark:True
 null:null
 ===========================train_benchmark_params=========================== 
-batch_size:80000
+batch_size:8000
 epoch:1
 --profiler_options="batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile"
 run_mode:PGLBOX
 fp_items:null
-device_num:N1C8|N4X16|N8X16|N16X16|N32X16
-gpu_config:models/graph/config.yaml
-cpu_config:models/graph/config.yaml
+device_num:N1C8
+gpu_config:models/graph/transformer_conv.yaml

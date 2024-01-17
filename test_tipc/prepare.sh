@@ -549,4 +549,18 @@ elif [ ${model_name} == "deep_walk" ]; then
         python -m pip install pgl -U
         python -m pip install gpustat==1.0.0 -U
     fi
+elif [ ${model_name} == "lightgcn" ]; then
+    if [ ${MODE} = "benchmark_train" ];then
+        python -m pip install paddlenlp==2.0.0rc16
+        python -m pip install protobuf==3.20.0 -U
+        python -m pip install pgl -U
+        python -m pip install gpustat==1.0.0 -U
+    fi
+elif [ ${model_name} == "transformer_conv" ]; then
+    if [ ${MODE} = "benchmark_train" ];then
+        python -m pip install paddlenlp==2.0.0rc16
+        python -m pip install protobuf==3.20.0 -U
+        python -m pip install pgl -U
+        python -m pip install gpustat==1.0.0 -U
+    fi
 fi
