@@ -302,11 +302,19 @@ if [ ${MODE} = "benchmark_train" ]; then
         line=$(sed -n -e '/static_pglbox_trainer.py/=' tools/run_pglbox.sh)
         sed -i "$line d" tools/run_pglbox.sh
         cmd="python -u tools/static_pglbox_trainer.py -m ${PGLBOX_HOME}/$gpu_config_value"
-        sed -i "$line a$cmd" tools/run_pglbox.sh 
-        #使用PDC官方镜像需要将环境变量注释掉
-        sed -i '/PYTHON_HOME=${PGLBOX_HOME}/d' tools/run_pglbox.sh 
-        sed -i '/export PATH=${PYTHON_HOME}/d' tools/run_pglbox.sh 
-        sed -i '/export LD_LIBRARY_PATH=${PYTHON_HOME}/d' tools/run_pglbox.sh 
+        sed -i "$line a$cmd" tools/run_pglbox.sh
+        #ubuntu环境下有这个文件，centos下没有
+        cat /etc/lsb-release
+        if [ $? -eq 0 ];then
+            #使用PDC的ubuntu镜像需要将环境变量注释掉
+            sed -i '/PYTHON_HOME=${PGLBOX_HOME}/d' tools/run_pglbox.sh 
+            sed -i '/export PATH=${PYTHON_HOME}/d' tools/run_pglbox.sh 
+            sed -i '/export LD_LIBRARY_PATH=${PYTHON_HOME}/d' tools/run_pglbox.sh
+        else
+            #使用PDC的centos镜像需要提前制定python环境
+            sed -i '/tar -zxvf dependency_py310.tar.gz/d' tools/run_pglbox.sh 
+            sed -i '/rm dependency_py310.tar.gz/d' tools/run_pglbox.sh 
+        fi
         #执行训练脚本
         sh -x tools/run_pglbox.sh
     fi
