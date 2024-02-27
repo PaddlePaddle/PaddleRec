@@ -284,7 +284,7 @@ if [ ${MODE} = "benchmark_train" ]; then
         export PADDLE_GLOO_FS_PATH=$gloo_fs_path
 
         cd ../
-        ${python} -m pip install paddlepaddle*.whl -U
+        ${python} -m pip install --force-reinstall paddlepaddle*.whl
         cd -
         CONFIG=$cpu_config_value
         SC="tools/static_ps_trainer.py -m "
