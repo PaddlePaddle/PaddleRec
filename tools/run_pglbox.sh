@@ -1,8 +1,4 @@
 #!/bin/bash
-if [ ! -d "./log" ]; then
-  mkdir ./log
-  echo "Create log floder for store running log"
-fi
 # environment variables for fleet distribute training
 echo 'begin to train...'
 
@@ -14,19 +10,33 @@ wget https://paddlerec.bj.bcebos.com/benchmark/pgl/dependency_py310.tar.gz --no-
 tar -zxvf dependency_py310.tar.gz
 rm dependency_py310.tar.gz
 
-# # # download data
-wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz --no-check-certificate
-tar -zxvf data.tar.gz
-rm data.tar.gz
-
 SOURCE_HOME=$(readlink -f $(dirname ${BASH_SOURCE[0]}) )/
 PGLBOX_HOME=${SOURCE_HOME}/../
+LOG_DIR="${PGLBOX_HOME}/log"
+[ ! -d ${LOG_DIR} ] && mkdir -p ${LOG_DIR}
 
 config_file="${PGLBOX_HOME}/models/graph/config.yaml" # 模型配置文件，可以修改
 
 # environment variables for fleet distribute training
 source ${PGLBOX_HOME}/tools/utils/static_ps/pglbox_util.sh
 
+unset PYTHONHOME
+unset PYTHONPATH
+
+# download graph data
+graph_data_hdfs_path=`parse_yaml2 ${config_file} graph_data_hdfs_path`
+graph_data_local_path=`parse_yaml2 ${config_file} graph_data_local_path`
+if [ -z "$graph_data_hdfs_path" ]; then
+    echo "download default graph data"
+    wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz --no-check-certificate
+    tar -zxvf data.tar.gz
+    rm data.tar.gz
+else
+    echo "download your graph data"
+    sh ${PGLBOX_HOME}/tools/utils/static_ps/download_graph_data.sh ${graph_data_hdfs_path} ${graph_data_local_path} ${config_file}> ${LOG_DIR}/graph_data.log 2>&1 &
+fi
+
+# train
 sharding=`grep sharding $config_file | sed s/#.*//g | grep sharding | awk -F':' '{print $1}' | sed 's/ //g'`
 if [ "${sharding}" = "sharding" ]; then
    export FLAGS_enable_adjust_op_order=2
@@ -168,6 +178,9 @@ set -x
 which python
 unset PYTHONHOME
 unset PYTHONPATH
+
+# install paddlepaddle-gpu whl
+# python -m pip install paddlepaddle-gpu==2.6.1
 
 ret=0
 for((i=0;i<$PADDLE_TRAINERS;i++))
