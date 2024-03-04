@@ -31,6 +31,7 @@ if [ -z "$graph_data_hdfs_path" ]; then
     wget https://paddlerec.bj.bcebos.com/benchmark/pgl/data.tar.gz --no-check-certificate
     tar -zxvf data.tar.gz
     rm data.tar.gz
+    touch ${PGLBOX_HOME}/data/download.done
 else
     echo "download your graph data"
     sh ${PGLBOX_HOME}/tools/utils/static_ps/download_graph_data.sh ${graph_data_hdfs_path} ${graph_data_local_path} ${config_file}> ${LOG_DIR}/graph_data.log 2>&1 &
