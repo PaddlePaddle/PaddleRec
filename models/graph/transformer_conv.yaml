@@ -65,10 +65,6 @@ nodeid_slot: 9008
 # 节点slot 特征配置，如果没有节点特征, 则slots参数为空列表
 slots: [] #["1", "2", "3", "4", "5", "6", "7", "8"]
 # slot_pool_type: slot 特征的聚合方式，有concat或者sum， 一般不用改动, sum的效果就比较ok了。
-float_slots: []
-# 格式是{"float_slot_id":shape...}，用法相当于token slot的max_seq_len,这里支持多个连续值特征，分别指定不同维度，那么python组网需要为每个连续值特征创建holder
-# 如果在节点文件里将多个连续值向量concat到一起，那么python端组网值需要定义一个holder,并使用类似于split_token_section的方式来切分特征数据
-float_slots_len: {}
 slot_pool_type: sum
 # max_slot_value_size: 一个slot如果对应的值太多，会很影响训练速度，甚至无法训练, 而且效果也不一定会更好。所以这里做了限制。一般不用改动。
 max_slot_value_size: 100
@@ -152,10 +148,6 @@ debug_mode: 0
 version: v_transformer_conv_230309
 # 大致设置gpups的显存占用率 默认 0.25
 gpups_memory_allocated_rate: 0.10
-metapath_split_opt: False
-# 训练模式，可填WHOLE_HBM/MEM_EMBEDDING/SSD_EMBEDDING，默认为MEM_EMBEDDING
-train_storage_mode: MEM_EMBEDDING
-version: v_refactor_0104
 
 # ---------------------------例行训练和预测------------------------------#
 # 若修改为"online_train"，则表示需要进行例行训练，否则默认为普通训练模式。
