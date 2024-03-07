@@ -56,7 +56,7 @@ function download_data_by_gzshell() {
 
     rm -rf ${graph_data_local_path}
     mkdir -p ${graph_data_local_path}
-    ${PGLBOX_HOME}/dependency/gzshell --uri=${fs_name} --username=${fs_user} --password=${fs_passwd} --conf=${SOURCE_HOME}/scripts/client.conf --thread=200 -get ${graph_data_hdfs_path} ${graph_data_local_path}
+    ${PGLBOX_HOME}/dependency/gzshell --uri=${fs_name} --username=${fs_user} --password=${fs_passwd} --conf=${SOURCE_HOME}/client.conf --thread=200 -get ${graph_data_hdfs_path} ${graph_data_local_path}
     if [ $? -eq 0 ]; then
         if [ -d ${graph_data_local_path}/${graph_data_dir} ]; then
             mv ${graph_data_local_path}/${graph_data_dir}/* ${graph_data_local_path}/
