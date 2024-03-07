@@ -33,6 +33,8 @@ pair_label: ""
 
 # 如果要使用hadoop_shard 的功能, 请先参考./tools/graph_sharding/README.md 进行操作; 这个参数的功能是手动对数据进行分片, 这样可以减少每台机从hadoop拉取数据的数据量，加快拉取速度。
 # 目前使用graph_shard 的功能, 对数据进行分片，必须分片为1000 个part文件
+train_start_nodes: ""
+infer_nodes: ""
 hadoop_shard: True
 # auto_shard是对数据自动进行sharding，强烈建议开启auto_shard，这样用户就不要先手动对数据进行sharding了。但如果用户已经使用hadoop streaming对数据手动sharding了，那就不要开启auto_shard了。
 auto_shard: False
@@ -146,6 +148,8 @@ debug_mode: 0
 metapath_split_opt: False
 # 训练模式，可填WHOLE_HBM/MEM_EMBEDDING/SSD_EMBEDDING，默认为MEM_EMBEDDING
 train_storage_mode: MEM_EMBEDDING
+# 大致设置gpups的显存占用率 默认 0.25
+gpups_memory_allocated_rate: 0.60
 version: v_refactor_0104
 
 # ---------------------------例行训练和预测------------------------------#
