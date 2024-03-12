@@ -163,7 +163,7 @@ class DINLayer(nn.Layer):
         for attlayer in self.attention_layer:
             concat = attlayer(concat)
 
-        atten_fc3 = concat + mask
+        atten_fc3 = concat + mask.astype(concat.dtype)
         atten_fc3 = paddle.transpose(atten_fc3, perm=[0, 2, 1])
         atten_fc3 = paddle.scale(atten_fc3, scale=self.firInDim**-0.5)
         weight = paddle.nn.functional.softmax(atten_fc3)
