@@ -318,8 +318,49 @@ if [ ${MODE} = "benchmark_train" ]; then
             sed -i '/tar -zxvf dependency_py310.tar.gz/d' tools/run_pglbox.sh 
             sed -i '/rm dependency_py310.tar.gz/d' tools/run_pglbox.sh 
         fi
+        if [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'CE' ]]; then
+            line=$(sed -n -e '/graph_data_fs_name:/=' $gpu_config_value)
+            new_graph_data_fs_name="graph_data_fs_name: \"${graph_data_fs_name}\""
+            sed -i "$line a${new_graph_data_fs_name}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            line=$(sed -n -e '/graph_data_fs_ugi:/=' $gpu_config_value)
+            new_graph_data_fs_ugi="graph_data_fs_ugi: \"${graph_data_fs_ugi}\""
+            sed -i "$line a${new_graph_data_fs_ugi}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            lines=$(sed -n -e '/graph_data_hdfs_path:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            new_graph_data_hdfs_path="graph_data_hdfs_path: \"${graph_data_hdfs_path}\""
+            sed -i "$line a${new_graph_data_hdfs_path}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            lines=$(sed -n -e '/graph_data_local_path:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            new_graph_data_local_path="graph_data_local_path: \"${graph_data_local_path}\""
+            sed -i "$line a${new_graph_data_local_path}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            lines=$(sed -n -e '/num_part:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            new_num_part="num_part: 1000"
+            sed -i "$line a${new_num_part}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            wget ${graph_eval_url} --no-check-certificate -P tools/
+        fi
         #执行训练脚本
         sh -x tools/run_pglbox.sh
+        if [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'CE' ]]; then
+            sh tools/run_graph_eval.sh $gpu_config_value > ${BENCHMARK_LOG_DIR}/graph_eval.log 2>&1
+            rm -rf ${graph_data_local_path}
+        fi
     fi
 elif [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     GPUID=$3
