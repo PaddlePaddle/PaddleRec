@@ -13,3 +13,12 @@ function modify_yaml {
     sed -i "s|^${key}: .*$|${key}: ${value}|" ${file}
 }
 
+function warn_log() {
+    d=`date`
+    echo -e "$d: WARN: " "$1"
+}
+
+function info_log() {
+    d=`date`
+    echo -e "$d: INFO: " "$1"
+}

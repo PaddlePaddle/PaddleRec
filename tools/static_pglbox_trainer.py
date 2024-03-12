@@ -368,6 +368,18 @@ class Main(object):
 
         fleet.barrier_worker()
         
+        # 检测是否有最新的图数据产生
+        while True:
+            if os.path.exists(os.path.join(self.config.graph_data_local_path, "download.done")):
+                break
+            if os.path.exists(os.path.join(self.config.graph_data_local_path, "download.fail")):
+                log.warning("Fail to download graph data!")
+                return -1
+            log.info("Downloading graph data, %s/download.done file is not ready, please wait."
+                     % self.config.graph_data_local_path)
+            time.sleep(30)
+        log.info("Finish graph data download.")
+
         dist_graph = DistGraph(
             root_dir=self.config.graph_data_local_path,
             node_types=self.config.ntype2files,
