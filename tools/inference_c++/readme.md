@@ -22,7 +22,7 @@ wide_deep
 └── rec_inference.pdmodel
 ```
 
-### step2：下载PaddlePaddle C++ 预测库 fluid_inference
+### step2：下载PaddlePaddle C++ 预测库 paddle_inference
 PaddlePaddle C++ 预测库针对不同的`CPU`和`CUDA`版本提供了不同的预编译版本，请根据实际情况下载:  [C++预测库下载列表](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)
 下载后请在tools/inference_c++/目录下解压，目录结构为：
 ```

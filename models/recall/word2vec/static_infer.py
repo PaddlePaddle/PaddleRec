@@ -137,7 +137,7 @@ def main(args):
                     "infer epoch: {}, batch_id: {}, acc: {:.6f}, speed: {:.2f} ins/s".
                     format(epoch_id, batch_id, accum_num * 1.0 / accum_num_sum,
                            print_interval * batch_size / (time.time() -
-                                                          interval_begin)))
+                                                          interval_begin + 1e-6)))
                 interval_begin = time.time()
         logger.info("infer epoch: {} done, acc: {:.6f}, : epoch time{:.2f} s".
                     format(epoch_id, accum_num * 1.0 / accum_num_sum,

@@ -12,44 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# workspace
-#workspace: "models/rank/wide_deep"
-
-
 runner:
   train_data_dir: "data/sample_data/train"
-  train_reader_path: "criteo_reader" # importlib format
-  use_gpu: True
-  use_auc: True
-  train_batch_size: 32
-  epochs: 3
-  print_interval: 10
-  model_save_path: "output_model_wide_deep_queue"
-
-  sync_mode: "gpubox"
-  thread_num: 30
-  reader_type: "InmemoryDataset"  # DataLoader / QueueDataset / RecDataset / InmemoryDataset
-  pipe_command: "python models/rank/wide_deep/queuedataset_reader.py"
-  dataset_debug: False
-  split_file_list: False
-
+  train_reader_path: "FastformerDataReader" # importlib format
+  use_gpu: False
+  train_batch_size: 10
+  epochs: 20
+  print_interval: 2
+  #model_init_path: "output_model/0" # init model
+  model_save_path: "output_model"
   infer_batch_size: 2
-  infer_reader_path: "criteo_reader" # importlib format
+  infer_reader_path: "FastformerDataReader" # importlib format
   test_data_dir: "data/sample_data/train"
-  infer_load_path: "output_model_wide_deep_queue"
+  infer_load_path: "output_model"
   infer_start_epoch: 0
-  infer_end_epoch: 3
+  infer_end_epoch: 20
+
 # hyper parameters of user-defined network
 hyper_parameters:
+  # fastformer
+  hidden_size: 256
+  hidden_dropout_prob: 0.2
+  num_hidden_layers: 2
+  num_attention_heads: 16
+  intermediate_size: 256
+  max_position_embeddings: 256
+  layer_norm_eps: 1e-12
+  initializer_range: 0.02
+  pooler_type: weightpooler
+
   # optimizer config
   optimizer:
     class: Adam
-    learning_rate: 0.001
+    learning_rate: 0.0001
     strategy: async
   # user-defined <key, value> pairs
-  sparse_inputs_slots: 27
-  sparse_feature_number: 1024
-  sparse_feature_dim: 9
-  dense_input_dim: 13
-  fc_sizes: [512, 256, 128, 32]
-  distributed_embedding: 0
+  article_content_size: 30
+  article_title_size: 10
+  browse_size: 10
+  neg_condidate_sample_size: 4
+  word_dimension: 30
+  category_size: 4
+  sub_category_size: 10
+  category_dimension: 32
+  word_dict_size: 101

@@ -34,6 +34,9 @@ from utils.utils_single import auc
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
+root_loger = logging.getLogger()
+for handler in root_loger.handlers[:]:
+    root_loger.removeHandler(handler)
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)

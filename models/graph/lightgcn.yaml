@@ -1,6 +1,6 @@
 # configuration for deepwalk
 # -----------paddlcloud 配置: 主要是一些提交paddlecloud任务的信息----------------------#
-job_name: test_nlp_pglbox_deepwalk_singlenode
+job_name: test_nlp_pglbox_lightgcn_singlenode
 # paddlecloud GPU 队列名称，每个部门的队列不同
 group_name: 
 # paddlecloud 提交任务所使用的docker 镜像
@@ -49,11 +49,11 @@ symmetry: True
 meta_path: "cuid2clk-clk2cuid;cuid2conv-conv2cuid;cuid2fcclk-fcclk2cuid;cuid2fcconv-fcconv2cuid;clk2cuid-cuid2clk;conv2cuid-cuid2clk;fcclk2cuid-cuid2clk;fcconv2cuid-cuid2clk;clk2cuid-cuid2conv;conv2cuid-cuid2conv;fcclk2cuid-cuid2conv;fcconv2cuid-cuid2conv;clk2entity-entity2clk;conv2entity-entity2conv;clk2entity-entity2conv;conv2entity-entity2clk"
 
 # 游走路径的正样本窗口大小
-win_size: 3
+win_size: 2
 # neg_num: 每对正样本对应的负样本数量
-neg_num: 5
+neg_num: 10
 # walk_len: metapath 游走路径深度
-walk_len: 24
+walk_len: 4
 # walk_times: 每个起始节点重复n次游走，这样可以尽可能把一个节点的所有邻居游走一遍，使得训练更加均匀。
 walk_times: 10
 
@@ -97,9 +97,9 @@ model_type: GNNModel
 # embedding 维度
 emb_size: 64
 # sparse_type: 稀疏参数服务器的优化器，目前支持adagrad, shared_adam
-sparse_type: adagrad_v2
+sparse_type: adagrad_v2 # shared_adam
 # sparse_lr: 稀疏参数服务器的学习率
-sparse_lr: 0.05
+sparse_lr: 0.1
 # dense_lr: 稠密参数的学习率
 dense_lr: 0.000005 #001
 # slot_feature_lr: slot特征的学习率
@@ -114,21 +114,23 @@ softsign: False
 gcl_loss: simgcl_loss
 
 # sage 模型设置开关
-sage_mode: False
+sage_mode: True
 # sage_layer_type: sage 模型类型选择
 sage_layer_type: "LightGCN"
 sage_alpha: 0.9
 samples: [5]
 infer_samples: [100]
 sage_act: "relu"
+hcl: True
+use_degree_norm: False # 如果为True，则sage_alpha 需设置为0.4-0.5, batch_node_size 和 infer_batch_size也要调小.
 
 # 带权采样开关，同时作用于游走和sage子图采样阶段。
 weighted_sample: False
 # 是否返回边权重，仅用于sage_mode=True模式，如边不带权则默认返回1。
 return_weight: False
-# 是否要进行训练，如果只想单独热启模型做预估(inference)，则可以关闭need_train
+
+# 是否需要在训练完成之后进行inference
 need_train: True
-# 是否需要进行inference. 如果只想单独训练模型，则可以关闭need_inference
 need_inference: True
 # 预估embedding的时候，需要的参数，保持默认即可.
 dump_node_name: "src_node___id"
@@ -138,19 +140,17 @@ need_dump_walk: False
 
 # ---------------------------train param config---------------------------------------------#
 epochs: 1
+# 为了加快训练速度，可以设置每隔多少个epochs才保存一次模型。默认最后一个epoch训练完一定会保存模型。
 # 训练样本的batch_size
-batch_size: 80000
-infer_batch_size: 80000
+batch_size: 20000
+infer_batch_size: 20000
 chunk_num: 1
+thread_num: 8
 # 1 for debug
 debug_mode: 0
-# 是否开启metapath优化
-metapath_split_opt: False
-# 训练模式，可填WHOLE_HBM/MEM_EMBEDDING/SSD_EMBEDDING，默认为MEM_EMBEDDING
-train_storage_mode: MEM_EMBEDDING
-# 大致设置gpups的显存占用率 默认 0.25
-gpups_memory_allocated_rate: 0.60
 version: v_refactor_0104
+# 大致设置gpups的显存占用率 默认 0.25
+gpups_memory_allocated_rate: 0.10
 
 # ---------------------------例行训练和预测------------------------------#
 # 若修改为"online_train"，则表示需要进行例行训练，否则默认为普通训练模式。

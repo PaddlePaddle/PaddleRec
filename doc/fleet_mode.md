@@ -75,7 +75,7 @@ runner:
 ```
 ### 修改reader
 目前我们paddlerec模型默认使用的reader都是继承自paddle.io.IterableDataset，在reader的__iter__函数中拆分文件，按行处理数据。当 paddle.io.DataLoader 中 num_workers > 0 时，每个子进程都会遍历全量的数据集返回全量样本，所以数据集会重复 num_workers 次，也就是每张卡都会获得全部的数据。您在训练时可能需要调整学习率等参数以保证训练效果。  
-如果需要数据集样本不会重复，可通过paddle.distributed.get_rank()函数获取当前使用的第几张卡，paddle.distributed.get_world_size()函数获取使用的总卡数。并在reader文件中自行添加逻辑划分各子进程的数据。[paddle.io.IterableDataset](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/fluid/dataloader/dataset/IterableDataset_cn.html#iterabledataset)的相关信息以及划分数据的示例可以点击这里获取。
+如果需要数据集样本不会重复，可通过paddle.distributed.get_rank()函数获取当前使用的第几张卡，paddle.distributed.get_world_size()函数获取使用的总卡数。并在reader文件中自行添加逻辑划分各子进程的数据。[paddle.io.IterableDataset](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/io/IterableDataset_cn.html#iterabledataset)的相关信息以及划分数据的示例可以点击这里获取。
 
 ### 单机多卡模式下指定需要使用的卡号
 在没有进行设置的情况下将使用单机上所有gpu卡。若需要指定部分gpu卡执行，可以通过设置环境变量CUDA_VISIBLE_DEVICES来实现。  

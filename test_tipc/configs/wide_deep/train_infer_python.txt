@@ -1,6 +1,6 @@
 ===========================train_params===========================
 model_name:wide_deep
-python:python3.7
+python:python
 gpu_list:0
 runner.use_gpu:True|False
 auto_cast:False
