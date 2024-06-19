@@ -333,6 +333,7 @@ class Main(object):
         if self.config.need_inference:
             self.exe.run(self.infer_model_dict.startup_program)
         fleet.init_worker()
+        self.model_dict.train_program._fleet_opt = self.model_dict.loss.block.program._fleet_opt
         slot_num_for_pull_feature = 1 if self.config.token_slot else 0
         slot_num_for_pull_feature += len(self.config.slots)
         float_slot_num = 0
