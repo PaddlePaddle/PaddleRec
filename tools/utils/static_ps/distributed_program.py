@@ -116,6 +116,8 @@ def make_distributed_infer_program(args, model_dict):
     opt_info["user_define_dump_filename"] = "000" 
     opt_info["dump_fields_mode"] = "a"
     opt_info["dump_num_decimals"] = 9
+    opt_info["use_ps_gpu"] = True
+    opt_info["use_gpu_graph"] = True
 
     with open("infer_before_main_program.pbtxt", "w") as fout:
         fout.write(str(model_dict.train_program))
