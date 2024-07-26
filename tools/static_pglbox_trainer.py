@@ -38,6 +38,7 @@ import logging
 
 from utils.static_ps.distributed_program import make_distributed_train_program, make_distributed_infer_program
 import profiler
+import utils.static_ps.util_hadoop as HFS
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -210,7 +211,17 @@ class Main(object):
         device_ids = get_cuda_places()
         place = paddle.CUDAPlace(device_ids[0])
         self.exe = paddle.static.Executor(place)
-        fleet.init()
+        if paddle.distributed.get_world_size() > 1:
+            fleet.init(is_collective=True)
+        else:
+            fleet.init()
+
+        if paddle.distributed.get_world_size() > 1:
+            worker_id = ("%03d" % (paddle.distributed.get_rank()))
+            self.config.local_model_path = os.path.join(self.config.local_model_path, worker_id)
+            self.config.local_result_path = os.path.join(self.config.local_result_path, worker_id)
+            self.config.local_dump_path = os.path.join(self.config.local_dump_path, worker_id)
+
         self.network()
         if fleet.is_server():
             self.run_server()
