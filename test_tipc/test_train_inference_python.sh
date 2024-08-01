@@ -317,6 +317,31 @@ if [ ${MODE} = "benchmark_train" ]; then
             #使用PDC的centos镜像需要提前制定python环境
             sed -i '/tar -zxvf dependency_py310.tar.gz/d' tools/run_pglbox.sh 
             sed -i '/rm dependency_py310.tar.gz/d' tools/run_pglbox.sh 
+            #监控多机任务需要设置fs_name和ugi，working_root的变量
+            lines=$(sed -n -e '/fs_name:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            fs_name="fs_name: \"${graph_data_fs_name}\""
+            sed -i "$line a${fs_name}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            lines=$(sed -n -e '/fs_ugi:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            fs_ugi="fs_ugi: \"${graph_data_fs_ugi}\""
+            sed -i "$line a${fs_ugi}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            lines=$(sed -n -e '/working_root:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            graph_working_root=$graph_working_root$model_name
+            new_graph_working_root="working_root: \"${graph_working_root}\""
+            sed -i "$line a${new_graph_working_root}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
         fi
         if [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'CE' ]]; then
             line=$(sed -n -e '/graph_data_fs_name:/=' $gpu_config_value)
