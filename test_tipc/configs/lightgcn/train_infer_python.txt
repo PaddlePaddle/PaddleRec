@@ -55,5 +55,5 @@ epoch:1
 --profiler_options="batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile"
 run_mode:PGLBOX
 fp_items:null
-device_num:N1C8
+device_num:N1C8|N2C16
 gpu_config:models/graph/lightgcn.yaml
