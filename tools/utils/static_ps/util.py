@@ -122,6 +122,8 @@ def remove_prefix_of_hadoop_path(hadoop_path):
     output_path = re.split("^\d+", output_path)[-1]
     return output_path
 
+def set_hadoop_account(hadoop_bin, fs_name, fs_ugi):
+    HFS.set_hadoop_account(hadoop_bin, fs_name, fs_ugi)
 
 def load_pretrained_model(exe, model_dict, args, model_path):
     """ load pretrained model """

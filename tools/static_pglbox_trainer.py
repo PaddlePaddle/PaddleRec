@@ -38,7 +38,6 @@ import logging
 
 from utils.static_ps.distributed_program import make_distributed_train_program, make_distributed_infer_program
 import profiler
-import utils.static_ps.util_hadoop as HFS
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -101,7 +100,7 @@ def parse_args():
     # set hadoop global account
     if config.fs_name or config.fs_ugi:
         hadoop_bin = "%s/bin/hadoop" % (os.getenv("HADOOP_HOME"))
-        HFS.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
+        util.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
     print("#===================PRETTY CONFIG============================#")
     pretty(config, indent=0)
     print("#===================PRETTY CONFIG============================#")

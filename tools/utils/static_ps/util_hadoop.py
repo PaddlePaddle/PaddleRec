@@ -194,6 +194,18 @@ def put(src, dest, hadoop_bin=None, fs_name=None, fs_ugi=None):
     ret = os.system(cmd)
     return ret
 
+def put_files(src, dest, hadoop_bin=None, fs_name=None, fs_ugi=None):
+    """hadoop upload file in src to dest """
+    hadoop_bin, fs_name, fs_ugi = parse_account(hadoop_bin, fs_name, fs_ugi)
+    dest = check_hadoop_path(dest, hadoop_bin, fs_name, fs_ugi)
+    cmd = make_base_cmd(hadoop_bin, fs_name, fs_ugi)
+    cmd1 = cmd + " -mkdir  %s " % dest
+    cmd2 = cmd + " -put %s/*  %s " % (src, dest)
+    cmd1 += " 2>>%s" % ERR_LOG
+    cmd2 += " 2>>%s" % ERR_LOG
+    os.system(cmd1)
+    ret = os.system(cmd2)
+    return ret
 
 def replace(src, dest, hadoop_bin=None, fs_name=None, fs_ugi=None):
     """hadoop replace"""
