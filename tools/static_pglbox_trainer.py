@@ -550,7 +550,7 @@ class Main(object):
                     % (epoch, savemodel_end - savemodel_begin))
 
         train_end_time = time.time()
-        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU TRAIN MODEL] finished, time cost: % sec" %
                 (train_end_time - train_begin_time))
 
         return 0
@@ -632,7 +632,7 @@ class Main(object):
                     % (epoch, savemodel_end - savemodel_begin))
 
         train_end_time = time.time()
-        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU TRAIN MODEL] finished, time cost: % sec" %
                 (train_end_time - train_begin_time))
 
         return 0
@@ -660,7 +660,7 @@ class Main(object):
         util.upload_embedding(self.config, self.config.local_result_path)
 
         infer_end = time.time()
-        log.info("STAGE [INFER MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU INFER MODEL] finished, time cost: % sec" %
                  (infer_end - infer_begin))
 
     def record_result(self):
