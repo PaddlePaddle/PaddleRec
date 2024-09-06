@@ -642,6 +642,9 @@ class Main(object):
         """
         infer_begin = time.time()
 
+        if paddle.distributed.get_world_size() > 1:
+            self.exe.flush()
+
         # set infer mode
         if hasattr(dataset.embedding.parameter_server, "set_mode"):
             dataset.embedding.set_infer_mode(True)
