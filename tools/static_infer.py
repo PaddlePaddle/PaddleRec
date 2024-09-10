@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 import os
+os.environ['FLAGS_enable_pir_api'] = '0'
 import warnings
 import logging
 import paddle

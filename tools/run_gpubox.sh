@@ -4,6 +4,7 @@ if [ ! -d "./log" ]; then
   echo "Create log floder for store running log"
 fi
 
+export FLAGS_enable_pir_api=0 #PS模式不支持新IR
 export FLAGS_LAUNCH_BARRIER=0
 export PADDLE_TRAINER_ID=0
 export PADDLE_PSERVER_NUMS=1
