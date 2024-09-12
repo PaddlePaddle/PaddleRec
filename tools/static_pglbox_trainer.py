@@ -38,7 +38,6 @@ import logging
 
 from utils.static_ps.distributed_program import make_distributed_train_program, make_distributed_infer_program
 import profiler
-import utils.static_ps.util_hadoop as HFS
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
@@ -101,7 +100,7 @@ def parse_args():
     # set hadoop global account
     if config.fs_name or config.fs_ugi:
         hadoop_bin = "%s/bin/hadoop" % (os.getenv("HADOOP_HOME"))
-        HFS.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
+        util.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
     print("#===================PRETTY CONFIG============================#")
     pretty(config, indent=0)
     print("#===================PRETTY CONFIG============================#")
@@ -550,7 +549,7 @@ class Main(object):
                     % (epoch, savemodel_end - savemodel_begin))
 
         train_end_time = time.time()
-        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU TRAIN MODEL] finished, time cost: % sec" %
                 (train_end_time - train_begin_time))
 
         return 0
@@ -632,7 +631,7 @@ class Main(object):
                     % (epoch, savemodel_end - savemodel_begin))
 
         train_end_time = time.time()
-        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU TRAIN MODEL] finished, time cost: % sec" %
                 (train_end_time - train_begin_time))
 
         return 0
@@ -642,6 +641,9 @@ class Main(object):
         infer
         """
         infer_begin = time.time()
+
+        if paddle.distributed.get_world_size() > 1:
+            self.exe.flush()
 
         # set infer mode
         if hasattr(dataset.embedding.parameter_server, "set_mode"):
@@ -660,7 +662,7 @@ class Main(object):
         util.upload_embedding(self.config, self.config.local_result_path)
 
         infer_end = time.time()
-        log.info("STAGE [INFER MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU INFER MODEL] finished, time cost: % sec" %
                  (infer_end - infer_begin))
 
     def record_result(self):

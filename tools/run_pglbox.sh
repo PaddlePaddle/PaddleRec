@@ -51,6 +51,7 @@ if [[ ${pretrained_model} =~ "1.5B" ]] || [[ ${pretrained_model} =~ "10B" ]]; th
 fi
 
 # environment variables for fleet distribute training
+export FLAGS_enable_pir_api=0 #PS模式不支持新IR
 export FLAGS_dynamic_static_unified_comm=false #PGLBOX最新不支持新通信库
 export NCCL_DEBUG=INFO
 export FLAGS_LAUNCH_BARRIER=0

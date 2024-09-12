@@ -342,6 +342,9 @@ if [ ${MODE} = "benchmark_train" ]; then
             new_graph_working_root="working_root: \"${graph_working_root}\""
             sed -i "$line a${new_graph_working_root}" $gpu_config_value
             sed -i "$line d" $gpu_config_value
+
+            rm_path=$(echo $graph_working_root | awk -F ':' '{print $2}')
+            hadoop fs -D hadoop.job.ugi=${graph_data_fs_ugi} -D fs.default.name=${graph_data_fs_name} -rmr ${rm_path}
         fi
         if [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'CE' ]]; then
             line=$(sed -n -e '/graph_data_fs_name:/=' $gpu_config_value)
