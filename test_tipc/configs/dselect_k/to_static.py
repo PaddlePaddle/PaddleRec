@@ -14,6 +14,7 @@
 
 import paddle
 import os
+os.environ['FLAGS_enable_pir_api'] = '0'
 import paddle.nn as nn
 import time
 import logging
