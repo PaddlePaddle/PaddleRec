@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+os.environ['FLAGS_enable_pir_api'] = '0'
 from __future__ import print_function
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy
@@ -23,8 +25,6 @@ import sys
 import paddle.distributed.fleet as fleet
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle
-import os
-os.environ['FLAGS_enable_pir_api'] = '0'
 import warnings
 import logging
 
