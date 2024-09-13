@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle
 import os
 os.environ['FLAGS_enable_pir_api'] = '0'
+import paddle
 import paddle.nn as nn
 import time
 import logging
