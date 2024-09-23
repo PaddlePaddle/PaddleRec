@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from __future__ import print_function
+import os
+os.environ['FLAGS_enable_pir_api'] = '0'
 from utils.static_ps.reader_helper import get_reader, get_example_num, get_file_list, get_word_num
 from utils.static_ps.program_helper import get_model, get_strategy, set_dump_config
 from utils.static_ps.flow_helper import *
@@ -25,7 +27,6 @@ import sys
 import paddle.distributed.fleet as fleet
 import paddle.distributed.fleet.base.role_maker as role_maker
 import paddle
-import os
 import warnings
 import logging
 from paddle.distributed.fleet.utils.fs import LocalFS, HDFSClient

@@ -100,7 +100,7 @@ def parse_args():
     # set hadoop global account
     if config.fs_name or config.fs_ugi:
         hadoop_bin = "%s/bin/hadoop" % (os.getenv("HADOOP_HOME"))
-        HFS.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
+        util.set_hadoop_account(hadoop_bin, config.fs_name, config.fs_ugi)
     print("#===================PRETTY CONFIG============================#")
     pretty(config, indent=0)
     print("#===================PRETTY CONFIG============================#")
@@ -210,7 +210,17 @@ class Main(object):
         device_ids = get_cuda_places()
         place = paddle.CUDAPlace(device_ids[0])
         self.exe = paddle.static.Executor(place)
-        fleet.init()
+        if paddle.distributed.get_world_size() > 1:
+            fleet.init(is_collective=True)
+        else:
+            fleet.init()
+
+        if paddle.distributed.get_world_size() > 1:
+            worker_id = ("%03d" % (paddle.distributed.get_rank()))
+            self.config.local_model_path = os.path.join(self.config.local_model_path, worker_id)
+            self.config.local_result_path = os.path.join(self.config.local_result_path, worker_id)
+            self.config.local_dump_path = os.path.join(self.config.local_dump_path, worker_id)
+
         self.network()
         if fleet.is_server():
             self.run_server()
@@ -333,6 +343,7 @@ class Main(object):
         if self.config.need_inference:
             self.exe.run(self.infer_model_dict.startup_program)
         fleet.init_worker()
+        self.model_dict.train_program._fleet_opt = self.model_dict.loss.block.program._fleet_opt
         slot_num_for_pull_feature = 1 if self.config.token_slot else 0
         slot_num_for_pull_feature += len(self.config.slots)
         float_slot_num = 0
@@ -538,7 +549,7 @@ class Main(object):
                     % (epoch, savemodel_end - savemodel_begin))
 
         train_end_time = time.time()
-        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU TRAIN MODEL] finished, time cost: % sec" %
                 (train_end_time - train_begin_time))
 
         return 0
@@ -620,7 +631,7 @@ class Main(object):
                     % (epoch, savemodel_end - savemodel_begin))
 
         train_end_time = time.time()
-        log.info("STAGE [TRAIN MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU TRAIN MODEL] finished, time cost: % sec" %
                 (train_end_time - train_begin_time))
 
         return 0
@@ -630,6 +641,9 @@ class Main(object):
         infer
         """
         infer_begin = time.time()
+
+        if paddle.distributed.get_world_size() > 1:
+            self.exe.flush()
 
         # set infer mode
         if hasattr(dataset.embedding.parameter_server, "set_mode"):
@@ -648,7 +662,7 @@ class Main(object):
         util.upload_embedding(self.config, self.config.local_result_path)
 
         infer_end = time.time()
-        log.info("STAGE [INFER MODEL] finished, time cost: % sec" %
+        log.info("STAGE [GPU INFER MODEL] finished, time cost: % sec" %
                  (infer_end - infer_begin))
 
     def record_result(self):

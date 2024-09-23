@@ -261,7 +261,7 @@ class BaseDataset(object):
                     raise e
                     break
                 end = time.time()
-                log.info("pass[%d] STAGE [SAMPLE] finished, time cost: %f sec",
+                log.info("pass[%d] STAGE [GPU SAMPLE] finished, time cost: %f sec",
                          pass_id, end - begin)
                 if self.config.need_dump_walk is True and self.is_predict is False:
                     dataset.dump_walk_path(self.config.local_dump_walk_path)
@@ -372,21 +372,21 @@ class UnsupReprLearningDataset(BaseDataset):
             beginpass_begin = time.time()
             self.embedding.begin_pass()
             beginpass_end = time.time()
-            log.info("train pass[%d] STAGE [BEGIN PASS] finished, time cost: %f sec" \
+            log.info("train pass[%d] STAGE [GPU BEGIN PASS] finished, time cost: %f sec" \
                     % (pass_id, beginpass_end - beginpass_begin))
             trainpass_begin = time.time()
 
             yield dataset
 
             trainpass_end = time.time()
-            log.info("train pass[%d] STAGE [TRAIN] finished, time cost: %f sec" \
+            log.info("train pass[%d] STAGE [GPU TRAIN] finished, time cost: %f sec" \
                     % (pass_id, trainpass_end - trainpass_begin))
 
             dataset.release_memory()
             endpass_begin = time.time()
             self.embedding.end_pass()
             endpass_end = time.time()
-            log.info("train pass[%d] STAGE [END PASS] finished, time cost: %f sec" \
+            log.info("train pass[%d] STAGE [GPU END PASS] finished, time cost: %f sec" \
                     % (pass_id, endpass_end - endpass_begin))
             self.could_load_sem.release()
 

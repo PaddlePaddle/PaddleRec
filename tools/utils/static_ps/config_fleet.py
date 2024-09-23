@@ -25,7 +25,7 @@ def get_strategy(args, model_dict):
     strategy = paddle.distributed.fleet.DistributedStrategy()
     strategy.a_sync = True  # 默认使用async模式
 
-    configs = {"use_ps_gpu": 1}
+    configs = {"use_ps_gpu": 1, "use_gpu_graph": 1}
     strategy.a_sync_configs = configs
 
     # sparse参数相关配置
@@ -58,6 +58,7 @@ def gen_sparse_config(args, sparse_lr, init_range, op_type, emb_size, feature_lr
     gen sparse config
     """
     sparse_config = dict()
+    sparse_config['use_gpu_graph'] = True
     sparse_config['sparse_table_class'] = sparse_table_class
     sparse_config['sparse_compress_in_save'] = True
     sparse_config['sparse_shard_num'] = 67
@@ -100,6 +101,7 @@ def gen_sparse_config(args, sparse_lr, init_range, op_type, emb_size, feature_lr
     sparse_config['feature_learning_rate'] = feature_lr
     sparse_config['sparse_load_filter_slots'] = load_filter_slots
     sparse_config['sparse_save_filter_slots'] = save_filter_slots
+    sparse_config['sparse_zero_init'] = False
     return sparse_config
 
 
