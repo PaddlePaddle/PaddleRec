@@ -382,6 +382,25 @@ if [ ${MODE} = "benchmark_train" ]; then
             sed -i "$line d" $gpu_config_value
 
             wget ${graph_eval_url} --no-check-certificate -P tools/
+            
+        elif [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'million' ]]; then
+            line=$(sed -n -e '/graph_data_fs_name:/=' $gpu_config_value)
+            new_graph_data_fs_name="graph_data_fs_name: \"${graph_data_fs_name_million}\""
+            sed -i "$line a${new_graph_data_fs_name}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            line=$(sed -n -e '/graph_data_fs_ugi:/=' $gpu_config_value)
+            new_graph_data_fs_ugi="graph_data_fs_ugi: \"${graph_data_fs_ugi_million}\""
+            sed -i "$line a${new_graph_data_fs_ugi}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
+
+            lines=$(sed -n -e '/graph_data_hdfs_path:/=' $gpu_config_value)
+            array_lines=(${lines})
+            line_num=${#array_lines[@]}
+            line=${array_lines[line_num-1]}
+            new_graph_data_hdfs_path="graph_data_hdfs_path: \"${graph_data_hdfs_path_million}\""
+            sed -i "$line a${new_graph_data_hdfs_path}" $gpu_config_value
+            sed -i "$line d" $gpu_config_value
         fi
         #执行训练脚本
         sh -x tools/run_pglbox.sh
