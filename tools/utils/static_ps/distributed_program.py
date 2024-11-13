@@ -40,14 +40,14 @@ def set_dump_config(args, model):
     
     all_param_list = []
     for param in program.all_parameters():
-        if param.type != core.VarDesc.VarType.LOD_TENSOR:
+        if param.type != core.VarDesc.VarType.DENSE_TENSOR:
             continue
         all_param_list.append(param.name)
         all_param_list.append(param.name + '@GRAD')
         
     all_field_list = []
     for var in program.list_vars():
-        if var.type != core.VarDesc.VarType.LOD_TENSOR:
+        if var.type != core.VarDesc.VarType.DENSE_TENSOR:
             continue
         if var.persistable:
             continue
