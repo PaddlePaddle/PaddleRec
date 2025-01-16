@@ -322,7 +322,8 @@ if [ ${MODE} = "benchmark_train" ]; then
             array_lines=(${lines})
             line_num=${#array_lines[@]}
             line=${array_lines[line_num-1]}
-            fs_name="fs_name: \"${graph_data_fs_name}\""
+            # 修改fs_name的值,区分图数据的存储和训练输出
+            fs_name="fs_name: \"${training_output_fs_name}\""
             sed -i "$line a${fs_name}" $gpu_config_value
             sed -i "$line d" $gpu_config_value
 
@@ -330,10 +331,12 @@ if [ ${MODE} = "benchmark_train" ]; then
             array_lines=(${lines})
             line_num=${#array_lines[@]}
             line=${array_lines[line_num-1]}
-            fs_ugi="fs_ugi: \"${graph_data_fs_ugi}\""
+            # 修改fs_ugi的值,区分图数据的存储和训练输出
+            fs_ugi="fs_ugi: \"${training_output_fs_ugi}\""
             sed -i "$line a${fs_ugi}" $gpu_config_value
             sed -i "$line d" $gpu_config_value
 
+            # 单机八卡任务不需要设置workroot,通过prepare_common.sh实现
             lines=$(sed -n -e '/working_root:/=' $gpu_config_value)
             array_lines=(${lines})
             line_num=${#array_lines[@]}
