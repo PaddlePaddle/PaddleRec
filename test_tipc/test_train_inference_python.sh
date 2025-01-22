@@ -383,9 +383,9 @@ if [ ${MODE} = "benchmark_train" ]; then
             new_num_part="num_part: 1000"
             sed -i "$line a${new_num_part}" $gpu_config_value
             sed -i "$line d" $gpu_config_value
-
-            wget ${graph_eval_url} --no-check-certificate -P tools/
-            
+            pushd tools 
+            wget ${graph_eval_url} -O run_graph_eval.sh --no-check-certificate
+            popd
         elif [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'million' ]]; then
             line=$(sed -n -e '/graph_data_fs_name:/=' $gpu_config_value)
             new_graph_data_fs_name="graph_data_fs_name: \"${graph_data_fs_name_million}\""
@@ -408,7 +408,8 @@ if [ ${MODE} = "benchmark_train" ]; then
         #执行训练脚本
         sh -x tools/run_pglbox.sh
         if [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'CE' ]]; then
-            sh tools/run_graph_eval.sh $gpu_config_value > ${BENCHMARK_LOG_DIR}/graph_eval.log 2>&1
+            echo 'exec tools/run_graph_eval.sh!!!!'
+            sh -x tools/run_graph_eval.sh $gpu_config_value > ${BENCHMARK_LOG_DIR}/graph_eval.log 2>&1
             rm -rf ${graph_data_local_path}
         fi
     fi
