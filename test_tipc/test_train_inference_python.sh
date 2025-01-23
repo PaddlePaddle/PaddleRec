@@ -408,8 +408,7 @@ if [ ${MODE} = "benchmark_train" ]; then
         #执行训练脚本
         sh -x tools/run_pglbox.sh
         if [[ ${SYS_JOB_NAME} && ${SYS_JOB_NAME} =~ 'CE' ]]; then
-            echo 'exec tools/run_graph_eval.sh!!!!'
-            sh -x tools/run_graph_eval.sh $gpu_config_value > ${BENCHMARK_LOG_DIR}/graph_eval.log 2>&1
+            sh tools/run_graph_eval.sh $gpu_config_value > ${BENCHMARK_LOG_DIR}/graph_eval.log 2>&1
             rm -rf ${graph_data_local_path}
         fi
     fi
