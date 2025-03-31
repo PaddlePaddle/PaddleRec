@@ -313,10 +313,10 @@ if [ ${MODE} = "benchmark_train" ]; then
             sed -i '/PYTHON_HOME=${PGLBOX_HOME}/d' tools/run_pglbox.sh 
             sed -i '/export PATH=${PYTHON_HOME}/d' tools/run_pglbox.sh 
             sed -i '/export LD_LIBRARY_PATH=${PYTHON_HOME}/d' tools/run_pglbox.sh
-        else
-            #使用PDC的centos镜像需要提前制定python环境
-            sed -i '/tar -zxvf dependency_py310.tar.gz/d' tools/run_pglbox.sh 
-            sed -i '/rm dependency_py310.tar.gz/d' tools/run_pglbox.sh 
+        # else
+        #     #使用PDC的centos镜像需要提前制定python环境
+        #     sed -i '/tar -zxvf dependency_py310.tar.gz/d' tools/run_pglbox.sh 
+        #     sed -i '/rm dependency_py310.tar.gz/d' tools/run_pglbox.sh 
             #监控多机任务需要设置fs_name和ugi，working_root的变量
             lines=$(sed -n -e '/fs_name:/=' $gpu_config_value)
             array_lines=(${lines})
