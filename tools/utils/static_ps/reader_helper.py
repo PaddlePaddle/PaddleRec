@@ -73,7 +73,7 @@ def get_infer_reader(input_var, config):
 
 def get_file_list(data_path, config):
     assert os.path.exists(data_path)
-    file_list = [data_path + "/%s" % x for x in os.listdir(data_path)]
+    file_list = [data_path + "/%s" % x for x in sorted(os.listdir(data_path))]
     if config.get("runner.split_file_list"):
         logger.info("Split file list for worker {}".format(fleet.worker_index(
         )))
